@@ -1,0 +1,233 @@
+<template>
+  <div class="app-container">
+
+    <cl-table @row-click="rowClick" :tableData="tableData" :tableColumns="col" :pageObj="pageObj" >
+       <!-- <el-table-column slot="operate" label="操作" >
+                <template slot-scope="scope">
+                    <el-button size="mini" type="warning"
+                              
+                               @click="edit(scope.row)">编辑
+                    </el-button>
+                    <el-button size="mini" type="primary"
+                              
+                               @click="startUsing(scope.row)">启用
+                    </el-button>          
+                </template>
+       </el-table-column> -->
+    </cl-table> 
+  </div>
+</template>
+<script>
+import clTable from '@/components/cl-table/'
+export default {
+  components:{
+    clTable
+    },
+  data() {
+    return {
+    // activeName:'second',
+      tempdata:'i am a farther',
+      pageObj: {
+                size: 10,
+                total: 1,
+                currentPage: 1,
+                func:(currentPage) =>{
+                    //this.pageTurning(currentPage)
+                }
+            },
+      col: [
+         {
+          label: '选择器',
+          prop: 'selectDataList',
+          width:'100',
+          headerAlign:'left',
+          align:'center',
+          rowRenderType:'select'
+        },
+         {
+          label: '喜欢吗',
+          prop: 'important',
+          align:'right',
+           width:'150',
+          rowRenderType:'star'
+        },
+         {
+          label: '年龄',
+          prop: 'age',
+          width:'145',
+          headerAlign:'left',
+          align:'center',
+          rowRenderType:'number'
+        },
+         {
+          label: '进度',
+          prop: 'progress',
+          width:'145',
+          headerAlign:'left',
+          align:'center',
+          rowRenderType:'progress'
+        },
+         {
+          label: '滑块',
+          prop: 'sliderValue',
+          width:'145',
+          headerAlign:'left',
+          align:'center',
+          rowRenderType:'slider'
+        },
+         {
+          label: '时间',
+          width:'110',
+          prop: 'startTime',
+          headerAlign:'center',
+          align:'left',
+          rowRenderType:'time'
+        },
+        {
+          label: '日期',
+          width:'140',
+          prop: 'date',
+          headerAlign:'left',
+          align:'center',
+          rowRenderType:'date'
+        },
+        {
+          label: '姓名',
+          prop: 'name',
+          width:'140',
+          headerAlign:'right',
+          align:'left',
+          rowRenderType:'input'
+        },
+       
+        {
+          label: '是否',
+          prop: 'isTrue',
+          align:'right',
+          rowRenderType:'switch'
+        },
+        {
+          label: '多选框',
+          prop: 'isCheck',
+          align:'right',
+           width:'300',
+          rowRenderType:'checkbox'
+        },
+        {
+          label: '单选框',
+          prop: 'singleRadio',
+          width:'300',
+           headerAlign:'center',
+          align:'left',
+          rowRenderType:'radio'
+        },
+         {
+          label: '图片',
+          prop: 'imageURL',
+          align:'right',
+           showTooltip:true,
+          rowRenderType:'image'
+        },
+         {
+          label: '地址',
+          prop: 'address',
+          align:'right',
+          showTooltip:true,
+        },
+         {slot: 'operate'} // 操作列
+      ],
+      tableData: [
+        {
+          id: '1',
+          date: '2016-05-02',
+          startTime: '08:30',
+          name: '王小虎1',
+          age:11,
+          important:3,
+          progress:72,
+          sliderValue:10,
+          address: '上海市普陀区金沙江路 100 弄',
+          selectDataList:{selected:'1',dataList:[{label:'aaa',value:'1'},{label:'bbb',value:'2'},{label:'ccc',value:'3'}]},
+          isTrue:false,
+         isCheck:{selected:['深圳'],dataList:[{label:'上海',value:'1'},{label:'北京',value:'2'},{label:'深圳',value:'3'}]},
+          singleRadio:{selected:'上海',dataList:[{label:'上海',value:'1'},{label:'北京',value:'2'},{label:'深圳',value:'3'}]},
+          imageURL:'https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg',
+        },
+        {
+          id: '2',
+          date: '2016-05-04',
+          startTime: '08:30',
+          name: '王小虎2',
+          age:111,
+           important:4,
+           progress:50,
+           sliderValue:20,
+          address: '上海市普陀区金沙江路 200 弄',
+          selectDataList:{selected:'2',dataList:[{label:'aaa',value:'1'},{label:'bbb',value:'2'},{label:'ccc',value:'3'}]},
+          isTrue:true,
+        isCheck:{selected:['北京'],dataList:[{label:'上海',value:'1'},{label:'北京',value:'2'},{label:'深圳',value:'3'}]},
+          singleRadio:{selected:'北京',dataList:[{label:'上海',value:'1'},{label:'北京',value:'2'},{label:'深圳',value:'3'}]},
+          imageURL:'https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg',
+        },
+        {
+          id: '3',
+          date: '2016-05-01',
+          startTime: '08:30',
+          name: '王小虎3',
+          age:13,
+           important:1,
+          progress:68,
+          sliderValue:50,
+          address: '上海市普陀区金沙江路 300 弄',
+            selectDataList:{selected:'3',dataList:[{label:'aaa',value:'1'},{label:'bbb',value:'2'},{label:'ccc',value:'3'}]},
+           isTrue:false,
+          isCheck:{selected:['上海','北京'],dataList:[{label:'上海',value:'1'},{label:'北京',value:'2'},{label:'深圳',value:'3'}]},
+           singleRadio:{selected:'深圳',dataList:[{label:'上海',value:'1'},{label:'北京',value:'2'},{label:'深圳',value:'3'}]},
+           imageURL:'https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg',
+        },
+        {
+          id: '4',
+          date: '2016-05-03',
+          startTime: '',
+          name: '王小虎4',
+          age:25,
+           important:5,
+          progress:100,
+          sliderValue:100,
+          address: '上海市普陀区金沙江路 400 弄',
+          selectDataList:{selected:'1',dataList:[{label:'aaa',value:'1'},{label:'bbb',value:'2'},{label:'ccc',value:'3'}]},
+          isTrue:true,
+          isCheck:{selected:['深圳'],dataList:[{label:'上海',value:'1'},{label:'北京',value:'2'},{label:'深圳',value:'3'}]},
+          singleRadio:{selected:'深圳',dataList:[{label:'上海',value:'1'},{label:'北京',value:'2'},{label:'深圳',value:'3'}]},
+          imageURL:'https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg',
+        }
+      ]
+    }
+  },
+  mounted() {
+
+  },
+  methods: {
+    rowClick(params){
+      console.log('rowClick:'+JSON.stringify(params))
+    },
+   indexMethod(index) {
+    return index + 1;
+  },
+  headerCellStyle({row, rowIndex}){
+    console.log('=======row=====rowIndex===:'+row,rowIndex)
+  },
+   tableRowClassName({row, rowIndex}) {
+        if (rowIndex === 1) {
+          return 'warning-row';
+        } else if (rowIndex === 3) {
+          return 'success-row';
+        }
+        return '';
+      }
+}
+}
+</script>
+<style>
+
+</style>

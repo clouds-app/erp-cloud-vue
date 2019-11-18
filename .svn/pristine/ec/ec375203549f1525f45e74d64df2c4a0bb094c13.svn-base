@@ -1,0 +1,113 @@
+import request from '@/utils/request'
+import axios from '@/libs/api.request'
+import Qs from 'qs'
+const _reqURL = '/api'
+
+/**
+ * @desc getValidatorToken 描述 获取加密Token字符串
+ *
+ * @params 参数 userId: string
+ *
+ * @return 返回 user Name Md5 用户名加密字符串
+ */
+export const getValidatorToken = (userId: string) => {
+  // 参数
+  const data = {
+    userId
+  }
+  return axios.request({
+    url: `${_reqURL}/user/validatorToken`,
+    data,
+    method: 'post',
+    // tslint:disable-next-line: no-shadowed-variable
+    transformRequest: [(data: any) => {
+      return Qs.stringify(data)
+    }]
+  })
+}
+
+/**
+* @desc user.login 描述 用户登陆
+*
+* @params 参数 userId: string, pwd: string
+*
+* @return 返回
+*/
+export const handlelogin = (data: { userId: string, pwd: string }) => {
+  return axios.request({
+    url: `${_reqURL}/user/login`,
+    data,
+    method: 'post',
+    // tslint:disable-next-line: no-shadowed-variable
+    transformRequest: [(data: any) => {
+      return Qs.stringify(data)
+    }]
+  })
+}
+
+/**
+* @desc user.getMenuByToken 描述
+*
+* @params 参数:TOKEN IN HEAD
+*
+* @return 返回:List {JSON}} 菜单列表
+*/
+export const getMenuByToken = () => {
+  return axios.request({
+    url: `${_reqURL}/user/resourceInfoV2`,
+    method: 'post'
+  })
+}
+
+export const getUsers = (params: any) =>
+  request({
+    url: '/users',
+    method: 'get',
+    params
+  })
+
+export const getUserInfo = (data: any) =>
+  request({
+    url: '/users/info',
+    method: 'post',
+    data
+  })
+
+export const getUserByName = (username: string) =>
+  request({
+    url: `/users/${username}`,
+    method: 'get'
+  })
+
+export const updateUser = (username: string, data: any) =>
+  request({
+    url: `/users/${username}`,
+    method: 'put',
+    data
+  })
+
+export const deleteUser = (username: string) =>
+  request({
+    url: `/users/${username}`,
+    method: 'delete'
+  })
+
+export const login = (data: any) =>
+  request({
+    url: '/users/login',
+    method: 'post',
+    data
+  })
+
+export const logout = () =>
+  request({
+    url: '/users/logout',
+    method: 'post'
+  })
+
+export const register = (data: any) =>
+  request({
+    url: '/users/register',
+    method: 'post',
+    data
+  })

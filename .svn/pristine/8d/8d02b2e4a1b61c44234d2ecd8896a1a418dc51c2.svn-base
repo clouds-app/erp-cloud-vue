@@ -1,0 +1,185 @@
+<template>
+  <div class="home-split">
+    <Card>
+      <div class="demo-tabs-style2">
+        <clTabs @on-click="handlechange"
+        @input="getCrrentActiveTab"
+          :animated="false"
+          type="card"
+          v-model="currentOpenedTab"
+          closable
+          @on-tab-remove="handleTabRemove"
+        >
+           <!-- 固定菜单 -->
+          <clTabPane
+            :isFirstOne="true"
+            :name="currentTopMenulable"
+            :label="currentTopMenulable"
+          >
+            <paneContents @openSubMenu="openSubMenu" ref="paneContents" :contentType="contentType" />
+          </clTabPane>
+           <!-- 动态菜单 -->
+            <clTabPane v-for="(item) in hasSelectedSubMenu" :uniqueKey='item.lable' :name="item.lable" :label="item.lable" :key="item.lable">
+               <dynamicPaneContents :contentType="contentType" :uniqueKey='item.lable'></dynamicPaneContents>   
+            </clTabPane>
+        </clTabs>
+      </div>
+    </Card>
+  </div>
+</template>
+<script>
+import clTabs from "@/components/cl-erp/tabs";
+import clTabPane from "@/components/cl-erp/tabs/pane";
+import paneContents from "@/components/cl-erp/tabPaneContents/tabPaneContents";
+import dynamicPaneContents from "@/components/cl-erp/tabPaneContentsDynamic/tabPaneContentsDynamic";
+import * as type from "@/enum"; //菜单枚举
+export default {
+  components: {
+    clTabs,
+    clTabPane,
+    paneContents,
+    dynamicPaneContents
+  },
+  data() {
+    return {
+      currentOpenedTab:'销售管理', //默认打开状态的TABL
+      hasSelectedSubMenu:[], //勾选过的子菜单
+      contentType:'sale', //默认内容 content
+      currentTopMenulable: "销售管理" // TAB 名称
+    };
+  },
+  computed: {
+    // 缓存  顶部选中===主===菜单 
+     cacheSelectedTopMenu() {
+      return this.$store.state.app.currentTopMenu;
+    },
+     // 缓存 顶部选中===子===菜单 
+     cacheSelectedSubMenu() {
+        return this.$store.state.app.currentSubMenu;
+        
+     }
+  },
+  watch: {
+    // 监控 主菜单 切换 出发查询 子菜单数据
+    cacheSelectedTopMenu(newVal, oldVal) {
+        this.switchTopMenuHanle(newVal)
+    }
+  },
+  methods: {
+    // 回调事件 - 当前选中TAB 标签
+    getCrrentActiveTab(uniqueKey){
+      debugger
+       this.resetCurrentActiveTab(uniqueKey)
+    },
+    // 回调事件 -开打指定页面
+    openSubMenu(params){
+      // 更新 hasSelectedSubMenu 数据
+       this.switchTopMenuHanle(this.contentType)
+       //选中指定TAB页面
+       this.currentOpenedTab = params.lable
+    },
+    // 回调事件 -点击tab 事件
+    handlechange(params){
+        this.resetCurrentActiveTab(params.uniqueKey)
+    },
+    // 回调事件 -删除指定TAB标签
+    handleTabRemove(params) {
+      // debugger
+      const deleteItemIndex= this.hasSelectedSubMenu.findIndex(item=>{
+        return item.uniqueKey===params.uniqueKey
+      })
+      if(deleteItemIndex!=-1){
+        this.hasSelectedSubMenu.splice(deleteItemIndex,1)
+        this.cacheSelectedSubMenu[this.contentType] = this.hasSelectedSubMenu
+        this.$store.commit('setCurrentSubMenu',this.cacheSelectedSubMenu)
+      }
+     
+     
+    },
+    //切换菜单 查询子菜单
+    switchTopMenuHanle(key) {
+      //debugger
+      switch (key+"") {
+        case type.topMenu_Account:
+           this.currentTopMenulable ='财务管理'
+           this.hasSelectedSubMenu = this.cacheSelectedSubMenu.Account
+          break;
+        case type.topMenu_Bas:
+             this.currentTopMenulable ='基础数据'
+               this.hasSelectedSubMenu = this.cacheSelectedSubMenu.Bas
+          break;
+        case type.topMenu_Mrp:
+             this.currentTopMenulable ='生产管理'
+               this.hasSelectedSubMenu = this.cacheSelectedSubMenu.Mrp
+          break;
+        case type.topMenu_Purchase:
+             this.currentTopMenulable ='采购管理'
+              this.hasSelectedSubMenu = this.cacheSelectedSubMenu.Purchase
+          break;
+        case type.topMenu_report:
+             this.currentTopMenulable ='报表中心'
+               this.hasSelectedSubMenu = this.cacheSelectedSubMenu.report
+          break;
+        case type.topMenu_sale:
+             this.currentTopMenulable ='销售管理'
+              this.hasSelectedSubMenu = this.cacheSelectedSubMenu.sale
+          break;
+        case type.topMenu_Stock:
+             this.currentTopMenulable ='储运管理'
+               this.hasSelectedSubMenu = this.cacheSelectedSubMenu.Stock
+          break;
+         case type.topMenu_Sys:
+              this.currentTopMenulable ='系统设置'
+              this.hasSelectedSubMenu = this.cacheSelectedSubMenu.Sys
+          break;
+        default:
+               this.currentTopMenulable ='销售管理'
+               this.hasSelectedSubMenu = this.cacheSelectedSubMenu.sale
+          break;
+      }
+       this.contentType = key;
+       this.getCurrentOpenedTab()
+    },
+    resetCurrentActiveTab(uniqueKey){
+      // 重置选择的标签
+         if(this.cacheSelectedSubMenu &&  this.cacheSelectedSubMenu[this.contentType].length>0){
+                 this.cacheSelectedSubMenu[this.contentType].forEach((item,index,arr)=>{
+                    item.isActive =false //重置其它菜单为 未选中
+                    if(item.uniqueKey == uniqueKey){
+                        arr[index].isActive =true
+                    }
+                })
+          }
+          this.$store.commit('setCurrentSubMenu', this.cacheSelectedSubMenu)
+    },
+    // 获取当前打开页面 当 切换主标签时
+    getCurrentOpenedTab(){
+      //debugger
+       if(this.cacheSelectedSubMenu &&  this.cacheSelectedSubMenu[this.contentType].length>0){
+                let flag=false
+                 this.cacheSelectedSubMenu[this.contentType].forEach((item,index,arr)=>{
+                   // debugger
+                    if(item.isActive === true){
+                       flag =true
+                       this.currentOpenedTab = arr[index].uniqueKey 
+                    }else{
+                       if(!flag){
+                              // 默认打开 首页
+                       this.currentOpenedTab = this.currentTopMenulable
+                       }
+                     
+                    }
+                })
+          }else{
+               // 默认打开 首页
+              this.currentOpenedTab = this.currentTopMenulable
+          }
+    }
+
+   
+  }
+};
+</script>
+<style>
+
+</style>

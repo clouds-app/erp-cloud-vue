@@ -1,0 +1,175 @@
+<template>
+    <div class="cl-tabPaneContents">
+
+            <Button class="btn-subMenu" @click="handleSubMenuEvent('Info')" type="info" ghost> {{kityminderDataJson.lable}} Info</Button>
+            <Button class="btn-subMenu" @click="handleSubMenuEvent('Success')" type="success" ghost> {{kityminderDataJson.lable}} Success</Button>
+            <Button class="btn-subMenu" @click="handleSubMenuEvent('Warning')" type="warning" ghost> {{kityminderDataJson.lable}} Warning</Button>
+            <Button class="btn-subMenu" @click="handleSubMenuEvent('Error')" type="error" ghost> {{kityminderDataJson.lable}} Error</Button>
+        
+    </div>
+</template>
+<script>
+import * as type from "@/enum"; //菜单枚举
+import kity from 'kity'
+import kityminder from 'kityminder-core'
+export default {
+    props:{
+        contentType:{
+            type:String,
+            default:'sale'
+        }
+    },
+    data(){
+        return {
+           kityminderDataJson:{},//测试数据 JOSN
+           currentOperateMenu:[],//当前操作菜单数据
+        }
+    },
+    computed: {
+        // 顶部选中子菜单
+        currentSelectedSubMenu() {
+             return this.$store.state.app.currentSubMenu;
+        }
+    },
+    watch: {
+         contentType(newVal, oldVal) {
+          // debugger
+                this.switchTopMenuHanle(newVal);
+                
+          },
+          currentSelectedSubMenu: {
+                  handler(n,o){
+                       this.switchTopMenuHanle(this.contentType);
+                  },
+                   immediate: true,  //刷新加载 立马触发一次handler
+                   deep: true  // 可以深度检测到 子菜单 对象的属性值的变化
+            }
+    },
+    mounted() {
+        this.$nextTick(()=>{
+            //  this.currentOperateMenu = this.currentSelectedSubMenu.sale //初始化数据
+            //  this.switchTopMenuHanle(this.contentType);
+        })
+     
+    },
+  methods:{
+     // 脑图 子页面 点击事件
+      handleSubMenuEvent(subItem){
+           //debugger
+          let params = {
+              type:this.contentType,
+              uniqueKey:this.kityminderDataJson.lable+subItem,
+              lable:this.kityminderDataJson.lable+subItem,
+              isActive:true
+          }
+          //判断是否已经存在,不要重复添加菜单
+          let isExist =false;
+          if(this.currentSelectedSubMenu && this.currentOperateMenu.length>0){
+                this.currentOperateMenu.forEach((item)=>{
+                    item.isActive =false //重置其它菜单为 未选中
+                    if(item.uniqueKey ==params.uniqueKey){
+                        isExist = true
+                        item.isActive =true // 当前的设置为 TRUE
+                    }
+                })
+          }
+          
+          // 不存在则添加 子页面
+          if(!isExist){
+            let needToAddData =Object.assign(this.currentOperateMenu,this.currentOperateMenu.push(params)) 
+            this.currentSelectedSubMenu[this.contentType] =  needToAddData
+          }
+          this.$store.commit('setCurrentSubMenu', this.currentSelectedSubMenu)
+          //打开指定页面
+          this.$emit('openSubMenu',params)
+        
+      },
+     // 切换菜单 查询子菜单 固定菜单 事件处理
+    switchTopMenuHanle(key) {
+     // debugger
+     this.kityminderDataJson ={}
+     console.log('===this.data.content=='+this.contentType)
+      switch (key+"") {
+        //财务管理
+        case type.topMenu_Account:
+            this.currentOperateMenu = this.currentSelectedSubMenu.Account
+           this.kityminderDataJson ={
+               lable:'财务管理 sub',
+           }
+       
+          break;
+          //基础数据
+        case type.topMenu_Bas:
+             this.currentOperateMenu = this.currentSelectedSubMenu.Bas
+               this.kityminderDataJson ={
+               lable:'基础数据 sub',
+           }
+          break;
+          //生产管理
+        case type.topMenu_Mrp:
+             this.currentOperateMenu = this.currentSelectedSubMenu.Mrp
+               this.kityminderDataJson ={
+               lable:'生产管理 sub',
+           }
+          break;
+          //采购管理
+        case type.topMenu_Purchase:
+              this.currentOperateMenu = this.currentSelectedSubMenu.Purchase
+                this.kityminderDataJson ={
+               lable:'采购管理 sub',
+           }
+          break;
+          //报表中心
+        case type.topMenu_report:
+             this.currentOperateMenu = this.currentSelectedSubMenu.report
+               this.kityminderDataJson ={
+               lable:'报表中心 sub',
+           }
+          break;
+          //销售管理
+        case type.topMenu_sale:
+            this.currentOperateMenu = this.currentSelectedSubMenu.sale
+              this.kityminderDataJson ={
+               lable:'销售管理 sub',
+           }
+          break;
+          //储运管理
+        case type.topMenu_Stock:
+              this.currentOperateMenu = this.currentSelectedSubMenu.Stock
+                this.kityminderDataJson ={
+               lable:'储运管理 sub',
+           }
+          break;
+          //系统设置
+         case type.topMenu_Sys:
+              this.currentOperateMenu = this.currentSelectedSubMenu.Sys
+                this.kityminderDataJson ={
+               lable:'系统设置 sub',
+           }
+          break;
+          //默认
+        default:
+             this.currentOperateMenu = this.currentSelectedSubMenu.sale
+          break;
+      }
+     // this.getDataByMenuId(this.currentOperateMenu)
+    },
+    getDataByMenuId(val){
+
+    }
+  
+  }
+
+}
+</script>
+<style>
+.btn-subMenu{
+    margin-left: 15px;
+}
+#minder-container{
+     height: 500px;
+}
+  .cl-tabPaneContents{
+      height: 100%;
+  }
+</style>

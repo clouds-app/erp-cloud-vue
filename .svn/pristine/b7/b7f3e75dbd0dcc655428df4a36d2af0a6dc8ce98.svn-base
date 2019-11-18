@@ -1,0 +1,99 @@
+import { Component, Vue, Watch } from 'vue-property-decorator';
+import i18n from '@/lang'
+
+// 声明合并
+
+declare module 'vue/types/vue' {
+    interface Vue {
+      $config: any;
+    }
+  }
+const WIDTH = 992; // refer to Bootstrap's responsive design
+@Component({
+  components: {
+    // 这里不管你用不用，都要写@Component。不然就会出现奇怪问题
+  },
+})
+export default class BaseMixin extends Vue {
+    public userForm = {
+        username: 'admin',
+        password: '111111',
+      };
+//   get device() {
+//     return AppModule.device
+//   }
+
+//   get sidebar() {
+//     return AppModule.sidebar
+//   }
+
+//   @Watch('$route')
+//   private onRouteChange() {
+//     if (this.device === DeviceType.Mobile && this.sidebar.opened) {
+//       AppModule.CloseSideBar(false)
+//     }
+//   }
+
+ private beforeMount() {
+   // window.addEventListener('resize', this.resizeHandler);
+  }
+
+  // private mounted(){
+  // };
+
+  private beforeDestroy() {
+   // window.removeEventListener('resize', this.resizeHandler);
+  }
+
+  private isMobile() {
+    const rect = document.body.getBoundingClientRect();
+    return rect.width - 1 < WIDTH;
+  }
+
+  /**
+   * 获取签名，参数排序
+   * @param {Object} param参数对象
+   */
+  public paramSort(param:any){
+    if(Array.isArray(param)){//是不是数组
+      let array:Object[] = [];
+      param.forEach((item)=>{
+       let aData =  this.paramSort(item);
+       array.push(aData);
+      });
+      return array;
+    }else{
+      //不是数组，就是对象，先看看对象里面存不存在对象或数组
+      let keys:string[] = Object.keys(param);
+      let data:any = {};
+      for(let i =0;i<keys.length;i++){
+        let key:string = keys[i];
+        if(param[key]  != null && typeof param[key]   == 'object'){
+          data[key] = this.paramSort(param[key]);
+        }
+      }
+      //应该排序了
+      return this.ObjSort(param);
+    }
+  }
+  /**对象按照属性key自然排序
+   * @param {Object} obj
+   */
+  private ObjSort(obj:any){
+    let keys = Object.keys(obj);
+    if(keys.length == 0){
+      return obj;
+    }
+    let keySort = keys.sort();
+    let objData:any = {};
+    keySort.forEach(function(key) {
+      objData[key] = obj[key];
+    });
+    return objData;
+  }
+
+  public getMessage(serverRes : any){
+    return serverRes.message && serverRes.message != null && serverRes.message != '' ? serverRes.message:'请求失败';
+  }
+
+}

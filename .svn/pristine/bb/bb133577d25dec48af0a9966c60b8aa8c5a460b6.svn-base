@@ -1,0 +1,135 @@
+<template>
+  <div class="home-split">
+    <Card>
+      <div class="demo-tabs-style2">
+        <clTabs @on-click="handlechange"
+          :animated="false"
+          type="card"
+          v-model="currentOpenedTab"
+          closable
+          @on-tab-remove="handleTabRemove"
+        >
+           <!-- 固定菜单 -->
+          <clTabPane
+            :isFirstOne="true"
+            :name="currentTopMenulable"
+            :label="currentTopMenulable"
+          >
+            <paneContents @updateMenu="updateMenu" ref="paneContents" :contentType="contentType" />
+          </clTabPane>
+           <!-- 动态菜单 -->
+            <clTabPane v-for="(item) in hasSelectedSubMenu" :uniqueKey='item.lable'  :label="item.lable" :key="item.lable">{{item.lable}}
+                          
+            </clTabPane>
+                 
+        </clTabs>
+      </div>
+    </Card>
+  </div>
+</template>
+<script>
+import clTabs from "@/components/cl-erp/tabs";
+import clTabPane from "@/components/cl-erp/tabs/pane";
+import paneContents from "@/components/cl-erp/tabPaneContents";
+import * as type from "@/enum"; //菜单枚举
+export default {
+  components: {
+    clTabs,
+    clTabPane,
+    paneContents
+  },
+  data() {
+    return {
+      currentOpenedTab:'销售管理', //当前打开状态的TABL
+      hasSelectedSubMenu:[], //勾选过的子菜单
+      contentType:'sale', //默认内容 content
+      currentTopMenulable: "销售管理"
+    };
+  },
+  computed: {
+    // 缓存  顶部选中===主===菜单 
+     cacheSelectedTopMenu() {
+      return this.$store.state.app.currentTopMenu;
+    },
+     // 缓存 顶部选中===子===菜单 
+     cacheSelectedSubMenu() {
+        return this.$store.state.app.currentSubMenu;
+        console.log('=====this.$store.state.app.currentSubMenu======:'+this.$store.state.app.currentSubMenu)
+     }
+  },
+  watch: {
+    cacheSelectedTopMenu(newVal, oldVal) {
+        this.switchTopMenuHanle(newVal)
+    }
+  },
+  methods: {
+    updateMenu(val){
+   
+    },
+    handlechange(params){
+
+    },
+    handleTabRemove(params) {
+       //debugger
+      const deleteItemIndex= this.hasSelectedSubMenu.findIndex(item=>{
+        return item.uniqueKey===params.uniqueKey
+      })
+      if(deleteItemIndex!=-1){
+        this.hasSelectedSubMenu.splice(deleteItemIndex,1)
+        this.cacheSelectedSubMenu[this.contentType] = this.hasSelectedSubMenu
+        this.$store.commit('setCurrentSubMenu',this.cacheSelectedSubMenu)
+      }
+     
+     
+    },
+    //切换菜单 查询子菜单
+    switchTopMenuHanle(key) {
+      //debugger
+      switch (key+"") {
+        case type.topMenu_Account:
+           this.currentTopMenulable ='财务管理'
+           this.hasSelectedSubMenu = this.cacheSelectedSubMenu.Account
+          break;
+        case type.topMenu_Bas:
+             this.currentTopMenulable ='基础数据'
+               this.hasSelectedSubMenu = this.cacheSelectedSubMenu.Bas
+          break;
+        case type.topMenu_Mrp:
+             this.currentTopMenulable ='生产管理'
+               this.hasSelectedSubMenu = this.cacheSelectedSubMenu.Mrp
+          break;
+        case type.topMenu_Purchase:
+             this.currentTopMenulable ='采购管理'
+              this.hasSelectedSubMenu = this.cacheSelectedSubMenu.Purchase
+          break;
+        case type.topMenu_report:
+             this.currentTopMenulable ='报表中心'
+               this.hasSelectedSubMenu = this.cacheSelectedSubMenu.report
+          break;
+        case type.topMenu_sale:
+             this.currentTopMenulable ='销售管理'
+              this.hasSelectedSubMenu = this.cacheSelectedSubMenu.sale
+          break;
+        case type.topMenu_Stock:
+             this.currentTopMenulable ='储运管理'
+               this.hasSelectedSubMenu = this.cacheSelectedSubMenu.Stock
+          break;
+         case type.topMenu_Sys:
+              this.currentTopMenulable ='系统设置'
+              this.hasSelectedSubMenu = this.cacheSelectedSubMenu.Sys
+          break;
+        default:
+               this.currentTopMenulable ='销售管理'
+               this.hasSelectedSubMenu = this.cacheSelectedSubMenu.sale
+          break;
+      }
+     // debugger
+       this.contentType = key;
+    },
+   
+  }
+};
+</script>
+<style>
+
+</style>

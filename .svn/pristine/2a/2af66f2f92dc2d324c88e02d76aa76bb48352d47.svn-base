@@ -1,0 +1,10 @@
+//顶部主菜单枚举
+export const topMenu_Account ='Account' //财务
+export const topMenu_Bas ='Bas' //基础数据
+export const topMenu_Mrp ='Mrp' //生产
+export const topMenu_Purchase ='Purchase' //采购
+export const topMenu_report ='report' //报表中心
+export const topMenu_sale ='sale' //财务
+export const topMenu_Stock ='Stock' //储运
+export const topMenu_Sys ='Sys' //系统设置
+

@@ -1,0 +1,39 @@
+<template>
+    <div class="cl-tabPaneContents-Dynamic">
+         <keep-alive>
+              <router-view/>
+         </keep-alive>
+       <!-- <sysTable></sysTable> -->
+    </div>
+</template>
+<script>
+// 动态 TAB 控件
+ //import sysTable from "@/view/sys/table/table";
+export default {
+    name:'tabPaneContents-Dynamic',
+    components:{
+       // sysTable,
+    },
+    props:{
+         contentType:{
+            type:String,
+            default:'sale'
+        },
+         uniqueKey:{
+            type:String,
+            default:'sale'
+        }
+    },
+    data(){
+        return {
+
+        }
+    },
+    mounted() {
+        console.log('====tabPaneContents-Dynamic====mounted===')
+    },
+}
+</script>
+<style>
+  
+</style>

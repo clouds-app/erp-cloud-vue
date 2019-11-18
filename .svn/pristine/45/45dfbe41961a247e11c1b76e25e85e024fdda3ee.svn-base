@@ -1,0 +1,161 @@
+<template>
+  <div>
+    <div class="toolbar-container">
+      <Card>
+        <Row :gutter="10">
+          <Col span="1">
+          <Button type="info" size="small" @click="showEditWindow = true">添加</Button>
+          </Col>
+          <Col span="1">
+          <Button type="success" size="small">编辑</Button>
+          </Col>
+          <Col span="1">
+          <Button type="warning" size="small">删除</Button>
+          </Col>
+          <Col span="1">
+          <Button type="error" size="small">禁用</Button>
+          </Col>
+          <Col span="1">
+          <Button type="info" size="small">审核</Button>
+          </Col>
+          <Col span="1">
+          <Button type="success" size="small">反审</Button>
+          </Col>
+        </Row>
+      </Card>
+    </div>
+
+    <div class="search-container">
+      <Card>
+        <Row :gutter="10">
+          <Col span="3">
+          <Input placeholder="请输入表名" size="small" />
+          </Col>
+          <Col span="3">
+          <Input placeholder="请输入描述" size="small" />
+          </Col>
+
+          <Col span="1">
+          <Button type="info" size="small">搜索</Button>
+          </Col>
+        </Row>
+      </Card>
+    </div>
+
+    <div class="content-container">
+      <Card>
+        <vTable :columns="columns" url="/sys/table/list" :pagination="false" @row-click="tableRowClick"></vTable>
+        <Tabs>
+          <TabPane label="表列信息" name="name1">
+            <vTable ref="tableFieldRef" :table-data="tableFieldData" :columns="tableFieldColuns" :pagination="false"></vTable>
+          </TabPane>
+          <TabPane label="表页面信息" name="name2">
+            <vTable :columns="columns" :pagination="false"></vTable>
+          </TabPane>
+        </Tabs>
+      </Card>
+    </div>
+    <sysEdit v-model="showEditWindow"></sysEdit>
+  </div>
+</template>
+
+<script>
+  import vTable from '@/components/tables/vTable'
+  import axios from '@/libs/api.request'
+  import sysEdit from './edit'
+  export default {
+    components: {
+      vTable,sysEdit
+    },
+    data() {
+      return {
+        showEditWindow:false,
+        columns: [{
+            type: 'selection',
+            width: 60,
+            align: 'center'
+          }, {
+            title: '表名',
+            key: 'tableName',
+            align: 'center'
+          },{
+            title:'别名',
+            key:'tableAlias',
+            align: 'center'
+          },
+          {
+            title: '说明',
+            key: 'tableDesc',
+            align: 'center'
+          },
+          {
+            title: '是否创建',
+            key: 'tableCreated',
+            render: (h, params) => {
+              return h('div', params.row.tableCreated ? '是' : '否');
+            },
+            align: 'center'
+          }
+        ],tableFieldColuns:[
+          {
+            title:'列名',
+            key:'fieldName',
+            align: 'center'
+          },{
+            title:'说明',
+            key:'fieldDesc',
+            align: 'center'
+          },{
+            title:'数据类型',
+            key:'fieldDataType',
+            align: 'center'
+          },{
+            title:'数据长度',
+            key:'fieldLength',
+            align: 'center'
+          },{
+            title:'默认值',
+            key:'fieldDefault',
+            align: 'center'
+          },{
+            title:'是否主键',
+            key:'fieldPk',
+            align: 'center'
+          },{
+            title:'不为空',
+            key:'fieldNotnull',
+            align: 'center'
+          },{
+            title:'字段顺序',
+            key:'fieldOrder',
+            align: 'center'
+          },{
+            title:'国际化KEY',
+            key:'fieldI18n',
+            align: 'center'
+          }
+        ],
+        tableFieldData:[]
+      }
+    },methods:{
+      tableRowClick(rowData,rowIndex){
+        let url = `/sys/table/${rowData.id}`;
+        let _self = this;
+        axios.request({
+          url:url,
+          method: 'get'
+        }).then(res=>{
+          if(res.data.success){
+            let data = res.data.result.tableFields;
+            _self.tableFieldData = data;
+          }else{
+            this.$Message.error('数据加载失败，请稍后再试...');
+          }
+        })
+      }
+    }
+  }
+</script>
+
+<style>
+</style>

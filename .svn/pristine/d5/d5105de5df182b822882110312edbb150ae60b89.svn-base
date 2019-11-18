@@ -1,0 +1,274 @@
+<template>
+  <div>
+    <editWindow v-model="showWindow" :fullscreen="false" width="80%"  @on-ok="formDataSubmit()">
+      <Form :label-colon="true" :label-width="50" :model="formModel" ref="editFormItem" @on-enter-over="formEnterOver">
+        <Row>
+          <Col span="5">
+          <FormItem label="表名"  prop="master.tableName" :rules="{required: true, message: '表名不能为空', trigger: 'blur' }">
+            <Input placeholder="请输入表名" v-model="formModel.master.tableName" size="small"></Input>
+          </FormItem>
+          </Col>
+          <Col span="5">
+          <FormItem label="说明" prop="master.tableDesc" :rules="{required: true, message: '说明不能为空', trigger: 'blur' }">
+            <Input placeholder="请输入说明" v-model="formModel.master.tableDesc"  size="small"></Input>
+          </FormItem>
+          </Col>
+          <Col span="5">
+          <FormItem label="别名" prop="master.tableAlias" :rules="{required: true, message: '别名不能为空', trigger: 'blur' }">
+            <Input placeholder="请输入别名" v-model="formModel.master.tableAlias"  size="small"></Input>
+          </FormItem>
+          </Col>
+        </Row>
+      </Form>
+      <Tabs>
+        <TabPane label="表列信息" name="name1">
+          <eTable ref="tableFields_slave"
+          unqiue-mark="id"
+          :height="400"
+          :index-menu="true"
+          :col-start="0"
+          :width="200"
+          :row-init-data="tableFieldInitData"
+          :data = "formModel.tableFields"
+          :rules="tableFieldsValidator"
+          >
+            <template slot="head">
+              <tr>
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">列名</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">说明</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">数据类型</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">数据长度</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">默认值</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">是否主键</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">不为空</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">字段顺序</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">国际化KEY</span>
+                  </div>
+                </th>
+              </tr>
+            </template>
+            <template slot="body" slot-scope="{row,index,valueChangeAssign}">
+              <td class="ivu-table-column-center" width="100">
+                <Input v-model="row.fieldName" @input="value=>{valueChangeAssign(value,index,row,'fieldName');}" size="small"
+                  :maxlength="20" ></Input>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                <Input v-model="row.fieldDesc" @input="value=>{valueChangeAssign(value,index,row,'fieldDesc');}" size="small"
+                  :maxlength="20" ></Input>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                  <Select v-model="row.fieldDataType" size="small" @change="value=>{valueChangeAssign(value,index,row,'fieldDataType');}">
+                          <Option v-for="(item,index) in dataType" :value="item" :key="index">{{ item}}</Option>
+                  </Select>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                <Input v-model="row.fieldLength" @input="value=>{valueChangeAssign(value,index,row,'fieldLength');}" size="small"
+                  :maxlength="20" ></Input>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                <Input v-model="row.fieldDefault" @input="value=>{valueChangeAssign(value,index,row,'fieldDefault');}" size="small"
+                  :maxlength="20" ></Input>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                  <Checkbox v-model="row.fieldPk" @input="value=>{valueChangeAssign(value,index,row,'fieldPk');}" ></Checkbox>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                  <Checkbox v-model="row.fieldNotnull" @input="value=>{valueChangeAssign(value,index,row,'fieldNotnull');}"></Checkbox>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                <Input v-model="row.fieldOrder" @input="value=>{valueChangeAssign(value,index,row,'fieldOrder');}" size="small"
+                  :maxlength="20" ></Input>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                <Input v-model="row.fieldI18n" @input="value=>{valueChangeAssign(value,index,row,'fieldI18n');}" size="small"
+                  :maxlength="20" ></Input>
+              </td>
+            </template>
+          </eTable>
+        </TabPane>
+        <!-- <TabPane label="表页面信息" name="name2">
+          sss
+        </TabPane> -->
+      </Tabs>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+  import editWindow from '@/components/edit-window/edit-window'
+  import Form from '@/components/form/form'
+  import eTable from '@/components/e-table/e-table'
+  import request from '@/libs/request'
+  export default {
+    name: 'sysEdit',
+    components: {
+      editWindow,
+      Form,
+      eTable
+    },
+    data() {
+      return {
+        showWindow: false,
+        tableFieldInitData:{
+          fieldName:'',
+          fieldDesc:'',
+          fieldDataType:'',
+          fieldLength:'',
+          fieldDefault:'',
+          fieldPk:false,
+          fieldNotnull:false,
+          fieldOrder:0,
+          fieldI18n:''
+        },
+        formInitData:{//表单初始化数据
+          master:{
+            tableName:'',
+            tableAlias:'',
+            tableDesc:''
+          },
+          slave:{
+            tableFields:{
+              fieldName:'',
+              fieldDesc:'',
+              fieldDataType:'',
+              fieldLength:'',
+              fieldDefault:'',
+              fieldPk:false,
+              fieldNotnull:false,
+              fieldOrder:0,
+              fieldI18n:''
+            }
+          }
+        },
+        formModel:{
+          master:{
+            tableName:'',
+            tableAlias:'',
+            tableDesc:''
+          },
+          tableFields:[]
+        },
+        dataType:['int','bigint','varchar','decimal','boolean','datetime','text','char'],
+        tableFieldsValidator:{
+          fieldName:[
+            {required: true, message: '列名不能为空', trigger: 'blur'},
+            {required:true,type:'string',pattern:/^[a-zA-Z]{1}[a-zA-Z0-9_]*$/,message:'列名只能包含字母数字和_且以字母开头',trigger: 'blur'},
+          ],
+          fieldDesc:[
+             {required: true, message: '列说明不能为空', trigger: 'blur'}
+          ],
+          fieldDataType:[
+             {required: true, message: '数据类型不能为空', trigger: 'change'}
+          ],
+          fieldLength:[
+             {message: '数据长度必须为数字', trigger: 'blur',pattern:/^\d+$/}
+          ]
+        }
+      }
+    },
+    props: {
+      value: {
+        type: Boolean,
+        default: false
+      },
+      formDetailData:{
+        default:()=>{
+          return {};
+        }
+      },
+      action:{
+        type:String,
+        default:'add'
+      }
+    },
+    watch: {
+      showWindow(n, o) {
+        this.$emit('input', n);
+      },
+      value(n, o) {
+        this.showWindow = n;
+        //窗体显示，文本框获取焦点
+        this.$refs.editFormItem.setCaptureFocus();
+        if(this.action == 'add'){
+          this.formModel.master = JSON.parse(JSON.stringify(this.formInitData.master));
+        }
+         this.$refs['tableFields_slave'].reset();
+      },formDetailData:{
+        handler(n,o){
+          if(n.master){
+            this.formModel.master = n.master;
+            this.formModel.tableFields = n.tableFields.defaultList;
+          }
+        },
+        deep:true
+      }
+    },methods:{
+      formEnterOver(){
+        this.$refs['tableFields_slave'].focusInit();
+      },formDataSubmit(){
+        //提交表单数据
+        this.$refs.editFormItem.validate(valid=>{
+        				if(!valid){//主表校验
+        					return;
+        				}
+        				//子表校验
+        				let subValidate = this.$refs['tableFields_slave'].validate();
+        				//数据组装
+        				let data = {
+        						master:this.formModel.master
+        				};
+        				//提示一下,存在子表中有校验，但未通过
+        				if(subValidate){
+        					return;
+        				}else{
+        					//校验通过
+        					//子表数据组装
+                  data['tableFields'] = this.$refs['tableFields_slave'].getCategorizeData();
+        					let url = `/sys/table`;
+        					request.post(url,data).then(res=>{
+        						this.$Message.success('操作成功');
+                    this.$emit('submit-success');
+        					});
+        				}
+        			});
+      }
+    }
+  }
+</script>
+
+<style>
+</style>

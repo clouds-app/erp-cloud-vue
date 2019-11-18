@@ -1,0 +1,26 @@
+import request from '@/utils/request'
+import axios from '@/libs/api.request'
+import Qs from 'qs'
+const _reqURL = '/api'
+
+/**
+ * login
+ * companyCode:单位编号
+ * userCode:用户名
+ * pwd:密码
+ */
+export const login = (data: {companyId:string,userCode: string, passWord: string }) => {
+  return axios.request({
+    url: `${_reqURL}/sys/user/login`,
+    data:data,
+    method: 'POST'
+  })
+}
+
+export const userCompanyByCode = (data:{companyCode:string})=>{
+  return axios.request({
+    url: `${_reqURL}/sys/user/login/getCompanyNameByCode`,
+    params:data,
+    method: 'GET'
+  })
+}

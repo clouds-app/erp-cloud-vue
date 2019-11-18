@@ -1,0 +1,81 @@
+import Cookies from 'js-cookie'
+import config from '@/config'; // cookie保存的天数
+
+// App
+const sidebarStatusKey = 'sidebar_status'
+export const getSidebarStatus = () => Cookies.get(sidebarStatusKey)
+export const setSidebarStatus = (sidebarStatus: string) => Cookies.set(sidebarStatusKey, sidebarStatus)
+
+const languageKey = 'language'
+export const getLanguage = () => Cookies.get(languageKey)
+export const setLanguage = (language: string) => Cookies.set(languageKey, language)
+
+const sizeKey = 'size'
+export const getSize = () => Cookies.get(sizeKey)
+export const setSize = (size: string) => Cookies.set(sizeKey, size)
+
+// User
+const tokenKey = 'vue_typescript_admin_access_token'
+export const getToken = () => Cookies.get(tokenKey)
+export const setToken = (token: string) => Cookies.set(tokenKey, token)
+export const removeToken = () => Cookies.remove(tokenKey)
+
+// menu List Key
+const menuListKey = 'erp_menuListKey'
+export const getMenuList = () => Cookies.get(menuListKey)
+export const setMenuList = (data: string) => Cookies.set(menuListKey, data)
+export const removeMenuList = () => Cookies.remove(menuListKey)
+
+
+const userNameMd5Key = 'userNameMd5';
+export const getUserNameMd5 = () => getCookie(userNameMd5Key);
+export const setUserNameMd5 = (userName: string) => setCookie(userNameMd5Key, userName);
+
+/**
+ * @desc cookies 描述 设置 Cookie 保存
+ *
+ * @params 参数 key:string,value:any
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/10/09 11:40:35
+ */
+export const setCookie = (key: string, value: any) => {
+    // 不设置path 会导致延时，不即时
+       Cookies.set(key, value, { expires: config.cookieExpires || 1, path: '/'});
+  };
+/**
+ * @desc cookies 描述 移除指定 Cookie
+ *
+ * @params 参数 key:string
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/10/09 11:40:35
+ */
+export const removeCookie = (key: string) => {
+       Cookies.remove(key, {path: '/'});
+  };
+
+
+/**
+ * @desc cookies 描述 获取指定 Cookie
+ *
+ * @params 参数 key:string
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/10/11 15:36:16
+ */
+
+export const getCookie = (key: string) => {
+    // debugger
+    const value = Cookies.get(key);
+    if (value) {
+      return value;
+    } else {
+      return false;
+    }
+  };

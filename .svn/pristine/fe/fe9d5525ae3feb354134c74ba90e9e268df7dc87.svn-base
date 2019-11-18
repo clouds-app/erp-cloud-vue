@@ -1,0 +1,173 @@
+<template>
+  <div>
+    <editWindow v-model="showWindow" :fullscreen="false" width="80%">
+      <Form :label-colon="true" :label-width="50">
+        <Row>
+          <Col span="5">
+          <FormItem label="表名">
+            <Input placeholder="请输入表名" size="small"></Input>
+          </FormItem>
+          </Col>
+          <Col span="5">
+          <FormItem label="说明">
+            <Input placeholder="请输入说明" size="small"></Input>
+          </FormItem>
+          </Col>
+          <Col span="5">
+          <FormItem label="别名">
+            <Input placeholder="请输入别名" size="small"></Input>
+          </FormItem>
+          </Col>
+        </Row>
+      </Form>
+      <Tabs>
+        <TabPane label="表列信息" name="name1">
+          <eTable ref="teamtypeitemFm_sub" unqiue-mark="id"
+          :height="200" :index-menu="true" :col-start="0"
+          :width="200"
+          :row-init-data="tableFieldInitData"
+          >
+            <template slot="head">
+              <tr>
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">列名</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">说明</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">数据类型</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">数据长度</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">默认值</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">是否主键</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">不为空</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">字段顺序</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">国际化KEY</span>
+                  </div>
+                </th>
+              </tr>
+            </template>
+            <template slot="body" slot-scope="{row,index,valueChangeAssign}">
+              <td class="ivu-table-column-center" width="100">
+                <Input @input="value=>{valueChangeAssign(value,index,row,'wkCode');}" size="small"
+                  :maxlength="20" ></Input>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                <Input @input="value=>{valueChangeAssign(value,index,row,'wkCode');}" size="small"
+                  :maxlength="20" ></Input>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                <Input @input="value=>{valueChangeAssign(value,index,row,'wkCode');}" size="small"
+                  :maxlength="20" ></Input>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                <Input @input="value=>{valueChangeAssign(value,index,row,'wkCode');}" size="small"
+                  :maxlength="20" ></Input>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                <Input @input="value=>{valueChangeAssign(value,index,row,'wkCode');}" size="small"
+                  :maxlength="20" ></Input>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                <Input @input="value=>{valueChangeAssign(value,index,row,'wkCode');}" size="small"
+                  :maxlength="20" ></Input>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                <Input @input="value=>{valueChangeAssign(value,index,row,'wkCode');}" size="small"
+                  :maxlength="20" ></Input>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                <Input @input="value=>{valueChangeAssign(value,index,row,'wkCode');}" size="small"
+                  :maxlength="20" ></Input>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                <Input @input="value=>{valueChangeAssign(value,index,row,'wkCode');}" size="small"
+                  :maxlength="20" ></Input>
+              </td>
+
+            </template>
+          </eTable>
+        </TabPane>
+        <TabPane label="表页面信息" name="name2">
+          sss
+        </TabPane>
+      </Tabs>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+  import editWindow from '@/components/edit-window/edit-window'
+  import Form from '@/components/form/form'
+  import eTable from '@/components/e-table/e-table'
+  export default {
+    name: 'sysEdit',
+    components: {
+      editWindow,
+      Form,
+      eTable
+    },
+    data() {
+      return {
+        showWindow: false,
+        tableFieldInitData:{
+          fieldName:'',
+          fieldDesc:'',
+          fieldDataType:'',
+          fieldLength:'',
+          fieldDefault:'',
+          fieldPk:false,
+          fieldNotnull:false,
+          fieldOrder:0,
+          fieldI18n:''
+        }
+      }
+    },
+    props: {
+      value: {
+        type: Boolean,
+        default: false
+      }
+    },
+    watch: {
+      showWindow(n, o) {
+        this.$emit('input', n);
+      },
+      value(n, o) {
+        this.showWindow = n;
+      }
+    }
+  }
+</script>
+
+<style>
+</style>

@@ -1,0 +1,110 @@
+
+import { Component, Prop, Vue } from 'vue-property-decorator'
+import { mixins } from 'vue-class-component'
+import tableBaseMixin from  './mixins/tableBaseMixin'
+@Component({
+  name: 'cl-table',
+  components: {
+  },
+},
+)
+export default class extends mixins(tableBaseMixin) {
+  @Prop({ default: '' }) private dataURL!: string
+  @Prop({ default: '' }) private columnsURL!: string
+  @Prop({ default: () => [] }) private tableData!: any[]
+  @Prop({ default: () => [] }) private tableColumns!: any[]
+  @Prop({ default: () => {} }) private pageObj!: any
+
+  public dataList:any[] =[]
+  public dataColumns:any[] =[]
+  //日期时间默认快捷方式 默认值
+  public pickerOptions= {
+    shortcuts: [{
+      text: '今天',
+      onClick(picker:any) {
+        picker.$emit('pick', new Date());
+      }
+    }, {
+      text: '昨天',
+      onClick(picker:any) {
+        const date = new Date();
+        date.setTime(date.getTime() - 3600 * 1000 * 24);
+        picker.$emit('pick', date);
+      }
+    }, {
+      text: '一周前',
+      onClick(picker:any) {
+        const date = new Date();
+        date.setTime(date.getTime() - 3600 * 1000 * 24 * 7);
+        picker.$emit('pick', date);
+      }
+    }]
+  }
+ 
+  public mounted(){
+    this.initTableDataAndColumns()
+  }
+  //设置文本过长时 是否显示 Tooltip
+  public showOverflowTooltip(rowItem: boolean|undefined) :boolean{
+      if(rowItem){
+        return true
+      }else{
+        return false
+      }
+  }
+  public getTableDataAndColumns(){
+    // 如果是URL 这里获取数据之后再填充到 列 和 行
+    if(this.columnsURL!="" && this.dataURL!=""){
+
+    }  
+  }
+  //设置状态 进度条 颜色
+  public setStatusColor(percent:number): string | undefined{
+      if(percent < 60){
+        return "exception"
+      }else if(percent>60 && percent < 70){
+        return "warning"
+      }
+      else if(percent>70 && percent < 100){
+       // return "—" //默认主色
+      }
+      else if(percent==100){
+        return "success"
+      }
+  }
+
+
+  public renderHeader(h:any, { column, $index }:any){
+    return h('div', {
+              attrs: {
+                class: 'cell'  //ele原来样式
+              },
+              domProps: {
+                innerHTML: '<span class="red">*</span>'+column.label
+              }
+           })
+    }
+
+  public initTableDataAndColumns(){
+    this.getTableDataAndColumns()
+   // debugger
+    if((this.columnsURL=="" || this.dataURL=="") && this.tableColumns.length>0 && this.tableData.length>0){
+          this.dataColumns = this.tableColumns
+          this.dataList = this.tableData
+          
+    }  
+  }
+ 
+  public headerCellStyle({row, rowIndex}:any){
+    console.log('=======row=====rowIndex===:'+row,rowIndex)
+  }
+  public tableRowClassName({row, rowIndex}:any) {
+    console.log('===cltable====row=====rowIndex===:'+row,rowIndex)
+    if (rowIndex === 1) {
+      return 'warning-row';
+    } else if (rowIndex === 3) {
+      return 'success-row';
+    }
+    return '';
+  }
+}

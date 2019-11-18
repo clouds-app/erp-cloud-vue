@@ -1,0 +1,9 @@
+{
+    "Columns": 
+    [
+     { "label": "日期","prop":"date" , "headerAlign":"left","align":"center" },
+     { "label": "姓名","prop":"name" , "headerAlign":"left","align":"center" },
+     { "label": "地址","prop":"address" , "headerAlign":"left","align":"center" },
+     { "slot": "operate"}
+    ]
+}

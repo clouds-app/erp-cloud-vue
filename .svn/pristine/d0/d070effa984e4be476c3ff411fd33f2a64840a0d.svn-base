@@ -1,0 +1,32 @@
+<template>
+    <div class="cl-tabPaneContents-Dynamic">
+        动态 TAB 控件 {{contentType}} -{{uniqueKey}}
+    </div>
+</template>
+<script>
+// 动态 TAB 控件
+export default {
+    name:'tabPaneContents-Dynamic',
+    props:{
+         contentType:{
+            type:String,
+            default:'sale'
+        },
+         uniqueKey:{
+            type:String,
+            default:'sale'
+        }
+    },
+    data(){
+        return {
+
+        }
+    },
+    mounted() {
+        console.log('====tabPaneContents-Dynamic====mounted===')
+    },
+}
+</script>
+<style>
+  
+</style>

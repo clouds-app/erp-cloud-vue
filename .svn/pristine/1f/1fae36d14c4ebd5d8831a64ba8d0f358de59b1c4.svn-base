@@ -1,0 +1,37 @@
+import clTable from '@/components/cl-table/index.vue'
+import clTableColumn from '@/components/cl-table-column/index.vue'
+
+// function plugin (Vue:any){
+//     if(plugin.installed){
+//         return
+//     }
+//     Vue.component('clTable',clTable)
+//     Vue.component('clTableColumn',clTableColumn)
+// }
+
+const p_clTable ={
+    install:function(Vue:any){
+        Vue.component('clTable',clTable)
+    }
+}
+const p_clTableColumn ={
+    install:function(Vue:any){
+        Vue.component('clTableColumn',clTableColumn)
+    }
+}
+
+export default {p_clTable,p_clTableColumn}
+
+//代码 方法输出规范
+
+// // good
+// function processInput(input) {
+//     // then a miracle occurs
+//     return { left, right, top, bottom };
+//   }
+  
+//   // the caller selects only the data they need
+//   const { left, top } = processInput(input);
+
+
+

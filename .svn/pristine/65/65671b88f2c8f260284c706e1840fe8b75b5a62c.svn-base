@@ -1,0 +1,178 @@
+<template>
+  <div class="cl-table-list">
+     <el-table size="mini" :data="dataList" v-on="$listeners" v-bind="$attrs" 
+         border
+         row-key="id"
+        >
+           <el-table-column
+                    label="序号"
+                    type="index"
+                    width="50"
+                    align="center">
+                <template slot-scope="scope">
+                    <!-- 有分页时，序号显示 -->
+                    <span v-if="pageObj">{{(pageObj.currentPage - 1)*pageObj.size + scope.$index + 1}}</span>
+                    <!-- 无分页时，序号显示 -->
+                    <span v-else>{{scope}}/{{scope.$index + 1}}</span>
+                </template>
+            </el-table-column>
+            <template v-for="(col, index) in tableColumns">
+                <!-- 操作列/自定义列 -->
+                <slot v-if="col.slot" :name="col.slot"></slot>
+                <!-- 普通列 -->
+                <el-table-column v-else
+                 :key="`col_${index}`"
+                 :label="col.label"
+                 :width="col.width"
+                 :formatter="col.formatter"
+                 :header-align="col.headerAlign"
+                 :align="col.align"
+                 :show-overflow-tooltip="showOverflowTooltip(col.showTooltip)"
+                >
+                  <template  slot-scope="scope">
+                    
+                     <!-- 重要程度 star v-if-->
+                     <div v-if="col.rowRenderType==='star'">
+                          <el-rate
+                            v-model="scope.row[col.prop]"
+                            show-text>
+                          </el-rate>
+                     </div>
+                      <!-- 选择器 select v-else-if-->
+                     <div v-else-if="col.rowRenderType==='select' && scope.row[col.prop]!=''">
+                        <el-select size="mini" v-model="scope.row[col.prop].selected" placeholder="请选择">
+                          <el-option
+                            v-for="item in scope.row[col.prop].dataList"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value">
+                          </el-option>
+                        </el-select>
+                     </div>
+                     <!-- 时间选择 time v-else-if-->
+                     <div id='cl-timeSelect' v-else-if="col.rowRenderType==='time'">
+                         <el-time-select
+                             size="mini"
+                             clear-icon=""
+                             :editable="false"
+                              v-model="scope.row[col.prop]"
+                              :picker-options="{
+                                start: '08:30',
+                                step: '00:15',
+                                end: '18:30'
+                              }"
+                              placeholder="时间">
+                            </el-time-select>
+                     </div>
+                      <!-- 选择日期 time v-else-if-->
+                      <div id='cl-dateSelect' v-else-if="col.rowRenderType==='date'">
+                          <el-date-picker
+                            size="mini"
+                           :editable="false"
+                            v-model="scope.row[col.prop]"
+                            type="date"
+                            placeholder="日期">
+                          </el-date-picker>
+                     </div>
+                      <!-- 选择日期时间 datetime v-else-if-->
+                      <div id='cl-dateSelect' v-else-if="col.rowRenderType==='date'">
+                        <el-date-picker
+                            v-model="scope.row[col.prop]"
+                            type="datetime"
+                            placeholder="选择日期时间"
+                            align="right"
+                            :picker-options="pickerOptions">
+                          </el-date-picker>
+                     </div>
+                      <!-- 输入框 input v-else-if-->
+                      <div v-else-if="col.rowRenderType==='input'">
+                          <el-input size="mini" v-model="scope.row[col.prop]" placeholder="请输入内容"></el-input>
+                     </div>
+                      <!-- 输入框 number v-else-if-->
+                      <div id='cl-numberInput'  v-else-if="col.rowRenderType==='number'">
+                         <el-input-number size="mini" v-model="scope.row[col.prop]" controls-position="right"></el-input-number>
+                     </div>
+                     <!-- 真假值 bool v-else-if-->
+                      <div v-else-if="col.rowRenderType==='switch'">
+                          <el-switch
+                            v-model="scope.row[col.prop]"
+                            active-color="#13ce66"
+                            inactive-color="#ff4949"
+                            >
+                          </el-switch>
+                     </div>
+                      <!-- 单选框 Radio v-else-if-->
+                      <div v-else-if="col.rowRenderType==='radio' && scope.row[col.prop]!=''">
+                            <el-radio-group v-model="scope.row[col.prop].selected"  size="mini">
+                              <el-radio  v-for="item in scope.row[col.prop].dataList"
+                              :key="item.value"
+                              :label="item.label">
+                              </el-radio>
+                            </el-radio-group>
+                     </div>
+                     <!-- 多选框 checkbox v-else-if-->
+                      <div v-else-if="col.rowRenderType==='checkbox' && scope.row[col.prop]!=''">
+                          <el-checkbox-group v-model="scope.row[col.prop].selected">
+                            <el-checkbox  v-for="item in scope.row[col.prop].dataList"
+                              :key="item.value"
+                              :label="item.label">
+                             </el-checkbox>
+                          </el-checkbox-group>
+                     </div>
+                    <!-- 进度条 progress v-else-if-->
+                     <div v-else-if="col.rowRenderType==='progress'">
+                       <el-progress  :text-inside="true" :stroke-width="20" :status="setStatusColor(scope.row[col.prop])"  :percentage="scope.row[col.prop]"></el-progress>
+                     </div>
+                     <!-- 滑块 slider v-else-if-->
+                     <div v-else-if="col.rowRenderType==='slider'">
+                       <el-slider  v-model="scope.row[col.prop]" :step="10"></el-slider>
+                     </div>
+                      <!-- 图片 缩略图 image v-else-if-->
+                     <div v-else-if="col.rowRenderType==='image'">
+                       <el-avatar shape="square" :size="25" fit="fill" :src="scope.row[col.prop]"></el-avatar>
+                     </div>
+                     <!-- 颜色选择 color  v-else-if-->
+                     <div v-else-if="col.rowRenderType==='color'">
+                       <el-color-picker v-model="scope.row[col.prop]"></el-color-picker>
+                     </div>
+                    <!-- 其它 text v-else-->
+                     <div v-else>
+                         <span>{{scope.row[col.prop]}}</span>
+                     </div>
+
+                  </template>   
+                </el-table-column>
+            </template>
+      </el-table>
+         <!-- 是否调用分页 -->
+        <el-pagination v-if="pageObj" background
+                    layout="total, prev, pager, next, jumper"
+                    :page-size="pageObj.size"
+                    :total="pageObj.total"
+                    :current-page="pageObj.currentPage"
+                    @current-change="pageObj.func">
+        </el-pagination>
+  </div>
+</template>
+
+<script lang="ts" src='./cl-table.ts'>
+</script>
+
+<style>
+  #cl-numberInput .el-input--mini .el-input__inner{
+        width: 130px;
+  }
+  #cl-timeSelect .el-input--mini .el-input__inner{
+        width: 90px;
+  }
+  #cl-dateSelect .el-input--mini .el-input__inner{
+        width: 125px;
+  }
+  .el-table .warning-row {
+    background: cornsilk !important;
+  }
+
+  .el-table .success-row {
+    background: #f0f9eb;
+  }
+</style>

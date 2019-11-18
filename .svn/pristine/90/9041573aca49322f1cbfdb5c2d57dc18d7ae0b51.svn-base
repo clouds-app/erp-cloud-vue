@@ -1,0 +1,116 @@
+import { VuexModule, Module, Action, Mutation, getModule } from 'vuex-module-decorators'
+import { getToken, setToken, removeToken,setUserNameMd5 } from '@/utils/cookies'
+import router, { resetRouter } from '@/router'
+import { PermissionModule } from './permission'
+import { TagsViewModule } from './tags-view'
+import store from '@/store'
+import {login,userCompanyByCode} from '@/api/users';
+
+const errObj =(msg: any) =>{
+  let res ={
+    data: '',
+    message: '执行失败:' + msg,
+    status: -1,
+    success: false,
+  }
+ return res
+}
+
+export interface IUserState {
+  token: string
+  name: string
+  avatar: string
+  introduction: string
+  roles: string[]
+  email: string
+}
+
+@Module({ dynamic: true, store, name: 'user' })
+class User extends VuexModule implements IUserState {
+  public token = getToken() || ''
+  public name = ''
+  public avatar = ''
+  public introduction = ''
+  public roles: string[] = []
+  public email = ''
+  public userCodeMd5 = ''
+  public menuList = {}
+
+
+  @Mutation
+  private SET_NAME(name: string) {
+    this.name = name
+  }
+
+  @Mutation
+  private SET_AVATAR(avatar: string) {
+    this.avatar = avatar
+  }
+
+  @Mutation
+  private SET_INTRODUCTION(introduction: string) {
+    this.introduction = introduction
+  }
+
+  @Mutation
+  private SET_ROLES(roles: string[]) {
+    this.roles = roles
+  }
+
+  @Mutation
+  private SET_EMAIL(email: string) {
+    this.email = email
+  }
+
+  // mutations 存储用户名加密字符串
+  @Mutation
+  private SET_userCodeMD5(userCodeMd5: string) {
+    this.userCodeMd5 = userCodeMd5;
+    setUserNameMd5(userCodeMd5);
+  }
+   // mutations 存储token字符串
+   @Mutation
+   private SET_TOKEN(token: string) {
+     this.token = token;
+     setToken(token);
+   }
+   // mutations 存储菜单列表
+   @Mutation
+   private SET_MENU(menuList: any) {
+     this.menuList = menuList;
+    // setMenuList(menuList);
+   }
+
+  @Action
+   public ResetToken(){}
+
+  @Action({ rawError: true })
+  public loginAction({companyId ,userCode,password}:any){
+    let passWord = password;
+    return new Promise((resolve,reject)=>{
+       login({companyId,userCode, passWord}).then((res:any)=>{
+        if(res.success) {
+             resolve(res.result);
+             this.SET_TOKEN(res.result.userCode);
+        }else{
+            reject(res);
+        }
+      });
+    })
+  }
+
+  @Action({rawError : true})
+  public userCompanyByCodeAction(companyCode:string){
+    return new Promise((resolve,reject)=>{
+       userCompanyByCode({companyCode}).then((res:any)=>{
+        if(res.success) {
+             resolve(res.result);
+        }else{
+            reject(res);
+        }
+      });
+    })
+  }
+}
+
+export const UserModule = getModule(User)

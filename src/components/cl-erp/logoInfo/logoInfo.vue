@@ -1,0 +1,67 @@
+<template>
+    <div class="cl-logoInfo" @click="trunToHome()">
+        <Row>
+            <Col span="4">
+              <div class="logo-con">
+                <img style="height:35px;width:35px;" :src="maxLogo" key="max-logo" />
+             </div>
+            </Col>
+            <Col span="10">
+                <span class="companyInfo">
+                    晨龙云ERP
+                </span>
+             
+            </Col>
+            <Col span="10">
+                <span class="company-subInfo">
+                    纸箱普及版
+                </span>
+            </Col>
+           
+        </Row>
+    </div>
+</template>
+<script>
+import baseMixin from '@/mixins'
+import maxLogo from '@/assets/images/logo.png'
+export default {
+    data(){
+        return {
+            maxLogo
+        }
+    },
+    mixins:[baseMixin],
+    methods:{
+        trunToHome(){
+            if(this.currentCurrentPage !='home'){
+                this.$store.commit('setCurrentPage','home')
+                this.$router.push({name:'home'})
+                this.$store.commit('setCurrentTopMenu','')
+            }
+            
+        }
+    }
+}
+</script>
+<style>
+.cl-logoInfo{
+    cursor: pointer;
+}
+.info{
+    margin-bottom: 10px;
+}
+    .companyInfo{
+        font-family: '微软雅黑 Bold', '微软雅黑 Regular', '微软雅黑';
+        font-weight: 700;
+        font-style: normal;
+        font-size: 24px;
+        color: #0e67b7;
+    }
+      .company-subInfo{
+        font-family: '微软雅黑 Bold', '微软雅黑 Regular', '微软雅黑';
+        font-style: normal;
+        font-weight: bold;
+        font-size: 14px;
+        color: red;
+    }
+</style>

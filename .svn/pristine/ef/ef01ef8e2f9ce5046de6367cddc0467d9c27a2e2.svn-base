@@ -1,0 +1,79 @@
+<template>
+  <div class="login-bg-container">
+    <div class="login-container">
+      <div class="login-logo">
+        <img src="../../assets/login/logo.png" />
+      </div>
+      <el-form label-position="right" class="login-form" ref="loginForm" label-width="0" :model="loginForm" :rules="loginRules">
+        <el-form-item prop="companyCode">
+          <el-input size="small" :placeholder="$t('login.companyCodeLabelTips')" v-model="loginForm.companyCode" @blur="getUserCompany">
+            <i slot="prefix" class="el-input__icon el-icon-office-building"></i>
+            <template slot="append">{{companyName}}</template>
+          </el-input>
+        </el-form-item>
+        <el-form-item prop="userCode">
+          <el-input size="small" :placeholder="$t('login.userCodeLabelTips')" v-model="loginForm.userCode">
+            <i slot="prefix" class="el-input__icon el-icon-s-custom"></i>
+          </el-input>
+        </el-form-item>
+        <el-form-item prop="password">
+          <el-input size="small" :placeholder="$t('login.passwordLabelTips')" show-password v-model="loginForm.password">
+            <i slot="prefix" class="el-input__icon el-icon-lock"></i>
+          </el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="handleLogin">{{$t('login.loginIn')}}</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+  </div>
+</template>
+
+<script lang="ts" src='./login.ts'></script>
+
+<style lang="scss">
+  .login-bg-container {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background-image: url('../../assets/login/login-bg2.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+
+  .login-container {}
+</style>
+
+<style lang="scss" scoped>
+  .login-container {
+    height: 24rem;
+    width: 24rem;
+    overflow: hidden;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin-left: -12rem;
+    margin-top: -12rem;
+    padding-top: 3rem;
+
+    .login-form {
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 4rem 2rem 2rem 2rem;
+      border-radius: 0.3rem;
+    }
+
+    .login-logo {
+      position: absolute;
+      top: 0;
+      left: 22%;
+    }
+
+    button {
+      width: 100%;
+    }
+
+    label {
+      font-weight: normal;
+    }
+  }
+</style>

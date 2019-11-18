@@ -1,0 +1,50 @@
+<template>
+    <div>
+        <Modal
+            v-model="isShowModal"
+            :title="title"
+            @on-ok="ok"
+            @on-cancel="cancel">
+            <span>{{message}}</span>
+       </Modal>
+    </div>
+</template>
+
+<script>
+// 是否确认关闭 当前数据
+export default {
+        name:'cl-Modal',
+        props:{
+            //  isShowModal:{
+            //      type:Boolean,
+            //      default:false
+            //  },
+              title:{
+                 type:String,
+                 default:'提示'
+             },
+            message:{
+                 type:String,
+                 default:'是否确认 全部关闭'
+             },
+        },
+        data(){
+            return {
+                isShowModal:false
+            }
+        },
+       methods: {
+            ok () {
+                this.$emit('on-ok','')
+               // this.$Message.info('Clicked ok');
+            },
+            cancel () {
+                 this.$emit('on-cancel','')
+               // this.$Message.info('Clicked cancel');
+            }
+        }
+}
+</script>
+<style lang="">
+    
+</style>
