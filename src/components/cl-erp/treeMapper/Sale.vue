@@ -1,7 +1,7 @@
 <template>
     <div>
         sale <Input size="large" placeholder="large size" />
-       <Button @click="handleSubMenuEvent('sale-test','sale-test','销售测试')" type="info">测试</Button>
+       <Button @click="handleSubMenuEvent('sale-test','销售测试','销售测试')" type="info">测试</Button>
     </div>
 </template>
 
@@ -19,7 +19,7 @@ export default {
     methods:{
         // 子页面-SUB子模块 点击事件
       handleSubMenuEvent(pathName,uniqueKey,tabName){
-        //  debugger
+          debugger
        let subItem = {
            uniqueKey:uniqueKey,
            lable:tabName
@@ -32,7 +32,7 @@ export default {
        }
        //判断是否已经存在,不要重复添加菜单
        let isExist =false;
-       let currentOperateMenu= this.currentSelectedSubMenu.sale
+       let currentOperateMenu= this.currentSelectedSubMenu.Sale
        if(this.currentSelectedSubMenu && currentOperateMenu.length>0){
              currentOperateMenu.forEach((item)=>{
                  item.isActive =false //重置其它菜单为 未选中

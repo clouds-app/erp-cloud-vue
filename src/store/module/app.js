@@ -35,8 +35,8 @@ export default {
       Bas:[],//基础数据
       Mrp:[],//生产
       Purchase:[],//采购
-      report:[],//报表中心
-      sale:[],//财务
+      Report:[],//报表中心
+      Sale:[],//财务
       Stock:[], //储运
       Sys:[], //系统设置
     },//当前选中子菜单

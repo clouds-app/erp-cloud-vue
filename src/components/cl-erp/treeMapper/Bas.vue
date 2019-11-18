@@ -2,7 +2,7 @@
     <div>
         Bas 
         <p>
-             <Button @click="handleSubMenuEvent('bas-department','bas-department','部门管理')" type="info">部门</Button>
+             <Button @click="handleSubMenuEvent('bas-department','部门管理','部门管理')" type="info">部门</Button>
        </p>
        <br/>
         <p>

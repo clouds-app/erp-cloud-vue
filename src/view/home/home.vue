@@ -23,6 +23,7 @@
            <!-- 动态菜单 -->
             <clTabPane icon="ios-create-outline" v-for="(item) in hasSelectedSubMenu" :uniqueKey='item.lable' :name="item.lable" :label="item.lable" :key="item.lable">
               <dynamicPaneContents :contentType="contentType" :uniqueKey='item.lable'></dynamicPaneContents>
+              <!-- <sysTable></sysTable> -->
             </clTabPane>
           <!--其它内容 全部关闭 -->
           <template  slot="extra">
@@ -44,6 +45,7 @@ import clTabs from "@/components/cl-erp/tabs";
 import clTabPane from "@/components/cl-erp/tabs/pane";
 import paneContents from "@/components/cl-erp/tabPaneContents/tabPaneContents";
 import dynamicPaneContents from "@/components/cl-erp/tabPaneContentsDynamic/tabPaneContentsDynamic";
+// import sysTable from "@/view/sys/table/table";
 
 import baseMixin from '@/mixins'
 import * as type from "@/enum"; //菜单枚举
@@ -53,15 +55,10 @@ export default {
     clTabPane,
     paneContents,
     dynamicPaneContents,
+	// sysTable,
     clModal
   },
   mixins:[baseMixin],
-  props:{
-      moudleType:{
-          type:String,
-          default:'sale'
-      }
-  },
   data() {
     return {
       //isShowModal:false,// 是否显示确认关闭窗口
@@ -71,15 +68,6 @@ export default {
        hasSelectedSubMenu:[], //勾选过的子菜单
     };
   },
-  //通过activated钩子触发请求函数
-activated() {
-    this.switchTopMenuHanle(this.moudleType)
-  console.log('========activated==========='+this.moudleType)
-},
-//返回详情页面时 隐藏内容div区块 再进入详情时 显示内容div区块 
-deactivated() {
-    console.log('========deactivated==========='+this.moudleType)
-},
   mounted() {
     console.log('===get parmas='+this.$route.params.menuType)
     let type =this.$route.params.menuType
@@ -102,12 +90,12 @@ deactivated() {
   },
   watch: {
     // 监控 主菜单 切换 出发查询 子菜单数据
-    // cacheSelectedTopMenu(newVal, oldVal) {
-    //    if(newVal!=null &&newVal!="" && newVal!=oldVal){
-    //        this.switchTopMenuHanle(newVal)
-    //    }
+    cacheSelectedTopMenu(newVal, oldVal) {
+       if(newVal!=null &&newVal!="" && newVal!=oldVal){
+           this.switchTopMenuHanle(newVal)
+       }
       
-    // }
+    }
   },
   methods: {
     showMoal(){
@@ -141,7 +129,6 @@ deactivated() {
     },
     // 回调事件 -开打指定页面
     openSubMenu(params){
-      debugger
       // 更新 hasSelectedSubMenu 数据
        this.switchTopMenuHanle(this.contentType)
        //选中指定TAB页面
@@ -169,8 +156,8 @@ deactivated() {
     },
     //切换菜单 查询子菜单
     switchTopMenuHanle(key) {
-      debugger
-      switch (key.toLowerCase()+"") {
+      //debugger
+      switch (key+"") {
         case type.topMenu_Account:
            this.currentTopMenulable ='财务管理'
            this.hasSelectedSubMenu = this.cacheSelectedSubMenu.Account
@@ -189,11 +176,11 @@ deactivated() {
           break;
         case type.topMenu_report:
              this.currentTopMenulable ='报表中心'
-               this.hasSelectedSubMenu = this.cacheSelectedSubMenu.Report
+               this.hasSelectedSubMenu = this.cacheSelectedSubMenu.report
           break;
         case type.topMenu_sale:
              this.currentTopMenulable ='销售管理'
-              this.hasSelectedSubMenu = this.cacheSelectedSubMenu.Sale
+              this.hasSelectedSubMenu = this.cacheSelectedSubMenu.sale
           break;
         case type.topMenu_Stock:
              this.currentTopMenulable ='储运管理'
@@ -212,7 +199,6 @@ deactivated() {
        this.getCurrentOpenedTab()
     },
     resetCurrentActiveTab(uniqueKey){
-       // debugger
       // 重置选择的标签
          if(this.cacheSelectedSubMenu &&  this.cacheSelectedSubMenu[this.contentType].length>0){
                  this.cacheSelectedSubMenu[this.contentType].forEach((item,index,arr)=>{
@@ -226,8 +212,8 @@ deactivated() {
     },
     // 获取当前打开页面 当 切换主标签时
     getCurrentOpenedTab(){
-      debugger
-       if(this.cacheSelectedSubMenu && this.cacheSelectedSubMenu[this.contentType] &&  this.cacheSelectedSubMenu[this.contentType].length>0){
+      //debugger
+       if(this.cacheSelectedSubMenu &&  this.cacheSelectedSubMenu[this.contentType].length>0){
                 let flag=false
                  this.cacheSelectedSubMenu[this.contentType].forEach((item,index,arr)=>{
                    // debugger
