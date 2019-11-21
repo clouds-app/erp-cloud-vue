@@ -1,0 +1,127 @@
+
+/**
+ * @desc index 描述 所有.vue 公共方法 .vue 中 添加mixin:[name]
+ * 
+ * 主要用于 表单的的添加 删除
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:08:28
+ */
+
+
+import config from "@/config";
+import clTabs from "@/components/cl-erp/tabs";
+import clTabPane from "@/components/cl-erp/tabs/pane";
+import editWindow from "@/components/edit-window/edit-window";
+import eTable from "@/components/e-table/e-table";
+import request from "@/libs/request";
+import Form from "@/components/form/form";
+export default {
+  data() {
+    return {
+      updateId:-1,  // 当前数据是否可以更新
+      actionLableName: "增加", // 当前操作行为的标题
+      showWindow: false, // 是否显示窗体
+      requestBaseUrl: "", // 请求的基础路径
+      formDataInfo: {} // 表单的内容 ,在基础类中重写
+    };
+  },
+  components: {
+    Form,
+    clTabs,
+    clTabPane,
+    editWindow,
+    eTable
+  },
+  props: {
+    value: {
+      type: Boolean,
+      default: false
+    },
+    formDetailData: {
+      default: () => {
+        return {};
+      }
+    },
+    action: {
+      type: String,
+      default: "add"
+    }
+  },
+  watch: {
+    showWindow(n, o) {
+      this.$emit("input", n);
+    },
+    value(n, o) {
+      this.showWindow = n;
+    },
+    action(n, o) {
+      this.resetTitle();
+    },
+    formDetailData(n, o) {
+      if (n != null && n != "") {
+         // debugger
+        this.formDataInfo = n; // 表单 需要更新的数据
+        this.updateId =n.id // 获取当前数据的ID
+      }
+    }
+  },
+  mounted() {
+    console.log("===tabPaneContentsDynamic==mixins mounted=======");
+  },
+  destroyed() {},
+  methods: {
+    // 修改标题
+    resetTitle() {
+      this.actionLableName = "增加";
+      if (this.action !== "add") {
+        this.actionLableName = "修改";
+      }
+    },
+    formDataSubmit() {
+      //提交表单数据
+      let _self = this;
+      this.$refs["formDataInfo"].validate(valid => {
+        if (valid) {
+          //debugger;
+          if (_self.action === "add") {
+            _self.insertData();
+          } else {
+            _self.updateData();
+          }
+        } else {
+          _self.$Message.error("请输入必填数据!");
+        }
+      });
+    },
+    // 增加 数据
+    insertData() {
+      let url = `${this.requestBaseUrl}/save`;
+      let data = this.formDataInfo;
+      request.post(url, data).then(res => {
+        this.infoTips();
+      });
+    },
+    // 更新 数据
+    updateData() {
+      if( this.updateId==-1){
+        this.$Message.error("获取数据异常,请稍后重试!");
+        return
+      }
+      let url = `${this.requestBaseUrl}/update?id=${this.updateId}`;
+      let data = this.formDataInfo;
+      request.post(url, data).then(res => {
+        this.infoTips();
+      });
+    },
+    // 信息提示 
+    infoTips() {
+      this.$Message.success("操作成功");
+      if (this.action === "add") {
+        this.$refs["formDataInfo"].resetFields();
+      }
+      this.$emit("submit-success");
+    }
+  }
+};

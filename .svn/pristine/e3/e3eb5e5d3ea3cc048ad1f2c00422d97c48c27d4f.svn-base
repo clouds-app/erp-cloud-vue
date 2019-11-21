@@ -1,0 +1,15 @@
+<template>
+    <div>
+         <tabCommon moudleType='Account'></tabCommon>
+    </div>
+</template>
+
+<script>
+import tabCommon from '@/components/cl-erp/tabCommon'
+export default {
+    components:{tabCommon},
+    mounted() {
+        console.log('========Account====mounted======')
+    },
+}
+</script>

@@ -1,0 +1,28 @@
+<template>
+<div>
+    <component v-bind:is="moudle"></component>
+</div> 
+      
+</template>
+<script>
+// 动态 TAB 控件
+export default {
+    name:'tabPaneContents-Dynamic',
+    components:{
+            'department':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/dept.vue"], resolve);
+         },
+    },
+    data(){
+        return {
+           moudle:'department',
+        }
+    },
+    mounted() {
+        console.log('====tabPaneContents-Dynamic====mounted===')
+    },
+}
+</script>
+<style>
+  
+</style>

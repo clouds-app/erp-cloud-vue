@@ -1,0 +1,53 @@
+<template>
+    <div class="cl-searchForm">
+         <Row :gutter="10" type="flex" justify="end">
+                <Col span="4">
+                   <Input placeholder="请输入表名" v-model="queryParams.tableName" size="small" />
+                </Col>
+                <Col span="4">
+                   <Input placeholder="请输入描述" size="small" v-model="queryParams.tableDesc" />
+                </Col>
+                <Col span="2" style="text-align: right;">
+                <Button type="info" size="small" @click="search()">搜索</Button>
+                </Col>
+         </Row>
+    </div>
+</template>
+<script>
+export default {
+    name:'searchform',
+    data(){
+        return {
+             queryParams: {
+                 tableName:'',
+                 tableDesc:''
+             },
+        }
+    },
+   computed: {
+    // 是否更新
+     updateFlag() {
+         return this.$store.state.bas.updateFlag;
+    }
+  
+  },
+  watch: {
+    // 监控 主菜单 切换 出发查询 子菜单数据
+    updateFlag(newVal, oldVal) {
+       if(newVal!=null &&newVal===true && newVal!=oldVal){
+           this.search()
+       }
+      
+    }
+  },
+    methods:{
+        search(){
+            console.log('===this.$bus.on==search==')
+            let selectionId = this.$parent.$parent.$parent.$parent.search(this.queryParams);
+            this.$store.commit('setUpdateFlag', false)
+        }
+    },
+   
+   
+}
+</script>

@@ -1,0 +1,5 @@
+<template>
+    <div>
+        department aaaaa<Input size="large" placeholder="large size" />
+    </div>
+</template>

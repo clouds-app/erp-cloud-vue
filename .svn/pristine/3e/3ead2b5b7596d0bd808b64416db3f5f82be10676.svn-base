@@ -1,0 +1,73 @@
+<template>
+<div>
+    <component v-bind:is="moudle"></component>
+</div> 
+      
+</template>
+<script>
+// 动态 TAB 控件
+export default {
+    name:'tabPaneContents-Dynamic',
+    props:{
+        currentSubMenuItem:{
+            type:Object,
+            default(){
+                return {
+                        // type:'Bas',
+                        // uniqueKey:subItem.uniqueKey,
+                        // lable:subItem.lable,
+                        // isActive:true
+                }
+            }
+        }
+    },
+    watch:{
+          currentSubMenuItem: {
+                  handler(n,o){
+                       if(n){
+                            //console.log('====currentSubMenuItem========'+JSON.stringify(n))
+                            try {
+                                const currentPage = n.page
+                                this.moudle = currentPage
+                            } catch (error) {
+                                
+                            }
+                         
+                       }
+                      
+                  },
+                   immediate: true,  //刷新加载 立马触发一次handler
+                   deep: true  // 可以深度检测到 子菜单 对象的属性值的变化
+            }
+    },
+    components:{
+         //部门
+         'dept':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/dept.vue"], resolve);
+         },
+          //职位
+           'position':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/position.vue"], resolve);
+         },
+          //班组
+           'team':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/team.vue"], resolve);
+         },
+          //人员
+           'worker':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/worker.vue"], resolve);
+         },
+    },
+    data(){
+        return {
+          // moudle:'dept',
+        }
+    },
+    mounted() {
+        console.log('====tabPaneContents-Dynamic====mounted===')
+    },
+}
+</script>
+<style>
+  
+</style>

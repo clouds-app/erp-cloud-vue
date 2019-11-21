@@ -1,0 +1,269 @@
+<template>
+    <div class="cl-button-list">
+               <div class="butn-MenuDiv">
+                    <div class="butn-menuText">
+                       <clButton :iconColor="iconColor" icon="md-add-circle" type="customer" size="small" @click="showEditWindow()">增加</clButton>
+                    </div>
+               </div>
+                <div class="butn-MenuDiv">
+                     <div class="butn-menuText" >
+                       <clButton :iconColor="iconColor" icon="md-create" type="customer" size="small" @click="editAction()">修改</clButton>
+                    </div>
+               </div>
+               <div class="butn-MenuDiv" >
+                      <div class="butn-menuText" >
+                      <clButton :iconColor="iconColor" icon="md-remove-circle" type="customer" size="small" @click="deleteAction()">删除</clButton>
+                    </div>
+               </div>
+               <div class="butn-MenuDiv" >
+                      <div class="butn-menuText" >
+                       <clButton :iconColor="iconColor" icon="md-redo" type="customer" size="small" @click="auditAction()">审核</clButton>
+                    </div>
+               </div>
+                <div class="butn-MenuDiv" >
+                      <div class="butn-menuText" >
+                      <clButton :iconColor="iconColor" icon="md-undo"  type="customer" size="small" @click="antiAuditAction()">反审</clButton>
+                    </div>
+               </div>
+                 <div class="butn-MenuDiv" >
+                     <div class="butn-menuText" >
+                         <clButton :iconColor="iconColor" icon="md-close"  type="customer" size="small" @click="disabledAction()">禁用</clButton>
+                    </div>
+                </div>
+                 <div class="butn-MenuDiv" >
+                      <div class="butn-menuText" >
+                     <clButton :iconColor="iconColor" disabled icon="md-cloud-upload" type="customer" size="small" @click="importAction()">导入</clButton>
+                    </div>
+               </div>
+                 <div class="butn-MenuDiv" >
+                     <div class="butn-menuText" >
+                         <clButton :iconColor="iconColor" disabled icon="md-cloud-download" type="customer" size="small" @click="exportAction()">导出</clButton>
+                    </div>
+               </div>
+                 <div class="butn-MenuDiv" >
+                     <div class="butn-menuText" >
+                          <clButton  :iconColor="iconColor"  icon="md-print" type="customer" size="small" @click="printAction()">打印</clButton>
+                    </div>
+               </div>
+                 <div class="butn-MenuDiv" >
+                     <div class="butn-menuText" >
+                           <clButton :iconColor="iconColor" icon="md-sync" type="customer" size="small" @click="refreshAction()">刷新</clButton>
+                    </div>
+               </div>
+    </div>
+</template>
+<script>
+import clButton from '@/components/cl-erp/button'
+import request from '@/libs/request'
+export default {
+  name:'btnList',
+  components:{
+    clButton
+  },
+  props:{
+    currrentRowItem:{
+      type:Object,
+      default(){
+        return {
+            rowName:'',
+            rowId:'',
+        }
+      }
+    },
+    // 数据请求基地址
+    requestBaseUrl:{
+      type:String,
+      default:''
+    },
+    // 操作数据当前表格列 唯一 ID 
+    uniqueId:{
+      type:String,
+      default:''
+    },
+  },
+  data(){
+    return {
+        contentInfo:'',
+        iconColor:'#57c5f7',// 图表颜色
+        _install:{} // 父类实列
+    }
+  },
+  mounted(){
+    // 父类实列 初始化
+    this._install = this.$parent.$parent.$parent.$parent
+
+  },
+  methods:{
+    //  获取当前选择行ROW ID
+    getCurrentRowId(){
+       // 获取父类 方法
+      let selectionId = this._install.getMasterSelectId();
+        if (!selectionId) {
+          return false;
+        }else{
+          return selectionId
+        }
+    },
+    // 增加
+    showEditWindow(){
+       this.$emit('isLoaddingDone',true) // 弹框按钮 状态
+       this._install.action = 'add';
+       this._install.showEditWindow =true;
+    },
+    // 修改
+    editAction(){
+        this.$emit('isLoaddingDone',false) // 弹框按钮 状态
+        let selectionId = this.getCurrentRowId()
+        if (!selectionId) {
+          return;
+        }
+        //编辑窗口展示
+        this._install.showEditWindow = true;
+        this._install.action = 'update';
+        this.loaddingDetail();
+    },
+    loaddingDetail() {
+        //加载详情数据
+        let selectionId = this.getCurrentRowId()
+        if (!selectionId) {
+          return;
+        }
+        let url = `${this.requestBaseUrl}/detail?${this.uniqueId}=${selectionId}`;
+        request.post(url).then(res => {
+          debugger
+             this._install.formDetailData = res
+             this.$emit('isLoaddingDone',true)
+        }).catch(err=>{
+           this.$emit('isLoaddingDone',false)
+        });
+    },
+    // 删除
+    deleteAction(){
+       // 获取父类 方法
+      let selectionId = this.getCurrentRowId()
+        if (!selectionId) {
+          return;
+        }
+        this.$Modal.confirm({
+          title: '删除确认',
+          content: `确定要删除当前选中[${this.currrentRowItem.rowName}]数据吗？`,
+          onOk: () => {
+            let url = `${this.requestBaseUrl}/delete?${this.uniqueId}=${selectionId}`;
+            let _self = this;
+            request.post(url).then(res => {
+               this.showTipInfo()
+              
+            });
+          }
+        });
+    },
+    // 审核
+    auditAction(){
+        // 获取父类 方法
+      let selectionId = this.getCurrentRowId()
+        if (!selectionId) {
+          return;
+        }
+        this.$Modal.confirm({
+          title: '审核确认',
+          content: `确定要审核当前选中[${this.currrentRowItem.rowName}]数据吗？`,
+          onOk: () => {
+            let url = `${this.requestBaseUrl}/audit?${this.uniqueId}=${selectionId}`;
+            let _self = this;
+            request.post(url).then(res => {
+              this.showTipInfo()
+            });
+          }
+        });
+    },
+    // 反审核
+    antiAuditAction(){
+         // 获取父类 方法
+      let selectionId = this.getCurrentRowId()
+        if (!selectionId) {
+          return;
+        }
+        this.$Modal.confirm({
+          title: '反审核确认',
+          content: `确定要反审核当前选中[${this.currrentRowItem.rowName}]数据吗？`,
+          onOk: () => {
+            let url = `${this.requestBaseUrl}/antiAudit?${this.uniqueId}=${selectionId}`;
+            let _self = this;
+            request.post(url).then(res => {
+               this.showTipInfo()
+            });
+          }
+        });
+    },
+    // 禁用
+    disabledAction(){
+         // 获取父类 方法
+      let selectionId = this.getCurrentRowId()
+        if (!selectionId) {
+          return;
+        }
+        this.$Modal.confirm({
+          title: '禁用确认',
+          content: `确定要禁用当前选中[${this.currrentRowItem.rowName}]数据吗？`,
+          onOk: () => {
+            let url = `${this.requestBaseUrl}/disabled?${this.uniqueId}=${selectionId}`;
+            let _self = this;
+            request.post(url).then(res => {
+              this.showTipInfo()
+               
+            });
+          }
+        });
+    },
+    // 导入
+    importAction(){
+
+    },
+     // 导出
+    exportAction(){
+
+    },
+     // 打印
+    printAction(){
+      this.showTipInfo()
+    },
+     // 刷新
+    refreshAction(){
+        this._install.search();
+    },
+    showTipInfo(){
+       this.$Message.success("操作成功");
+       this.$store.commit('setUpdateFlag', true)
+    }
+    
+  },
+
+  
+}
+</script>
+<style>
+.butn-MenuDiv > .ivu-icon-md-add-circle:before
+{
+  color: red;
+}
+.butn-menuText{
+    font-weight: bold;
+    vertical-align: top;
+   
+}
+
+.butn-MenuDiv{
+     cursor: pointer;
+      margin-left: 5px;
+      /* border: 1px solid red; */
+}
+
+.cl-button-list{
+    text-align: left;
+    /* border: 1px solid red; */
+}
+.cl-button-list div{
+    display:inline;
+}
+
+</style>

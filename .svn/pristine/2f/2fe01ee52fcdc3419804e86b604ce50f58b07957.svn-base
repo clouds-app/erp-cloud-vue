@@ -1,0 +1,26 @@
+// view-design ui 样式重置,自定义
+@import '~view-design/src/styles/index.less';
+
+@menu-dark-title: #001529;
+@menu-dark-active-bg: #000c17;
+@layout-sider-background: #001529;
+.toolbar-container{
+  margin-bottom:5px;
+}
+
+.search-container{
+  margin-bottom:5px;
+}
+
+.ivu-btn-customer {
+  color: #414141;
+  background-color: #f8f8f9;
+  border-color: #e6e6e6;
+}
+
+.ivu-btn-customer:hover {
+  border-color: #e6e6e6;
+  color: #ffffff;
+  background: #57c5f7
+}
+

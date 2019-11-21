@@ -1,0 +1,168 @@
+<template>
+  <div class="cl-BtnList">
+      <Row :gutter="10" type="flex" justify="start">
+              <Col span="2">
+                 <Button type="info" size="small" @click="showEditWindow = true">增加</Button>
+              </Col>
+              <Col span="2">
+              <Button type="success" size="small" @click="editAction">修改</Button>
+              </Col>
+              <Col span="2">
+              <Button type="warning" size="small" @click="deleteAction">删除</Button>
+              </Col>
+              <Col span="2">
+              <Button type="error" size="small" @click="auditAction">审核</Button>
+              </Col>
+              <Col span="2">
+              <Button ghost type="error" size="small" @click="antiAuditAction">反审核</Button>
+              </Col>
+              <Col span="2">
+              <Button ghost type="error" size="small" @click="disabledAction">禁用</Button>
+              </Col>
+               <Col span="2">
+              <Button ghost type="error" size="small" @click="importAction">导入</Button>
+              </Col>
+               <Col span="2">
+              <Button ghost type="error" size="small" @click="exportAction">导出</Button>
+              </Col>
+              <Col span="2">
+              <Button ghost type="error" size="small" @click="printAction">打印</Button>
+              </Col>
+               <Col span="2">
+                  <Button ghost type="error" size="small" @click="refreshAction">刷新</Button>
+              </Col>
+      </Row>
+  </div>
+</template>
+<script>
+import request from '@/libs/request'
+export default {
+  name:'btnList',
+  props:{
+    // 数据请求基地址
+    requestBaseUrl:{
+      type:String,
+      default:''
+    },
+    // 操作数据当前表格列 唯一 ID 
+    uniqueId:{
+      type:String,
+      default:''
+    },
+  },
+  methods:{
+    //  获取当前选择行ROW ID
+    getCurrentRowId(){
+       // 获取父类 方法
+      let selectionId = this.$parent.$parent.$parent.$parent.getMasterSelectId();
+        if (!selectionId) {
+          return false;
+        }else{
+          return selectionId
+        }
+    },
+    // 增加
+    showEditWindow(){
+
+    },
+    // 修改
+    editAction(){
+
+    },
+    // 删除
+    deleteAction(){
+       // 获取父类 方法
+      let selectionId = this.getCurrentRowId()
+        if (!selectionId) {
+          return;
+        }
+        this.$Modal.confirm({
+          title: '删除确认',
+          content: '确定要删除当前选中数据吗？',
+          onOk: () => {
+            let url = `${this.requestBaseUrl}/delete?${this.uniqueId}=${selectionId}`;
+            let _self = this;
+            request.post(url).then(res => {
+               _self.$store.commit('setUpdateFlag', true)
+            });
+          }
+        });
+    },
+    // 审核
+    auditAction(){
+        // 获取父类 方法
+      let selectionId = this.getCurrentRowId()
+        if (!selectionId) {
+          return;
+        }
+        this.$Modal.confirm({
+          title: '审核确认',
+          content: '确定要审核当前选中数据吗？',
+          onOk: () => {
+            let url = `${this.requestBaseUrl}/audit?${this.uniqueId}=${selectionId}`;
+            let _self = this;
+            request.post(url).then(res => {
+               _self.$store.commit('setUpdateFlag', true)
+            });
+          }
+        });
+    },
+    // 反审核
+    antiAuditAction(){
+         // 获取父类 方法
+      let selectionId = this.getCurrentRowId()
+        if (!selectionId) {
+          return;
+        }
+        this.$Modal.confirm({
+          title: '反审核确认',
+          content: '确定要反审核当前选中数据吗？',
+          onOk: () => {
+            let url = `${this.requestBaseUrl}/antiAudit?${this.uniqueId}=${selectionId}`;
+            let _self = this;
+            request.post(url).then(res => {
+               _self.$store.commit('setUpdateFlag', true)
+            });
+          }
+        });
+    },
+    // 禁用
+    disabledAction(){
+         // 获取父类 方法
+      let selectionId = this.getCurrentRowId()
+        if (!selectionId) {
+          return;
+        }
+        this.$Modal.confirm({
+          title: '禁用确认',
+          content: '确定要禁用当前选中数据吗？',
+          onOk: () => {
+            let url = `${this.requestBaseUrl}/disabled?${this.uniqueId}=${selectionId}`;
+            let _self = this;
+            request.post(url).then(res => {
+               _self.$store.commit('setUpdateFlag', true)
+            });
+          }
+        });
+    },
+    // 导入
+    importAction(){
+
+    },
+     // 导出
+    exportAction(){
+
+    },
+     // 打印
+    printAction(){
+
+    },
+     // 刷新
+    refreshAction(){
+
+    },
+    
+  }
+  
+}
+</script>

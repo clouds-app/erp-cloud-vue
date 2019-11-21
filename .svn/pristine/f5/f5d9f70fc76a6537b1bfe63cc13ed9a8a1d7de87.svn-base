@@ -1,0 +1,80 @@
+
+/**
+ * @desc index 描述 所有.vue 公共方法 .vue 中 添加mixin:[name]
+ * 
+ * 主要用于 table 数据 操作
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:08:28
+ */
+
+import config from "@/config";
+
+import functionBtnList from '../components/functionBtnList.vue'
+import searchForm from '../components/searchForm.vue'
+import vTable from '@/components/tables/vTable'
+import request from '@/libs/request'
+export default {
+ components: {
+        vTable,functionBtnList,searchForm
+      },
+  data() {
+    return {
+        functionParams:{
+            requestBaseUrl: '',
+            uniqueId:''
+        },
+        showEditWindow: false,
+        columns: [],
+        tableFieldData: [],
+        masterRowSelection: {},
+        formDetailData: {},
+        action: 'add',
+        tableHeight:0
+    };
+  },
+  created() {
+    this.comptuedTableHeight();
+  },
+  mounted() {
+    console.log("===tabPaneContentsDynamic==mixins mounted==list=====");
+  },
+  destroyed() {},
+  methods: {
+     // 添加成功 回调事件 刷新数据
+     submitSuccess(){
+        this.search()
+     },
+     tableRowClick(rowData, rowIndex) {
+       //debugger
+       this.masterRowSelection = rowData;
+       let url = `${this.requestBaseUrl}/detailDept?${this.uniqueId}=${rowData.id}`;
+       // let _self = this;
+       // request.get(url).then(res => {
+       //   _self.tableFieldData = res.tableFields.defaultList;
+       // });
+     },
+     getMasterSelectId() {
+       if (Object.keys(this.masterRowSelection).length == 0) {
+         this.$Message.warning('请选择需要操作的数据');
+         return false;
+       }
+       return this.masterRowSelection.id;
+     },
+     // 数据查询 master_list_table 为 talbe refs='master_list_table'
+     search(queryParams) {
+       //表单搜索
+       this.$refs['master_list_table'].search(queryParams);
+     },
+     // 数据双击
+     rowDblclick(){
+       console.log('=====rowDblclick====')
+     },
+     comptuedTableHeight(){
+       //计算table高度
+       let height = document.body.offsetHeight;
+       this.tableHeight = height - (46 + 40 + 48 + 6 + 25);
+     }
+  }
+};

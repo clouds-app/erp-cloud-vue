@@ -1,0 +1,77 @@
+
+/**
+ * @desc index 描述 所有.vue 公共方法 .vue 中 添加mixin:[name]
+ * 
+ * 主要用于 table 数据 操作
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:08:28
+ */
+
+import config from "@/config";
+
+import functionBtnList from '../components/functionBtnList.vue'
+import searchForm from '../components/searchForm.vue'
+import vTable from '@/components/tables/vTable'
+import request from '@/libs/request'
+export default {
+ components: {
+        vTable,functionBtnList,searchForm
+      },
+  data() {
+    return {
+        currrentRowItem:{
+          rowName:'',
+          rowId:'',
+        }, // 当前选择列的基本信息 操作时 需要用
+        isLoaddingDone:false, // 获取详细 是否获取完成
+        functionParams:{  // 清酒基础路径
+            requestBaseUrl: '',
+            uniqueId:''
+        },
+        showEditWindow: false, // 是否显示编辑窗体
+        columns: [], // 表格数据列表
+        tableFieldData: [], // 
+        masterRowSelection: {}, // 当前选择行
+        formDetailData: {}, // 当前表单详细数据
+        action: 'add', // 当前操作 添加 编辑
+        tableHeight:0 // 表格高度
+    };
+  },
+  created() {
+    this.comptuedTableHeight();
+  },
+  methods: {
+    // 是否加载完成 
+    getLoaddingDone(isDone){
+      this.isLoaddingDone =isDone
+    },
+     // 添加成功 回调事件 刷新数据
+     submitSuccess(){
+        this.search()
+     },
+    // 当前选择行的ID
+     getMasterSelectId() {
+       if (Object.keys(this.masterRowSelection).length == 0) {
+         this.$Message.warning('请选择需要操作的数据');
+         return false;
+       }
+       return this.masterRowSelection.id;
+     },
+     // 数据查询 master_list_table 为 talbe refs='master_list_table'
+     search(queryParams) {
+       //表单搜索
+       this.$refs['master_list_table'].search(queryParams);
+     },
+     // 数据双击
+     rowDblclick(){
+      // console.log('=====rowDblclick====')
+     },
+     comptuedTableHeight(){
+       //计算table高度
+       let height = document.body.offsetHeight;
+       this.tableHeight = height - (46 + 40 + 48 + 6 + 25);
+     }
+  }
+};
