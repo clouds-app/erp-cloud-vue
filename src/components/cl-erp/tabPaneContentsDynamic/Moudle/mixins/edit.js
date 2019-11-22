@@ -60,6 +60,7 @@ export default {
     },
     // 是否实现当前窗体
     value(n, o) {
+      this.$refs["formDataInfo"].resetFields(); // fix 清除上次的错误提示
       this.showWindow = n;
     },
     // 当前微添加 OR 修改

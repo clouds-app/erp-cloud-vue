@@ -1,20 +1,15 @@
 <template>
   <div class="cl-moudle">
-    <div class="toolbar-container">
-        <Card :bordered="false" dis-hover>
-        <Row>
-          <Col span="14">
-                <functionBtnList :currrentRowItem="currrentRowItem" @isLoaddingDone="getLoaddingDone" :requestBaseUrl="functionParams.requestBaseUrl" :uniqueId="functionParams.uniqueId"/>
-          </Col>
-          <Col span="10">
-            <searchForm/>
-          </Col>
-        </Row>
-      </Card>
-    </div>
-
+    <htmlTemplate 
+    :currrentRowItem="currrentRowItem" 
+    @isLoaddingDone="getLoaddingDone" 
+    :requestBaseUrl="functionParams.requestBaseUrl" 
+    :uniqueId="functionParams.uniqueId"
+    :queryParamsDefault="queryParamsDefault"
+    >
+    </htmlTemplate>
     <div class="content-container" :style="{'height':tableHeight+'px'}">
-      <vTable :height="tableHeight " ref="master_list_table" :columns="columns" url="/bas/dept/page" @row-dblclick="rowDblclick()" :pagination="true" @row-click="tableRowClick"></vTable>
+      <vTable :height="tableHeight " ref="master_list_table" :columns="columns" url="/bas/dept/page" :pagination="true" @row-click="tableRowClick"></vTable>
     </div>
    <editForm  
    :isLoaddingDone="isLoaddingDone"
@@ -25,12 +20,14 @@
   </div>
 </template>
 <script>
+import vTable from '@/components/tables/vTable'
+import htmlTemplate from '../components/htmlTemplate'
 import editForm from './edit/edit-dept'
 import listBaseMixins from "../mixins/list";
   export default {
    mixins: [listBaseMixins],
    components: {
-       editForm
+       editForm,htmlTemplate,vTable
       },
     data() {
       return {
@@ -38,6 +35,19 @@ import listBaseMixins from "../mixins/list";
             requestBaseUrl: '/bas/dept',
             uniqueId:'deptId'
         },
+       // 查询参数 ,注意格式
+        queryParamsDefault:[
+            {
+            title: '请输入部门编码',
+            code:'deptCode',
+            deptCode:''
+           },
+           {
+            title: '请输入部门名称',
+            name:'deptName',
+            deptName: '',
+          },
+        ],
         columns: [
            {
             title: '部门编码',
@@ -52,6 +62,11 @@ import listBaseMixins from "../mixins/list";
           {
             title: '备注',
             key: 'remark',
+            align: 'center'
+          },
+           {
+            title: '审核状态',
+            key: 'iisAudit',
             align: 'center'
           },
              {

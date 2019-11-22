@@ -1,20 +1,15 @@
 <template>
   <div class="cl-moudle">
-    <div class="toolbar-container">
-        <Card :bordered="false" dis-hover>
-        <Row>
-          <Col span="14">
-                <functionBtnList :currrentRowItem="currrentRowItem" @isLoaddingDone="getLoaddingDone" :requestBaseUrl="functionParams.requestBaseUrl" :uniqueId="functionParams.uniqueId"/>
-          </Col>
-          <Col span="10">
-            <searchForm/>
-          </Col>
-        </Row>
-      </Card>
-    </div>
-
+    <htmlTemplate 
+    :currrentRowItem="currrentRowItem" 
+    @isLoaddingDone="getLoaddingDone" 
+    :requestBaseUrl="functionParams.requestBaseUrl" 
+    :uniqueId="functionParams.uniqueId"
+    :queryParamsDefault="queryParamsDefault"
+    >
+    </htmlTemplate>
     <div class="content-container" :style="{'height':tableHeight+'px'}">
-      <vTable :height="tableHeight " ref="master_list_table" :columns="columns" url="/bas/team/page" @row-dblclick="rowDblclick()" :pagination="true" @row-click="tableRowClick"></vTable>
+      <vTable :height="tableHeight " ref="master_list_table" :columns="columns" url="/bas/team/page" :pagination="true" @row-click="tableRowClick"></vTable>
     </div>
    <editForm  
    :isLoaddingDone="isLoaddingDone"
@@ -25,12 +20,14 @@
   </div>
 </template>
 <script>
+import vTable from '@/components/tables/vTable'
+import htmlTemplate from '../components/htmlTemplate'
 import editForm from './edit/edit-team'
 import listBaseMixins from "../mixins/list";
   export default {
    mixins: [listBaseMixins],
    components: {
-       editForm
+       editForm,htmlTemplate,vTable
       },
     data() {
       return {
@@ -38,6 +35,19 @@ import listBaseMixins from "../mixins/list";
             requestBaseUrl: '/bas/team',
             uniqueId:'teamId'
         },
+        // 查询参数 ,注意格式
+        queryParamsDefault:[
+            {
+            title: '请输入班组编码',
+            code:'teamCode',
+            teamCode:''
+           },
+           {
+            title: '请输入班组名称',
+            name:'teamName',
+            teamName: '',
+          },
+        ],
        columns: [
           {
             title: '班组编码',

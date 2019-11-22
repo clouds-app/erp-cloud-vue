@@ -1,33 +1,33 @@
 <template>
-    <div class="cl-button-list">
+ <div class="cl-button-list">
                <div class="butn-MenuDiv">
                     <div class="butn-menuText">
-                       <clButton :iconColor="iconColor" icon="md-add-circle" type="customer" size="small" @click="showEditWindow()">增加</clButton>
+                       <clButton iconColor="#0cb05b" icon="md-add-circle" type="customer" size="small" @click="showEditWindow()">增加</clButton>
                     </div>
                </div>
                 <div class="butn-MenuDiv">
                      <div class="butn-menuText" >
-                       <clButton :iconColor="iconColor" icon="md-create" type="customer" size="small" @click="editAction()">修改</clButton>
+                       <clButton iconColor="#0cb05b" icon="md-create" type="customer" size="small" @click="editAction()">修改</clButton>
                     </div>
                </div>
                <div class="butn-MenuDiv" >
                       <div class="butn-menuText" >
-                      <clButton :iconColor="iconColor" icon="md-remove-circle" type="customer" size="small" @click="deleteAction()">删除</clButton>
+                      <clButton iconColor="#e16205" icon="md-remove-circle" type="customer" size="small" @click="deleteAction()">删除</clButton>
                     </div>
                </div>
                <div class="butn-MenuDiv" >
                       <div class="butn-menuText" >
-                       <clButton :iconColor="iconColor" icon="md-redo" type="customer" size="small" @click="auditAction()">审核</clButton>
+                       <clButton iconColor="#0e67b7" icon="md-redo" type="customer" size="small" @click="auditAction()">审核</clButton>
                     </div>
                </div>
                 <div class="butn-MenuDiv" >
                       <div class="butn-menuText" >
-                      <clButton :iconColor="iconColor" icon="md-undo"  type="customer" size="small" @click="antiAuditAction()">反审</clButton>
+                      <clButton iconColor="#0e67b7" icon="md-undo"  type="customer" size="small" @click="antiAuditAction()">反审</clButton>
                     </div>
                </div>
                  <div class="butn-MenuDiv" >
                      <div class="butn-menuText" >
-                         <clButton :iconColor="iconColor" icon="md-close"  type="customer" size="small" @click="disabledAction()">禁用</clButton>
+                         <clButton iconColor="#e16205" icon="md-warning"  type="customer" size="small" @click="disabledAction()">禁用</clButton>
                     </div>
                 </div>
                  <div class="butn-MenuDiv" >
@@ -42,12 +42,12 @@
                </div>
                  <div class="butn-MenuDiv" >
                      <div class="butn-menuText" >
-                          <clButton  :iconColor="iconColor"  icon="md-print" type="customer" size="small" @click="printAction()">打印</clButton>
+                          <clButton  :iconColor="iconColor" disabled icon="md-print" type="customer" size="small" @click="printAction()">打印</clButton>
                     </div>
                </div>
                  <div class="butn-MenuDiv" >
                      <div class="butn-menuText" >
-                           <clButton :iconColor="iconColor" icon="md-sync" type="customer" size="small" @click="refreshAction()">刷新</clButton>
+                           <clButton iconColor="#0cb05b" icon="md-sync" type="customer" size="small" @click="refreshAction()">刷新</clButton>
                     </div>
                </div>
     </div>
@@ -55,10 +55,12 @@
 <script>
 import clButton from '@/components/cl-erp/button'
 import request from '@/libs/request'
+import vuescroll from 'vuescroll';
 export default {
   name:'btnList',
   components:{
-    clButton
+    clButton,
+    vuescroll
   },
   props:{
     currrentRowItem:{
@@ -89,13 +91,15 @@ export default {
     }
   },
   mounted(){
+    //debugger
     // 父类实列 初始化
-    this._install = this.$parent.$parent.$parent.$parent
+    this._install = this.$parent.$parent.$parent.$parent.$parent
 
   },
   methods:{
     //  获取当前选择行ROW ID
     getCurrentRowId(){
+      debugger
        // 获取父类 方法
       let selectionId = this._install.getMasterSelectId();
         if (!selectionId) {
@@ -229,11 +233,13 @@ export default {
     },
      // 刷新
     refreshAction(){
+      debugger
         this._install.search();
     },
     showTipInfo(){
        this.$Message.success("操作成功");
-       this.$store.commit('setUpdateFlag', true)
+       this._install.search();
+       //this.$store.commit('setUpdateFlag', true)
     }
     
   },
@@ -242,10 +248,10 @@ export default {
 }
 </script>
 <style>
-.butn-MenuDiv > .ivu-icon-md-add-circle:before
+/* .butn-MenuDiv > .ivu-icon-md-add-circle:before
 {
   color: red;
-}
+} */
 .butn-menuText{
     font-weight: bold;
     vertical-align: top;
@@ -254,6 +260,7 @@ export default {
 
 .butn-MenuDiv{
      cursor: pointer;
+     margin-bottom: 5px;
       margin-left: 5px;
       /* border: 1px solid red; */
 }

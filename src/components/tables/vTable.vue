@@ -222,6 +222,7 @@
     			return newColumns;
     		},
     		getTableData(){
+				this.isLoading = true;
     			if(this.url && this.url != null){
             return axios.request({
               url:this.url,

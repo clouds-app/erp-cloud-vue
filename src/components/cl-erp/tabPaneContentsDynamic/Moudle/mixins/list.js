@@ -11,14 +11,8 @@
 
 import config from "@/config";
 
-import functionBtnList from '../components/functionBtnList.vue'
-import searchForm from '../components/searchForm.vue'
-import vTable from '@/components/tables/vTable'
 import request from '@/libs/request'
 export default {
- components: {
-        vTable,functionBtnList,searchForm
-      },
   data() {
     return {
         currrentRowItem:{
@@ -43,6 +37,13 @@ export default {
     this.comptuedTableHeight();
   },
   methods: {
+     // 数据查询 master_list_table 为 talbe refs='master_list_table'
+     search(queryParams) {
+     // debugger
+      //表单搜索
+      //this.$refs['master_list_table'].search();
+      this.$refs['master_list_table'].search(queryParams);
+    },
     // 是否加载完成 
     getLoaddingDone(isDone){
       this.isLoaddingDone =isDone
@@ -59,10 +60,9 @@ export default {
        }
        return this.masterRowSelection.id;
      },
-     // 数据查询 master_list_table 为 talbe refs='master_list_table'
-     search(queryParams) {
-       //表单搜索
-       this.$refs['master_list_table'].search(queryParams);
+     
+     refresh(){
+      this.$refs['master_list_table'].search();
      },
      // 数据双击
      rowDblclick(){
@@ -71,7 +71,7 @@ export default {
      comptuedTableHeight(){
        //计算table高度
        let height = document.body.offsetHeight;
-       this.tableHeight = height - (46 + 40 + 48 + 6 + 25);
+       this.tableHeight = height - (118);
      }
   }
 };

@@ -1,54 +1,116 @@
 <template>
     <div>
         <ul>
-            <li>
-                 <Input style="width:100px;" placeholder="请输部门编码" v-model="queryParams.tableName" size="small" />
+            <li v-if="queryParamsDefault.length>0">
+                 <Input style="width:120px;" :placeholder ="`${queryParamsDefault[0].title}`" v-model="queryParamsDefault[0][queryParamsDefault[0].code+'']" size="small" />
             </li>
-            <li>
-                  <Input style="width:100px;" placeholder="请输入部门名称" size="small" v-model="queryParams.tableDesc" />
+            <li v-if="queryParamsDefault.length>0">
+                  <Input style="width:120px;" :placeholder="`${queryParamsDefault[1].title}`" size="small" v-model="queryParamsDefault[1][queryParamsDefault[1].name+'']" />
             </li>
             <li>
                  <clButton iconColor="#57c5f7" icon="md-search"  type="customer" size="small" @click="search()">搜索</clButton>
             </li>
+             <li style="margin-left:10px;margin-right:10px;">
+                 <Icon color="#57c5f7" @click="showDrawer=true" type="ios-arrow-dropright-circle" />
+            </li>
         </ul>
+     <adSearch @on-close="closeAdSearch()"  :isShowDrawer="showDrawer"></adSearch>
     </div>
-   
 </template>
 <script>
+/**
+ * @desc searchForm 描述 查询模块,集体模块配置查询参数即可,无需每个模块一个文件
+ *
+ * @params 参数 CODE ,NAME 
+ *
+ * @return 返回 对象模块的数据
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/22 11:26:30
+ */
+
+import adSearch from './advancedSearch'
 import clButton from '@/components/cl-erp/button'
 export default {
     name:'searchform',
   components:{
-    clButton
+    clButton,adSearch
   },
-    data(){
-        return {
-             queryParams: {
-                 tableName:'',
-                 tableDesc:''
-             },
+    props:{
+        queryParamsDefault:{
+            type:Array,
+            default(){
+                return []
+            }
         }
     },
-   computed: {
-    // 是否更新
-     updateFlag() {
-         return this.$store.state.bas.updateFlag;
-    }
-  
-  },
-  watch: {
+    data(){
+        return {
+             showDrawer:false, // 是否显示高级查询
+              _install:{}, // 父类实列
+             //queryParams:{} //Object.assign({},queryParamsDefault),
+        }
+    },
+   watch: {
+       //   queryParamsDefault: {
+        //           handler(n,o){
+                      
+        //           },
+        //            immediate: true,  //刷新加载 立马触发一次handler
+        //            deep: true  // 可以深度检测到 子菜单 对象的属性值的变化
+        //     }
     // 监控 主菜单 切换 出发查询 子菜单数据
     updateFlag(newVal, oldVal) {
        if(newVal!=null &&newVal===true && newVal!=oldVal){
+          // this.queryParams= Object.assign({},queryParamsDefault),
            this.search()
        }
       
     }
   },
+   computed: {
+    // 是否更新
+     updateFlag() {
+        // debugger
+        // this._install = this.$parent.$parent.$parent.$parent
+         return this.$store.state.bas.updateFlag;
+    }
+  
+  },
+  
+   mounted(){
+       debugger
+    // 父类实列 初始化
+    this._install = this.$parent.$parent.$parent.$parent.$parent
+   },
     methods:{
+      // 关闭高级查询
+       closeAdSearch(){
+           this.showDrawer=false
+       },
+     
         search(){
-            let selectionId = this.$parent.$parent.$parent.$parent.search(this.queryParams);
+            debugger
+            let queryParams =this.coverObjectKeyTo()
+            let selectionId = this._install.search(queryParams);
             this.$store.commit('setUpdateFlag', false)
+        },
+        // 更改对象的KEY名称微当前模块的查询的名称
+        coverObjectKeyTo(){
+             let code= this.queryParamsDefault[0].code // 当前模块查询字段 动态1 
+             let name= this.queryParamsDefault[1].name // 当前模块查询字段 动态2
+             // 查询对象
+             let queryParams = {
+                code:this.queryParamsDefault[0][this.queryParamsDefault[0].code],
+                name:this.queryParamsDefault[1][this.queryParamsDefault[1].name]
+            }
+           let queryParamsStr = JSON.stringify(queryParams) // 对象转换微字符串 修改字段
+               queryParamsStr =queryParamsStr.replace(/code/g,code) // 替换字段一
+               queryParamsStr =queryParamsStr.replace(/name/g,name) // 替换字段二
+           let  queryParamsObj = JSON.parse(queryParamsStr)  // 转换微对象 返回
+           return queryParamsObj
+
         }
     },
 }

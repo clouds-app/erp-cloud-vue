@@ -19,6 +19,9 @@
             </Col>
            
         </Row>
+       
+            
+         
     </div>
 </template>
 <script>
@@ -43,7 +46,19 @@ export default {
     }
 }
 </script>
+
 <style>
+
+ul{
+    float: left;
+}
+ul div {
+     display: inline;
+}
+ul li{
+    display: inline;
+    /* margin-left: 2px; */
+}
 .cl-logoInfo{
     cursor: pointer;
 }
