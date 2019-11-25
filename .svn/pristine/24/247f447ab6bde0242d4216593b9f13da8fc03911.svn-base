@@ -116,8 +116,8 @@ deactivated() {
     showMoal(){
       // this.$refs.clModal.isShowModal =true
        this.$Modal.confirm({
-          title: '确认关闭',
-          content: `是否确认全部关闭？`,
+          title: '提示',
+          content: `是否确认 全部关闭？`,
           onOk: () => {
              this. ok()
           }

@@ -60,7 +60,7 @@ export default {
     },
     // 是否实现当前窗体
     value(n, o) {
-      //debugger
+      this.$refs["formDataInfo"].resetFields(); // fix 清除上次的错误提示
       this.showWindow = n;
     },
     // 当前添加 OR 修改
@@ -79,8 +79,6 @@ export default {
   methods: {
     // 修改标题
     resetTitle() {
-      //debugger
-      this.$refs["formDataInfo"].resetFields(); // fix 清除上次的错误提示
       this.actionLableName = "增加";
       if (this.action !== "add") {
         this.actionLableName = "修改";
@@ -91,7 +89,6 @@ export default {
     },
      // 提交表单数据
     formDataSubmit() {
-      debugger
       let _self = this;
       this.$refs["formDataInfo"].validate(valid => {
         if (valid) {

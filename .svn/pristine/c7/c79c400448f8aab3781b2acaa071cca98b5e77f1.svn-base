@@ -80,7 +80,7 @@ export default {
   },
   
    mounted(){
-       //debugger
+       debugger
     // 父类实列 初始化
     this._install = this.$parent.$parent.$parent.$parent.$parent
    },

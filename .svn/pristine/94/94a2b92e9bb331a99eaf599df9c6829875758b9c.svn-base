@@ -44,10 +44,6 @@ export default {
       //this.$refs['master_list_table'].search();
       this.$refs['master_list_table'].search(queryParams);
     },
-    // 清除选择项
-    cleanSelectedItem(){
-      this.masterRowSelection={}
-    },
     // 是否加载完成 
     getLoaddingDone(isDone){
       this.isLoaddingDone =isDone

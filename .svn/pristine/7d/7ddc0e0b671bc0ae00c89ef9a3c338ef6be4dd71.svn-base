@@ -99,7 +99,7 @@ export default {
   methods:{
     //  获取当前选择行ROW ID
     getCurrentRowId(){
-     // debugger
+      debugger
        // 获取父类 方法
       let selectionId = this._install.getMasterSelectId();
         if (!selectionId) {
@@ -134,7 +134,7 @@ export default {
         }
         let url = `${this.requestBaseUrl}/detail?${this.uniqueId}=${selectionId}`;
         request.post(url).then(res => {
-          //debugger
+          debugger
              this._install.formDetailData = res
              this.$emit('isLoaddingDone',true)
         }).catch(err=>{

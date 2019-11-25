@@ -9,20 +9,20 @@
     >
     </htmlTemplate>
     <div class="content-container" :style="{'height':tableHeight+'px'}">
-      <vTable :height="tableHeight " ref="master_list_table" :columns="columns" url="/bas/worker/page" :pagination="true" @row-click="tableRowClick"></vTable>
+      <vTable :height="tableHeight " ref="master_list_table" :columns="columns" url="/bas/position/page" :pagination="true" @row-click="tableRowClick"></vTable>
     </div>
    <editForm  
-    :isLoaddingDone="isLoaddingDone"
-    :form-detail-data="formDetailData"
-      :action="action"
-      @submit-success="search()" 
-      v-model="showEditWindow"/>
+   :isLoaddingDone="isLoaddingDone"
+   :form-detail-data="formDetailData"
+    :action="action"
+    @submit-success="search()" 
+    v-model="showEditWindow"/>
   </div>
 </template>
 <script>
 import vTable from '@/components/tables/vTable'
 import htmlTemplate from '../components/htmlTemplate'
-import editForm from './edit/edit-worker'
+import editForm from './edit/edit-position'
 import listBaseMixins from "../mixins/list";
   export default {
    mixins: [listBaseMixins],
@@ -32,91 +32,36 @@ import listBaseMixins from "../mixins/list";
     data() {
       return {
         functionParams:{
-            requestBaseUrl: '/bas/worker',
-            uniqueId:'workerId'
+            requestBaseUrl: '/bas/position',
+            uniqueId:'positionId'
         },
        // 查询参数 ,注意格式
         queryParamsDefault:[
             {
-            title: '请输入人员编号',
-            code:'workCode',
-            workCode:''
+            title: '请输入职位编号',
+            code:'poCode',
+            deptCode:''
            },
            {
-            title: '请输入人员名称',
-            name:'workName',
-            workName: '',
+            title: '请输入职位名称',
+            name:'poName',
+            deptName: '',
           },
         ],
         columns: [
            {
-            title: '人员编号',
-            key: 'workCode',
+            title: '职位编号',
+            key: 'poCode',
             align: 'center'
           },
            {
-            title: '人员名称',
-            key: 'workName',
-            align: 'center'
-          },
-           {
-            title: '职别',
-            key: 'workOptType',
-            align: 'center'
-          },
-           {
-            title: '部门名称',
-            key: 'deptName',
-            align: 'center'
-          },
-           {
-            title: '班组名称',
-            key: 'teamName',
-            align: 'center'
-          },
-           {
-            title: '性别',
-            key: 'sex',
-            align: 'center'
-          },
-           {
-            title: '出生日期',
-            key: 'borthDay',
-            align: 'center'
-          },
-           {
-            title: '籍贯',
-            key: 'borthAdress',
-            align: 'center'
-          },
-           {
-            title: '民族',
-            key: 'nation',
-            align: 'center'
-          },
-           {
-            title: '婚否',
-            key: 'iisMarried',
-            align: 'center'
-          },
-           {
-            title: '入职日期',
-            key: 'workInDate',
-            align: 'center'
-          },
-           {
-            title: '手机号码',
-            key: 'mob',
+            title: '职位名称',
+            key: 'poName',
             align: 'center'
           },
           {
             title: '备注',
             key: 'remark',
-            align: 'center'
-          },
-           {
-            title: '审核状态',
-            key: 'iisAudit',
             align: 'center'
           },
              {
@@ -160,12 +105,11 @@ import listBaseMixins from "../mixins/list";
     },
     methods: {
       tableRowClick(rowData, rowIndex) {
-      //  debugger
        this.formDetailData ={} // 清除上次缓存数据 增加体验良好
        this.masterRowSelection = rowData;
        if(rowData!=null){
           // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
-          this.currrentRowItem.rowName=rowData.workCode+' '+rowData.workName // 要修改成对应的 列
+          this.currrentRowItem.rowName=rowData.deptCode+' '+rowData.deptName
        }
      },
     },
@@ -174,5 +118,4 @@ import listBaseMixins from "../mixins/list";
 </script>
 
 <style>
-
 </style>

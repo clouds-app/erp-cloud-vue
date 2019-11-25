@@ -10,8 +10,8 @@
             <li>
                  <clButton iconColor="#57c5f7" icon="md-search"  type="customer" size="small" @click="search()">搜索</clButton>
             </li>
-             <li style="margin-left:10px;margin-right:10px;vertical-align: middle;">
-                 <Icon size='20' color="#57c5f7" @click="showDrawer=true" type="ios-arrow-dropright-circle" />
+             <li style="margin-left:10px;margin-right:10px;">
+                 <Icon color="#57c5f7" @click="showDrawer=true" type="ios-arrow-dropright-circle" />
             </li>
         </ul>
      <adSearch @on-close="closeAdSearch()"  :isShowDrawer="showDrawer"></adSearch>
@@ -80,7 +80,7 @@ export default {
   },
   
    mounted(){
-       //debugger
+       debugger
     // 父类实列 初始化
     this._install = this.$parent.$parent.$parent.$parent.$parent
    },
