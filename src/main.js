@@ -11,7 +11,7 @@ import importDirective from '@/directive'
 import installPlugin from '@/plugin'
 //import 'iview/dist/styles/iview.css'
 import 'view-design/dist/styles/iview.css';
-import './index.less'  // 样式重置
+import './index.less' // 样式重置
 //import './globle.less' // 全局变量
 import '@/assets/icons/iconfont.css'
 
@@ -20,19 +20,25 @@ import '@/assets/icons/iconfont.css'
 //if (process.env.NODE_ENV !== 'production') require('@/mock')
 window.ViewUI = ViewUI;
 window.i18n = i18n;
+
+//用于兄弟组件之间通信的事件总线
+export const eventBus = new Vue();
+//Vue.prototype.$eventBus = eventBus
 /* Vue.use(ViewUI, {
   i18n: (key, value) => i18n.t(key, value)
 }) */
-
+// ViewUI全局配置
 Vue.use(ViewUI, {
-  i18n: function(path, options) {
-    let value = i18n.t(path, options)
-    if (value !== null && value !== undefined) {
-      return value
-    }
-    return ''
-  }
+	size: 'small',
+	i18n: function(path, options) {
+		let value = i18n.t(path, options)
+		if(value !== null && value !== undefined) {
+			return value
+		}
+		return ''
+	}
 })
+
 /**
  * @description 注册admin内置插件
  */
@@ -53,9 +59,9 @@ importDirective(Vue)
 
 /* eslint-disable no-new */
 new Vue({
-  el: '#app',
-  router,
-  i18n,
-  store,
-  render: h => h(App)
+	el: '#app',
+	router,
+	i18n,
+	store,
+	render: h => h(App)
 })

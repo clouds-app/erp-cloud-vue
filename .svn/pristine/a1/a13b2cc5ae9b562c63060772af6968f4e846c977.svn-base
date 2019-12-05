@@ -1,0 +1,225 @@
+<template>
+    <div >
+        <!-- Bas  -->
+        <div id="Bas_sun" style=" ">
+                <div id="Bas_one">
+                    <p>
+                        <Button @click="handleSubMenuEvent('dept','bas-department','部门')" type="success">部门</Button>
+                    </p>
+                    <br/> <br/>
+                    <p>
+                        <Button @click="handleSubMenuEvent('team','bas-team','班组')" type="success">班组</Button>
+                    </p>
+                    <br/> <br/>
+                    <p>
+                        <Button @click="handleSubMenuEvent('position','bas-position','职位')" type="success">职位</Button>
+                    </p>
+                    <br/> <br/>
+                    <p>
+                        <Button @click="handleSubMenuEvent('worker','bas-worker','人员')" type="success">人员</Button>
+                    </p>
+                    <br> <br/>
+                    <p>
+                        <Button @click="handleSubMenuEvent('areaList','bas-areaList','区域')" type="success">区域</Button>
+                    </p>
+                    <br> <br/>
+                    <p>
+                        <Button @click="handleSubMenuEvent('','','纸度(宽幅)')" type="info">纸度(宽幅)</Button>
+                    </p>
+                    
+                </div>
+
+        <div id="Bas_one">    
+                    <p>
+                        <Button @click="handleSubMenuEvent('car','bas-car','车辆')" type="success">车辆</Button>
+                    </p>
+            
+                <br/> <br/>
+                    <p>
+                        <Button @click="handleSubMenuEvent('warehouse','bas-warehouse','仓库')" type="success">仓库</Button>
+                    </p>
+            
+                <br/> <br/>
+                    <p>
+                        <Button @click="handleSubMenuEvent('leng','bas-leng','楞别')" type="success">楞别</Button>
+                    </p>
+            
+                <br> <br/>
+                    <p>
+                        <Button @click="handleSubMenuEvent('bank','bas-bank','银行')" type="success">银行</Button>
+                    </p>
+            
+                <br/> <br/>
+                    <p>
+                        <Button @click="handleSubMenuEvent('unit','bas-unit','物料')" type="success">物料</Button>
+                    </p>
+                <br> <br/>
+                <p>
+                <Button @click="handleSubMenuEvent('','','模切板资料')" type="info">模切板资料</Button>
+                </p>
+            
+        </div> 
+        
+        <div id="Bas_one">   
+
+
+            <p>
+                <Button @click="handleSubMenuEvent('coin','bas-coin','货币')" type="success">货币</Button>
+            </p>
+            <br/> <br/>
+            
+            <p>
+                <Button @click="handleSubMenuEvent('fadeReason','bas-fadeReason','退货原因')" type="success">退货原因</Button>
+            </p>
+            <br> <br/>
+            <p>
+                <Button @click="handleSubMenuEvent('payType','bas-payType','付款方式')" type="success">付款方式</Button>
+            </p>
+            <br/> <br/>
+            <p>
+                <Button @click="handleSubMenuEvent('resume','bas-resume','摘要说明')" type="success">摘要说明</Button>
+            </p>
+            <br/> <br/>
+            <p>
+                <Button @click="handleSubMenuEvent('','','人员档案')" type="info">人员档案</Button>
+            </p>
+            <br> <br/>
+            <p>
+                <Button @click="handleSubMenuEvent('','','印唛资料')" type="info">印唛资料</Button>
+            </p>
+
+        </div> 
+        <div id="Bas_one" >  
+            <p>
+                <Button @click="handleSubMenuEvent('','','纸质')" type="info">纸质</Button>
+            </p>
+            <br> <br/>
+            <p>
+                <Button @click="handleSubMenuEvent('','','颜色')" type="info">颜色</Button>
+            </p>
+            <br> <br/>
+            <p>
+                <Button @click="handleSubMenuEvent('','','印版')" type="info">印版</Button>
+            </p>
+            <br> <br/>
+            <p>
+                <Button @click="handleSubMenuEvent('','','产品资料')" type="info">产品资料</Button>
+            </p>
+            <br> <br/>
+            <p>
+                <Button @click="handleSubMenuEvent('','','工序资料')" type="info">工序资料</Button>
+            </p>
+            
+            
+            </div>
+
+            <div id="Bas_one">
+                <p>
+                <Button @click="handleSubMenuEvent('','','机台')" type="info">机台</Button>
+                </p>
+                <br> <br/>
+                
+                <p>
+                <Button @click="handleSubMenuEvent('','','盒式公式')" type="info">盒式公式</Button>
+                </p>
+                <br> <br/>
+                <p>
+                <Button @click="handleSubMenuEvent('','','纸箱产品套件')" type="info">纸箱产品套件</Button>
+                </p>
+                <br> <br/>
+                <p>
+                <Button @click="handleSubMenuEvent('','','纸箱内外径设定')" type="info">纸箱内外径设定</Button>
+                </p>
+                <br> <br/>
+                
+                <p>
+                <Button @click="handleSubMenuEvent('','','客户化计算盒式')" type="info">客户化计算盒式</Button>
+                </p>
+                
+                
+            </div> 
+        </div>       
+
+    </div>
+
+    
+    
+
+
+</template>
+
+<script>
+import globleMixin from '@/mixins'
+//import subMenuMixin from './mixins'
+export default {
+    mixins:[globleMixin],
+    data() {
+        return {
+
+        }
+    },
+    methods:{
+      // 子页面 参数: 页面.vue,唯一区别ID,TAB 标签显示名称
+      handleSubMenuEvent(currentPage,uniqueKey,tabName){
+        //  debugger
+       let subItem = {
+           uniqueKey:uniqueKey,
+           lable:tabName
+       }  
+       let params = {
+           type:'Bas',
+           page:currentPage, //显示控件页面
+           uniqueKey:subItem.uniqueKey,
+           lable:subItem.lable,
+           isActive:true
+       }
+       //判断是否已经存在,不要重复添加菜单
+       let isExist =false;
+       let currentOperateMenu= this.currentSelectedSubMenu.Bas
+       if(this.currentSelectedSubMenu && currentOperateMenu.length>0){
+             currentOperateMenu.forEach((item)=>{
+                 item.isActive =false //重置其它菜单为 未选中
+                 if(item.uniqueKey ==params.uniqueKey){
+                     isExist = true
+                     item.isActive =true // 当前的设置为 TRUE
+                 }
+             })
+       }
+
+       // 不存在则添加 子页面
+       if(!isExist){
+         currentOperateMenu =Object.assign(currentOperateMenu,currentOperateMenu.push(params))
+       }
+       this.$store.commit('setCurrentSubMenu', this.currentSelectedSubMenu)
+       //打开指定页面
+       this.$emit('openSubMenu',params)
+ 
+      },
+  }
+}
+</script>
+
+<style >
+#Bas_sun{
+    
+    margin-top: 50px;
+    margin-left: 240px;
+     text-align:center;
+     height: 600px;
+    
+     
+     
+      
+     
+}
+#Bas_one{
+    
+    float: left;
+    padding-left: 100px; 
+    
+   
+     
+    
+}
+
+</style>

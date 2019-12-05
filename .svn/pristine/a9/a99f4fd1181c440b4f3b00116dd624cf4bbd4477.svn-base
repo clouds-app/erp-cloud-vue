@@ -1,0 +1,56 @@
+/**
+ * @name mixin
+ * @description 所有.vue 公共方法
+ * @action .vue 中 添加mixin:[name]
+ * 
+ */
+
+import config from '@/config'
+export default {
+    name:'mixin-base',
+    data() {
+        return {
+        }
+    },
+    computed:{
+        // 默认 选中菜单
+         currentSelected(){
+             return this.$store.state.app.currentTopMenu
+         },
+        // 顶部选中子菜单
+        currentSelectedSubMenu() {
+            return this.$store.state.app.currentSubMenu;
+        },
+          // 当前页面--放在MIXIN
+         currentCurrentPage(){
+             return this.$store.state.app.currentPage
+         }
+    },
+    methods: {
+        // 监控页面刷新事件
+        beforeunloadHandler (e) {
+           // debugger
+          console.log('=========beforeunloadHandler==========')
+          
+          this.turnToHome()
+        },
+        turnToHome(uniqueKey){
+            if(uniqueKey=='' || uniqueKey==0 || this.currentCurrentPage !='home'){
+                //debugger
+                console.log('========turnToHome=====_home============')
+                this.$store.commit('setCurrentPage','home')
+                this.$router.push({name:'_home'})
+                this.$store.commit('setCurrentTopMenu','')
+            }
+          }
+    },
+    mounted(){
+      window.addEventListener('beforeunload', e => this.beforeunloadHandler(e))
+      console.log('=====mixins mounted=======')
+      
+    },
+    destroyed() {
+        window.removeEventListener('beforeunload', e => this.beforeunloadHandler(e))
+    }
+
+}

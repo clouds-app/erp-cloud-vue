@@ -1,0 +1,231 @@
+<template>
+  <div>
+    <editWindow
+    class="cl-edit-prinMarks"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="70%"
+      :loading="!isLoaddingDone"
+      @on-ok="formDataSubmit()"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-message="false"
+        :model="formDataInfo"
+        :rules="ruleValidate"
+        :label-width="80"
+      >
+    <Row :gutter="12">
+          <Col span="18">
+            <div id="print">
+              <Row :gutter="12">
+                <!-- 第一列 -->
+                  <Col span="12">
+                    <FormItem label="产品编号" prop="productId">
+                    <Input
+                        v-model="formDataInfo.productId"
+                        maxlength="20"
+                        style="width = 200px;"
+                        placeholder="请输入产品编号"
+                    ></Input>
+                    </FormItem>
+                    <FormItem label="印唛编号" prop="pmNo">
+                    <Input
+                        v-model="formDataInfo.pmNo"
+                        maxlength="20"
+                        placeholder="请输入印唛编号"
+                    ></Input>
+                    </FormItem>
+
+                    <FormItem label="上摇(一)" prop="pmSYRemark1">
+                    <Input
+                        v-model="formDataInfo.pmSYRemark1"
+                        maxlength="20"
+                        placeholder="请输入上摇(一)"
+                    ></Input>
+                    </FormItem>
+                    <FormItem label="上摇(二)" prop="pmSYRemark2">
+                    <Input
+                        v-model="formDataInfo.pmSYRemark2"
+                        maxlength="20"
+                        placeholder="请输入上摇(二)"
+                    ></Input>
+                    </FormItem>
+
+                    
+                    <FormItem label="下摇(一)" prop="pmXYRemark1">
+                    <Input
+                        v-model="formDataInfo.pmXYRemark1"
+                        maxlength="20"
+                        placeholder="请输入下摇(一)"
+                    ></Input>
+                    </FormItem>
+                  </Col>
+                <!-- 第二列 -->
+                  <Col span="12">
+                    <FormItem label="下摇(二)" prop="pmXYRemark2">
+                    <Input
+                        v-model="formDataInfo.pmXYRemark2"
+                        maxlength="20"
+                        placeholder="请输入下摇(二)"
+                    ></Input>
+                    </FormItem>
+
+                    
+                    <FormItem label="正唛(一)" prop="pmZMRemark1">
+                    <Input
+                        v-model="formDataInfo.pmZMRemark1"
+                        maxlength="20"
+                        placeholder="请输入正唛(一)"
+                    ></Input>
+                    </FormItem>
+                    <FormItem label="正唛(二)" prop="pmZMRemark2">
+                    <Input
+                        v-model="formDataInfo.pmSYRemark2"
+                        maxlength="20"
+                        placeholder="请输入正唛(二)"
+                    ></Input>
+                    </FormItem>
+
+                    <FormItem label="文档1路径" prop="pmDocNo1">
+                    <Input
+                        v-model="formDataInfo.pmDocNo1"
+                        maxlength="20"
+                        placeholder="请输入文档1路径"
+                    ></Input>
+                    </FormItem>
+                    <FormItem label="文档2路径" prop="pmDocNo2">
+                    <Input
+                        v-model="formDataInfo.pmDocNo2"
+                        maxlength="20"
+                        placeholder="请输入文档2路径"
+                    ></Input>
+                    </FormItem>
+                  </Col>
+              </Row>
+              <br>
+              <!-- 留言 -->
+              <Row :gutter="16">
+                <Col span="24">
+                   <FormItem label="备注" prop="remark">
+                    <Input
+                        v-model="formDataInfo.remark"
+                        type="textarea"
+                        maxlength="100"
+                        :autosize="{ minRows: 2, maxRows: 5}"
+                        placeholder="请输入备注..."
+                    ></Input>
+                    </FormItem>
+                </Col>
+              </Row>
+              <!-- // 其它单选信息  -->
+              
+            </div>
+          </Col>
+          <!-- // 图片上传 -->
+          <Col span="6">
+            <div>图片上传
+              <uploadImg moduleName="bas" :imgUrl="formDataInfo.idPhoto" @uploadSuccess="uploadSuccessHeads" tipInfo="唛头图片路径"/>
+              <br/>
+              
+             <uploadImg  moduleName="bas" :imgUrl="formDataInfo.photo" @uploadSuccess="uploadSuccessTails" tipInfo="侧唛图片路径"/>
+            </div>
+          </Col>
+        </Row>
+
+
+      </Form>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:07:54
+ */
+import uploadImg from '@/components/cl-erp/uploadImg'
+import dayjs from 'dayjs'
+import editBaseMixins from "../../mixins/edit";
+const  default_formDataInfo= {
+       pmCMRemark1: "",
+      pmCMRemark2: "",
+      pmDocNo1: "",
+      pmDocNo2: "",
+      pmImg: "",
+      pmImg2: "",
+      pmNo: "",
+      pmSYRemark1: "",
+      pmSYRemark2: "",
+      pmXYRemark1: "",
+      pmXYRemark2: "",
+      pmZMRemark1: "",
+      pmZMRemark2: ""
+
+
+      }
+export default {
+  name: "edit-printMarks",
+  mixins: [editBaseMixins],
+ components:{uploadImg},
+  data() {
+    return {
+      requestBaseUrl: "/bas/printMarks", // 请求 查询 操作的基础路径
+      formDataInfo:Object.assign({},default_formDataInfo),// 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {
+        pmNo: [
+          { required: true, message: "印唛不能为空", trigger: "blur" }
+        ],
+        productId: [
+          { required: true, message: "产编号不能为空", trigger: "blur" }
+        ]
+      }
+    };
+  },
+
+   methods: {
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo(){
+     this.formDataInfo=Object.assign({},default_formDataInfo)
+    },
+    // 唛头图片路径上传成功后 回调事件 返回图片地址
+    uploadSuccessHeads(res){
+       let picUrl =res.result
+       if(!!picUrl){
+        this.formDataInfo.idPhoto= picUrl
+       }
+    },
+     //侧唛图片路径上传成功后 回调事件 返回图片地址
+    uploadSuccessTails(res){
+       let picUrl =res.result
+       if(!!picUrl){
+         this.formDataInfo.photo= picUrl
+       }
+    },
+    
+  }
+};
+</script>
+
+<style>
+.cl-edit-prinMarks .ivu-form-item {
+  margin-bottom: 12px !important;
+}
+
+.ivu-table-header th{
+    font-size: 12px;
+}
+
+
+</style>

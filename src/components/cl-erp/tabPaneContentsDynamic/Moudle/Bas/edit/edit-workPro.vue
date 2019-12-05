@@ -1,0 +1,121 @@
+<template>
+  <div>
+    <editWindow
+        class="cl-edit-workerPro"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="30%"
+      :loading="!isLoaddingDone"
+      @on-ok="formDataSubmit()"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-message="false"
+        :model="formDataInfo"
+        :rules="ruleValidate"
+        :label-width="80"
+      >
+        <FormItem label="编号" prop="wpNo">
+          <Input
+            v-model="formDataInfo.wpNo"
+            style="width:300px"
+            
+            maxlength="20"
+            placeholder="请输入编号"
+          ></Input>
+        </FormItem>
+        <FormItem label="名称" prop="wpName">
+          <Input
+            v-model="formDataInfo.wpName"
+            style="width:300px"
+            maxlength="80"
+            placeholder="请输入名称"
+          ></Input>
+        </FormItem>
+          <FormItem label="工序类型" prop="wpType">
+           <Select
+                style="width:300px"
+                v-model="formDataInfo.wpType"
+                placeholder="请选择工序类型" >
+                <Option value="0">印刷</Option>
+                <Option value="1">分纸</Option>
+                <Option value="2">开槽</Option>
+                <Option value="3">啤机</Option>
+                <Option value="4">钉机</Option>
+                <Option value="5">纸板线</Option>
+                 <Option value="6">粘合</Option>
+                <Option value="7">其他</Option>
+                <Option value="8">临时</Option>
+            </Select>
+        </FormItem>
+        <FormItem label="备注" prop="remark">
+          <Input
+            v-model="formDataInfo.remark"
+            style="width:300px"
+            type="textarea"
+            maxlength="100"
+            :autosize="{ minRows: 2, maxRows: 5 }"
+            placeholder="请输入备注..."
+          ></Input>
+        </FormItem>
+      </Form>
+      
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:07:54
+ */
+import editBaseMixins from "../../mixins/edit";
+const default_formDataInfo = {
+  wpNo: "",
+  wpName: "",
+  remark: ""
+};
+export default {
+  name: "edit-workPro",
+  mixins: [editBaseMixins],
+
+  data() {
+    return {
+      requestBaseUrl: "/bas/workPro", // 请求 查询 操作的基础路径
+      formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {
+        wpNo: [
+          { required: true, message: "编号不能为空", trigger: "blur" }
+        ],
+        wpName: [
+          { required: true, message: "名称不能为空", trigger: "blur" }
+        ]
+      }
+    };
+  },
+
+  methods: {
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo() {
+      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    }
+  }
+};
+</script>
+
+<style>
+.cl-edit-workerPro .ivu-select-item{
+  display: block
+}
+</style>

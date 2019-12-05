@@ -52,7 +52,7 @@ module.exports = {
     },
     proxy: {
       '/sys': {
-        target: 'http://192.168.168.101:8080/', //对应自己的接口
+        target: 'http://192.168.168.101:9999/', //对应自己的接口
         changeOrigin: true,//是否跨域
         ws: true,
         pathRewrite: {
@@ -61,6 +61,22 @@ module.exports = {
       },
       '/bas': {
         target: 'http://192.168.168.101:8080/', //对应自己的接口
+        changeOrigin: true,//是否跨域
+        ws: true,
+        pathRewrite: {
+          '^/': ''
+        }
+      },
+      '/common': {
+        target: 'http://134.175.53.247/erp/', //对应自己的接口
+        changeOrigin: true,//是否跨域
+        ws: true,
+        pathRewrite: {
+          '^/': ''
+        }
+      },
+      '/file': {
+        target: 'http://134.175.53.247/erp/', //对应自己的接口
         changeOrigin: true,//是否跨域
         ws: true,
         pathRewrite: {

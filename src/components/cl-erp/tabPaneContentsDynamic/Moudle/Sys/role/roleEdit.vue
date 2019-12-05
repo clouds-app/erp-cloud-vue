@@ -1,0 +1,97 @@
+<template>
+  <!--角色编辑-->
+  <div>
+    <editWindow v-model="showWindow" :fullscreen="false" width="500" @on-ok="formDataSubmit()">
+      <Form :label-colon="true" :label-width="100" :model="formModel" ref="editFormItem">
+        <FormItem label="角色名称"  prop="ruleName" :rules="{required: true, message: '角色名称不能为空', trigger: 'blur' }">
+          <Input placeholder="请输入角色名称" v-model="formModel.ruleName" size="small"></Input>
+        </FormItem>
+
+        <FormItem label="角色说明" prop="ruleExplain">
+          <Input placeholder="请输入角色说明" v-model="formModel.ruleExplain"  size="small" type="textarea"></Input>
+        </FormItem>
+
+        <FormItem label="状态">
+            <i-switch size="large" v-model="formModel.status" :true-value="1" :false-value="0">
+                    <span slot="open">启用</span>
+                    <span slot="close">禁用</span>
+            </i-switch>
+        </FormItem>
+      </Form>
+     </editWindow>
+  </div>
+</template>
+
+<script>
+  import editWindow from '@/components/edit-window/edit-window'
+  import Form from '@/components/form/form'
+  import request from '@/libs/request'
+  export default {
+    name: 'sysRoleEdit',
+    components: {
+      editWindow,
+      Form
+    },
+    data() {
+      return {
+        showWindow: false,
+        formInitData:{//表单初始化数据
+          ruleName:'',
+          ruleExplain:'',
+          status:1
+        },
+        formModel:{
+          ruleName:'',
+          ruleExplain:'',
+          status:1
+        }
+      }
+    },
+    props: {
+      value: {
+        type: Boolean,
+        default: false
+      },
+      formDetailData:{
+        default:()=>{
+          return {};
+        }
+      }
+    },
+    watch: {
+      showWindow(n, o) {
+        this.$emit('input', n);
+      },
+      value(n, o) {
+        this.showWindow = n;
+        //窗体显示，文本框获取焦点
+        this.$refs.editFormItem.setCaptureFocus();
+        if(this.action == 'add'){
+          this.formModel = JSON.parse(JSON.stringify(this.formInitData));
+        }
+      },formDetailData:{
+        handler(n,o){
+           this.formModel = n;
+        },
+        deep:true
+      }
+    },methods:{
+      formDataSubmit(){
+        //提交表单数据
+        this.$refs.editFormItem.validate(valid=>{
+            if(!valid){//主表校验
+              return;
+            }
+            let url = `/sys/role/saveOrUpdate`;
+            request.post(url,this.formModel).then(res=>{
+            	this.$Message.success('操作成功');
+              this.$emit('submit-success');
+            });
+        });
+      }
+    }
+  }
+</script>
+
+<style>
+</style>

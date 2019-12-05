@@ -1,0 +1,48 @@
+<template>
+  <div class="table-page">
+    <Page :current="page.pageNumber" :total="page.total" :page-size="page.pageSize" simple @on-change="onPageNumberChange"/>
+  </div>
+</template>
+
+<script>
+  import {eventBus} from '../../main'
+  export default{
+    name:'page',
+    data(){
+      return {
+        page:{
+        	pageNumber:1,
+        	total:0,
+        	pageSize:15,
+          pages:0,//总页数
+        }
+      }
+    },
+    methods:{
+      onPageNumberChange(pageNumber){
+      	eventBus.$emit('on-pagenumber-change',pageNumber);
+      }
+    },created() {
+      eventBus.$on('page-data-init',page =>{
+        console.log('page-data-init');
+        console.log(page);
+        this.page = page;
+      })
+    }
+  }
+</script>
+
+<style>
+  .table-page,.ivu-page-prev,.ivu-page-next{
+    min-width:0.875rem !important;
+  }
+  .table-page,.ivu-page-simple .ivu-page-simple-pager{
+    margin-right: 0rem;
+  }
+  .table-page,.ivu-page-simple .ivu-page-simple-pager span{
+    padding:inherit !important;
+  }
+  .table-page,.ivu-page-simple .ivu-page-simple-pager input{
+    margin: 0;
+  }
+</style>

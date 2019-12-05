@@ -1,49 +1,88 @@
 <template>
   <div class="cl-moudle">
-    <div class="toolbar-container">
-        <Card :bordered="false" dis-hover>
-        <Row>
-          <Col span="12">
-                <functionBtnList :requestBaseUrl="functionParams.requestBaseUrl" :uniqueId="functionParams.uniqueId"/>
-          </Col>
-          <Col span="12">
-            <searchForm/>
-          </Col>
-        </Row>
-      </Card>
+    <htmlTemplate
+      :currrentRowItem="currrentRowItem"
+      @isLoaddingDone="getLoaddingDone"
+      :requestBaseUrl="functionParams.requestBaseUrl"
+      :uniqueId="functionParams.uniqueId"
+      :queryParamsDefault="queryParamsDefault"
+    >
+    </htmlTemplate>
+    <div class="content-container" :style="{ height: tableHeight + 'px' }">
+      <Split :v-model="splitModel" mode="vertical">
+        <div slot="top" class="demo-split-pane">
+          <vTable
+            :height="tableHeight / 2"
+            ref="master_list_table"
+            columns-url="/sys/popup/warehouseFm/columns"
+            url="/bas/warehouse/page"
+            :pagination="true"
+            @row-click="tableRowClick"
+          ></vTable>
+        </div>
+        <div slot="bottom" :style="{ 'padding-top': '6px' }">
+          <Tabs>
+            <TabPane label="仓位信息" name="name1">
+              <vTable
+                :height="tableHeight / 2"
+                ref="tableFieldRef"
+                :table-data="tableFieldData"
+                :columns="tableFieldColuns"
+                :pagination="false"
+              ></vTable>
+            </TabPane>
+          </Tabs>
+        </div>
+      </Split>
     </div>
-
-    <div class="content-container" :style="{'height':tableHeight+'px'}">
-      <vTable :height="tableHeight " ref="master_list_table" :columns="columns" url="/bas/warehouse/page" :pagination="true" @row-click="tableRowClick"></vTable>
-    </div>
-   
+    
+    <editForm
+      :isLoaddingDone="isLoaddingDone"
+      :form-detail-data="formDetailData"
+       moduleName="worker"
+      :action="action"
+      @submit-success="search()"
+      v-model="showEditWindow"
+    />
   </div>
 </template>
-
 <script>
-  import functionBtnList from '../components/functionBtnList.vue'
-  import searchForm from '../components/searchForm.vue'
-  import vTable from '@/components/tables/vTable'
-  import request from '@/libs/request'
- 
-  export default {
-    components: {
-      vTable,functionBtnList,searchForm
-    },
-    data() {
-      return {
-        functionParams:{
-            requestBaseUrl: '/bas/warehouse',
-            uniqueId:'wareHouseId'
+import vTable from "@/components/tables/vTable";
+import htmlTemplate from "../components/htmlTemplate";
+//import editForm from "./edit/edit-warehouse";
+import listBaseMixins from "../mixins/list";
+import request from '@/libs/request'
+export default {
+  mixins: [listBaseMixins],
+  components: {
+    'editForm':function(resolve) { //组件的异步加载
+                require(["./edit/edit-warehouse"], resolve);
+            },
+    htmlTemplate,
+    vTable
+  },
+  data() {
+    return {
+     // who:'editForm', // 动态指定编辑控件
+      functionParams: {
+        requestBaseUrl: "/bas/warehouse",
+        uniqueId: "wareHouseId"
+      },
+      // 查询参数 ,注意格式
+      queryParamsDefault: [
+        {
+          title: "请输入仓库编号",
+          code: "whCode",
+          whCode: ""
         },
-        showEditWindow: false,
-        columns: [
-            {
-            title: '',
-            key: 'id',
-            align: 'center'
-           },
-           {
+        {
+          title: "请输入仓库名称",
+          name: "whName",
+          whName: ""
+        }
+      ],
+      columns: [
+         {
             title: '仓库编号',
             key: 'whCode',
             align: 'center'
@@ -58,131 +97,105 @@
             key: 'whType',
             align: 'center'
           },
-          {
-            title: '备注',
-            key: 'remark',
-            align: 'center'
-          },
-             {
-            title: '状态',
-            key: 'status',
-            align: 'center'
-          },
-            {
-            title: '审核状态',
-            key: 'iisAudit',
-            align: 'center'
-          },
-             {
-            title: '创建人',
-            key: 'createUser',
-            align: 'center'
-          },
-          {
-            title: '创建时间',
-            key: 'createTime',
-            align: 'center'
-          },
-             {
-            title: '修改人',
-            key: 'updateUser',
-            align: 'center'
-          },
-             {
-            title: '修改时间',
-            key: 'updateTime',
-            align: 'center'
-          },
-          {
-            title: '审核人',
-            key: 'auditUser',
-            align: 'center'
-          },
-           {
-            title: '审核时间',
-            key: 'auditTime',
-            align: 'center'
-          },
-        ],
-        tableFieldData: [],
-        masterRowSelection: {},
-        formDetailData: {},
-        action: 'add',
-        tableHeight:0
-      }
-    },
-    methods: {
-      tableRowClick(rowData, rowIndex) {
+        {
+          title: "备注",
+          key: "remark",
+          align: "center"
+        },
+        {
+          title: "审核状态",
+          key: "iisAudit",
+          align: "center"
+        },
+        {
+          title: "状态",
+          key: "status",
+          align: "center"
+        },
+        {
+          title: "创建人",
+          key: "createUser",
+          align: "center"
+        },
+        {
+          title: "创建时间",
+          key: "createTime",
+          align: "center"
+        },
+        {
+          title: "修改人",
+          key: "updateUser",
+          align: "center"
+        },
+        {
+          title: "修改时间",
+          key: "updateTime",
+          align: "center"
+        },
+        {
+          title: "审核人",
+          key: "auditUser",
+          align: "center"
+        },
+        {
+          title: "审核时间",
+          key: "auditTime",
+          align: "center"
+        }
+      ],
+      tableFieldColuns: [
+        {
+          title: "仓位编号",
+          key: "wsCode",
+          align: "center"
+        },
+        {
+          title: "仓位名称",
+          key: "wsName",
+          align: "center"
+        },
+        {
+          title: "备注",
+          key: "remark",
+          align: "center"
+        }
+      ]
+    };
+  },
+  methods: {
+    tableRowClick(rowData, rowIndex) {
+      this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData;
+      if (rowData != null) {
         //debugger
-        this.masterRowSelection = rowData;
-        let url = `${this.requestBaseUrl}/detailDept?${this.uniqueId}=${rowData.id}`;
-        // let _self = this;
-        // request.get(url).then(res => {
-        //   _self.tableFieldData = res.tableFields.defaultList;
-        // });
-      },
-      getMasterSelectId() {
-        if (Object.keys(this.masterRowSelection).length == 0) {
-          this.$Message.warning('请选择需要操作的数据');
-          return false;
-        }
-        return this.masterRowSelection.id;
-      },
-      editAction() {
-        let selectionId = this.getMasterSelectId();
-        if (!selectionId) {
-          return;
-        }
-        //编辑窗口展示
-        this.showEditWindow = true;
-        this.action = 'update';
-        this.detailAction();
-      },
-      detailAction() {
-        //加载详情数据
-        let url = `${this.requestBaseUrl}/detailDept?${this.uniqueId}=${this.masterRowSelection.id}`;
-        let _self = this;
-        request.post(url).then(res => {
-          _self.formDetailData = res;
-        });
-      },
-      addAction() {
-        //数据添加
-        this.action = 'add';
-        this.showEditWindow = true;
-      },
-      search(queryParams) {
-        //表单搜索
-        this.$refs['master_list_table'].search(queryParams);
-      },
-     
-      createTableAction(){
-        let selectionId = this.getMasterSelectId();
-        if (!selectionId) {
-          return;
-        }
-        if(this.masterRowSelection.tableCreated){
-          this.$Message.info('表已经被创建');
-          return;
-        }
-        let url = `${this.requestBaseUrl}/${selectionId}/created`;
-        let _self = this;
-        request.post(url).then(res => {
-          _self.$Message.success('数据库表创建成功');
-          _self.search();
-        });
-      },
-      comptuedTableHeight(){
-        //计算table高度
-        let height = document.body.offsetHeight;
-        this.tableHeight = height - (46 + 40 + 48 + 6 + 25);
+        // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
+        this.currrentRowItem.rowName =
+          rowData.whCode + " " + rowData.whName;
+      }
+      if(this.masterRowSelection){
+          this.getItemDataById()
       }
     },
-    created() {
-      this.comptuedTableHeight();
-    }
+    // 获取仓位数据
+    getItemDataById(){
+       //debugger
+        let url = `/bas/warehouse/item/list`;
+        let data ={
+          whId:this.masterRowSelection.id,
+        }
+        let _self = this;
+        request.post(url,data).then(res => {
+          //debugger
+          _self.tableFieldData = res
+        });
+    },
+    //重写父类方法, 更新操作
+    handleUpdateEvent(){
+      debugger
+       this.getItemDataById()
+    },
   }
+};
 </script>
 
-<style>
-</style>
+<style></style>

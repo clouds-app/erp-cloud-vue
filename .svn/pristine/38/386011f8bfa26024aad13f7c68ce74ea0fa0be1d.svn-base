@@ -1,0 +1,131 @@
+<template>
+<div>
+    <component v-bind:is="moudle"></component>
+</div> 
+      
+</template>
+<script>
+// 动态 TAB 控件
+export default {
+    name:'tabPaneContents-Dynamic',
+    props:{
+        currentSubMenuItem:{
+            type:Object,
+            default(){
+                return {
+                        // type:'Bas',
+                        // uniqueKey:subItem.uniqueKey,
+                        // lable:subItem.lable,
+                        // isActive:true
+                }
+            }
+        }
+    },
+    watch:{
+          currentSubMenuItem: {
+                  handler(n,o){
+                       if(n){
+                            //console.log('====currentSubMenuItem========'+JSON.stringify(n))
+                            try {
+                                const currentPage = n.page
+                                this.moudle = currentPage //显示当前选择页面
+                            } catch (error) {
+                                
+                            }
+                         
+                       }
+                      
+                  },
+                   immediate: true,  //刷新加载 立马触发一次handler
+                   deep: true  // 可以深度检测到 子菜单 对象的属性值的变化
+            }
+    },
+    components:{
+         // 部门
+         'dept':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/dept.vue"], resolve);
+         },
+          // 职位
+           'position':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/position.vue"], resolve);
+         },
+          // 班组
+           'team':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/team.vue"], resolve);
+         },
+          // 人员
+           'worker':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/worker.vue"], resolve);
+         },
+          // 区域
+           'areaList':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/areaList.vue"], resolve);
+         },
+          // 车辆
+           'car':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/car.vue"], resolve);
+         },
+          // 仓库
+           'warehouse':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/warehouse.vue"], resolve);
+         },
+          // 表单
+           'sysForm':function(resolve) { //组件的异步加载
+            require(["./moudle/Sys/form/table/table.vue"], resolve);
+         },
+         'sysRole':function(resolve) { //组件的异步加载
+            require(["./moudle/Sys/role/index.vue"], resolve);
+         },
+
+         
+          // 楞次
+           'leng':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/leng.vue"], resolve);
+         },
+           // 银行
+           'bank':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/bank.vue"], resolve);
+         },
+         
+           // 退货原因
+           'fadeReason':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/fadeReason.vue"], resolve);
+         },
+           // 货币
+           'coin':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/coin.vue"], resolve);
+         },
+           // 物料单位
+           'unit':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/unit.vue"], resolve);
+         },
+           // 付款方式
+           'payType':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/payType.vue"], resolve);
+         },
+           // 摘要
+           'resume':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/resume.vue"], resolve);
+         },
+         
+
+
+           // 弹框配置
+          'windowPopupConfig':function(resolve) { //组件的异步加载
+            require(["./moudle/Sys/windowPopupConfig.vue"], resolve);
+         },
+
+    },
+    data(){
+        return {
+          // moudle:'dept',
+        }
+    },
+    mounted() {
+        console.log('====tabPaneContents-Dynamic====mounted===')
+    },
+}
+</script>
+<style>
+  
+</style>

@@ -1,0 +1,38 @@
+<template>
+    <div>
+        paramsContent
+    </div>
+</template>
+<script>
+const testData=[
+{"id":"11","paramId":"11","paramFlag":"SysInchToCm","paramValue":"2.54","companyId":"15","createTime":"2019-11-15T15:12:40","paramName":"纸度英寸单位与厘米单位换算","paramDefault":"2.54","paramIsSys":false,"paramIsShow":true,"paramGroup":4,"paramSort":0,"paramControl":"text","paramSelectValue":"NULL","paramNote":"纸度英寸单位与厘米单位换算"},
+{"id":"12","paramId":"12","paramFlag":"Unit","paramValue":"0:英寸","companyId":"15","createTime":"2019-11-15T15:12:40","paramName":"纸度单位","paramDefault":"0:英寸","paramIsSys":false,"paramIsShow":true,"paramGroup":4,"paramSort":0,"paramControl":"select","paramSelectValue":"0:英寸,1:厘米,2:毫米","paramNote":"纸度单位选择"},
+{"id":"35","paramId":"35","paramFlag":"TaiWanSizeTOCM","paramValue":"3.03","companyId":"15","createTime":"2019-11-15T15:12:40","paramName":"台寸单位与厘米单位换算率","paramDefault":"3.03","paramIsSys":false,"paramIsShow":true,"paramGroup":4,"paramSort":0,"paramControl":"text","paramSelectValue":null,"paramNote":null},
+{"id":"47","paramId":"47","paramFlag":"SysUnit","paramValue":"0:英寸;1:厘米;2:毫米","companyId":"15","createTime":"2019-11-15T15:12:40","paramName":"系统显示单位","paramDefault":"0:英寸;1:厘米;2:毫米","paramIsSys":false,"paramIsShow":true,"paramGroup":4,"paramSort":0,"paramControl":"select","paramSelectValue":"0:英寸,1:厘米,2:毫米,1:厘米;2:毫米,0:英寸;1:厘米,0:英寸;2:毫米,0:英寸;1:厘米;2:毫米,0:英寸;1:厘米;2:毫米;3:台寸","paramNote":"系统所有单位下拉框根据参数值设置显示，不在参数设置范围的单位不能选择"}]
+export default {
+    name:'paramsContent',
+    props:{
+        tabContent:{
+            type:Array,
+            default(){
+                return []
+            }
+        }
+    },
+    data(){
+        return {
+            dataSource:[...testData]
+        }
+    },
+    methods:{
+        // 根据类型渲染控件 paramControl:text,select,checkbox
+        renderHtmlControl()
+        {
+
+
+        }
+    }
+    
+
+}
+</script>

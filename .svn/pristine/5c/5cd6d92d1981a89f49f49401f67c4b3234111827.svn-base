@@ -1,0 +1,196 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-boxSizeSet"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="50%"
+      :loading="!isLoaddingDone"
+      @on-ok="formDataSubmit()"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-message="false"
+        :model="formDataInfo"
+        :rules="ruleValidate"
+        :label-width="80"
+      >
+        <Row :gutter="16">
+            <Col span="12">
+                    <FormItem label="客户id" prop="custId">
+                     <Select
+                                v-model="formDataInfo.custId"
+                                placeholder="请选择单位"
+                                >
+                                <Option value="1">
+                                    0
+                                </Option>
+                                <Option value="2"> 
+                                    1
+                                </Option>
+                                <Option value="4">
+                                     2
+                                </Option>
+                            </Select>
+                    </FormItem>
+                    <FormItem label="楞别id" prop="lengId">
+                     <Select
+                                v-model="formDataInfo.lengId"
+                                placeholder="请选择单位"
+                                >
+                                <Option value="1">
+                                    0
+                                </Option>
+                                <Option value="2"> 
+                                    1
+                                </Option>
+                                <Option value="4">
+                                    2
+                                </Option>
+                            </Select>
+                    </FormItem>
+                    <FormItem label="盒式id" prop="boxId">
+                      <Select
+                                v-model="formDataInfo.boxId"
+                                placeholder="请选择单位"
+                                >
+                                <Option value="1">
+                                    0
+                                </Option>
+                                <Option value="2"> 
+                                    1
+                                </Option>
+                                <Option value="4">
+                                    2
+                                </Option>
+                            </Select>
+                    </FormItem>
+
+                     <FormItem label="备注" prop="remark">
+                    <Input
+                        v-model="formDataInfo.remark"
+                        type="textarea"
+                        maxlength="100"
+                        :autosize="{ minRows: 2, maxRows: 5 }"
+                        placeholder="请输入备注..."
+                    ></Input>
+                    </FormItem>
+
+                   
+            </Col>
+            <Col span="12"> 
+
+                <FormItem label="单位" prop="bsUnit">
+                    <div>
+                            <Select
+                                v-model="formDataInfo.bsUnit"
+                                placeholder="请选择单位"
+                                >
+                                <Option value="1">
+                                    0：英寸
+                                </Option>
+                                <Option value="2"> 
+                                    1：厘米
+                                </Option>
+                                <Option value="4">
+                                    2：毫米
+                                </Option>
+                            </Select>
+                        </div>
+                    </Input>
+                </FormItem>
+
+                    <FormItem label="增量高度" prop="bs_SizeH">
+                    <Input
+                        v-model="formDataInfo.bs_SizeH"
+                        type="number"
+                        maxlength="20"
+                        placeholder="请输入增量高度"
+                    ></Input>
+                    </FormItem>
+                    <FormItem label="增量长度" prop="bs_SizeL">
+                    <Input
+                        v-model="formDataInfo.bs_SizeL"
+                        type="number"
+                        maxlength="20"
+                        placeholder="请输入增量长度"
+                    ></Input>
+                    </FormItem>
+                    <FormItem label="增量宽度" prop="bs_SizeW">
+                    <Input
+                        v-model="formDataInfo.bs_SizeW"
+                        type="number"
+                        maxlength="20"
+                        placeholder="请输入增量宽度"
+                    ></Input>
+                    </FormItem>
+
+                   
+            </Col>    
+        </Row>
+      </Form>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:07:54
+ */
+import editBaseMixins from "../../mixins/edit";
+const default_formDataInfo = {
+    custId: "",
+    lengId: "",
+    boxId: 0,
+    bs_SizeH: 0,
+    bs_SizeL: 0,
+    bs_SizeW: 0,
+    remark: ""
+};
+export default {
+  name: "edit-boxSizeSet",
+  mixins: [editBaseMixins],
+
+  data() {
+    return {
+      requestBaseUrl: "/bas/boxSizeSet", // 请求 查询 操作的基础路径
+      formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {
+        custId: [
+          { required: true, message: "", trigger: "blur" }
+        ],
+        lengId: [
+          { required: true, message: "", trigger: "blur" }
+        ]
+      }
+    };
+  },
+
+  methods: {
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo() {
+      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    }
+  }
+};
+</script>
+
+<style>
+
+
+.cl-edit-boxSizeSet .ivu-select-item{
+  display: block
+}
+</style>

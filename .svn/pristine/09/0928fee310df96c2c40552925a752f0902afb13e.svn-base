@@ -1,0 +1,105 @@
+<template>
+  <div>
+    <editWindow
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="30%"
+      :loading="!isLoaddingDone"
+      @on-ok="formDataSubmit()"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-message="false"
+        :model="formDataInfo"
+        :rules="ruleValidate"
+        :label-width="80"
+      >
+        <FormItem label="货币编号" prop="coinCode">
+          <Input
+            v-model="formDataInfo.coinCode"
+            maxlength="20"
+            placeholder="请输入货币编号"
+          ></Input>
+        </FormItem>
+        <FormItem label="货币名称" prop="coinName">
+          <Input
+            v-model="formDataInfo.coinName"
+            maxlength="20"
+            placeholder="请输入货币名称"
+          ></Input>
+        </FormItem>
+        <FormItem label="汇率" prop="coinRate">
+          <Input
+            v-model="formDataInfo.coinRate"
+            type="number"
+            maxlength="20"
+            placeholder="请输入汇率"
+          ></Input>
+        </FormItem>
+
+        <FormItem label="备注" prop="remark">
+          <Input
+            v-model="formDataInfo.remark"
+            type="textarea"
+            maxlength="100"
+            :autosize="{ minRows: 2, maxRows: 5 }"
+            placeholder="请输入备注..."
+          ></Input>
+        </FormItem>
+      </Form>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:07:54
+ */
+import editBaseMixins from "../../mixins/edit";
+const default_formDataInfo = {
+  coinCode: "",
+  coinName: "",
+
+  remark: ""
+};
+export default {
+  name: "edit-coin",
+  mixins: [editBaseMixins],
+
+  data() {
+    return {
+      requestBaseUrl: "/bas/coin", // 请求 查询 操作的基础路径
+      formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {
+        coinCode: [
+          { required: true, message: "货币编码不能为空", trigger: "blur" }
+        ],
+        coinName: [
+          { required: true, message: "货币编号不能为空", trigger: "blur" }
+        ]
+      }
+    };
+  },
+
+  methods: {
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo() {
+      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    }
+  }
+};
+</script>
+
+<style></style>

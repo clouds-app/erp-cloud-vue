@@ -5,7 +5,7 @@
       :title="actionLableName"
       v-model="showWindow"
       :fullscreen="false"
-      width="80%"
+      width="90%"
       :loading="!isLoaddingDone"
       @on-ok="formDataSubmit()"
     >
@@ -35,67 +35,83 @@
                       v-model="formDataInfo.deptId"
                       placeholder="请选择职位部门"
                     >
-                      <Option value="0">
-                        部门1
+                      <Option value="1">
+                        销售部
                         </Option>
                       <Option value="2"> 
-                        部门2
+                        采购部
                         </Option>
-                      <Option value="1">
-                        部门3
+                      <Option value="4">
+                        生产部
                         </Option>
                     </Select>
+                     <!-- <popup v-model="formDataInfo.deptName"
+                              field-name="deptName"
+                              :disabled="false"
+                              popup-name="basDeptPopup"
+                              :fill-model.sync="formDataInfo"
+                              render-fields="deptName"
+                              from-fields="deptName"
+                              :query-params="{}">
+                      </popup> -->
                     </div>
                  
+                  </FormItem>
+                   <FormItem label="所属班组" prop="teamId">
+                    <Select
+                      v-model="formDataInfo.teamId"
+                      placeholder="请选择班组"
+                    >
+                      <Option value="1">分纸班组</Option>
+                      <Option value="2">印刷班组</Option>
+                      <Option value="3">开槽班组</Option>
+                    </Select>
                   </FormItem>
                   <FormItem label="民族">
                     <Input
                       v-model="formDataInfo.nation"
-                      maxlength="100"
+                      maxlength="20"
                       placeholder="请输入民族"
                     />
                   </FormItem>
                   <FormItem label="文化程度">
-                    <Select
+                     <Input
+                      v-model="formDataInfo.degreeSchool"
+                      maxlength="20"
+                      placeholder="请选择文化程度"
+                    />
+                    <!-- <Select
                       v-model="formDataInfo.degreeSchool"
                       placeholder="请选择文化程度"
                     >
                       <Option value="0">高中</Option>
                       <Option value="2">大学</Option>
                       <Option value="1">中学</Option>
+                    </Select> -->
+                  </FormItem>
+                  <FormItem label="婚姻状况">
+                     <Select
+                      v-model="formDataInfo.iisMarried"
+                      placeholder="请选择婚姻状况" 
+                    >
+                      <Option value="0">未婚</Option>
+                      <Option value="1">已婚</Option>
+                      <Option value="3">离异</Option>
+                      <!-- <Option value="-1">其它</Option> -->
                     </Select>
                   </FormItem>
-                  <FormItem label="健康状况">
-                    <!-- <Input
-                      v-model="formDataInfo.poName"
-                      maxlength="80"
-                      placeholder="请输入健康状况"
-                    /> -->
-                  </FormItem>
-                  <FormItem label="个人特长">
-                    <!-- <Input
-                      v-model="formDataInfo.poName"
-                      maxlength="80"
-                      placeholder="请输入个人特长"
-                    /> -->
-                  </FormItem>
+                 
                   <FormItem label="入厂时间">
-                     <DatePicker type="date" placeholder="选择入厂时间" v-model="formDataInfo.workInDate"></DatePicker>
+                     <DatePicker type="datetime"  format="yyyy-MM-dd HH:mm:ss" placeholder="选择入厂时间" v-model="formDataInfo.workInDate"></DatePicker>
                   </FormItem>
                   <FormItem label="基本底薪">
                     <Input
                       v-model="formDataInfo.salary"
-                      maxlength="80"
+                      maxlength="20"
                       placeholder="请输入基本底薪"
                     />
                   </FormItem>
-                  <FormItem label="社保金额">
-                    <Input
-                      v-model="formDataInfo.insuranceAmt"
-                      maxlength="80"
-                      placeholder="请输入社保金额"
-                    />
-                  </FormItem>
+                
                 </Col>
                 <!-- 第二列 -->
                 <Col span="8">
@@ -116,73 +132,64 @@
                         </Select>
                   </FormItem>
                   <FormItem label="出生日期">
-                       <DatePicker type="date" placeholder="选择出生日期" v-model="formDataInfo.borthDay"></DatePicker>
+                       <DatePicker type="date" format="yyyy-MM-dd" placeholder="选择出生日期" v-model="formDataInfo.borthDay"></DatePicker>
                   </FormItem>
                  <FormItem label="专业">
                     <Input
                       v-model="formDataInfo.major"
-                      maxlength="80"
+                      maxlength="20"
                       placeholder="请输入专业"
                     />
                   </FormItem>
                   <FormItem label="身高">
                     <Input
                       v-model="formDataInfo.height"
-                      maxlength="80"
+                      maxlength="20"
                       placeholder="请输入身高"
                     />
                   </FormItem>
-                  <FormItem label="电话号码">
-                    <!-- <Input
-                      v-model="formDataInfo.mob"
-                      maxlength="80"
-                      placeholder="请输入电话号码"
-                    /> -->
+                   <FormItem label="社保">
+                     <Checkbox v-model="formDataInfo.iisInsurance"> 
+                       <Icon size=0 type="ios-add" />
+                     </Checkbox>
+                      <!-- <ul class="cl-other-checkBox">
+                        <li>
+                          <Checkbox v-model="formDataInfo.iisInsurance">社保</Checkbox>
+                        </li>
+                     </ul> -->
                   </FormItem>
-                  <FormItem label="服务类型">
-                    <!-- <Input
-                      v-model="formDataInfo.poName"
-                      maxlength="80"
-                      placeholder="请输入服务类型"
-                    /> -->
-                  </FormItem>
-                  <FormItem label="通讯补贴">
-                    <!-- <Input
-                      v-model="formDataInfo.poName"
-                      maxlength="80"
-                      placeholder="请输入通讯补贴"
-                    /> -->
+                  <FormItem label="社保金额">
+                    <Input
+                      v-model="formDataInfo.insuranceAmt"
+                      maxlength="20"
+                      placeholder="请输入社保金额"
+                    />
                   </FormItem>
                   <FormItem label="合同开始日期">
-                    <!-- <DatePicker type="date" placeholder="选择合同开始日期" v-model="formDataInfo.date"></DatePicker> -->
+                    <DatePicker type="date" placeholder="选择合同开始日期" v-model="formDataInfo.workLabourPactSDate"></DatePicker>
                   </FormItem>
                 </Col>
                 <!-- 第三列 -->
                 <Col span="8">
-                  <FormItem label="性别" prop="poCode">
-                   <Select
-                      v-model="formDataInfo.sex"
-                      placeholder="请选择性别"
-                    >
-                      <Option value="1">男</Option>
-                      <Option value="0">女</Option>
-                    </Select>
+                  <FormItem label="性别" prop="sex">
+                    <optionSearch @onChange="optionOnChange" :defaultItem="formDataInfo.sex" :loaddingDataWhen="showWindow" query="sex"/>
                   </FormItem>
                   <FormItem label="证件号码">
                     <Input
                       v-model="formDataInfo.idNumber"
-                      maxlength="80"
+                      maxlength="20"
                       placeholder="请输入证件号码"
                     />
                   </FormItem>
                   <FormItem label="籍贯">
                     <Input
                       v-model="formDataInfo.borthAdress"
-                      maxlength="100"
+                      maxlength="20"
                       placeholder="请输入籍贯"
                     />
                   </FormItem>
                   <FormItem label="政治面貌">
+                     <!-- <optionSearch @onChange="optionOnChange" :defaultItem="formDataInfo.political" :loaddingDataWhen="showWindow" query="workXzmm"/> -->
                      <Select
                           v-model="formDataInfo.political"
                           placeholder="请选择政治面貌" >
@@ -193,35 +200,29 @@
                   <FormItem label="视力">
                     <Input
                       v-model="formDataInfo.eys"
-                      maxlength="80"
+                      maxlength="20"
                       placeholder="请输入视力"
                     />
                   </FormItem>
                   <FormItem label="手机号码">
                     <Input
                       v-model="formDataInfo.mob"
-                      maxlength="80"
+                      maxlength="20"
                       placeholder="请输入手机号码"
                     />
                   </FormItem>
-                  <FormItem label="是否在职">
+                  <FormItem label="在职状态">
                     <Select
                       v-model="formDataInfo.iisWork"
                       placeholder="请选择是否在职"
                     >
-                      <Option value="1">是</Option>
-                      <Option value="0">否</Option>
+                      <Option value="1">在职</Option>
+                      <Option value="0">离职</Option>
                     </Select>
                   </FormItem>
-                  <FormItem label="保险金额">
-                    <!-- <Input
-                      v-model="formDataInfo.poName"
-                      maxlength="80"
-                      placeholder="请输入保险金额"
-                    /> -->
-                  </FormItem>
+                 
                   <FormItem label="合同结束日期">
-                    <!-- <DatePicker type="date" placeholder="选择合同结束日期" v-model="formDataInfo.date"></DatePicker> -->
+                    <DatePicker type="date" placeholder="选择合同结束日期" v-model="formDataInfo.workLabourPactEDate"></DatePicker>
                   </FormItem>
                 </Col>
               </Row>
@@ -232,7 +233,7 @@
                     <Input
                       v-model="formDataInfo.homeAddress"
                       type="textarea"
-                      maxlength="100"
+                      maxlength="80"
                       :autosize="{ minRows: 2, maxRows: 5 }"
                       placeholder="请输入家庭住址"
                     />
@@ -243,7 +244,7 @@
                     <Input
                       v-model="formDataInfo.nowAdress"
                       type="textarea"
-                      maxlength="100"
+                      maxlength="80"
                       :autosize="{ minRows: 2, maxRows: 5 }"
                       placeholder="请输入现住地址"
                     />
@@ -252,36 +253,12 @@
               </Row>
               <!-- // 其它单选信息  -->
               <Row :gutter="16">
-                <Col span="12">
-                  <ul class="cl-other-checkBox">
-                    <!-- <li>
-                      <CheckboxGroup v-model="formDataInfo.iisInsurance">
-                        <Checkbox label="社保"></Checkbox>
-                      </CheckboxGroup>
-                    </li>
-                    <li>
-                      <CheckboxGroup v-model="formDataInfo.iisMarried">
-                        <Checkbox label="婚否"></Checkbox>
-                      </CheckboxGroup>
-                    </li> -->
-                    <!-- <li>
-                      <CheckboxGroup v-model="formDataInfo.interest">
-                        <Checkbox label="保险"></Checkbox>
-                      </CheckboxGroup>
-                    </li> -->
-                    <!-- <li>
-                      <CheckboxGroup v-model="formDataInfo.interest">
-                        <Checkbox label="是否记产"></Checkbox>
-                      </CheckboxGroup>
-                    </li> -->
-                  </ul>
-                </Col>
-                <Col span="12">
+                <Col span="24">
                   <FormItem label="备注">
                     <Input
-                      v-model="formDataInfo.poCode"
+                      v-model="formDataInfo.remark"
                       type="textarea"
-                      maxlength="100"
+                      maxlength="80"
                       :autosize="{ minRows: 2, maxRows: 5 }"
                       placeholder="请输入备注..."
                     />
@@ -292,7 +269,11 @@
           </Col>
           <!-- // 图片上传 -->
           <Col span="6">
-            <div>图片上传</div>
+            <div>图片上传
+              <uploadImg moduleName="bas" :imgUrl="formDataInfo.idPhoto" @uploadSuccess="uploadSuccessHeads" tipInfo="身份证-照片"/>
+              <br/>
+             <uploadImg  moduleName="bas" :imgUrl="formDataInfo.photo" @uploadSuccess="uploadSuccessTails" tipInfo="个人-照片"/>
+            </div>
           </Col>
         </Row>
       </Form>
@@ -310,70 +291,133 @@
  *
  * @return 返回
  *
- * @author Andy Huang
+ * @author Andy Huang 
  *
  * @created 2019/11/20 17:07:54
  */
+//import popup from '@/components/popup/popup'
+import {getOptionSourceItem} from '@/libs/optionSearch'
+import optionSearch from '../../components/optionSearch'
+import uploadImg from '@/components/cl-erp/uploadImg'
+import dayjs from 'dayjs'
 import editBaseMixins from "../../mixins/edit";
-export default {
-  name: "edit-position",
-  mixins: [editBaseMixins],
-
-  data() {
-    return {
-      requestBaseUrl: "/bas/worker", // 请求 查询 操作的基础路径
-      formDataInfo: {
-      	// auditTime:'',
-        // auditUser:'',
+const  default_formDataInfo= {
         borthAdress:'',
-       // companyId: 0,
-        // createTime:'',
-        // createUser:'',
+        borthDay: '',
+        workLabourPactSDate:dayjs().format('YYYY-MM-DD'),
+        workLabourPactEDate:'',
         degreeSchool:'',
-        deptId: 0,
+        status: "0",
+        deptId:"0",
         deptName:'',
-        eys: 0,
-        height: 0,
+        eys: "0",
+        height: "0",
         homeAddress:'',
-       // id: 0,
         idNumber:'',
-       // iisAudit: 0,
-        iisInsurance: true,
-        iisMarried: 0,
-        iisWork: 0,
-        insuranceAmt: 0,
+        iisInsurance: false,
+        iisMarried: "0",
+        iisWork: "0",
+        insuranceAmt: "0",
         major:'',
         mob:'',
         nation:'',
         nowAdress:'',
-        photo:'',
-        political:'',
+        photo:"",
+        idPhoto:"",
+        political:"0",
         remark:'',
-        salary: 0,
-        sex: 0,
-        //status: 0,
-        //teamId: 0,
+        salary: "0",
+        sex: "1",
+        //status: "0",
+        teamId: "0",
        // teamName:'',
-       // updateTime:'',
-      //  updateUser:'',
         workCode:'',
-        workInDate:'',
+        workInDate:dayjs().format('YYYY-MM-DD HH:mm:ss'),
         workName:'',
         workOptType: ''
-      },
-      // 需要验证的数据
+      }
+export default {
+  name: "edit-position",
+  mixins: [editBaseMixins],
+  components:{uploadImg,optionSearch},
+  data() {
+    return {
+      // editFormItem:{
+      //       main:{
+      //         piRemark:'',
+      //         piNo:''
+      //       }
+      //     },
+      requestBaseUrl: "/bas/worker", // 请求 查询 操作的基础路径
+      formDataInfo:Object.assign({},default_formDataInfo),// 防止添加和更新数据提交发生冲突
+      // 需要验证的数据 
       ruleValidate: {
+          teamId: [
+          { required: true, message: "班组不能为空", trigger: "blur" }
+        ],
+          deptId: [
+          { required: true, message: "部门不能为空", trigger: "blur" }
+        ],
+          workOptType: [
+          { required: true, message: "职别不能为空", trigger: "blur" }
+        ],
+          sex: [
+          { required: true, message: "性别不能为空", trigger: "blur" }
+        ],
         workCode: [
-          { required: true, message: "职位编号不能为空", trigger: "blur" }
+          { required: true, message: "编号不能为空", trigger: "blur" }
         ],
         workName: [
-          { required: true, message: "职位名称不能为空", trigger: "blur" }
+          { required: true, message: "名称不能为空", trigger: "blur" }
         ]
       }
     };
   },
-
-  methods: {}
+  methods: {
+    optionOnChange(itemObj){
+      //debugger
+      if(!!itemObj){
+        this.formDataInfo[itemObj.key]=itemObj.value
+      }
+    },
+   
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo(){
+     this.formDataInfo=Object.assign({},default_formDataInfo)
+    },
+    // 身份证===图片上传成功后 回调事件 返回图片地址
+    uploadSuccessHeads(res){
+       let picUrl =res.result
+       if(!!picUrl){
+        this.formDataInfo.idPhoto= picUrl
+       }
+    },
+     //个人===图片上传成功后 回调事件 返回图片地址
+    uploadSuccessTails(res){
+       let picUrl =res.result
+       if(!!picUrl){
+         this.formDataInfo.photo= picUrl
+       }
+    },
+    //重写父类 修改一些提交的数据
+    resetformDataInfo(_data){
+      // 时间格式化
+       if(!!_data.borthDay){
+         _data.borthDay =dayjs(_data.borthDay).format('YYYY-MM-DD')
+       }
+       if(!!_data.workLabourPactSDate){
+         _data.workLabourPactSDate =dayjs(_data.workLabourPactSDate).format('YYYY-MM-DD')
+       }
+        if(!!_data.workLabourPactEDate){
+         _data.workLabourPactEDate =dayjs(_data.workLabourPactEDate).format('YYYY-MM-DD')
+       }
+       if(!!_data.workInDate){
+         _data.workInDate =dayjs(_data.workInDate).format('YYYY-MM-DD HH:mm:ss')
+       }
+       
+      return _data
+    },
+  }
 };
 </script>
 

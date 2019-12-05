@@ -1,0 +1,198 @@
+<template>
+  <div class="cl-paramsContent">
+       <Row>
+              <ul class="ulclass">
+              <li v-for="(item, index) in tabContent" :key="index">
+                
+                <template v-if="item.paramControl==='text'">
+                    <div class="paramNameDesc">{{item.paramName}}</div>  <Input size="small" v-model="item.paramValue" :placeholder="`请输入${item.paramName}`" class="paramControlTextW"/>
+                </template>
+                <template v-else-if="item.paramControl==='select'">
+                     <div class="paramNameDesc">{{item.paramName}}</div>
+                    <Select size="small"
+                     class="paramControlSelectW"
+                      v-model="item.paramValue"
+                      :placeholder="`请选择${item.paramName}`"
+                    >
+                      <Option :key="index" v-for="(item, index) in item.paramSelectValue.split(',')" :value="item">{{item}}</Option>
+                    </Select>
+                </template>
+                <template v-else-if="item.paramControl==='checkbox'">
+                    <div class="paramNameDesc">{{item.paramName}}</div>
+                    <Checkbox size="small" class="paramControlCheckboxW" v-model="item.paramValue"><Icon type="ios-add" size=0 /></Checkbox>
+                </template>
+            </li>  
+        </ul>
+       </Row>
+     
+        <Row>
+            <Col span="16"><Icon type="ios-add" size=0 /></Col>
+            <Col span="8"> <Button @click="save" type="success">保存</Button></Col>
+       </Row>
+    
+  </div>
+</template>
+<script>
+const testData = [
+  {
+    id: "11",
+    paramId: "11",
+    paramFlag: "SysInchToCm",
+    paramValue: "2.54",
+    companyId: "15",
+    createTime: "2019-11-15T15:12:40",
+    paramName: "纸度英寸单位与厘米单位换算",
+    paramDefault: "2.54",
+    paramIsSys: false,
+    paramIsShow: true,
+    paramGroup: 4,
+    paramSort: 0,
+    paramControl: "text",
+    paramSelectValue: "NULL",
+    paramNote: "纸度英寸单位与厘米单位换算"
+  },
+  {
+    id: "12",
+    paramId: "12",
+    paramFlag: "Unit",
+    paramValue: "0:英寸",
+    companyId: "15",
+    createTime: "2019-11-15T15:12:40",
+    paramName: "纸度单位",
+    paramDefault: "0:英寸",
+    paramIsSys: false,
+    paramIsShow: true,
+    paramGroup: 4,
+    paramSort: 0,
+    paramControl: "select",
+    paramSelectValue: "0:英寸,1:厘米,2:毫米",
+    paramNote: "纸度单位选择"
+  },
+  {
+    id: "35",
+    paramId: "35",
+    paramFlag: "TaiWanSizeTOCM",
+    paramValue: "3.03",
+    companyId: "15",
+    createTime: "2019-11-15T15:12:40",
+    paramName: "台寸单位与厘米单位换算率",
+    paramDefault: "3.03",
+    paramIsSys: false,
+    paramIsShow: true,
+    paramGroup: 4,
+    paramSort: 0,
+    paramControl: "text",
+    paramSelectValue: null,
+    paramNote: null
+  },
+  {
+    id: "47",
+    paramId: "47",
+    paramFlag: "SysUnit",
+    paramValue: "0:英寸;1:厘米;2:毫米",
+    companyId: "15",
+    createTime: "2019-11-15T15:12:40",
+    paramName: "系统显示单位",
+    paramDefault: "0:英寸;1:厘米;2:毫米",
+    paramIsSys: false,
+    paramIsShow: true,
+    paramGroup: 4,
+    paramSort: 0,
+    paramControl: "select",
+    paramSelectValue:
+      "0:英寸,1:厘米,2:毫米,1:厘米;2:毫米,0:英寸;1:厘米,0:英寸;2:毫米,0:英寸;1:厘米;2:毫米,0:英寸;1:厘米;2:毫米;3:台寸",
+    paramNote:
+      "系统所有单位下拉框根据参数值设置显示，不在参数设置范围的单位不能选择"
+  }
+]
+import request from '@/libs/request'
+export default {
+  name: "paramsContent",
+  props: {
+    tabContent: {
+      type: Array,
+      default() {
+        return [];
+      }
+    }
+  },
+  data() {
+    return {
+      dataSource: [...testData],
+    }
+  },
+  methods: {
+    // 根据类型渲染控件 paramControl:text,select,checkbox
+    renderHtmlControl() {},
+    // 修改保存
+    save(){
+        debugger
+        let url = `/sys/param/value/updateBatch`
+        let data = {
+            sysParamValues:this.formatPostData(this.tabContent)
+        }
+        //let data =this.formatPostData(this.dataSource)
+        request.post(url, data).then(res => { 
+            this.$Message.success("操作成功");
+        }).catch(err=>{
+            this.$Message.error("操作失败!");
+        })
+    },
+    // 格式化更新的数据,符号接口模式
+    formatPostData(itemList){
+       let newPostArray = itemList.map((item)=>{
+
+           let formatItem = {
+                id: item.id,
+                // paramControl: item.paramControl,
+                // paramDefault: item.paramDefault,
+                // paramFlag: item.paramFlag,
+                // paramGroup: item.paramGroup,
+                // paramId: item.paramId,
+                // paramIsShow: item.paramIsShow,
+                // paramIsSys: item.paramIsSys,
+                // paramName: item.paramName,
+                // paramNote: item.paramNote,
+                // paramSelectValue: item.paramSelectValue,
+                // paramSort: item.paramSort,
+                paramValue: item.paramValue,
+           }
+
+           return formatItem
+       })
+       return newPostArray
+    }
+  }
+};
+</script>
+<style >
+    .cl-paramsContent{
+        background: #f8f8f9;
+    }
+    .cl-paramsContent .paramControlCheckboxW{
+        width: 190px;
+    }
+    .cl-paramsContent .paramControlTextW{
+        width: 200px;
+    }
+    .cl-paramsContent .paramControlSelectW{
+        width: 200px;
+    }
+    .cl-paramsContent .ulclass li{
+        margin: 10px;
+        
+    }
+    .cl-paramsContent .ulclass li:nth-child(n){
+                display:inline;
+                float:left;
+            }
+      /* 四个LI换行 */
+     .cl-paramsContent .ulclass li:nth-child(5n+1){
+                clear:both
+            }
+     .paramNameDesc{
+                width:220px;
+                overflow: hidden;
+                height: 20px;
+            }
+</style>

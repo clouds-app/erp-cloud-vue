@@ -1,0 +1,132 @@
+<template>
+  <div class="cl-moudle">
+    <htmlTemplate 
+    :currrentRowItem="currrentRowItem" 
+    @isLoaddingDone="getLoaddingDone" 
+    :requestBaseUrl="functionParams.requestBaseUrl" 
+    :uniqueId="functionParams.uniqueId"
+    :queryParamsDefault="queryParamsDefault"
+    >
+    </htmlTemplate>
+    <div class="content-container" :style="{'height':tableHeight+'px'}">
+      <vTable :height="tableHeight " ref="master_list_table"  columns-url="/sys/popup/fadereasonFm/columns" url="/bas/fadeReason/page" :pagination="true" @row-click="tableRowClick"></vTable>
+    </div>
+   <editForm  
+   :isLoaddingDone="isLoaddingDone"
+   :form-detail-data="formDetailData"
+    :action="action"
+    @submit-success="search()" 
+    v-model="showEditWindow"/>
+  </div>
+</template>
+<script>
+import vTable from '@/components/tables/vTable'
+import htmlTemplate from '../components/htmlTemplate'
+import editForm from './edit/edit-fadeReason'
+import listBaseMixins from "../mixins/list";
+  export default {
+   mixins: [listBaseMixins],
+   components: {
+       editForm,htmlTemplate,vTable
+      },
+    data() {
+      return {
+        functionParams:{
+            requestBaseUrl: '/bas/fadeReason',
+            uniqueId:'fadeReasonId'
+        },
+       // 查询参数 ,注意格式
+          queryParamsDefault:[
+            {
+            title: '请输入编号',
+            code:'frCode',
+            companyId:''
+           },
+           {
+            title: '请输入退货原因',
+            name:'frName',
+            lbCode: '',
+          },
+          
+        ],
+        // columns: [
+           
+        //    {
+        //     title: '编号',
+        //     key: 'frCode',
+        //     align: 'center'
+        //   },
+        //    {
+        //     title: '退货原因',
+        //     key: 'frName',
+        //     companyId: 'center'
+        //   },
+          
+          
+        //    {
+        //     title: '备注',
+        //     key: 'remark',
+        //     align: 'center'
+        //   },
+        //   {
+        //     title: '状态',
+        //     key: 'status',
+        //     align: 'center'
+        //   },
+        //    {
+        //       title:'0私用,1公用',
+        //       key:'iisPublic',
+        //       align:'center'
+        //   },
+        //   {
+        //     title: '审核人',
+        //     key: 'auditUser',
+        //     align: 'center'
+        //   },
+        //   {
+        //     title: '审核时间 ',
+        //     key: 'auditTime',
+        //     align: 'center'
+        //   },
+        //   {
+        //     title: '创建人',
+        //     key: 'createUser',
+        //     align: 'center'
+        //   },
+        //   {
+        //     title: '创建时间',
+        //     key: 'createTime',
+        //     align: 'center'
+        //   },
+        //    {
+        //     title: '修改人',
+        //     key: 'updateUser',
+        //     align: 'center'
+        //   },
+        //    {
+        //     title: '修改时间',
+        //     key: 'updateTime',
+        //     align: 'center'
+        //   },
+         
+           
+        // ],
+       
+      }
+    },
+    methods: {
+      tableRowClick(rowData, rowIndex) {
+       this.formDetailData ={} // 清除上次缓存数据 增加体验良好
+       this.masterRowSelection = rowData;
+       if(rowData!=null){
+          // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
+          this.currrentRowItem.rowName=rowData.frCode+' '+rowData.frName
+       }
+     },
+    },
+   
+  }
+</script>
+
+<style>
+</style>

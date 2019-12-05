@@ -1,0 +1,55 @@
+<template>
+  <div>
+    <Tabs @on-click="onClickEvent" :animated="false" v-model="currentOpenedTab">
+      <!-- 固定菜单-->
+      <TabPane name="0" label="原纸"> </TabPane>
+      <TabPane name="2" label="辅料"> </TabPane>
+      <TabPane name="3" label="系统常规"> </TabPane>
+      <TabPane name="4" label="基本资料"> </TabPane>
+      <TabPane name="8" label="流程控制"> </TabPane>
+      <TabPane name="9" label="财务管理"> </TabPane>
+    </Tabs>
+        <div>
+            <paramsContent :isLoadding="isLoadding" :tabContent="tabContent"/>
+        </div>
+  </div>
+</template>
+<script>
+import request from '@/libs/request'
+import paramsContent from './paramsContent'
+export default {
+  name: "param-config",
+  components: {paramsContent},
+  data() {
+    return {
+      isLoadding:true,
+      currentOpenedTab: "0",
+      tabContent:[]
+    };
+  },
+  mounted(){
+    this.getTabContentById() // 默认获取值
+  },
+  methods: {
+    // 点击事件按-返回当前name
+    onClickEvent(name) {
+      //this.currentTabName =name
+      this.getTabContentById()
+    },
+    // 获取对应的tab内容
+    getTabContentById(){
+      this.isLoadding=true
+      let url = `sys/param/value/list`
+      let data = {
+          paramGroup:this.currentOpenedTab
+      }
+      request.post(url, data).then(res => { 
+         this.isLoadding=false
+         this.tabContent=res
+      }).catch(err=>{
+         this.isLoadding=false
+      });
+    }
+  }
+};
+</script>

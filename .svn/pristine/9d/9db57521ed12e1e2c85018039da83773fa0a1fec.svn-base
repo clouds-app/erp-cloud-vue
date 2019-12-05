@@ -1,0 +1,35 @@
+<template>
+  <div>
+    <!--
+    <tableSelect size="small" v-model="row.controlType" @change="value=>{valueChangeAssign(value,index,row,'controlType');}">
+      <option value="input">文本框</option>
+      <option value="textarea">文本域</option>
+      <option value="number">数字框</option>
+      <option value="tableSelect">下拉框</option>
+      <option value="popup">窗口选择器</option>
+      <option value="checkbox">复选框</option>
+      <option value="date">日期</option>
+      <option value="switch">开关</option>
+      <option value="hidden">隐藏域</option>
+      <option value="file">文件上传</option>
+    </tableSelect>
+    -->
+      <Input v-if="controlType == 'input' || controlType == 'textarea'" size="small" v-bind="$attrs" v-on="$listeners"></Input>
+      <InputNumber v-if="controlType == 'number'" size="small" v-bind="$attrs" v-on="$listeners"></InputNumber>
+      <Checkbox v-if="controlType == 'checkbox'"  size="small" v-bind="$attrs" v-on="$listeners"></Checkbox>
+
+
+  </div>
+</template>
+
+<script>
+  export default{
+    name:'formControl',
+    props:{
+      controlType:String
+    }
+  }
+</script>
+
+<style>
+</style>

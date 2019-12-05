@@ -1,36 +1,148 @@
 <template>
-    <div>
-        Bas 
-        <p>
-             <Button @click="handleSubMenuEvent('dept','bas-department','部门')" type="info">部门</Button>
-       </p>
-       <br/>
-        <p>
-               <Button @click="handleSubMenuEvent('team','bas-team','班组')" type="success">班组</Button>
-       </p>
-        <br/>
-        <p>
-              <Button @click="handleSubMenuEvent('position','bas-position','职位')" type="warning">职位</Button>
-       </p>
-        <br/>
-        <p>
-               <Button @click="handleSubMenuEvent('worker','bas-worker','人员')" type="error">人员</Button>
-        </p>
-         <br/>
-          <p>
-               <Button @click="handleSubMenuEvent('areaList','bas-areaList','区域')" type="error">区域</Button>
-        </p>
-         <br/>
-          <p>
-               <Button @click="handleSubMenuEvent('car','bas-car','车辆')" type="error">车辆</Button>
-        </p>
-         <br/>
-          <p>
-               <Button @click="handleSubMenuEvent('warehouse','bas-warehouse','仓库')" type="error">仓库</Button>
-        </p>
-         <br/>
+    <div >
+        <!-- Bas  -->
+        <div id="Bas_sun">
+                <div id="Bas_one">
+                    <p>
+                        <Button @click="handleSubMenuEvent('dept','bas-department','部门')" type="success">部门</Button>
+                    </p>
+                    <br/> <br/>
+                    <p>
+                        <Button @click="handleSubMenuEvent('team','bas-team','班组')" type="success">班组</Button>
+                    </p>
+                    <br/> <br/>
+                    <p>
+                        <Button @click="handleSubMenuEvent('position','bas-position','职位')" type="success">职位</Button>
+                    </p>
+                    <br/> <br/>
+                    <p>
+                        <Button @click="handleSubMenuEvent('worker','bas-worker','人员')" type="success">人员</Button>
+                    </p>
+                    <br> <br/>
+                    <p>
+                        <Button @click="handleSubMenuEvent('areaList','bas-areaList','区域')" type="success">区域</Button>
+                    </p>
+                    <br> <br/>
+                    <p>
+                        <Button @click="handleSubMenuEvent('paperLimit','Bas-paperLimit','纸度')" type="success">纸度</Button>
+                    </p>
+                    
+                </div>
+
+        <div id="Bas_one">    
+                    <p>
+                        <Button @click="handleSubMenuEvent('car','bas-car','车辆')" type="success">车辆</Button>
+                    </p>
+            
+                <br/> <br/>
+                    <p>
+                        <Button @click="handleSubMenuEvent('warehouse','bas-warehouse','仓库')" type="success">仓库</Button>
+                    </p>
+            
+                <br/> <br/>
+                    <p>
+                        <Button @click="handleSubMenuEvent('leng','bas-leng','楞别')" type="success">楞别</Button>
+                    </p>
+            
+                <br> <br/>
+                    <p>
+                        <Button @click="handleSubMenuEvent('bank','bas-bank','银行')" type="success">银行</Button>
+                    </p>
+            
+                <br/> <br/>
+                    <p>
+                        <Button @click="handleSubMenuEvent('unit','bas-unit','计量单位')" type="success">计量单位</Button>
+                    </p>
+                <br> <br/>
+                <p>
+                <Button @click="handleSubMenuEvent('dieCuttingPlate','bas-dieCuttingPlate','模切板')" type="success">模切板</Button>
+                </p>
+            
+        </div> 
+        
+        <div id="Bas_one">   
+
+
+            <p>
+                <Button @click="handleSubMenuEvent('coin','bas-coin','货币')" type="success">货币</Button>
+            </p>
+            <br/> <br/>
+            
+            <p>
+                <Button @click="handleSubMenuEvent('fadeReason','bas-fadeReason','退货原因')" type="success">退货原因</Button>
+            </p>
+            <br> <br/>
+            <p>
+                <Button @click="handleSubMenuEvent('payType','bas-payType','付款方式')" type="success">付款方式</Button>
+            </p>
+            <br/> <br/>
+            <p>
+                <Button @click="handleSubMenuEvent('resume','bas-resume','摘要说明')" type="success">摘要说明</Button>
+            </p>
+            <br/> <br/>
+            
+            <p>
+                <Button @click="handleSubMenuEvent('printMarks','bas-printMarks','印唛操作')" type="success">印唛操作</Button>
+            </p>
+
+        </div> 
+        <div id="Bas_one" >  
+            <p>
+                <Button @click="handleSubMenuEvent('art','bas-art','纸质')" type="success">纸质</Button>
+            </p>
+            <br> <br/>
+            <p>
+                <Button @click="handleSubMenuEvent('color','bas-color','颜色')" type="success">颜色</Button>
+            </p>
+            <br> <br/>
+            <p>
+                <Button @click="handleSubMenuEvent('print','bas-print','印版')" type="success">印版</Button>
+            </p>
+            <br> <br/>
+            <p>
+                <Button @click="handleSubMenuEvent('','','产品资料')" type="info">产品资料</Button>
+            </p>
+            <br> <br/>
+            <p>
+                <Button @click="handleSubMenuEvent('workPro','Bas-workPro','工序资料')" type="success">工序资料</Button>
+            </p>
+            
+            
+            </div>
+
+            <div id="Bas_one">
+                <p>
+                <Button @click="handleSubMenuEvent('machine','bas-machine','机台')" type="success">机台</Button>
+                </p>
+                <br> <br/>
+                
+                <p>
+                <Button @click="handleSubMenuEvent('boxItem','bas-boxItem','盒式公式')" type="success">盒式公式</Button>
+                </p>
+                <br> <br/>
+                <p>
+                <Button @click="handleSubMenuEvent('productSuite','bas-productSuite','纸箱产品套件')" type="info">纸箱产品套件</Button>
+                </p>
+                <br> <br/>
+                <p>
+                <Button @click="handleSubMenuEvent('boxSizeSet','bas-boxSizeSet','纸箱内外径设置')" type="success">纸箱内外径设置</Button>
+                </p>
+                <br> <br/>
+                
+                <p>
+                <Button @click="handleSubMenuEvent('specPrice','bas-specPrice','客户化计算盒式')" type="success">客户化计算盒式</Button>
+                </p>
+                
+                
+            </div> 
+        </div>       
 
     </div>
+
+    
+    
+
+
 </template>
 
 <script>
@@ -83,3 +195,30 @@ export default {
   }
 }
 </script>
+
+<style >
+#Bas_sun{
+    
+    margin-top: 4%;
+    margin-left: 16%;
+    
+     text-align:center;
+     height:600px;
+     width: 100%;
+    
+     
+     
+      
+     
+}
+#Bas_one{
+    
+    float: left;
+    padding-left: 100px; 
+    
+   
+     
+    
+}
+
+</style>

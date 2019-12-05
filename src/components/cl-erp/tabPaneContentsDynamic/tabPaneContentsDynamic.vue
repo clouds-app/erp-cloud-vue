@@ -73,6 +73,112 @@ export default {
            'sysForm':function(resolve) { //组件的异步加载
             require(["./moudle/Sys/form/table/table.vue"], resolve);
          },
+         'sysRole':function(resolve) { //组件的异步加载
+            require(["./moudle/Sys/role/index.vue"], resolve);
+         },
+
+          // 纸箱产品套件
+           'productSuite':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/productSuite.vue"], resolve);
+         },
+          // 楞次
+           'leng':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/leng.vue"], resolve);
+         },
+           // 银行
+           'bank':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/bank.vue"], resolve);
+         },
+         
+           // 退货原因
+           'fadeReason':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/fadeReason.vue"], resolve);
+         },
+           // 货币
+           'coin':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/coin.vue"], resolve);
+         },
+           // 物料单位
+           'unit':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/unit.vue"], resolve);
+         },
+           // 付款方式
+           'payType':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/payType.vue"], resolve);
+         },
+           // 摘要
+           'resume':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/resume.vue"], resolve);
+         },
+          // 颜色
+          'color':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/color.vue"], resolve);
+         },
+         // 机台
+          'machine':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/machine.vue"], resolve);
+         },
+          // 纸度操作
+          'paperLimit':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/paperLimit.vue"], resolve);
+         },
+          // 工序资料
+          'workPro':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/workPro.vue"], resolve);
+         },
+          // 印唛操作
+          'printMarks':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/printMarks.vue"], resolve);
+         },
+          // 印版
+          'print':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/print.vue"], resolve);
+         },
+         // 纸箱内外径设置
+          'boxSizeSet':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/boxSizeSet.vue"], resolve);
+         },
+            // 模切板
+          'dieCuttingPlate':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/dieCuttingPlate.vue"], resolve);
+         },
+          // 纸质
+          'art':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/art.vue"], resolve);
+         },
+          // 客户化计算盒式
+          'specPrice':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/specPrice.vue"], resolve);
+         },
+         // 客户化计算盒式
+          'boxItem':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/boxItem.vue"], resolve);
+         },
+         
+         
+
+
+           // 弹框配置
+          'popopConfig':function(resolve) { //组件的异步加载
+            require(["./moudle/Sys/popup/popup.vue"], resolve);
+         },
+            // 参数配置
+          'paramConfig':function(resolve) { //组件的异步加载
+            require(["./moudle/Sys/paramConfig/paramConfig.vue"], resolve);
+         },
+            // 数字字典
+          'dic':function(resolve) { //组件的异步加载
+            require(["./moudle/Sys/dic/dic.vue"], resolve);
+         },
+            // 系统编码
+          'sysCode':function(resolve) { //组件的异步加载
+            require(["./moudle/Sys/sysCode/sysCode.vue"], resolve);
+         },
+         //=============销售模块=================
+            // 客户资料
+          'customerInfo':function(resolve) { //组件的异步加载
+            require(["./moudle/Sale/customerInfo.vue"], resolve);
+         },
     },
     data(){
         return {

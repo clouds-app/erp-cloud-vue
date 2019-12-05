@@ -9,7 +9,7 @@
     >
     </htmlTemplate>
     <div class="content-container" :style="{'height':tableHeight+'px'}">
-      <vTable :height="tableHeight " ref="master_list_table" :columns="columns" url="/bas/dept/page" :pagination="true" @row-click="tableRowClick"></vTable>
+      <vTable :height="tableHeight " ref="master_list_table" columns-url="/bas/dept/deptFm/columns" url="/bas/dept/page" :pagination="true" @row-click="tableRowClick"></vTable>
     </div>
    <editForm  
    :isLoaddingDone="isLoaddingDone"
@@ -26,7 +26,7 @@ import editForm from './edit/edit-dept'
 import listBaseMixins from "../mixins/list";
   export default {
    mixins: [listBaseMixins],
-   components: {
+   components: {  
        editForm,htmlTemplate,vTable
       },
     data() {
@@ -48,63 +48,63 @@ import listBaseMixins from "../mixins/list";
             deptName: '',
           },
         ],
-        columns: [
-           {
-            title: '部门编码',
-            key: 'deptCode',
-            align: 'center'
-          },
-           {
-            title: '部门名称',
-            key: 'deptName',
-            align: 'center'
-          },
-          {
-            title: '备注',
-            key: 'remark',
-            align: 'center'
-          },
-           {
-            title: '审核状态',
-            key: 'iisAudit',
-            align: 'center'
-          },
-             {
-            title: '状态',
-            key: 'status',
-            align: 'center'
-          },
-             {
-            title: '创建人',
-            key: 'createUser',
-            align: 'center'
-          },
-          {
-            title: '创建时间',
-            key: 'createTime',
-            align: 'center'
-          },
-             {
-            title: '修改人',
-            key: 'updateUser',
-            align: 'center'
-          },
-             {
-            title: '修改时间',
-            key: 'updateTime',
-            align: 'center'
-          },
-          {
-            title: '审核人',
-            key: 'auditUser',
-            align: 'center'
-          },
-           {
-            title: '审核时间',
-            key: 'auditTime',
-            align: 'center'
-          },
-        ],
+        // columns: [
+        //    {
+        //     title: '部门编码',
+        //     key: 'deptCode',
+        //     align: 'center'
+        //   },
+        //    {
+        //     title: '部门名称',
+        //     key: 'deptName',
+        //     align: 'center'
+        //   },
+        //   {
+        //     title: '备注',
+        //     key: 'remark',
+        //     align: 'center'
+        //   },
+        //    {
+        //     title: '审核状态',
+        //     key: 'iisAudit',
+        //     align: 'center'
+        //   },
+        //      {
+        //     title: '状态',
+        //     key: 'status',
+        //     align: 'center'
+        //   },
+        //      {
+        //     title: '创建人',
+        //     key: 'createUser',
+        //     align: 'center'
+        //   },
+        //   {
+        //     title: '创建时间',
+        //     key: 'createTime',
+        //     align: 'center'
+        //   },
+        //      {
+        //     title: '修改人',
+        //     key: 'updateUser',
+        //     align: 'center'
+        //   },
+        //      {
+        //     title: '修改时间',
+        //     key: 'updateTime',
+        //     align: 'center'
+        //   },
+        //   {
+        //     title: '审核人',
+        //     key: 'auditUser',
+        //     align: 'center'
+        //   },
+        //    {
+        //     title: '审核时间',
+        //     key: 'auditTime',
+        //     align: 'center'
+        //   },
+        // ],
        
       }
     },

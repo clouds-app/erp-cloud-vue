@@ -1,0 +1,146 @@
+<template>
+    <div class="cl-tabPaneContents">
+      <component @openSubMenu="openSubMenu" v-bind:is="who"></component>
+    </div>
+</template>
+<script>
+
+import * as type from "@/enum"; //菜单枚举
+export default {
+    props:{
+        contentType:{
+            type:String,
+            default:'sale'
+        }
+    },
+    components:{
+            'Account':function(resolve) { //组件的异步加载
+                require(["./moudle/Account.vue"], resolve);
+            },
+            'Bas':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas.vue"], resolve);
+         },
+            'Mrp':function(resolve) { //组件的异步加载
+            require(["./moudle/Mrp.vue"], resolve);
+         },
+            'Purchase':function(resolve) { //组件的异步加载
+            require(["./moudle/Purchase.vue"], resolve);
+         },
+            'Report':function(resolve) { //组件的异步加载
+            require(["./moudle/Report.vue"], resolve);
+         },
+            'Sale':function(resolve) { //组件的异步加载
+            require(["./moudle/Sale.vue"], resolve);
+         },
+            'Stock':function(resolve) { //组件的异步加载
+            require(["./moudle/Stock.vue"], resolve);
+         },
+            'Sys':function(resolve) { //组件的异步加载
+            require(["./moudle/Sys.vue"], resolve);
+         },
+           
+           
+     },
+    data(){
+        return {
+           who:'sale',
+           currentOperateMenu:[],//当前操作菜单数据
+        }
+    },
+    computed: {
+        // 顶部选中子菜单
+        currentSelectedSubMenu() {
+             return this.$store.state.app.currentSubMenu;
+        }
+    },
+    watch: {
+         contentType(newVal, oldVal) {
+          // debugger
+                this.switchTopMenuHanle(newVal);
+
+          },
+          currentSelectedSubMenu: {
+                  handler(n,o){
+                       this.switchTopMenuHanle(this.contentType);
+                  },
+                   immediate: true,  //刷新加载 立马触发一次handler
+                   deep: true  // 可以深度检测到 子菜单 对象的属性值的变化
+            }
+    },
+    mounted() {
+        this.$nextTick(()=>{
+            //  this.currentOperateMenu = this.currentSelectedSubMenu.sale //初始化数据
+            //  this.switchTopMenuHanle(this.contentType);
+        })
+
+    },
+  methods:{
+    openSubMenu(params){
+         this.$emit('openSubMenu',params)
+    } ,
+     // 切换菜单 查询子菜单 固定菜单 事件处理
+    switchTopMenuHanle(key) {
+      switch (key.toLowerCase()+"") {
+        //财务管理
+        case type.topMenu_Account:
+            this.currentOperateMenu = this.currentSelectedSubMenu.Account
+            this.who='Account'
+          break;
+          //基础数据
+        case type.topMenu_Bas:
+             this.currentOperateMenu = this.currentSelectedSubMenu.Bas
+           this.who='Bas'
+          break;
+          //生产管理
+        case type.topMenu_Mrp:
+             this.currentOperateMenu = this.currentSelectedSubMenu.Mrp
+            this.who='Mrp'
+          break;
+          //采购管理
+        case type.topMenu_Purchase:
+              this.currentOperateMenu = this.currentSelectedSubMenu.Purchase
+         this.who='Purchase'
+          break;
+          //报表中心
+        case type.topMenu_report:
+             this.currentOperateMenu = this.currentSelectedSubMenu.report
+        this.who='Report'
+          break;
+          //销售管理
+        case type.topMenu_sale:
+            this.currentOperateMenu = this.currentSelectedSubMenu.sale
+        this.who='Sale'
+          break;
+          //储运管理
+        case type.topMenu_Stock:
+              this.currentOperateMenu = this.currentSelectedSubMenu.Stock
+          this.who='Stock'
+          break;
+          //系统设置
+         case type.topMenu_Sys:
+              this.currentOperateMenu = this.currentSelectedSubMenu.Sys
+           this.who='Sys'
+          break;
+          //默认
+        default:
+             this.currentOperateMenu = this.currentSelectedSubMenu.sale
+             this.who='sale'
+          break;
+      }
+
+    }
+  }
+
+}
+</script>
+<style>
+.btn-subMenu{
+    margin-left: 15px;
+}
+/* #minder-container{
+     height: 500px;
+}
+  .cl-tabPaneContents{
+      height: 100%;
+  } */
+</style>

@@ -1,0 +1,96 @@
+<template>
+  <!--
+  弹窗文本框
+  -->
+  <Input v-model="inputValue" size="small" :disabled="disabled" @on-blur="inputOnBlur">
+  <Icon type="md-add" slot="suffix" v-if="!disabled" @click="plusClick"></Icon>
+  </Input>
+</template>
+
+<script>
+  import request from '@/libs/request'
+  export default {
+    name: 'popupField',
+    data() {
+      return {
+        inputValue: ''
+      }
+    },
+    props: {
+      disabled: {
+        type: Boolean,
+        default: false
+      },
+      value: {
+        type: [String, Number, Date, Boolean]
+      },
+      popupName: {
+        type: String,
+        required: true
+      },
+      queryParams: Object,
+      url: String,
+      fieldName: String,
+      fillMapping: Object //值填充映射
+    },
+    watch: {
+      value: {
+        immediate: true,
+        handler(n, o) {
+          this.inputValue = n;
+        }
+      },
+      inputValue(n, o) {
+        this.$emit('input', n);
+      }
+    },
+    methods: {
+      //当文本框的+被点击
+      plusClick() {
+        this.$emit('on-click');
+      },
+      inputOnBlur() {
+        /**
+         * 文本框失去焦点，需要做的事情包括需要去后台查询数据，
+         * 并且将查询回来的数据填充的对应的内容上去
+         */
+        //必须要不为空才去加载数据
+        if (this.inputValue != '') {
+          //没有指定加载数据的URL，就使用默认的URL
+          let url = this.url;
+          if (!this.url) {
+            url = `/common/sys/popup/${this.popupName}/query`;
+          }
+          let fieldName = this.getFieldMappingName(); //获取真实的fieldName
+          //查询参数
+          let queryParams = JSON.parse(JSON.stringify(this.queryParams));
+          if (!queryParams) {
+            queryParams = {};
+          }
+          queryParams[fieldName] = this.inputValue;
+          request.post(url, queryParams).then(res => {
+            if (res.length > 0) {
+              //this.fieldValue = res[0][fieldName];
+              this.$emit('on-fill', res[0]);
+            }
+          });
+        }
+      },
+      getFieldMappingName() {
+        /**
+         * 会存在这样的情况，后面接口中返回的数据时字段A,但是此处的名称是 字段B
+         * 所以需要这样的一个映射，A,B映射，将A的值赋给B
+         */
+        for (let key in this.fillMapping) {
+          if (this.fillMapping[key] == this.fieldName) {
+            return key;
+          }
+        }
+        return this.fieldName;
+      }
+    }
+  }
+</script>
+
+<style>
+</style>
