@@ -1,0 +1,145 @@
+<template>
+  <div class="cl-moudle">
+    <htmlTemplate 
+    :currrentRowItem="currrentRowItem" 
+    @isLoaddingDone="getLoaddingDone" 
+    :requestBaseUrl="functionParams.requestBaseUrl" 
+    :uniqueId="functionParams.uniqueId"
+    :queryParamsDefault="queryParamsDefault"
+    >
+    </htmlTemplate>
+    <div class="content-container" :style="{'height':tableHeight+'px'}">
+      <vTable :height="tableHeight " ref="master_list_table" columns-url="/bas/dept/backFm/columns" url="/bas/bank/page" :pagination="true" @row-click="tableRowClick"></vTable>
+    </div>
+   <editForm  
+   :isLoaddingDone="isLoaddingDone"
+   :form-detail-data="formDetailData"
+    :action="action"
+    @submit-success="search()" 
+    v-model="showEditWindow"/>
+  </div>
+</template>
+<script>
+import vTable from '@/components/tables/vTable'
+import htmlTemplate from '../components/htmlTemplate'
+import editForm from './edit/edit-bank'
+import listBaseMixins from "../mixins/list";
+  export default {
+   mixins: [listBaseMixins],
+   components: {
+       editForm,htmlTemplate,vTable
+      },
+    data() {
+      return {
+        functionParams:{
+            requestBaseUrl: '/bas/bank',
+            uniqueId:'bankId'
+        },
+       // 查询参数 ,注意格式
+        queryParamsDefault:[
+            {
+            title: '请输入编码',
+            code:'bankCode',
+            bankCode:''
+           },
+           {
+            title: '请输入名称',
+            name:'bankName',
+            bankName: '',
+          },
+        ],
+        // columns: [
+        //    {
+        //     title: '银行编码',
+        //     key: 'bankCode',
+        //     align: 'center'
+        //   },
+        //    {
+        //     title: '银行名称',
+        //     key: 'bankName',
+        //     align: 'center'
+        //   },
+        //    {
+        //       title:'初始金额',
+        //       key:'initAmt',
+        //       align:'center'
+        //   },
+        //   {
+        //       title:'期末金额',
+        //       key:'endItAmt',
+        //       align:'center'
+        //   },
+          
+           
+        //    {
+        //       title:'审核状态',
+        //       key:'iisAudit',
+        //       align:'center'
+        //   },
+          
+        //    {
+        //       title:'备注',
+        //       key:'remark',
+        //       align:'center'
+        //   },
+        //    {
+        //       title:'状态',
+        //       key:'status',
+        //       align:'center'
+        //   },
+        //   {
+        //       title:'0私用,1公用',
+        //       key:'iisPublic',
+        //       align:'center'
+        //   },
+        //   {
+        //       title:'创建时间',
+        //       key:'createTime',
+        //       align:'center'
+        //   },
+        //   {
+        //       title:'创建人',
+        //       key:'createUser',
+        //       align:'center'
+        //   },
+           
+        //   {
+        //       title:'修改时间',
+        //       key:'updateTime',
+        //       align:'center'
+        //   },
+        //   {
+        //       title:'修改人',
+        //       key:'updateUser',
+        //       align:'center'
+        //   },
+        //    {
+        //       title:'审核时间',
+        //       key:'auditTime',
+        //       align:'center'
+        //   },
+        //   {
+        //       title:'审核人',
+        //       key:'auditUser',
+        //       align:'center'
+        //   },
+        // ],
+       
+      }
+    },
+    methods: {
+      tableRowClick(rowData, rowIndex) {
+       this.formDetailData ={} // 清除上次缓存数据 增加体验良好
+       this.masterRowSelection = rowData;
+       if(rowData!=null){
+          // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
+          this.currrentRowItem.rowName=rowData.bankCode+' '+rowData.bankName
+       }
+     },
+    },
+   
+  }
+</script>
+
+<style>
+</style>

@@ -1,0 +1,154 @@
+<template>
+  <!--用户编辑-->
+  <div>
+    <editWindow v-model="showWindow" :loadding="loadding" :fullscreen="false" width="500" @on-ok="formDataSubmit()" @on-cancel="windowOnCanel">
+      <Form :label-colon="true" :label-width="100" :model="formModel" ref="editFormItem">
+        <FormItem label="用户编码"  prop="userCode" :rules="[{required: true, message: '用户编码不能为空', trigger: 'blur' },{validator:userCodeValidator,trigger: 'blur'}]">
+          <Input placeholder="请输入用户编码" v-model="formModel.userCode" size="small"></Input>
+        </FormItem>
+
+        <FormItem label="用户名称" prop="userName" :rules="{required: true, message: '用户名称不能为空', trigger: 'blur' }">
+          <Input placeholder="请输入用户名称" v-model="formModel.userName"  size="small"></Input>
+        </FormItem>
+
+        <div>
+          <FormItem  label="密码" prop="passWord">
+            <Input placeholder="请输入密码" v-model="formModel.passWord"  size="small" type="password"></Input>
+          </FormItem>
+        </div>
+
+        <FormItem label="部门" prop="deptName">
+          <popup v-model="formModel.deptName"
+          					   field-name="deptName"
+                       :disabled="false"
+          					   popup-name="basDeptPopup"
+          					   :fill-model.sync="formModel"
+          					   :fill-mapping="{id:'deptId',deptName:'deptName'}"
+          					   :query-params="{}">
+            	</popup>
+        </FormItem>
+
+       <!-- <FormItem label="业务员" prop="custList">
+        </FormItem> -->
+
+        <FormItem label="状态">
+            <i-switch size="large" v-model="formModel.status">
+                    <span slot="open">启用</span>
+                    <span slot="close">禁用</span>
+            </i-switch>
+        </FormItem>
+      </Form>
+     </editWindow>
+  </div>
+</template>
+
+<script>
+  import editWindow from '@/components/edit-window/edit-window'
+  import Form from '@/components/form/form'
+  import request from '@/libs/request'
+  import popup from '@/components/popup/popup'
+  export default {
+    name: 'sysUserEdit',
+    components: {
+      editWindow,
+      Form,
+      popup
+    },
+    data() {
+      return {
+        showWindow: false,
+        formInitData:{//表单初始化数据
+          userCode:'',
+          userName:'',
+          deptId:'',
+          deptName:'',
+          deptCode:'',
+          passWord:'',
+          custList:'',
+          status:true
+        },
+        formModel:{
+          userCode:'',
+          userName:'',
+          deptId:'',
+          deptName:'',
+          deptCode:'',
+          passWord:'',
+          custList:'',
+          status:true
+        },
+        action:'add',
+        loadding:false
+      }
+    },
+    props: {
+      value: {
+        type: Boolean,
+        default: false
+      }
+    },
+    watch: {
+      showWindow(n, o) {
+        this.$emit('input', n);
+      },
+      value(n, o) {
+        this.showWindow = n;
+        //窗体显示，文本框获取焦点
+        //this.formModel = JSON.parse(JSON.stringify(this.formInitData));
+        this.$refs.editFormItem.setCaptureFocus();
+      }
+    },methods:{
+      formDataSubmit(){
+        //提交表单数据
+        this.$refs.editFormItem.validate(valid=>{
+            if(!valid){//主表校验
+              return;
+            }
+            if(this.action == 'add' && this.formModel.passWord == ''){
+              this.$Message.error('密码不能为空');
+              return;
+            }
+            let url = `/sys/user/saveOrUpdate`;
+            request.post(url,this.formModel).then(res=>{
+            	this.$Message.success('操作成功');
+              this.showWindow = false;
+              this.$emit('submit-success');
+            });
+        });
+      },getDetailData(userId){
+        this.loadding = true;
+        request.post('/sys/user/detail',{id:userId},{id:userId}).then(res=>{
+          //this.formModel = Object.assign({},this.formModel,res[0]) ;
+          this.formModel = res;
+          this.loadding = false;
+        }).catch(()=>{
+          this.loadding = false;
+        });
+      },userCodeValidator(rule, value, callback){
+        let _self = this;
+        request.post('/sys/user/list',{userCode:value},{userCode:value}).then(res=>{
+          if(res.length > 0){
+            if(_self.action == 'update' && res.length == 1 && res[0].userCode == value){
+                callback();
+            }else{
+                callback(new Error('用户编号已经存在'));
+            }
+          }else{
+            callback();
+          }
+
+        });
+
+      },windowOnCanel(){
+        this.formModel = JSON.parse(JSON.stringify(this.formInitData));
+      },getWorker(){
+        //获取业务员
+        this.url ='/common/sys/popup/basWorkerPopup/query';
+        //request.post(url,{});
+      }
+    }
+  }
+</script>
+
+<style>
+</style>

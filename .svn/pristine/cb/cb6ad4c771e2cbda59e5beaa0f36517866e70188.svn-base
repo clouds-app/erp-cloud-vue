@@ -1,0 +1,193 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-specPrice"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="50%"
+      :loading="!isLoaddingDone"
+      @on-ok="formDataSubmit()"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-message="false"
+        :model="formDataInfo"
+        :rules="ruleValidate"
+        :label-width="130"
+      >
+
+            <Row :gutter="16">
+              <Col span="12">
+              
+                        <FormItem label="客服" prop="custId"  >
+                          <Select
+                  
+                                v-model="formDataInfo.custId"
+                                placeholder="请选择客户id"
+                                  >
+                                <Option value="0">
+                                    0
+                                </Option>
+                                <Option value="1"> 
+                                    1
+                                </Option>
+                                <Option value="2"> 
+                                    2
+                                </Option>
+                                
+                                </Select>
+                        </FormItem>
+                        <FormItem label="盒子" prop="boxId">
+                          <Select
+                                v-model="formDataInfo.boxId"
+                                placeholder="请选择盒子id"
+                                  >
+                                <Option value="0">
+                                    0
+                                </Option>
+                                <Option value="1"> 
+                                    1
+                                </Option>
+                                <Option value="2"> 
+                                    2
+                                </Option>
+                                
+                                </Select>
+                        </FormItem>
+
+                         <FormItem label="面积公式描述" prop="spAreaExprMsg">
+                          <Input
+                            v-model="formDataInfo.spAreaExprMsg"
+                            maxlength="80"
+                            placeholder="请输入面积公式描述"
+                          ></Input>
+                        </FormItem>
+
+                        <FormItem label="面积公式" prop="spAreaExpr">
+                          <Input
+                            v-model="formDataInfo.spAreaExpr"
+                            maxlength="80"
+                            placeholder="请输入面积公式"
+                          ></Input>
+                        </FormItem>
+
+                         
+
+                        <FormItem label="备注" prop="remark">
+                          <Input
+                            v-model="formDataInfo.remark"
+                            type="textarea"
+                            maxlength="100"
+                            :autosize="{ minRows: 2, maxRows: 5 }"
+                            placeholder="请输入备注..."
+                          ></Input>
+                        </FormItem>
+                    </Col>
+                    <Col span="12">
+                      
+
+                       
+
+                        <FormItem label="厘米计价公式" prop="spCMExpr">
+                          <Input
+                            v-model="formDataInfo.spCMExpr"
+                            maxlength="80"
+                            placeholder="请输入厘米计价公式"
+                          ></Input>
+                        </FormItem>
+
+                        <FormItem label="厘米计价公式描述" prop="artCode">
+                          <Input
+                            v-model="formDataInfo.artCode"
+                            maxlength="80"
+                            placeholder="请输入厘米计价公式描述"
+                          ></Input>
+                        </FormItem>
+
+                        <FormItem label="英寸计价公式" prop="spInchExpr">
+                          <Input
+                            v-model="formDataInfo.spInchExpr"
+                            maxlength="80"
+                            placeholder="请输入英寸计价公式"
+                          ></Input>
+                        </FormItem>
+                        <FormItem label="英寸计价公式描述" prop="spInchExprMsg">
+                          <Input
+                            v-model="formDataInfo.spInchExprMsg"
+                            maxlength="80"
+                            placeholder="请输入英寸计价公式描述"
+                          ></Input>
+                        </FormItem>
+
+                         <FormItem label="面积公式描述" prop="spAreaExprMsg">
+                          <Input
+                            v-model="formDataInfo.spAreaExprMsg"
+                            maxlength="80"
+                            placeholder="请输入面积公式描述"
+                          ></Input>
+                        </FormItem>
+                  </Col>
+            </Row>
+
+                       
+
+
+
+      </Form>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:07:54
+ */
+import editBaseMixins from "../../mixins/edit";
+const default_formDataInfo ={
+     
+
+        remark: ""
+      }
+export default {
+  name: "edit-specPrice",
+  mixins: [editBaseMixins],
+
+  data() {
+    return {
+      requestBaseUrl: "/bas/specPrice", // 请求 查询 操作的基础路径
+      formDataInfo:Object.assign({},default_formDataInfo),// 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {
+        custId: [
+          { required: true, message: "客户id不能为空", trigger: "blur" }
+        ],
+        boxId: [{ required: true, message: "盒子Id不能为空", trigger: "blur" }]
+      }
+    };
+  },
+
+  methods: {
+      // 重写父类,添加时候,清空数据
+    HandleFormDataInfo(){
+     this.formDataInfo=Object.assign({},default_formDataInfo)
+    },
+  }
+};
+</script>
+
+<style>
+.cl-edit-specPrice .ivu-select-item{
+  display: block
+}
+</style>

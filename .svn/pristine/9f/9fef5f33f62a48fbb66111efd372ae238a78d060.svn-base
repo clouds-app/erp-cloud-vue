@@ -1,0 +1,49 @@
+<template>
+  <div>
+    <Card dis-hover>
+       <p slot="title">菜单</p>
+        <Tree :data="resourceTreeData" @on-select-change="treeSelectEvent"></Tree>
+        <Spin size="large" fix v-if="treeLoading"></Spin>
+     </Card>
+  </div>
+</template>
+
+<script>
+  import request from '@/libs/request'
+  export default{
+    name:'resourceTree',
+    data(){
+      return{
+        treeLoading:false,
+        resourceTreeData:[]
+      }
+    },created() {
+      this.getResourceTree();
+    },methods:{
+      getResourceTree(){
+        this.treeLoading = true;
+         request.get('/sys/resource/tree').then(res => {
+           this.resourceTreeData.push({
+             title: '标准模块',
+             expand: true,
+             children:res.common,
+             id:'0'
+           },{
+             title: '非标模块',
+             expand: true,
+             children:res.owner
+           });
+           this.treeLoading = false;
+         }).catch(()=>{
+           this.treeLoading = false;
+         });
+      },
+      treeSelectEvent(a,b){
+        this.$emit('on-select-change',a,b);
+      }
+    }
+  }
+</script>
+
+<style>
+</style>

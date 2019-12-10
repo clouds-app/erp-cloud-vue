@@ -1,0 +1,81 @@
+<template>
+  <div>
+    <Row :style="{height:getHeight+'px'}">
+      <Col span="5">
+        <resourceTree  @on-select-change="treeSelectEvent"></resourceTree>
+      </Col>
+      <Col span="19">
+        <Card dis-hover>
+           <p slot="title" style="text-align: right;">
+             开通时间：{{company.erpOpeningtime}}    到期时间：{{company.erpExpirationTime}}
+           </p>
+            <vTable ref="table"
+            :height="getHeight - 51"
+            :columns="columns"
+            :table-data.sync="resourceList"></vTable>
+         </Card>
+
+      </Col>
+    </Row>
+  </div>
+</template>
+
+<script>
+    import resourceTree from '../resource-tree/resourceTree'
+    import vTable from '@/components/tables/vTable'
+    import request from '@/libs/request'
+    export default{
+      components:{resourceTree,vTable},
+      computed:{
+        getHeight(){
+          return window.innerHeight - 100;
+        }
+      },
+      data(){
+        return {
+          columns:[{
+            title:'功能名称',
+            key:'resourceName',
+            align:'center'
+          }/* ,{
+            title:'功能类型',
+            key:'resourceType'
+          } */,{
+            title:'启用',
+            key:'status',
+            align:'center',
+            render:(h,param)=>{
+              let value = param.row.status == 1;
+              return h('Checkbox',{
+                props:{
+                  value:value,
+                  small:'size',
+                  disabled:true
+                }
+              })
+            }
+          }],
+          resourceList:[],
+          company:{}
+        }
+      },methods:{
+        treeSelectEvent(a,b){
+          this.resourceList = [];
+          this.setResourceChild(b.children);
+        },setResourceChild(resArray){
+          resArray.forEach((item)=>{
+            this.resourceList.push(item.data);
+          });
+        },getCompany(){
+          request.post('/sys/user/company').then(res=>{
+            this.company = res;
+          })
+        }
+      },created() {
+        this.getCompany();
+      }
+    }
+</script>
+
+<style>
+</style>

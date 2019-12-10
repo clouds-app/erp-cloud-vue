@@ -1,0 +1,202 @@
+<template>
+<div>
+    <component v-bind:is="moudle"></component>
+</div> 
+      
+</template>
+<script>
+// 动态 TAB 控件
+export default {
+    name:'tabPaneContents-Dynamic',
+    props:{
+        currentSubMenuItem:{
+            type:Object,
+            default(){
+                return {
+                        // type:'Bas',
+                        // uniqueKey:subItem.uniqueKey,
+                        // lable:subItem.lable,
+                        // isActive:true
+                }
+            }
+        }
+    },
+    watch:{
+          currentSubMenuItem: {
+                  handler(n,o){
+                       if(n){
+                            //console.log('====currentSubMenuItem========'+JSON.stringify(n))
+                            try {
+                                const currentPage = n.page
+                                this.moudle = currentPage //显示当前选择页面
+                            } catch (error) {
+                                
+                            }
+                         
+                       }
+                      
+                  },
+                   immediate: true,  //刷新加载 立马触发一次handler
+                   deep: true  // 可以深度检测到 子菜单 对象的属性值的变化
+            }
+    },
+    components:{
+         // 部门
+         'dept':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/dept.vue"], resolve);
+         },
+          // 职位
+           'position':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/position.vue"], resolve);
+         },
+          // 班组
+           'team':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/team.vue"], resolve);
+         },
+          // 人员
+           'worker':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/worker.vue"], resolve);
+         },
+          // 区域
+           'areaList':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/areaList.vue"], resolve);
+         },
+          // 车辆
+           'car':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/car.vue"], resolve);
+         },
+          // 仓库
+           'warehouse':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/warehouse.vue"], resolve);
+         },
+          // 表单
+           'sysForm':function(resolve) { //组件的异步加载
+            require(["./moudle/Sys/form/table/table.vue"], resolve);
+         },
+         'sysRole':function(resolve) { //组件的异步加载
+            require(["./moudle/Sys/role/index.vue"], resolve);
+         },
+
+          // 纸箱产品套件
+           'productSuite':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/productSuite.vue"], resolve);
+         },
+          // 楞次
+           'leng':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/leng.vue"], resolve);
+         },
+           // 银行
+           'bank':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/bank.vue"], resolve);
+         },
+         
+           // 退货原因
+           'fadeReason':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/fadeReason.vue"], resolve);
+         },
+           // 货币
+           'coin':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/coin.vue"], resolve);
+         },
+           // 物料单位
+           'unit':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/unit.vue"], resolve);
+         },
+           // 付款方式
+           'payType':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/payType.vue"], resolve);
+         },
+           // 摘要
+           'resume':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/resume.vue"], resolve);
+         },
+          // 颜色
+          'color':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/color.vue"], resolve);
+         },
+         // 机台
+          'machine':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/machine.vue"], resolve);
+         },
+          // 纸度操作
+          'paperLimit':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/paperLimit.vue"], resolve);
+         },
+          // 工序资料
+          'workPro':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/workPro.vue"], resolve);
+         },
+          // 印唛操作
+          'printMarks':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/printMarks.vue"], resolve);
+         },
+          // 印版
+          'print':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/print.vue"], resolve);
+         },
+         // 纸箱内外径设置
+          'boxSizeSet':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/boxSizeSet.vue"], resolve);
+         },
+            // 模切板
+          'dieCuttingPlate':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/dieCuttingPlate.vue"], resolve);
+         },
+          // 纸质
+          'art':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/art.vue"], resolve);
+         },
+          // 客户化计算盒式
+          'specPrice':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/specPrice.vue"], resolve);
+         },
+         // 客户化计算盒式
+          'boxItem':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/boxItem.vue"], resolve);
+         },
+         
+          // 产品资料
+          'product':function(resolve) { //组件的异步加载
+            require(["./moudle/Bas/product.vue"], resolve);
+         },         
+
+
+           // 弹框配置
+          'popopConfig':function(resolve) { //组件的异步加载
+            require(["./moudle/Sys/popup/popup.vue"], resolve);
+         },
+            // 参数配置
+          'paramConfig':function(resolve) { //组件的异步加载
+            require(["./moudle/Sys/paramConfig/paramConfig.vue"], resolve);
+         },
+            // 数字字典
+          'dic':function(resolve) { //组件的异步加载
+            require(["./moudle/Sys/dic/dic.vue"], resolve);
+         },
+            // 系统编码
+          'sysCode':function(resolve) { //组件的异步加载
+            require(["./moudle/Sys/sysCode/sysCode.vue"], resolve);
+         },'sysUser':function(resolve) { //组件的异步加载
+            require(["./moudle/Sys/user/index.vue"], resolve);
+         },sysResource:function(resolve) { //组件的异步加载
+            require(["./moudle/Sys/resource/index.vue"], resolve);
+         }
+         //=============销售模块=================
+            // 客户资料
+          'customerInfo':function(resolve) { //组件的异步加载
+            require(["./moudle/Sale/customerInfo.vue"], resolve);
+         },
+    },
+    data(){
+        return {
+          // moudle:'dept',
+        }
+    },
+    mounted() {
+        console.log('====tabPaneContents-Dynamic====mounted===')
+    },
+}
+</script>
+<style>
+  
+</style>

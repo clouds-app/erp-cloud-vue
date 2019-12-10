@@ -1,0 +1,597 @@
+<template>
+  <div class="cl-moudle">
+    <htmlTemplate
+      :currrentRowItem="currrentRowItem"
+      @isLoaddingDone="getLoaddingDone"
+      :requestBaseUrl="functionParams.requestBaseUrl"
+      :uniqueId="functionParams.uniqueId"
+      :queryParamsDefault="queryParamsDefault"
+    >
+    </htmlTemplate>
+    <div class="content-container" :style="{ height: tableHeight + 'px' }">
+      <Split :v-model="splitModel" mode="vertical">
+        <div slot="top" class="demo-split-pane">
+          <vTable
+            :height="tableHeight / 2"
+            ref="master_list_table"
+            :columns="columns"
+            url="/bas/product/page"
+            :pagination="true"
+            @row-click="tableRowClick"
+          ></vTable>
+        </div>
+        <div slot="bottom" :style="{ 'padding-top': '6px' }">
+          <Tabs @on-click="TabsClickEvent">
+            <TabPane label="纸板规格" name="ProductMData">
+              <vTable
+                :height="tableHeight / 2"
+                ref="tableFieldRef"
+                :table-data="tableFieldData"
+                :columns="tableFieldColuns"
+                :pagination="false"
+              ></vTable>
+            </TabPane>
+
+            <tabPane label="生产工序" name="ProductWorkProc" >
+                    <vTable
+                    :height="tableHeight / 2"
+                    ref="tableFieldRef"
+                    :table-data="tableFieldData2"
+                    :columns="tableFieldColuns2"
+                    :pagination="false"
+              ></vTable>
+            </tabPane>
+            
+          </Tabs>
+        </div>
+      </Split>
+    </div>
+    
+    <editForm
+      :isLoaddingDone="isLoaddingDone"
+      :form-detail-data="formDetailData"
+       moduleName="worker"
+      :action="action"
+      @submit-success="search()"
+      v-model="showEditWindow"
+    />
+  </div>
+</template>
+<script>
+import vTable from "@/components/tables/vTable";
+import htmlTemplate from "../components/htmlTemplate";
+//import editForm from "./edit/edit-warehouse";
+import listBaseMixins from "../mixins/list";
+import request from '@/libs/request'
+
+export default {
+  mixins: [listBaseMixins],
+  components: {
+    'editForm':function(resolve) { //组件的异步加载
+                require(["./edit/edit-product"], resolve);
+            },
+    htmlTemplate,
+    vTable
+  },
+  data() {
+    return {
+     // who:'editForm', // 动态指定编辑控件
+      tableFieldData:{},   //纸板规格
+      tableFieldData2:{}, //产品生产工序
+      currentTabName:'ProductMData', //当前TABL名称
+      functionParams: {
+        requestBaseUrl: "/bas/product",
+        uniqueId: "productId"
+      },
+      // 查询参数 ,注意格式
+      queryParamsDefault: [
+        {
+          title: "请输入产品编号",
+          code: "bpNo",
+          bpNo: ""
+        },
+        {
+          title: "请输入产品名称",
+          name: "bpName",
+          bpName: ""
+        }
+      ],
+      columns: [
+        
+           {
+            title: '附件',
+            key: 'attachment',
+            width:"30",
+            align: 'center'
+          },
+        {
+          title: "审核",
+          key: "iisAudit",
+          width:"30",
+          align: "center"
+        },
+           {
+            title: '公用',
+            key: 'bpIsPublic',
+            width:"30",
+            align: 'center'
+          },
+           {
+            title: '外发',
+            key: 'bpWF',
+            width:"30",
+            align: 'center'
+          },
+        {
+          title: "满版印刷",
+          width:"80",
+          key: "bpIsFullPrint",
+          align: "center"
+        },
+        {
+          title: "内径",
+          key: "bpIsDiameter",
+          width:"30",
+          align: "center"
+        },
+        {
+          title: "产品编号",
+          key: "bpNo",
+          width:"80",
+          align: "center"
+        },
+        {
+          title: "产品名称",
+          key: "bpName",
+          width:"80",
+          align: "center"
+        },
+        {
+          title: "料号",
+          key: "bpBatchNo",
+          width:"30",
+          align: "center"
+        },
+        {
+          title: "楞别Id",
+          key: "lengId",
+          width:"50",
+          align: "center"
+        },
+        {
+          title: "楞别名称",
+          key: "lengName",
+          width:"80",
+          align: "center"
+        },
+        {
+          title: "客户Id",
+          key: "custId",
+          width:"60",
+          align: "center"
+        },
+        {
+          title: "客户名称",
+          key: "cusName",
+          width:"80",
+          align: "center"
+        },
+        {
+          title: "客方纸质",
+          key: "bpCArtId",
+          width:"80",
+          align: "center"
+        },
+        {
+          title: "客方盒式",
+          key: "bpCBoxId",
+          width:"80",
+          align: "center"
+        },
+        {
+          title: "客方长",
+          key: "bpCSizeL",
+          width:"60",
+          align: "center"
+        },
+        {
+          title: "客方宽",
+          key: "bpCSizeW",
+          width:"60",
+          align: "center"
+        },
+         {
+          title: "客方高",
+          key: "bpCSizeH",
+          width:"60",
+          align: "center"
+        },
+        {
+          title: "单位",
+          key: "bpUnitId",
+          width:"30",
+          align: "center"
+        },
+        {
+          title: "生产备注",
+          key: "bpPRemark",
+          width:"80",
+          align: "center"
+        },
+         {
+          title: "送货备注",
+          key: "bpDRemark",
+          width:"80",
+          align: "center"
+        },
+        {
+          title: "生产纸质",
+          key: "bpPArtId",
+          width:"80",
+          align: "center"
+        },
+        {
+          title: "生产盒式",
+          key: "bpPBoxId",
+          width:"80",
+          align: "center"
+        },
+        {
+          title: "生产长",
+          key: "bpPSizeL",
+          width:"60",
+          align: "center"
+        },
+         {
+          title: "生产宽",
+          key: "bpPSizeW",
+          width:"60",
+          align: "center"
+        },
+        {
+          title: "生产高",
+          key: "bpPSizeH",
+          width:"60",
+          align: "center"
+        },
+        {
+          title: "单面积",
+          key: "bpSArea",
+          width:"60",
+          align: "center"
+        },
+        {
+          title: "单体积",
+          key: "bpSCube",
+          width:"60",
+          align: "center"
+        },
+         {
+          title: "单重",
+          key: "bpSWeight",
+          width:"30",
+          align: "center"
+        },
+        {
+          title: "开口",
+          key: "bpHatch",
+          width:"30",
+          align: "center"
+        },
+        {
+          title: "商检号",
+          key: "bpShopNo",
+          width:"60",
+          align: "center"
+        },
+
+         {
+          title: "客户产品编号",
+          key: "bpCustProdNo",
+          width:"120",
+          align: "center"
+        },
+        {
+          title: "客户产品名称",
+          key: "bpCustProdName",
+          width:"120",
+          align: "center"
+        },
+         {
+          title: "客户单面积",
+          key: "bpCustSArea",
+          width:"100",
+          align: "center"
+        },
+        {
+          title: "客户单重",
+          key: "bpCustSWeight",
+          width:"80",
+          align: "center"
+        },
+         {
+          title: "印唛编号",
+          key: "bpPMNo",
+          width:"80",
+          align: "center"
+        },
+        {
+          title: "印版编号",
+          key: "bpPPNo",
+          width:"80",
+          align: "center"
+        },
+         {
+          title: "模板编号",
+          key: "bpDPNo",
+          width:"80",
+          align: "center"
+        },
+        {
+          title: "模切数",
+          key: "bpMoCut",
+          width:"60",
+          align: "center"
+        },
+         {
+          title: "颜色",
+          key: "bpColorId",
+          width:"30",
+          align: "center"
+        },
+        {
+          title: "色数",
+          key: "bpColorQty",
+          width:"30",
+          align: "center"
+        },
+        {
+          title: "备注",
+          key: "remark",
+          width:"30",
+          align: "center"
+        },
+         {
+          title: "创建人",
+          key: "createUser",
+          width:"60",
+          align: "center"
+        },
+        {
+          title: "创建时间",
+          key: "createTime",
+          width:"80",
+          align: "center"
+        },
+        {
+          title: "修改人",
+          key: "updateUser",
+          width:"60",
+          align: "center"
+        },
+         {
+          title: "修改时间",
+          key: "updateTime",
+          width:"80",
+          align: "center"
+        },
+        {
+          title: "审核人",
+          key: "auditUser",
+          width:"60",
+          align: "center"
+        },
+        {
+          title: "审核时间",
+          key: "auditTime",
+          width:"80",
+          align: "center"
+        }
+      ],
+      tableFieldColuns: [
+        {
+          title: "用料序号",
+          key: "bmIndex",
+          align: "center"
+        },
+        {
+          title: "双片",
+          key: "bmDoubleCut",
+          align: "center"
+        },
+        {
+          title: "纸质",
+          key: "bmArtId",
+          align: "center"
+        },
+        {
+          title: "净料规格宽",
+          key: "bmSSizeW",
+          align: "center"
+        },
+        {
+          title: "净料规格长",
+          key: "bmSSizeL",
+          align: "center"
+        },
+        {
+          title: "压线",
+          key: "bmScoreStr",
+          align: "center"
+        },
+        {
+          title: "开槽",
+          key: "bmDieCutStr",
+          align: "center"
+        },
+        {
+          title: "用料规格宽",
+          key: "bmSizeW",
+          align: "center"
+        },
+        {
+          title: "用料规格长",
+          key: "bmSizeL",
+          align: "center"
+        },
+        {
+          title: "纸度开",
+          key: "bmKsW",
+          align: "center"
+        },
+        {
+          title: "纸长开",
+          key: "bmKsL",
+          align: "center"
+        },
+        {
+          title: "总开数",
+          key: "bmKsTotal",
+          align: "center"
+        },
+        {
+          title: "修边",
+          key: "bmAdjBorder",
+          align: "center"
+        },
+        {
+          title: "用料系数",
+          key: "bmQty",
+          align: "center"
+        },
+
+
+        {
+          title: "压线类型",
+          key: "remark",
+          align: "center"
+        },
+
+
+        {
+          title: "压线深度",
+          key: "wsCode",
+          align: "center"
+        },
+        {
+          title: "备注",
+          key: "remark",
+          align: "center"
+        },
+      ],
+
+      tableFieldColuns2: [
+        {
+          title: "序号",
+          key: "wsCode",
+          align: "center"
+        },
+        {
+          title: "工序编号",
+          key: "wsName",
+          align: "center"
+        },
+         {
+          title: "工序名称",
+          key: "wsCode",
+          align: "center"
+        },
+        {
+          title: "生产系数",
+          key: "wsName",
+          align: "center"
+        },
+         {
+          title: "机台编号",
+          key: "wsCode",
+          align: "center"
+        },
+        {
+          title: "机台名称",
+          key: "wsName",
+          align: "center"
+        },
+         {
+          title: "工艺要求",
+          key: "wsCode",
+          align: "center"
+        },
+        {
+          title: "辅助说明",
+          key: "wsName",
+          align: "center"
+        },
+        {
+          title: "备注",
+          key: "remark",
+          align: "center"
+        }
+      ]
+    };
+  },
+  methods: {
+      // tab 点击切换事件
+      TabsClickEvent(name){
+          debugger
+          this.currentTabName = name
+          if(this.masterRowSelection && this.masterRowSelection.id!=null &&this.masterRowSelection.id!=""){
+            if(name==="ProductWorkProc"){
+            this.getProductWorkProc()
+            }else{
+              this.getProductMData()
+            }
+          }
+        
+       
+      },
+    tableRowClick(rowData, rowIndex) {
+      this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData;
+      if (rowData != null) {
+        //debugger
+        // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
+        this.currrentRowItem.rowName =
+          rowData.bpNo + " " + rowData.bpName;
+      }
+      if(this.masterRowSelection){
+          this.TabsClickEvent(this.currentTabName)
+      }
+    },
+
+    // 获取查询产品纸板规格列表信息
+    getProductMData(){
+       debugger
+        let url = `/bas/product/productMData/list`;
+        let data ={
+          productId:this.masterRowSelection.id,
+        }
+        let _self = this;
+        request.post(url,data).then(res => {
+          //debugger
+          _self.tableFieldData = res
+        });
+    },
+     // 获取查询产品生产工序列表信息
+    getProductWorkProc(item){
+        
+       debugger
+        let url = `/bas/product/productWorkProc/list`;
+        let data ={
+          productId:this.masterRowSelection.id,
+        }
+        let _self = this;
+        request.post(url,data).then(res => {
+          //debugger
+          _self.tableFieldData2 = res
+        });
+    },
+    //重写父类方法, 更新操作
+    handleUpdateEvent(){
+      debugger
+       this.TabsClickEvent(this.currentTabName)
+    },
+  }
+};
+</script>
+
+<style></style>

@@ -1,0 +1,1143 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-product"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="90%"
+      :loading="!isLoaddingDone"
+      :spinLoaddingText="spinLoaddingText"
+      @on-ok="formTableDataSubmit()"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-message="false"   
+        :model="formDataInfo.master"
+        :rules="ruleValidate"
+        :label-width="100"
+      >
+        <Row>
+          <Col span="6">
+                  <FormItem label="产品名称" prop="bpName">
+              <Input
+                v-model="formDataInfo.master.bpName"
+                maxlength="80"
+                placeholder="请输入产品名称"
+              ></Input>
+            </FormItem>
+            <FormItem label="产品编号" prop="bpNo">
+                <Input
+                v-model="formDataInfo.master.bpNo"
+                maxlength="80"
+                placeholder="请输入产品编号"
+              ></Input>
+            </FormItem>
+            <FormItem label="楞别" prop="lengId">
+              <Input
+                v-model="formDataInfo.master.lengId"
+                type="number"
+                maxlength="20"
+                placeholder="请输入楞别id"
+              ></Input>
+            </FormItem>
+             
+            <FormItem label="客方纸质" prop="bpCArtId">
+              <Input
+                v-model="formDataInfo.master.bpCArtId"
+                type="number"
+                maxlength="80"
+                placeholder="请输入客方纸质"
+              ></Input>
+            </FormItem>
+
+             <FormItem label="客方盒式" prop="bpCBoxId">
+              <Input
+                v-model="formDataInfo.master.bpCBoxId"
+                type="number"
+                maxlength="80"
+                placeholder="请输入客方盒式"
+              ></Input>
+            </FormItem>
+             <FormItem label="客方高" prop="bpCSizeH">
+              <Input
+                v-model="formDataInfo.master.bpCSizeH"
+                type="number"
+                maxlength="80"
+                placeholder="请输入客方高"
+              ></Input>
+            </FormItem>
+             <FormItem label="客方长" prop="bpCSizeL">
+              <Input
+                v-model="formDataInfo.master.bpCSizeL"
+                type="number"
+                maxlength="80"
+                placeholder="请输入客方长"
+              ></Input>
+            </FormItem>
+             <FormItem label="客方宽" prop="bpCSizeW">
+              <Input
+                v-model="formDataInfo.master.bpCSizeW"
+                type="number"
+                maxlength="80"
+                placeholder="请输入客方宽"
+              ></Input>
+            </FormItem>
+             <FormItem label="颜色" prop="bpColorId">
+              <Input
+                v-model="formDataInfo.master.bpColorId"
+                maxlength="80"
+                placeholder="请输入颜色"
+              ></Input>
+            </FormItem>
+             <FormItem label="色数" prop="bpColorQty">
+              <Input
+                v-model="formDataInfo.master.bpColorQty"
+                type="number"
+                maxlength="80"
+                placeholder="请输入色数"
+              ></Input>
+            </FormItem>
+            <FormItem label="生产备注" prop="bpPRemark">
+                <Input
+                    v-model="formDataInfo.bpPRemark"
+                    type="textarea"
+                    maxlength="100"
+                    :autosize="{ minRows: 2, maxRows: 5 }"
+                    placeholder="请输入生产备注"
+                ></Input>
+            </FormItem>
+             
+          </Col>
+          <Col span="6">
+                <FormItem label="外发" prop="bpWF">
+                    <!-- <Select
+                        v-model="formDataInfo.bpWF"
+                        placeholder="请选择" >
+                        <Option value="0">0:否</Option>
+                        <Option value="1">1:是</Option>
+                    </Select> -->
+                    <i-switch size="default" v-model="formDataInfo.master.bpWF">
+                        <span slot="open">是</span>
+                        <span slot="close">否</span>
+                    </i-switch>
+                </FormItem>
+                <FormItem label="客户产品名称" prop="bpCustProdName">
+              <Input
+                v-model="formDataInfo.master.bpCustProdName"
+                maxlength="80"
+                placeholder="请输入客户产品名称"
+              ></Input>
+            </FormItem>
+             <FormItem label="客方产品编号" prop="bpCustProdNo">
+              <Input
+                v-model="formDataInfo.master.bpCustProdNo"
+                maxlength="80"
+                placeholder="请输入客方产品编号"
+              ></Input>
+            </FormItem>
+             <FormItem label="客方单面积" prop="bpCustSArea">
+              <Input
+                v-model="formDataInfo.master.bpCustSArea"
+                type="number"
+                maxlength="80"
+                placeholder="请输入客方单面积"
+              ></Input>
+            </FormItem>
+             <FormItem label="客方重" prop="bpCustSWeight">
+              <Input
+                v-model="formDataInfo.master.bpCustSWeight"
+                type="number"
+                maxlength="80"
+                placeholder="请输入客方重"
+              ></Input>
+            </FormItem>
+             <FormItem label="模板编号" prop="bpDPNo">
+              <Input
+                v-model="formDataInfo.master.bpDPNo"
+                maxlength="80"
+                placeholder="请输入模板编号"
+              ></Input>
+            </FormItem>
+            
+             <FormItem label="客方纸质" prop="bpCArtId">
+              <Input
+                v-model="formDataInfo.master.bpCArtId"
+                type="number"
+                maxlength="80"
+                placeholder="请输入客方纸质"
+              ></Input>
+            </FormItem>
+             <FormItem label="开口" prop="bpHatch">
+              <Input
+                v-model="formDataInfo.master.bpHatch"
+                type="number"
+                maxlength="80"
+                placeholder="请输入开口"
+              ></Input>
+            </FormItem>
+
+        
+             <FormItem label="内径" prop="bpIsDiameter">
+              <Input
+                v-model="formDataInfo.master.bpIsDiameter"
+                type="number"
+                maxlength="80"
+                placeholder="请输入内径"
+              ></Input>
+            </FormItem>
+             <FormItem label="客户" prop="custId">
+              <Input
+                v-model="formDataInfo.master.custId"
+                maxlength="80"
+                placeholder="请输入客户Id"
+              ></Input>
+            </FormItem>
+            <FormItem label="送货备注" prop="bpDRemark">
+                <Input
+                    v-model="formDataInfo.bpDRemark"
+                    type="textarea"
+                    maxlength="100"
+                    :autosize="{ minRows: 2, maxRows: 5 }"
+                    placeholder="请输入送货备注"
+                ></Input>
+            </FormItem>
+          </Col>
+        
+          <Col span="6">
+                <FormItem label="满版印刷" prop="bpIsFullPrint">
+               <!-- <Select
+                          v-model="formDataInfo.bpIsFullPrint"
+                          placeholder="请选择是否" >
+                          <Option value="0">0：否</Option>
+                          <Option value="1">1：是</Option>
+                          
+                        </Select> -->
+                    <i-switch size="default"  v-model="formDataInfo.master.bpIsFullPrint">
+                      <span slot="open">是</span>
+                      <span slot="close">否</span>
+                  </i-switch>
+                </FormItem>
+                
+            <FormItem label="公用" prop="bpIsPublic">
+            
+               <!-- <Select
+                          v-model="formDataInfo.bpIsPublic"
+                          placeholder="请选择是否" >
+                          <Option value="0">0：否</Option>
+                          <Option value="1">1：是</Option>
+                          
+                </Select> -->
+                <i-switch size="default"  v-model="formDataInfo.master.bpIsPublic">
+                    <span slot="open">是</span>
+                    <span slot="close">否</span>
+                </i-switch>
+
+            </FormItem>
+            
+             <FormItem label="模切数" prop="bpMoCut">
+              <Input
+                v-model="formDataInfo.master.bpMoCut"
+                type="number"
+                maxlength="80"
+                placeholder="请输入模切数"
+              ></Input>
+            </FormItem>
+            <FormItem label="料号" prop="bpBatchNo">
+              <Input
+                v-model="formDataInfo.master.bpBatchNo"
+                maxlength="20"
+                placeholder="请输入料号"
+              ></Input>
+            </FormItem>
+
+                 <!-- <FormItem label="楞别" prop="lengId">
+              <Input
+                v-model="formDataInfo.master.lengId"
+                type="number"
+                maxlength="20"
+                placeholder="请输入楞别id"
+              ></Input>
+            </FormItem> -->
+            <FormItem label="附件" prop="attachment">
+              <Input
+                v-model="formDataInfo.master.attachment"
+                maxlength="20"
+                placeholder="请输入附件"
+              ></Input>
+            </FormItem>
+           
+             <FormItem label="生产纸质" prop="bpPArtId">
+              <Input
+                v-model="formDataInfo.master.bpPArtId"
+                maxlength="80"
+                placeholder="请输入生产纸质"
+              ></Input>
+            </FormItem>
+             <FormItem label="生产盒式" prop="bpPBoxId">
+              <Input
+                v-model="formDataInfo.master.bpPBoxId"
+                maxlength="80"
+                placeholder="请输入生产盒式"
+              ></Input>
+            </FormItem>
+            <FormItem label="印唛编号" prop="bpPMNo">
+                <Input
+                v-model="formDataInfo.master.bpPMNo"
+                maxlength="80"
+                placeholder="请输入印唛编号"
+              ></Input>
+            </FormItem>
+             <FormItem label="印版编号" prop="bpPPNo">
+              <Input
+                v-model="formDataInfo.master.bpPPNo"
+                maxlength="80"
+                placeholder="请输入印版编号"
+              ></Input>
+            </FormItem>
+            <FormItem label="愣别名称" prop="lengName">
+              <Input
+                v-model="formDataInfo.master.lengName"
+                maxlength="80"
+                placeholder="请输入楞别"
+              ></Input>
+            </FormItem>
+             <FormItem label="备注" prop="remark">
+                <Input
+                    v-model="formDataInfo.remark"
+                    type="textarea"
+                    maxlength="100"
+                    :autosize="{ minRows: 2, maxRows: 5 }"
+                    placeholder="请输入备注"
+                ></Input>
+            </FormItem>
+
+           
+
+          </Col>
+
+          <Col span="6">
+            <FormItem label="客户名称" prop="cusName">
+              <Input
+                v-model="formDataInfo.master.cusName"
+                maxlength="80"
+                placeholder="请输入客户名称"
+              ></Input>
+            </FormItem>
+            
+             <FormItem label="生产高" prop="bpPSizeH">
+              <Input
+                v-model="formDataInfo.master.bpPSizeH"
+                type="number"
+                maxlength="80"
+                placeholder="请输入生产高"
+              ></Input>
+            </FormItem>
+             <FormItem label="生产宽" prop="bpPSizeW">
+              <Input
+                v-model="formDataInfo.master.bpPSizeW"
+                type="number"
+                maxlength="80"
+                placeholder="请输入生产宽"
+              ></Input>
+            </FormItem>
+             <FormItem label="单面积" prop="bpSArea">
+              <Input
+                v-model="formDataInfo.master.bpSArea"
+                type="number"
+                maxlength="80"
+                placeholder="请输入单面积"
+              ></Input>
+            </FormItem>
+             <FormItem label="单体积" prop="bpSCube">
+              <Input
+                v-model="formDataInfo.master.bpSCube"
+                type="number"
+                maxlength="80"
+                placeholder="请输入生产高"
+              ></Input>
+            </FormItem>
+             <FormItem label="生产长" prop="bpPSizeL">
+              <Input
+                v-model="formDataInfo.master.bpPSizeL"
+                type="number"
+                maxlength="80"
+                placeholder="请输入生产长"
+              ></Input>
+            </FormItem>
+             <FormItem label="单重" prop="bpSWeight">
+              <Input
+                v-model="formDataInfo.master.bpSWeight"
+                type="number"
+                maxlength="80"
+                placeholder="请输入单重"
+              ></Input>
+            </FormItem>
+
+            <FormItem label="商检号" prop="bpShopNo">
+              <Input
+                v-model="formDataInfo.master.bpShopNo"
+                maxlength="80"
+                placeholder="请输入商检号"
+              ></Input>
+            </FormItem>
+            <FormItem label="单位" prop="bpUnitId">
+              <Input
+                v-model="formDataInfo.master.bpUnitId"
+                maxlength="80"
+                placeholder="请输入单位"
+              ></Input>
+            </FormItem>
+            
+           
+          </Col>
+        </Row>
+         
+
+      </Form>
+
+      <Tabs>
+        <!--  注意:eTable formDataInfo.wareHouseItems.defaultList  ===wareHouseItems=== 需要根据实际接口修改,其它不变-->
+        <TabPane label="纸板规格" name="name">
+          <eTable
+            ref="tableFields"
+            unqiue-mark="id"
+            :height="400"
+            :index-menu="true"
+            :col-start="0"
+            :width="200"
+            :row-init-data="tableFieldInitData"
+            :data="formDataInfo.productMDataSlaves.defaultList"
+            :rules="tableFieldsValidator"
+          >
+            <template slot="head">
+              <tr>
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">数据是否删除</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">产品</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">修边</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">纸质</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">开槽</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">双片</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">用料序号</span>
+                  </div>
+                </th>
+              <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">纸长开</span>
+                  </div>
+                </th>
+              
+              <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">总开数</span>
+                  </div>
+                </th>
+              <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">纸度开</span>
+                  </div>
+                </th>
+              <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">用料系数</span>
+                  </div>
+                </th>
+              <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">净料规格长</span>
+                  </div>
+                </th>
+              <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">净料规格宽</span>
+                  </div>
+                </th>
+              <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">压线深度</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">压线深度Text</span>
+                  </div>
+                </th>
+              <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">压线</span>
+                  </div>
+                </th>
+              <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">压线类型</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">压线类型Text</span>
+                  </div>
+                </th>
+              <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">用料规格长</span>
+                  </div>
+                </th>
+              <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">用料规格宽</span>
+                  </div>
+                </th>
+              </tr>
+              
+
+            </template>
+            <template
+              slot="body"
+              slot-scope="{ row, index, valueChangeAssign }"
+            >
+
+                <td class="ivu-table-column-left" width="100">
+                
+                 <i-switch  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'hasDelete');
+                    }
+                  " v-model="row.hasDelete" />
+                </td>
+
+              <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.productId"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'productId');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+                 
+              </td>
+              <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.bmAdjBorder"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'bmAdjBorder');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+              <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.bmArtId"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'bmArtId');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+              <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.bmDieCutStr"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'bmDieCutStr');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+              <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.bmDoubleCut"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'bmDoubleCut');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+              <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.bmIndex"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'bmIndex');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+                </td>
+                <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.bmKsL"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'bmKsL');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+                </td>
+                <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.bmKsTotal"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'bmKsTotal');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+                </td>
+                <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.bmKsW"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'bmKsW');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+                </td>
+                <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.bmQty"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'bmQty');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+                </td>
+                <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.bmSSizeL"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'bmSSizeL');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+                </td>
+                <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.bmSSizeW"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'bmSSizeW');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+               <td class="ivu-table-column-left" width="100">
+                 <Select
+                        v-model="formDataInfo.bmScoreDepth"
+                        placeholder="请选择" >
+                        <Option value="0">0:无</Option>
+                        <Option value="1">1:浅压</Option>
+                        <Option value="2">2:深压</Option>
+                        <Option value="3">3:普通</Option>
+                        
+                    </Select>
+              </td>
+              <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.bmScoreDepthText"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'bmScoreDepthText');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+               <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.bmScoreStr"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'bmScoreStr');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+               <td class="ivu-table-column-left" width="100">
+                 <Select
+                        v-model="formDataInfo.bmScoreType"
+                        placeholder="请选择" >
+                        <Option value="0">0:无</Option>
+                        <Option value="1">1:普通</Option>
+                        <Option value="2">2:平压</Option>
+                        <Option value="3">3:对压</Option>
+                        <Option value="4">4:双压</Option>
+                            
+                    </Select>
+              </td>
+               <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.bmScoreTypeText"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'bmScoreTypeText');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+               <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.bmSizeL"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'bmSizeL');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+               <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.bmSizeW"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'bmSizeW');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+               
+            </template>
+          </eTable>
+        </TabPane>
+
+
+        <TabPane label="生产工序" name="name1">
+          <eTable
+            ref="tableFields2"
+            unqiue-mark="id"
+            :height="400"
+            :index-menu="true"
+            :col-start="0"
+            :width="200"
+            :row-init-data="tableFieldInitData"
+            :data="formDataInfo.productworkProcSlaves.defaultList"
+            :rules="tableFieldsValidator1"
+          >
+            <template slot="head">
+              <tr>
+                  <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">数据是否删除</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">机台</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">产品</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">工序资料明细</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">工艺要求</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">辅助说明</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">序号</span>
+                  </div>
+                </th>
+              <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">机台名称</span>
+                  </div>
+                </th>
+              
+              <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">用料系数</span>
+                  </div>
+                </th>
+              <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">工序资料名称</span>
+                  </div>
+                </th>
+              <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">备注</span>
+                  </div>
+                </th>
+              </tr>
+              
+
+            </template>
+            <template
+              slot="body"
+              slot-scope="{ row, index, valueChangeAssign }"
+            >
+                <td class="ivu-table-column-left" width="100">
+                
+                 <i-switch  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'hasDelete');
+                    }
+                  " v-model="row.hasDelete" />
+                </td>
+
+              <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.machId"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'machId');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+              <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.productId"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'productId');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+              <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.workProcItemId"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'workProcItemId');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+              <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.bwAskNote"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'bwAskNote');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+              <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.bwAssNote"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'bwAssNote');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+              <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.bwIndex"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'bwIndex');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+                </td>
+                <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.machName"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'machName');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+                </td>
+                <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.prodRatio"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'prodRatio');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+                </td>
+                <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.workProcItemName"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'workProcItemName');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+                </td>
+                <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.remark"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'remark');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+                </td>
+               
+               
+            </template>
+          </eTable>
+        </TabPane>
+        
+
+        
+      </Tabs>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:07:54
+ */
+import editWindow from "@/components/edit-window/edit-window";
+// import Form from '@/components/form/form'
+import eTable from "@/components/e-table/e-table";
+import request from "@/libs/request";
+import editBaseMixins from "../../mixins/edit";
+const default_formDataInfo = {
+        // 主表 更改字段
+      master: {
+        attachment: "",
+        bpBatchNo: "",
+        bpName:"",
+        bpNo:"",
+        lengId:"0",
+        bpCArtId: 0,
+        bpCBoxId: 0,
+        bpCSizeH: 0,
+        bpCSizeL: 0,
+        bpCSizeW: 0,
+        bpColorId: "",
+        bpColorQty: 0,
+        bpCustProdName: "",
+        bpCustProdNo: "",
+        bpCustSArea: 0,
+        bpCustSWeight: 0,
+        bpDPNo: "",
+        bpDRemark: "",
+        bpHatch: 0,
+        bpIsDiameter: 0,
+        bpIsFullPrint: true,
+        bpIsPublic: true,
+        bpMoCut: 0,
+        bpName: "",
+        bpNo: "",
+        bpPArtId: 0,
+        bpPBoxId: 0,
+        bpPMNo: "",
+        bpPPNo: "",
+        bpPRemark: "",
+        bpPSizeH: 0,
+        bpPSizeL: 0,
+        bpPSizeW: 0,
+        bpSArea: 0,
+        bpSCube: 0,
+        bpSWeight: 0,
+        bpShopNo: "",
+        bpUnitId: "",
+        bpWF: true,
+        remark: ""
+
+        },
+      
+
+        // 子表 wareHouseItems 根据实际接口更改,其它不变
+        //子表 纸度规格
+        productMDataSlaves: {
+          addList: [], // 添加列
+          defaultList: [], // 默认列
+          deleteList: [], // 删除列
+          updateList: [] // 更新列
+        },
+        //子表 生产工序
+         productworkProcSlaves: {
+          addList: [], // 添加列
+          defaultList: [], // 默认列
+          deleteList: [], // 删除列
+          updateList: [] // 更新列
+        }
+      }
+        
+export default {
+  name: "edit-product",
+  mixins: [editBaseMixins],
+  components: {
+    editWindow,
+    // Form,
+    eTable
+  },
+  data() {
+    return {
+      requestBaseUrl: "/bas/product", // 请求 查询 操作的基础路径
+      formDataInfo:Object.assign({},default_formDataInfo),// 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {
+        lengId: [
+          { required: true, message: "", trigger: "blur" }
+        ],
+        bpName: [
+          { required: true, message: "", trigger: "blur" }
+        ],
+        bpNo: [
+          { required: true, message: "", trigger: "blur" }
+        ],
+       
+      },
+      tableFieldsValidator: {
+        // productId: [
+        //   { required: true, message: "", trigger: "blur" }
+        // ],
+       
+      },
+       tableFieldsValidator1:{
+        // machId: [
+        //   { required: true, message: "", trigger: "blur" }
+        // ],
+        //  productId: [
+        //   { required: true, message: "", trigger: "blur" }
+        // ],
+        //  workProcItemId: [
+        //   { required: true, message: "", trigger: "blur" }
+        // ],
+       
+      }
+    };
+  },
+
+  methods: {
+     // 重写父类,添加时候,清空数据
+    HandleFormDataInfo(){
+     this.formDataInfo=Object.assign({},default_formDataInfo)
+    },
+    // 重写父类,修改提交数据
+    resetformDataInfo(_data) {
+      let tableData = this.$refs["tableFields"].getCategorizeData();
+      let tableData2 = this.$refs["tableFields2"].getCategorizeData();
+      // debugger
+      // debugger
+      this.formDataInfo.productMDataSlaves = tableData;
+      this.formDataInfo.productworkProcSlaves = tableData2;
+      return this.formDataInfo;
+    }
+  }
+};
+</script>
+
+<style>
+.cl-edit-product .ivu-form-item {
+  margin-bottom: 5px !important;
+}
+.cl-edit-product .ivu-select-item {
+  display: block;
+}
+</style>
