@@ -1,0 +1,191 @@
+<template>
+  <div class="cl-modal">
+    <div class="toolbar-container">
+      <Card :bordered="false">
+        <Row>
+          <Col span="12">
+            <Row :gutter="10" type="flex" justify="start">
+              <Col span="2">
+              <Button type="info" size="small" @click="addAction">添加</Button>
+              </Col>
+              <Col span="2">
+              <Button type="success" size="small" @click="editAction">编辑</Button>
+              </Col>
+              <Col span="2">
+              <Button type="warning" size="small" @click="deleteAction">删除</Button>
+              </Col>
+              <!-- <Col span="1">
+              <Button type="info" size="small">审核</Button>
+              </Col>
+              <Col span="1">
+              <Button type="success" size="small">反审</Button>
+              </Col> -->
+            </Row>
+          </Col>
+          <Col span="12">
+
+              <Row :gutter="10" type="flex" justify="end">
+                <Col span="4">
+                <Input placeholder="请输入弹窗名" v-model="queryParams.popupName" size="small" />
+                </Col>
+                <Col span="4">
+                <Input placeholder="请输入弹窗描述" size="small" v-model="queryParams.popupDesc" />
+                </Col>
+
+                <Col span="2" style="text-align: right;">
+                <Button type="info" size="small" @click="search()">搜索</Button>
+                </Col>
+              </Row>
+          </Col>
+
+        </Row>
+
+      </Card>
+    </div>
+
+    <!-- <div class="search-container">
+      <Card>
+
+      </Card>
+    </div> -->
+
+    <div class="content-container" :style="{'height':tableHeight+'px'}">
+      <Split :v-model="splitModel" mode="vertical">
+        <div slot="top" class="demo-split-pane">
+           <vTable :upDownMove="true"
+            :height="tableHeight / 2 "
+            ref="master_list_table"
+            columns-url="/sys/form/syspopupFm/columns"
+            url="/sys/popup/list"
+            :pagination="false"
+            @row-click="tableRowClick"></vTable>
+        </div>
+        <div slot="bottom" :style="{'padding-top':'6px'}">
+            <Tabs>
+              <TabPane label="字段信息" name="name1">
+                 <vTable  :upDownMove="true" :height="tableHeight / 2"
+                ref="tableFieldRef" :table-data="tableFieldData"
+                 columns-url="/sys/form/sysPopupFieldFM/columns"
+                 :pagination="false"
+                 ></vTable>
+              </TabPane>
+              <!-- <TabPane label="表页面信息" name="name2">
+                <vTable :columns="columns" :pagination="false"></vTable>
+              </TabPane> -->
+            </Tabs>
+        </div>
+      </Split>
+    </div>
+
+    <popupEdit ref="popupEdit" @submit-success="popupSubmitSuccess" v-model="edit.window.show" :init-data="edit.initData"></popupEdit>
+  </div>
+</template>
+
+<script>
+  import vTable from '@/components/tables/vTable'
+  import request from '@/libs/request'
+  import popupEdit from './popup-edit'
+  export default {
+    components: {
+      vTable,
+      popupEdit
+    },
+    data() {
+      return {
+        splitModel:0.5,
+        showEditWindow: false,
+        queryParams: {
+
+        },
+        edit:{
+          window:{
+            show:false
+          },
+          initData:{}
+        },
+        tableFieldColuns: [],
+        tableFieldData: [],
+        masterRowSelection: {},
+        formDetailData: {},
+        action: 'add',
+        tableHeight:0,
+      }
+    },
+    methods: {
+      tableRowClick(rowData, rowIndex) {
+        this.masterRowSelection = rowData;
+        this.detailAction();
+      },
+      getMasterSelectId() {
+        if (Object.keys(this.masterRowSelection).length == 0) {
+          this.$Message.warning('请选择需要操作的数据');
+          return false;
+        }
+        return this.masterRowSelection.id;
+      },
+      editAction() {
+        let selectionId = this.getMasterSelectId();
+        if (!selectionId) {
+          return;
+        }
+        //编辑窗口展示
+       this.edit.window.show = true;
+       this.$refs.popupEdit.getDetailData(selectionId);
+      },
+      detailAction() {
+        //加载详情数据
+        let url = `/sys/popup/detail/${this.masterRowSelection.id}`;
+        let _self = this;
+        request.get(url).then(res => {
+          _self.tableFieldData = res.popupFields.defaultList;
+        });
+      },
+      addAction() {
+        //数据添加
+        this.edit.window.show = true;
+      },
+      search() {
+        //表单搜索
+        this.$refs['master_list_table'].search(this.queryParams);
+      },
+      deleteAction() {
+        let selectionId = this.getMasterSelectId();
+        if (!selectionId) {
+          return;
+        }
+        this.$Modal.confirm({
+          title: '删除确认',
+          content: '确定要删除当前选中数据吗？',
+          onOk: () => {
+            let url = `/sys/popup/delete`;
+            let _self = this;
+            request.post(url,{popupId:selectionId},{popupId:selectionId}).then(res => {
+              _self.search();
+            });
+          }
+        });
+      },comptuedTableHeight(){
+        //计算table高度
+        let height = document.body.offsetHeight;
+        this.tableHeight = height - (46 + 40 + 48 + 6 + 25);
+      },getInitData(){
+        //加载初始化数据
+        let url = '/sys/form/syspopupFm/init';
+        let _self = this;
+        request.get(url).then(res => {
+          _self.edit.initData = res;
+        });
+      },popupSubmitSuccess(){
+        //表单提交成功
+         this.search();
+         this.detailAction();
+      }
+    },created() {
+      this.comptuedTableHeight();
+      this.getInitData();
+    }
+  }
+</script>
+
+<style>
+</style>

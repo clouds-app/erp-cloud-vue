@@ -1,0 +1,317 @@
+<template>
+  <div class="cl-moudle">
+    <htmlTemplate
+      :currrentRowItem="currrentRowItem"
+      @isLoaddingDone="getLoaddingDone"
+      :requestBaseUrl="functionParams.requestBaseUrl"
+      :uniqueId="functionParams.uniqueId"
+      :queryParamsDefault="queryParamsDefault"
+    >
+    </htmlTemplate>
+    <div class="content-container" :style="{ height: tableHeight + 'px' }">
+      <Split :v-model="splitModel" mode="vertical">
+        <div slot="top" class="demo-split-pane">
+          <vTable
+            :height="tableHeight / 2"
+            ref="master_list_table"
+            :columns-url="functionParams.requestColBaseUrl + '/customerFm'"
+            url="/sale/customer/page"
+            :pagination="true"
+            @row-click="tableRowClick"
+          ></vTable>
+        </div>
+        <div slot="bottom" :style="{ 'padding-top': '6px' }">
+          <Tabs @on-click="TabsClickEvent">
+            <TabPane label="客户联系人" name="addrList">
+              <vTable
+                :height="tableHeight / 2"
+                ref="tableFieldRef"
+                :table-data="tableFieldData"
+                :columns-url="functionParams.requestColBaseUrl + '/customerContactFm'"
+                :pagination="false"
+              ></vTable>
+            </TabPane>
+            <TabPane label="附加地址" name="cusList">
+              <vTable
+                :height="tableHeight / 2"
+                ref="tableFieldRef2"
+                :table-data="tableFieldData2"
+                :columns-url="functionParams.requestColBaseUrl + '/customerAddrFm'"
+                :pagination="false"
+              ></vTable>
+            </TabPane>
+          </Tabs>
+        </div>
+      </Split>
+    </div>
+    
+    <editForm
+      :isLoaddingDone="isLoaddingDone"
+      :form-detail-data="formDetailData"
+       moduleName="worker"
+      :action="action"
+      @submit-success="search()"
+      v-model="showEditWindow"
+    />
+  </div>
+</template>
+<script>
+import vTable from "@/components/tables/vTable";
+import htmlTemplate from "../components/htmlTemplate";
+//import editForm from "./edit/edit-warehouse";
+import listBaseMixins from "../mixins/list";
+import request from '@/libs/request'
+export default {
+  mixins: [listBaseMixins],
+  components: {
+    'editForm':function(resolve) { //组件的异步加载
+                require(["./edit/edit-customerInfo"], resolve);
+            },
+    htmlTemplate,
+    vTable
+  },
+  data() {
+    return {
+      tableFieldData:[], //客户联系人列表
+      tableFieldData2:[], //附加地址列表
+      currentTabName:'addrList',// 当前TABL名称
+     // who:'editForm', // 动态指定编辑控件
+      functionParams: {
+        requestBaseUrl: "/sale/customer",
+        uniqueId: "customerId"
+      },
+      // 查询参数 ,注意格式
+      queryParamsDefault: [
+        {
+          title: "请输入客户编号",
+          code: "cusCode",
+          cusCode: ""
+        },
+        {
+          title: "请输入客户名称",
+          name: "cusName",
+          cusName: ""
+        }
+      ],
+      // columns: [
+      //     {
+      //       title: '客户编号',
+      //       key: 'cusCode',
+      //       align: 'center'
+      //     },
+      //      {
+      //       title: '客户名称',
+      //       key: 'cusName',
+      //       align: 'center'
+      //     },
+      //    {
+      //       title: '位置经度',
+      //       key: 'pointj',
+      //       align: 'center'
+      //     },
+      //      {
+      //       title: '位置纬度',
+      //       key: 'pointw',
+      //       align: 'center'
+      //     },
+      //   {
+      //     title: "备注",
+      //     key: "remark",
+      //     align: "center"
+      //   },
+      //   {
+      //     title: "审核状态",
+      //     key: "iisAudit",
+      //     align: "center"
+      //   },
+      //   {
+      //     title: "状态",
+      //     key: "status",
+      //     align: "center"
+      //   },
+      //   {
+      //     title: "创建人",
+      //     key: "createUser",
+      //     align: "center"
+      //   },
+      //   {
+      //     title: "创建时间",
+      //     key: "createTime",
+      //     align: "center"
+      //   },
+      //   {
+      //     title: "修改人",
+      //     key: "updateUser",
+      //     align: "center"
+      //   },
+      //   {
+      //     title: "修改时间",
+      //     key: "updateTime",
+      //     align: "center"
+      //   },
+      //   {
+      //     title: "审核人",
+      //     key: "auditUser",
+      //     align: "center"
+      //   },
+      //   {
+      //     title: "审核时间",
+      //     key: "auditTime",
+      //     align: "center"
+      //   }
+      // ],
+      // // 客户联系人列表
+      // tableFieldColuns: [
+      //   {
+      //     title: "联系邮件",
+      //     key: "contactEmail",
+      //     align: "center"
+      //   },
+      //   {
+      //     title: "传真号码",
+      //     key: "contactFax",
+      //     align: "center"
+      //   },
+      //   {
+      //     title: "联系姓名",
+      //     key: "contactName",
+      //     align: "center"
+      //   },
+      //   {
+      //     title: "联系QQ",
+      //     key: "contactQQ",
+      //     align: "center"
+      //   },
+      //   {
+      //     title: "联系电话",
+      //     key: "contactTel",
+      //     align: "center"
+      //   },
+      //   {
+      //     title: "职位",
+      //     key: "postType",
+      //     align: "center"
+      //   },
+      //   {
+      //     title: "职位Text",
+      //     key: "postTypeText",
+      //     align: "center"
+      //   },
+      //   {
+      //     title: "性别",
+      //     key: "sex",
+      //     align: "center"
+      //   },
+      //   {
+      //     title: "备注",
+      //     key: "remark",
+      //     align: "center"
+      //   }
+      // ],
+      // // 附加地址列表
+      //  tableFieldColuns2: [
+      //   {
+      //     title: "编号",
+      //     key: "addrCode",
+      //     align: "center"
+      //   },
+      //   {
+      //     title: "详细地址",
+      //     key: "addrDetail",
+      //     align: "center"
+      //   },
+      //   {
+      //     title: "名称",
+      //     key: "addrName",
+      //     align: "center"
+      //   },
+      //   {
+      //     title: "所属地区",
+      //     key: "areaIds",
+      //     align: "center"
+      //   },
+      //   {
+      //     title: "所属地区Text",
+      //     key: "areaIdsText",
+      //     align: "center"
+      //   },
+      //   {
+      //     title: "联系人",
+      //     key: "vContractor",
+      //     align: "center"
+      //   },
+      //   {
+      //     title: "联系人电话",
+      //     key: "vContractorTel",
+      //     align: "center"
+      //   },
+      //   {
+      //     title: "备注",
+      //     key: "remark",
+      //     align: "center"
+      //   }
+       
+      // ]
+    };
+  },
+  methods: {
+    // tab 切换事件
+    TabsClickEvent(name){
+     // debugger
+      this.currentTabName = name
+      if(this.masterRowSelection && this.masterRowSelection.id!=null && this.masterRowSelection.id!=""){
+          if(name==='cusList'){
+          this.getContactListById()
+        }else if(name==='addrList'){
+          this.getAddrListById()
+        }
+      }
+    },
+    tableRowClick(rowData, rowIndex) {
+      this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData;
+      if (rowData != null) {
+        //debugger
+        // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
+        this.currrentRowItem.rowName =
+          rowData.cusCode + " " + rowData.cusName;
+      }
+      if(this.masterRowSelection){
+          this.TabsClickEvent(this.currentTabName)
+      }
+    },
+    // 查询客户联系人列表信息
+    getContactListById(){
+       //debugger
+        let url = `/sale/customer/contact/list`;
+        let data ={
+          custId:this.masterRowSelection.id,
+        }
+        let _self = this;
+        request.post(url,data).then(res => {
+          //debugger
+          _self.tableFieldData2 = res
+        });
+    },
+    // 查询客户附加地址列表信息
+    getAddrListById(){
+       //debugger
+        let url = `/sale/customer/addr/list`;
+        let data ={
+          custId:this.masterRowSelection.id,
+        }
+        let _self = this;
+        request.post(url,data).then(res => {
+          //debugger
+          _self.tableFieldData = res
+        });
+    },
+    //重写父类方法, 更新操作
+    handleUpdateEvent(){
+       this.TabsClickEvent(this.currentTabName)
+    },
+  }
+};
+</script>
+
+<style></style>

@@ -1,27 +1,28 @@
-import {} from '@/api/sys'
+import { getUnicode } from '@/api/sys'
 
 export default {
   state: {
     hasGetInfo: false
   },
   mutations: {
-  
+
   },
   actions: {
-    // 获取用户相关信息
-    // getUserInfo ({ state, commit }) {
-    //   return new Promise((resolve, reject) => {
-    //     try {
-    //       getUserInfo(state.token).then(res => {
-    //         const data = res.data
-    //         resolve(data)
-    //       }).catch(err => {
-    //         reject(err)
-    //       })
-    //     } catch (error) {
-    //       reject(error)
-    //     }
-    //   })
-    // }
+    // 获取唯一编码
+    getUnicodeAction ({ commit }, params) {
+      // debugger
+      return new Promise((resolve, reject) => {
+        try {
+          getUnicode(params).then(res => {
+            const data = res.data
+            resolve(data)
+          }).catch(err => {
+            reject(err)
+          })
+        } catch (error) {
+          reject(error)
+        }
+      })
+    }
   }
 }

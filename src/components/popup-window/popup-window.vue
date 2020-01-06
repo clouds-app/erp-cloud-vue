@@ -1,5 +1,5 @@
 <template>
-  <modal v-model="modalShow" :title="popupInit.title" :width="popupInit.width" transfer>
+  <modal v-model="modalShow" :styles="{top: '50px'}" :title="popupInit.title" :width="popupInit.width" transfer class="popup">
     <Form :model="queryParams" v-if="popupInit && popupInit.formItems.length > 0">
       <Row>
         <Col :span="colSpan" v-for="(item,index) in popupInit.formItems" :key="index" :style="{'padding-right':'10px'}">
@@ -26,119 +26,141 @@
       :width="popupInit.width"
       :columns="popupInit.columns"
       :query-params="queryParams"
+      :table-data="tableData"
       @on-selection-change="selectGroupChange"
       @select-all="selectGroupChange"
       @row-click="rowClick"
       @row-dblclick="rowDbClick"></vTable>
     <div slot="footer">
-      <Button @click="modelShow=false">取消</Button>
+      <Button @click="closeWindow">取消</Button>
       <Button type="primary" @click="onOk">确定</Button>
     </div>
   </modal>
 </template>
 
 <script>
-  import request from '@/libs/request'
-  import vTable from '../tables/vTable'
-  export default {
-    name: 'popupWindow',
-    components: {
-      vTable
-    },
-    data() {
-      return {
-        tableShow:false,
-        modalShow: false,
-        initOk: false,
-        url: '',
-        selectionItems: [],
-        popupInit: {
-          formItems:[]
-        },
-        pagination:true //分页
+import request from '@/libs/request'
+import vTable from '../tables/vTable'
+export default {
+  name: 'popupWindow',
+  components: {
+    vTable
+  },
+  data () {
+    return {
+      tableShow: false,
+      modalShow: false,
+      initOk: false,
+      url: '',
+      selectionItems: [],
+      popupInit: {
+        formItems: []
+      },
+      pagination: true // 分页
+    }
+  },
+  watch: {
+    value: {
+      immediate: true,
+      handler (n, o) {
+        this.modalShow = n
       }
     },
-    watch: {
-      value: {
-        immediate: true,
-        handler(n, o) {
-          this.modalShow = n;
+    modalShow (n, o) {
+      this.$emit('input', n)
+    },
+    queryParams: {
+      handler (n, o) {
+        if (this.$refs.vipTable) {
+          this.$refs.vipTable.search(n)
         }
       },
-      modalShow(n, o) {
-        this.$emit('input', n);
-      }
+      deep: true
+    }
+  },
+  props: {
+    value: {
+      type: Boolean,
+      default: false
     },
-    props: {
-      value: {
-        type: Boolean,
-        default: false
-      },
-      popupName: String,
-      queryParams: {
-        type: Object,
-        default: {}
-      }
+    popupName: String,
+    queryParams: {
+      default: {}
     },
-    computed: {
-      colSpan() {
-        return Math.floor(24 / (this.popupInit.formItems.length + 1));
-      },
-      myValue() {
-        return this.value;
-      }
-    },
-    created() {
-      this.url = `/common/sys/popup/${this.popupName}` + '/query';
-      let _self = this;
-      request.get('/common/sys/popup/detail',{},{popupName:this.popupName}).then(res => {
-        _self.popupInit = res;
-        _self.initOk = true;
-        _self.pagination = res.existsPage;
-        _self.tableShow = true;
-        if (_self.popupInit.multiple) { //多选
-          _self.popupInit.columns.unshift({
-            type: 'selection',
-            width: 40,
-            titleAlign: 'center',
-            align: 'center'
-          });
-        }
-        //storage.session.put(this.popupName, JSON.stringify(this.popupInit));
-      }).catch(()=>{
-        _self.tableShow = true;
-      });
-    },
-    methods: {
-      search() {
-        this.$refs.vipTable.search();
-      },
-      selectGroupChange(selection) {
-        this.selectionItems = selection;
-      },
-      rowClick(rowData, rowIndex) {
-        if (this.popupInit.multiple) {
-          return;
-        }
-        this.selectionItems = rowData;
-      },
-      onOk() {
-        if (this.selectionItems.length == 0) {
-          this.$Message.warning('请选择内容');
-          return;
-        }
-        this.modalShow = false;
-        this.$emit('on-ok', this.selectionItems, Array.isArray(this.selectionItems));
-      },
-      resize() {
-        //this.$refs.vipTable.resize();
-      },
-      rowDbClick() {
-        this.onOk();
+    tableData: {
+      default: () => {
+        return []
       }
     }
+  },
+  computed: {
+    colSpan () {
+      return Math.floor(24 / (this.popupInit.formItems.length + 1))
+    },
+    myValue () {
+      return this.value
+    }
+  },
+  created () {
+    this.url = `/common/sys/popup/${this.popupName}` + '/query'
+    let _self = this
+    request.get('/common/sys/popup/detail', {}, { popupName: this.popupName }).then(res => {
+      _self.popupInit = res
+      _self.initOk = true
+      _self.pagination = res.existsPage
+      _self.tableShow = true
+      if (_self.popupInit.multiple) { // 多选
+        _self.popupInit.columns.unshift({
+          type: 'selection',
+          width: 40,
+          titleAlign: 'center',
+          align: 'center'
+        })
+      }
+      // storage.session.put(this.popupName, JSON.stringify(this.popupInit));
+    }).catch(() => {
+      _self.tableShow = true
+    })
+  },
+  methods: {
+    search () {
+      this.$refs.vipTable.search()
+    },
+    selectGroupChange (selection) {
+      this.selectionItems = selection
+    },
+    rowClick (rowData, rowIndex) {
+      if (this.popupInit.multiple) {
+        return
+      }
+      this.selectionItems = rowData
+    },
+    onOk () {
+      if (this.selectionItems.length == 0) {
+        this.$Message.warning('请选择内容')
+        return
+      }
+      this.modalShow = false
+      this.$emit('on-ok', this.selectionItems, Array.isArray(this.selectionItems))
+    },
+    resize () {
+      // this.$refs.vipTable.resize();
+    },
+    rowDbClick () {
+      this.onOk()
+    },
+    closeWindow () {
+      this.modalShow = false
+    }
   }
+}
 </script>
 
 <style>
+  .popup .ivu-modal-body{
+    padding-top: 0px;
+  }
+  .popup .ivu-form-item{
+    margin-bottom: 0px;
+  }
 </style>

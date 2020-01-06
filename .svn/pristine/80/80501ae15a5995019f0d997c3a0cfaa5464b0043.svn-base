@@ -1,0 +1,309 @@
+<template>
+  <div>
+    <Row>
+      <Col span="5">
+      <Card dis-hover>
+        <p slot="title" id="menu">系统资源</p>
+        <Tree :data="resourceTreeData" @on-select-change="treeSelectEvent"></Tree>
+        <Spin size="large" fix v-if="treeLoading"></Spin>
+      </Card>
+      </Col>
+      <Col span="19">
+      <Row>
+        <Col span="24">
+        <div>
+          <Button class="resource-btn" type="primary" @click="addAction()">新增</Button>
+          <Button class="resource-btn" type="info" @click="editAction">修改</Button>
+          <Button class="resource-btn" type="error" @click="deleteResource">删除</Button>
+        </div>
+        </Col>
+      </Row>
+      <Row>
+        <Col span="24">
+          <vTable :upDownMove="false" @row-click="rowClick" :height="getTableHeight" :table-data="tableData" :columns="columns" :pagination="false"></vTable>
+        </Col>
+      </Row>
+      </Col>
+    </Row>
+    <editWindow v-model="editWindowShow" :width="500" :fullscreen="false" @on-ok="resourceSubmit">
+      <Form :label-colon="true" :label-width="90" :model="formModel"  ref="editFormItem" >
+          <FormItem label="上级资源" >
+            {{selectNode.title}}
+          </FormItem>
+          <FormItem label="资源名称" prop="resourceName" :rules="{required: true, message: '资源名称不能为空', trigger: 'blur' }">
+            <Input placeholder="请输入资源名称" size="small" v-model="formModel.resourceName"></Input>
+          </FormItem>
+          <FormItem label="资源属性" prop="iisPublic">
+            <i-Switch  v-model="formModel.iisPublic"size="large">
+                <span slot="open">公有</span>
+                <span slot="close">私有</span>
+            </i-Switch>
+          </FormItem>
+          <FormItem label="资源类型" prop="resourceType" :rules="{required: true,type:'number',message: '资源类型不能为空', trigger: 'change' }">
+            <Select v-model="formModel.resourceType" size="small">
+              <Option :value="0">菜单</Option>
+              <Option :value="1">按钮</Option>
+              <Option :value="2">功能</Option>
+            </Select>
+          </FormItem>
+          <FormItem label="资源标识" prop="resourceFlag" v-if="formModel.resourceType == 2">
+            <Select v-model="formModel.resourceFlag" size="small">
+              <Option :value="item.value" v-for="(item,index) in resourceFlagItems" :key="index">{{item.text}}</Option>
+            </Select>
+          </FormItem>
+          <FormItem label="资源链接" prop="resourceLink" >
+            <Input placeholder="请输入资源链接" size="small" v-model="formModel.resourceLink"></Input>
+          </FormItem>
+          <FormItem label="资源顺序" prop="resourceSort" >
+            <InputNumber placeholder="请输入资源顺序" size="small" v-model="formModel.resourceSort"></InputNumber>
+          </FormItem>
+          <FormItem label="资源图标" prop="resourceIcon" >
+            <Input placeholder="请输入资源图标" size="small" v-model="formModel.resourceIcon"></Input>
+          </FormItem>
+          <FormItem label="资源I18N" prop="resourceI18n" >
+            <Input placeholder="请输入资源I18N" size="small" v-model="formModel.resourceI18n"></Input>
+          </FormItem>
+
+          <FormItem label="状态" prop="status" >
+            <i-Switch  v-model="formModel.status"size="large">
+                <span slot="open">启用</span>
+                <span slot="close">禁用</span>
+            </i-Switch>
+          </FormItem>
+      </Form>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+  import request from '@/libs/request'
+  import vTable from '@/components/tables/vTable'
+  import editWindow from "@/components/edit-window/edit-window"
+  export default {
+    components: {
+      vTable,
+      editWindow
+    },
+    data() {
+      return {
+        editWindowShow:false,
+        resourceTreeData: [],
+        treeLoading: false,
+        resourceFlagItems:[{
+          text:'添加',
+          value:'iisAdd'
+        },{
+          text:'编辑',
+          value:'iisEdit'
+        },{
+          text:'删除',
+          value:'iisDel'
+        },{
+          text:'打印',
+          value:'iisPrint'
+        },{
+          text:'审核',
+          value:'iisAudit'
+        },{
+          text:'反审',
+          value:'iisNotAudit'
+        },{
+          text:'导出',
+          value:'iisExport'
+        },{
+          text:'导入',
+          value:'iisImport'
+        }],
+        formModel:{
+          parentId:'',
+          iisPublic:true,
+          resourceName:'',
+          resourceType:0,
+          resourceLink:'',
+          resourceSort:0,
+          resourceIcon:'',
+          resourceI18n:'',
+          parentPath:'',
+          status:true,
+          resourceFlag:''
+        },
+        columns: [{
+          title: '状态',
+          key: 'status',
+          align: 'center',
+          width:40,
+          render:(h,params)=>{
+            return h('Checkbox',{
+              props:{
+                disabled:true,
+                size:'small',
+                value:params.row.status
+              }
+            })
+          }
+        }, {
+          title: '资源名称',
+          key: 'resourceName',
+          align: 'left',
+          titleAlign: 'center',
+          width:200
+        }, {
+          title: '资源类型',
+          key: 'resourceType',
+          align: 'center',
+          titleAlign: 'center',
+          width:100,
+          render:(h,params)=>{
+            //资源类型0菜单1按钮2功能
+            let text;
+            switch (params.row.resourceType){
+              case 0:
+                  text = '菜单';
+                break;
+              case 1:
+                  text = '按钮';
+                  break;
+              case 2:
+                  text = '功能';
+                  break;
+            }
+
+            return h('span',text);
+          }
+        }, {
+          title: '资源属性',
+          key: 'iisPublic',
+          align: 'center',
+          titleAlign: 'center',
+          width:80,
+          render:(h,params)=>{
+            return h('span',params.row.iisPublic?'公有':'私有');
+          }
+        },{
+          title: '资源链接',
+          key: 'resourceLink',
+          align: 'left',
+          titleAlign: 'center'
+        }, {
+          title: '资源顺序',
+          key: 'resourceSort',
+          align: 'center',
+          titleAlign: 'center'
+        }],
+        selectNode: {},
+        rowSelectData:{}
+      }
+    },
+    computed: {
+      tableData() {
+        let data = [];
+        if (Object.keys(this.selectNode).length == 0) {
+          return data;
+        }
+        this.selectNode.children.forEach((item, index) => {
+          data.push(item.data);
+        });
+        return data;
+      },getTableHeight(){
+        return window.innerHeight - 120;
+      }
+    },
+    methods: {
+      addAction(){
+        this.$refs.editFormItem.resetFields();
+        this.editWindowShow = true;
+      },
+      editAction(){
+        if (Object.keys(this.rowSelectData).length == 0) {
+          this.$Message.warning('请选择需要操作的数据');
+          return;
+        }
+        this.formModel = JSON.parse(JSON.stringify(this.rowSelectData));
+        this.editWindowShow = true;
+      },
+      treeSelectEvent(a, b) {
+        this.selectNode = b;
+        this.rowSelectData = {};
+      },
+      loaddingTree() {
+        request.get('/sys/resource/platform/tree').then(res => {
+          let node = {
+            id:'0',
+            parentId:'0',
+            children:res,
+            expand:true,
+            title:'顶级资源',
+            data:{
+              id:'0',
+              parentPath:''
+            }
+          }
+           this.resourceTreeData = [node];
+          if(Object.keys(this.selectNode).length == 0){
+            this.selectNode = node;
+          }else{
+            this.setResourceSelectNode(node);
+          }
+        });
+      },setResourceSelectNode(res){
+        let _self = this;
+        res.children.forEach((item,index)=>{
+          if(_self.selectNode.data.id == item.data.id){
+            _self.selectNode = item;
+            return;
+          }else{
+            this.setResourceSelectNode(item);
+          }
+        });
+      },resourceSubmit(){
+        let _self = this;
+        this.$refs.editFormItem.validate(valid=>{
+          debugger;
+          if(!valid){//主表校验
+            return;
+          }
+          let url = '/sys/resource/saveOrUpdate';
+          _self.formModel.parentId = _self.selectNode.data.id;
+          if(_self.selectNode.data.id == '0'){
+            _self.formModel.parentPath = `${_self.selectNode.data.id}`;
+          }else{
+            _self.formModel.parentPath = `${_self.selectNode.data.parentPath},${_self.selectNode.data.id}`;
+          }
+
+          request.post(url,_self.formModel).then(res=>{
+            _self.$Message.success('操作成功');
+            _self.loaddingTree();
+             this.editWindowShow = false;
+          });
+         });
+      },deleteResource(){
+          if (Object.keys(this.rowSelectData).length == 0) {
+            this.$Message.warning('请选择需要操作的数据');
+            return;
+          }
+          this.$Modal.confirm({
+            title: '删除确认',
+            content: '确定要删除当前选中数据吗？',
+            onOk: () => {
+              let url = `/sys/resource/delete`;
+              let _self = this;
+              request.post(url,{id:this.rowSelectData.id}).then(res => {
+                this.loaddingTree();
+              });
+            }
+          });
+      },rowClick(rowData, rowIndex){
+        this.rowSelectData = rowData;
+      }
+    },
+    created() {
+      this.loaddingTree();
+    }
+  }
+</script>
+
+<style>
+  .resource-btn {
+    margin: 0.25rem;
+  }
+</style>

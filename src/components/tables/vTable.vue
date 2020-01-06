@@ -49,21 +49,21 @@
 </template>
 
 <script>
-import axios from "@/libs/api.request";
-import Table from "../table/table";
-import formatter from "@/libs/formatter";
-import { eventBus } from "../../main";
+import axios from '@/libs/api.request'
+import Table from '../table/table'
+import formatter from '@/libs/formatter'
+import { eventBus } from '../../main'
 export default {
-  name: "vTable",
+  name: 'vTable',
   components: { Table },
-  data() {
+  data () {
     return {
       resColumns: [], // 查询返回的列数据
       page: {
         pageNumber: 1,
         total: 0,
-        pageSize: 15,
-        pages: 0 //总页数
+        pageSize: 50,
+        pages: 0 // 总页数
       },
       tableDataItems: [],
       pageSizeOpts: [10, 30, 50, 70, 100],
@@ -71,34 +71,34 @@ export default {
       verticalResizeOffset: this.pagination ? 32 : 0,
       scrollHeight: 0,
       formatter: {
-        NUMBER_MARK: "numberMark", //千分位
-        STATUS: "statusFormat",
-        AUDIT: "auditFormat",
-        CHECKBOX: "checkBoxFormat"
+        NUMBER_MARK: 'numberMark', // 千分位
+        STATUS: 'statusFormat',
+        AUDIT: 'auditFormat',
+        CHECKBOX: 'checkBoxFormat'
       },
       rowClassValidates: [],
       colorItem: {
-        red: "#ed4014",
-        yellow: "#ff9900",
-        green: "#19be6b",
-        skyblue: "#2db7f5",
-        blue: "#2d8cf0"
+        red: '#ed4014',
+        yellow: '#ff9900',
+        green: '#19be6b',
+        skyblue: '#2db7f5',
+        blue: '#2d8cf0'
       },
       tableQueryParams: {},
       tableDataItemsIsClear: false
-    };
+    }
   },
   props: {
     columns: {
       type: Array,
       default: () => {
-        return [];
+        return []
       }
     },
     tableData: {
       type: Array,
       default: () => {
-        return [];
+        return []
       }
     },
     height: {
@@ -144,67 +144,70 @@ export default {
     columnsGroup: {
       type: Array,
       default: () => {
-        return [];
+        return []
       }
     },
     paginationControl: {
       type: String,
-      default: "scroll"
+      default: 'scroll'
     },
     showIndex: {
       type: Boolean,
       default: () => {
-        return true;
+        return true
       }
     }
   },
   watch: {
     // 监控 列查询 是否变动
     resColumns: {
-      handler(n, o) {
+      handler (n, o) {
         if (n.length > 0) {
-          this.handleColums();
+          this.handleColums()
         }
       },
       deep: true
     },
     tableData: {
-      handler(n, o) {
-        this.tableDataItems = n;
+      handler (n, o) {
+        this.tableDataItems = n
       },
       deep: true
     },
-    total(n, o) {
-      this.page.total = n;
+    total (n, o) {
+      this.page.total = n
     },
-    pageSize(n, o) {
-      this.page.pageSize = n;
+    pageSize (n, o) {
+      this.page.pageSize = n
     },
-    pageNumber(n, o) {
-      this.page.pageNumber = n;
+    pageNumber (n, o) {
+      this.page.pageNumber = n
     },
-    height(n, o) {
-      //this.resize();
+    height (n, o) {
+      // this.resize();
     },
     queryParams: {
-      handler(n, o) {
-        this.tableQueryParams = n;
+      handler (n, o) {
+        this.tableQueryParams = n
       },
       deep: true
     },
     tableDataItems: {
-      handler(n, o) {
-        /* this.$nextTick(()=>{
-               this.pageScrollAddEventListener();
-             }) */
+      handler (n, o) {
+        if (n && n.length > 0) {
+          this.$nextTick(() => {
+            // debugger;
+            // this.$refs.vTable.clickCurrentRow(0);
+          })
+        }
       },
       deep: true
     }
   },
   computed: {
-    columnsComputed() {
+    columnsComputed () {
       if (!this.format) {
-        return this.columns;
+        return this.columns
       }
       /* if(this.columnsGroup && this.columnsGroup.length > 0 && !Array.isArray(this.columns)){
     				let col = this.columnsGroupParse(this.columnsGroup);
@@ -213,271 +216,274 @@ export default {
       if (this.showIndex) {
         let index = [
           {
-            title: "序号",
-            type: "index",
+            title: '序号',
+            type: 'index',
             width: 40,
-            align: "center",
-            titleAlign: "center",
-            fixed: "left"
+            align: 'center',
+            titleAlign: 'center',
+            fixed: 'left'
           }
-        ];
-        return index.concat(this.columnsRenderParse(this.columns));
+        ]
+        return index.concat(this.columnsRenderParse(this.columns))
       } else {
-        return this.columnsRenderParse(this.columns);
+        return this.columnsRenderParse(this.columns)
       }
     },
-    tableHeight() {
-      if (this.paginationControl == "page") {
-        return this.height - 32;
+    tableHeight () {
+      if (this.paginationControl == 'page') {
+        return this.height - 32
       }
-      return this.height;
+      return this.height
     }
   },
-  created() {
-    this.getFormColumns();
-    this.getTableData();
-    //事件
-    eventBus.$on("on-pagenumber-change", pageNumber => {
-      console.log("on-pagenumber-change");
-      console.log(pageNumber);
-      this.onPageNumberChange(pageNumber);
-    });
+  created () {
+    this.tableQueryParams = this.queryParams
+    this.getFormColumns()
+    // this.getTableData();
+    // 事件
+    eventBus.$on('on-pagenumber-change', pageNumber => {
+      console.log('on-pagenumber-change')
+      console.log(pageNumber)
+      this.onPageNumberChange(pageNumber)
+    })
   },
   methods: {
-    handleColums() {
-      let tempColums = this.columns;
+    handleColums () {
+      let tempColums = this.columns
       if (this.resColumns.length > 0) {
-        tempColums = this.resColumns;
+        tempColums = this.resColumns
       }
       if (!this.format) {
-        return this.columns;
+        return this.columns
       }
       if (this.showIndex) {
         let index = [
           {
-            title: "序号",
-            type: "index",
+            title: '序号',
+            type: 'index',
             width: 40,
-            align: "center",
-            titleAlign: "center",
-            fixed: "left"
+            align: 'center',
+            titleAlign: 'center',
+            fixed: 'left'
           }
-        ];
-        return index.concat(this.columnsRenderParse(tempColums));
+        ]
+        this.columnsRenderParse(tempColums)
+        let array = index.concat(tempColums)
+        // console.log(array);
+        // console.log(JSON.stringify(array));
+        return array
       } else {
-        return this.columnsRenderParse(tempColums);
+        this.columnsRenderParse(tempColums)
+        return tempColums
       }
     },
-    columnsGroupParse(columnsGroup) {
-      //列分组解析
-      let columns = [];
-      //fieldName
+    columnsGroupParse (columnsGroup) {
+      // 列分组解析
+      let columns = []
+      // fieldName
       columnsGroup.forEach((column, index) => {
         if (column.fieldName && column.children) {
-          //需要替换同时又有子节点
-          let children = this.columnsGroupParse(column.children);
-          column = this.columns[column.fieldName];
-          column["children"] = children;
-          columns.push(column);
+          // 需要替换同时又有子节点
+          let children = this.columnsGroupParse(column.children)
+          column = this.columns[column.fieldName]
+          column['children'] = children
+          columns.push(column)
         } else if (column.fieldName) {
-          //需要替换
-          columns.push(this.columns[column.fieldName]);
+          // 需要替换
+          columns.push(this.columns[column.fieldName])
         } else if (column.children) {
-          //自定义的节点有子节点
-          let children = this.columnsGroupParse(column.children);
-          column["children"] = children;
-          columns.push(column);
+          // 自定义的节点有子节点
+          let children = this.columnsGroupParse(column.children)
+          column['children'] = children
+          columns.push(column)
         } else {
-          //自定义节点
-          columns.push(column);
+          // 自定义节点
+          columns.push(column)
         }
-      });
-      return columns;
+      })
+      return columns
     },
-    columnsRenderParse(columns) {
-      //列添加render
-      let newColumns = [];
+    columnsRenderParse (columns) {
+      // 列添加render
+      // let newColumns = [];
       columns.forEach(item => {
         if (item.children) {
-          let column = this.columnsRenderParse(item.children);
-          newColumns.push(column);
+          if (item.children.length == 0) {
+            delete item.children
+          } else {
+            this.columnsRenderParse(item.children)
+            // newColumns.push({"children":column});
+          }
         } else {
-          if (item.format && item.format != null && item.format != "") {
-            let formatMethod = this.formatter[item.format];
+          if (item.format && item.format != null && item.format != '') {
+            let formatMethod = this.formatter[item.format]
             if (formatMethod) {
-              //匹配上了
-              item.render = formatter[formatMethod];
+              // 匹配上了
+              item.render = formatter[formatMethod]
             } else {
-              item.render = eval("(function(h,params){" + item.format + "})");
+              item.render = eval('(function(h,params){' + item.format + '})')
             }
           }
-          newColumns.push(item);
-          if (item.colorValidator != null && item.colorValidator != "") {
-            this.rowClassValidates.push(item.colorValidator);
+          // newColumns.push(item);
+          if (item.colorValidator != null && item.colorValidator != '') {
+            this.rowClassValidates.push(item.colorValidator)
           }
         }
-      });
-      return newColumns;
+      })
+      // return newColumns;
     },
-    getTableData() {
-      this.isLoading = true;
+    getTableData () {
+      this.isLoading = true
       if (this.url && this.url != null) {
-        this.isLoading = true;
-        return axios
-          .request({
-            url: this.url,
-            params: this.pagination ? this.page : {},
-            method: "post",
-            data: this.tableQueryParams
-          })
-          .then(res => {
-            if (res.data.success) {
-              let tableDataItems = [];
-              let data = res.data.result;
-              if (this.pagination) {
-                tableDataItems = data.records;
-                this.page.pageNumber = parseInt(data.current);
-                this.page.pageSize = parseInt(data.size);
-                this.page.total = parseInt(data.total);
-                this.page.pages = parseInt(data.pages);
-                eventBus.$emit("page-data-init", this.page);
-              } else {
-                tableDataItems = data;
-              }
-              /* if(this.paginationControl == 'scroll'){
-                  //this.tableDataItems=[] //FIX 避免数据重复添加
-                  if(this.tableDataItemsIsClear){
-                    this.tableDataItems=[];
-                  }
-                  this.tableDataItems.push(...tableDataItems);
-                }else{
-                  this.tableDataItems = tableDataItems;
-                } */
-              this.tableDataItems = tableDataItems;
+        this.isLoading = true
+        axios.request({
+          url: this.url,
+          params: this.pagination ? this.page : {},
+          method: 'post',
+          data: this.tableQueryParams ? this.tableQueryParams : {}
+        }).then(res => {
+          if (res.data.success) {
+            let tableDataItems = []
+            let data = res.data.result
+            if (this.pagination) {
+              tableDataItems = data.records
+              this.page.pageNumber = parseInt(data.current)
+              this.page.pageSize = parseInt(data.size)
+              this.page.total = parseInt(data.total)
+              this.page.pages = parseInt(data.pages)
+              eventBus.$emit('page-data-init', this.page)
             } else {
-              this.$Message.error("数据加载失败，请稍后再试...");
+              tableDataItems = data
             }
-          })
-          .finally(() => {
-            this.isLoading = false;
-          });
+            this.tableDataItems = tableDataItems
+          } else {
+            this.$Message.error('数据加载失败，请稍后再试...')
+          }
+        }).finally(() => {
+          this.isLoading = false
+        })
       } else {
-        this.isLoading = false;
+        this.isLoading = false
       }
     },
-    onPageNumberChange(pageNumber) {
-      this.page.pageNumber = pageNumber;
-      this.getTableData();
+    onPageNumberChange (pageNumber) {
+      this.page.pageNumber = pageNumber
+      this.getTableData()
     },
-    onPageSizeChange(pageSize) {
-      this.page.pageSize = pageSize;
-      this.getTableData();
+    onPageSizeChange (pageSize) {
+      this.page.pageSize = pageSize
+      this.getTableData()
     },
-    search(queryParams) {
+    search (queryParams) {
       if (queryParams) {
-        this.tableQueryParams = queryParams;
+        this.tableQueryParams = queryParams
       }
-      this.tableDataItemsIsClear = true;
-      this.getTableData();
+      this.tableDataItemsIsClear = true
+      this.getTableData()
     },
-    rowClick(rowIndex, rowData, colData) {
-      this.$emit("row-click", rowIndex, rowData);
+    rowClick (rowIndex, rowData, colData) {
+      this.$emit('row-click', rowIndex, rowData)
     },
-    selectGroupChange(selection) {
-      this.$emit("select-group-change", selection);
+    selectGroupChange (selection) {
+      this.$emit('select-group-change', selection)
     },
-    selectAll(selection) {
-      this.$emit("select-all", selection);
+    selectAll (selection) {
+      this.$emit('select-all', selection)
     },
-    onSelectionChange(selection) {
-      this.$emit("on-selection-change", selection);
+    onSelectionChange (selection) {
+      this.$emit('on-selection-change', selection)
     },
-    resize() {
-      //this.$refs.vTable.resize();
+    resize () {
+      // this.$refs.vTable.resize();
     },
-    rowDbClick(rowIndex, rowData, column) {
-      this.$emit("row-dblclick", rowIndex, rowData);
+    rowDbClick (rowIndex, rowData, column) {
+      this.$emit('row-dblclick', rowIndex, rowData)
     },
-    getFormColumns() {
-      this.resColumns = []; // 默认值
-      if (this.columnsUrl && this.columnsUrl != "") {
+    getFormColumns () {
+      this.resColumns = [] // 默认值
+      if (this.columnsUrl && this.columnsUrl != '') {
         if (this.columnsGroup && this.columnsGroup.length > 0) {
-          this.columnsUrl = this.columnsUrl + "/group";
+          this.columnsUrl = this.columnsUrl + '/group'
         }
-        axios
-          .request({
-            url: this.columnsUrl,
-            method: "get"
-          })
-          .then(res => {
-            if (res.data.success) {
-              this.resColumns = res.data.result;
-              //this.columns = res.data.result;
+        axios.request({
+          url: this.columnsUrl,
+          method: 'get'
+        }).then(res => {
+          if (res.data.success) {
+            if (res.data.result.pageSize) {
+              this.page.pageSize = res.data.result.pageSize
+              this.resColumns = res.data.result.columns
             } else {
-              this.$Message.error("列数据失败,请稍后再试");
+              this.resColumns = res.data.result
             }
-          });
+            // this.columns = res.data.result;
+            // 列加载成功了，在加载数据
+            this.getTableData()
+          } else {
+            this.$Message.error('列数据失败,请稍后再试')
+          }
+        })
+      } else {
+        this.getTableData()
       }
     },
-    rowClassName(row, index) {
-      let classSty = "column-cell-class-";
+    rowClassName (row, index) {
+      let classSty = 'column-cell-class-'
       for (let i = 0; i < this.rowClassValidates.length; i++) {
-        let rowClassValidate = this.rowClassValidates[i];
-        let exec = eval("(function(row,index){" + rowClassValidate + "})");
-        let color = exec(row, index);
-        return classSty + color;
+        let rowClassValidate = this.rowClassValidates[i]
+        let exec = eval('(function(row,index){' + rowClassValidate + '})')
+        let color = exec(row, index)
+        return classSty + color
       }
-      return classSty;
+      return classSty
     },
-    scrollPaging() {
-      //滚动分页
+    scrollPaging () {
+      // 滚动分页
       if (this.isLoading || this.page.pageNumber >= this.page.pages) {
-        return;
+        return
       }
-      this.onPageNumberChange(this.page.pageNumber + 1);
+      this.onPageNumberChange(this.page.pageNumber + 1)
     },
-    pageScrollAddEventListener() {
-      if (this.paginationControl == "scroll") {
-        let _self = this;
-        let loadding = true;
-        this.$refs.vTable.$refs.body.addEventListener("scroll", e => {
+    pageScrollAddEventListener () {
+      if (this.paginationControl == 'scroll') {
+        let _self = this
+        let loadding = true
+        this.$refs.vTable.$refs.body.addEventListener('scroll', e => {
           if (
             loadding &&
             e.target.scrollHeight -
-              (e.target.scrollTop + e.target.offsetHeight) <=
-              0
-          ) {
-            //加载更多
-            //console.log('加载更多数据了...'+(e.target.scrollHeight - e.target.scrollTop));
-            loadding = false;
-            _self.tableDataItemsIsClear = false;
-            _self.pageScrollRemoveEventListener();
-            _self.scrollPaging();
+              (e.target.scrollTop + e.target.offsetHeight) <= 0) {
+            // 加载更多
+            // console.log('加载更多数据了...'+(e.target.scrollHeight - e.target.scrollTop));
+            loadding = false
+            _self.tableDataItemsIsClear = false
+            _self.pageScrollRemoveEventListener()
+            _self.scrollPaging()
           }
-        });
+        })
       }
     },
-    pageScrollRemoveEventListener() {
-      this.$refs.vTable.$refs.body.removeEventListener("scroll", e => {});
+    pageScrollRemoveEventListener () {
+      this.$refs.vTable.$refs.body.removeEventListener('scroll', e => {})
     }
   },
-  updated() {
+  updated () {
     if (this.$refs.vTable.$children.length > 0) {
-      var node1 = this.$refs.vTable.$children[0].$el;
+      var node1 = this.$refs.vTable.$children[0].$el
       if (
         node1.children.length > 0 &&
         node1.children[0].offsetWidth > this.$refs.vTable.$el.scrollWidth
       ) {
-        this.scrollHeight = 20;
+        this.scrollHeight = 20
       }
     }
   },
-  mounted() {},
-  beforeDestroy() {
+  mounted () {},
+  beforeDestroy () {
     // 移除所有事件频道， 注意不需要添加任何参数
-    eventBus.$off();
+    eventBus.$off()
   }
-};
+}
 </script>
 
 <style></style>

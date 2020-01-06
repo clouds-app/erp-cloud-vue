@@ -1,0 +1,139 @@
+<template>
+  <div class="cl-moudle">
+    <htmlTemplate
+      :currrentRowItem="currrentRowItem"
+      @isLoaddingDone="getLoaddingDone"
+      :requestBaseUrl="functionParams.requestBaseUrl"
+      :uniqueId="functionParams.uniqueId"
+      :queryParamsDefault="queryParamsDefault"
+    >
+    </htmlTemplate>
+    <div class="content-container" :style="{ height: tableHeight + 'px' }">
+      <vTable
+        :height="tableHeight"
+        ref="master_list_table"
+        :columns-url="functionParams.requestColBaseUrl + '/paperLimitFm'"  
+        url="/bas/paperLimit/page"
+        :pagination="true"
+        @row-click="tableRowClick"
+      ></vTable>
+    </div>
+    <editForm
+      :isLoaddingDone="isLoaddingDone"
+      :form-detail-data="formDetailData"
+      :action="action"
+      @submit-success="search()"
+      v-model="showEditWindow"
+    />
+  </div>
+</template>
+<script>
+import vTable from "@/components/tables/vTable";
+import htmlTemplate from "../components/htmlTemplate";
+import editForm from "./edit/edit-paperLimit";
+import listBaseMixins from "../mixins/list";
+export default {
+  mixins: [listBaseMixins],
+  components: {
+    editForm,
+    htmlTemplate,
+    vTable
+  },
+  data() {
+    return {
+      functionParams: {
+        requestBaseUrl: "/bas/paperLimit",
+        uniqueId: "paperLimitId"
+      },
+      // 查询参数 ,注意格式
+      queryParamsDefault: [
+        {
+          title: "请输入纸度",
+          code: "plWidth",
+          plWidth: ""
+        },
+        {
+          title: "请输入开料",
+          name: "plkarat",
+          plkarat: ""
+        }
+      ]
+      // columns: [
+      //    {
+      //     title: '纸度',
+      //     key: 'plWidth',
+      //     align: 'center'
+      //   },
+      //    {
+      //     title: '开料',
+      //     key: 'moName',
+      //     align: 'center'
+      //   },
+      //     {
+      //     title: '毫米对照',
+      //     key: 'p1WidthMM',
+      //     align: 'center'
+      //   },
+
+      //   {
+      //     title: '备注',
+      //     key: 'remark',
+      //     align: 'center'
+      //   },
+      //    {
+      //     title: '审核状态',
+      //     key: 'iisAudit',
+      //     align: 'center'
+      //   },
+      //      {
+      //     title: '状态',
+      //     key: 'status',
+      //     align: 'center'
+      //   },
+      //      {
+      //     title: '创建人',
+      //     key: 'createUser',
+      //     align: 'center'
+      //   },
+      //   {
+      //     title: '创建时间',
+      //     key: 'createTime',
+      //     align: 'center'
+      //   },
+      //      {
+      //     title: '修改人',
+      //     key: 'updateUser',
+      //     align: 'center'
+      //   },
+      //      {
+      //     title: '修改时间',
+      //     key: 'updateTime',
+      //     align: 'center'
+      //   },
+      //   {
+      //     title: '审核人',
+      //     key: 'auditUser',
+      //     align: 'center'
+      //   },
+      //    {
+      //     title: '审核时间',
+      //     key: 'auditTime',
+      //     align: 'center'
+      //   },
+      // ],
+    };
+  },
+  methods: {
+    tableRowClick(rowData, rowIndex) {
+      this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData;
+      if (rowData != null) {
+        // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
+        this.currrentRowItem.rowName = rowData.plWidth + " " + rowData.plkarat;
+      }
+    }
+  }
+};
+</script>
+
+<style></style>

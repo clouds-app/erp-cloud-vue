@@ -10,8 +10,7 @@
       :spinLoaddingText="spinLoaddingText"
       @on-ok="formTableDataSubmit()"
     >
-    <Row>
-           <Form
+    <Form
         ref="formDataInfo"
         :show-message="false"
         :model="formDataInfo.master"
@@ -19,65 +18,590 @@
         :label-width="100"
       >
         <Row>
-          <Col span="8">
-            <FormItem label="客户编号" prop="cusCode">
-              <Input
-                v-model="formDataInfo.master.cusCode"
-                maxlength="20"
-                placeholder="请输入客户编号"
-              ></Input>
+          <Col span="24">
+            <Row>
+              <Col span="6"> <FormItem label="客户编号" prop="cusCode">
+                  <Input
+                    v-model="formDataInfo.master.cusCode"
+                    maxlength="20"
+                    placeholder="请输入客户编号"
+                  ></Input>
+                </FormItem></Col>
+              <Col span="6"> <FormItem label="简称" prop="shortName">
+                    <Input
+                      v-model="formDataInfo.master.shortName"
+                      maxlength="20"
+                      placeholder="请输入简称"
+                    ></Input>
+                  </FormItem></Col>
+              <Col span="6"> <FormItem label="客户名称" prop="cusName">
+                  <Input
+                    v-model="formDataInfo.master.cusName"
+                    maxlength="20"
+                    placeholder="请输入客户名称"
+                  ></Input>
+                </FormItem></Col>
+              <Col span="6"><FormItem label="英文名称" prop="enName">
+                      <Input
+                        v-model="formDataInfo.master.enName"
+                        maxlength="20"
+                        placeholder="请输入英文名称"
+                      ></Input>
+                    </FormItem>
+                    </Col>
+              </Row>
+          </Col>
+
+          <Col span="6"><FormItem label="业务类型" prop="ctType">
+              <optionSearch
+                  v-model="formDataInfo.master.ctType"
+                  :loaddingDataWhen="showWindow"
+                  formKey="ctType"
+                  query="ctType"
+                />
             </FormItem>
           </Col>
-          <Col span="8">
-            <FormItem label="客户名称" prop="cusName">
-              <Input
-                v-model="formDataInfo.master.cusName"
-                maxlength="20"
-                placeholder="请输入客户名称"
-              ></Input>
-            </FormItem>
+          <Col span="6">
+                  <FormItem label="客户等级" prop="ctLevel">
+                    <optionSearch
+                          v-model="formDataInfo.master.ctLevel"
+                          :loaddingDataWhen="showWindow"
+                          formKey="ctLevel"
+                          query="ctLevel"
+                        />
+                  </FormItem>
+
+            </Col>
+          <Col span="6"> <FormItem label="所属地区" prop="areaIdsText">
+                  <Input
+                    v-model="formDataInfo.master.areaIdsText"
+                    maxlength="20"
+                    placeholder="请输入所属地区"
+                  ></Input>
+                </FormItem>
+
           </Col>
-        </Row>
-        <Row>
-          <Col span="8">
-            <FormItem label="位置经度" prop="pointj">
+          <Col span="6"><FormItem label="详细地址" prop="addrDetail">
+                  <Input
+                    v-model="formDataInfo.master.addrDetail"
+                    maxlength="20"
+                    placeholder="请输入详细地址"
+                  ></Input>
+                </FormItem></Col>
+          <Col span="6">
+            <!-- <FormItem label="跟单员" prop="followerId">
               <Input
                 type="number"
-                v-model="formDataInfo.master.pointj"
+                v-model="formDataInfo.master.followerId"
                 maxlength="20"
-                placeholder="请输入位置经度"
+                placeholder="请输入跟单员"
               ></Input>
-            </FormItem>
+            </FormItem> -->
+
+            <FormItem label="跟单员" prop="followerCode">
+                  <popup
+                    v-model="formDataInfo.master.followerCode"
+                    field-name="followerCode"
+                    :disabled="false"
+                    popup-name="FollowerIdSingleBox"
+                    :fill-model.sync="formDataInfo.master"
+                    render-fields="followerId,followerCode,followerName"
+                    from-fields="id,workCode,workName"
+                    :suffix="true"
+                    :suffix-model="formDataInfo.master.followerName"
+                    :query-params="{}"
+                  ></popup>
+                </FormItem>
           </Col>
-         <Col span="8">
-            <FormItem label="位置纬度" prop="pointw">
+          <Col span="6"> <FormItem label="业务员" prop="salerCode">
+              <!-- <Input
+                v-model="formDataInfo.master.salerId"
+                maxlength="20"
+                placeholder="请输入业务员"
+              ></Input> -->
+               <popup
+                    v-model="formDataInfo.master.salerCode"
+                    field-name="salerCode"
+                    :disabled="false"
+                    popup-name="SalerIdSingleBox"
+                    :fill-model.sync="formDataInfo.master"
+                    render-fields="salerId,salerCode,salerName"
+                    from-fields="id,workCode,workName"
+                    :suffix="true"
+                    :suffix-model="formDataInfo.master.salerName"
+                    :query-params="{}"
+                  ></popup>
+            </FormItem></Col>
+          <Col span="6">
+                <FormItem label="结算货币" prop="coinCode">
+                  <!-- <Input
+                    type="number"
+                    v-model="formDataInfo.master.curyCode"
+                    maxlength="20"
+                    placeholder="请输入结算货币"
+                  ></Input> -->
+                   <popup
+                    v-model="formDataInfo.master.coinCode"
+                    field-name="coinCode"
+                    :disabled="false"
+                    popup-name="CoinSingleBox"
+                    :fill-model.sync="formDataInfo.master"
+                    render-fields="coinId,coinCode,coinName"
+                    from-fields="id,coinCode,coinName"
+                    :suffix="true"
+                    :suffix-model="formDataInfo.master.coinName"
+                    :query-params="{}"
+                  ></popup>
+                </FormItem></Col>
+          <Col span="6">
+                <FormItem label="接单控制" prop="orderControl">
+                  <optionSearch
+                      v-model="formDataInfo.master.orderControl"
+                      :loaddingDataWhen="showWindow"
+                      formKey="orderControl"
+                      query="orderControl"
+                    />
+                </FormItem></Col>
+          <Col span="6">  <FormItem label="单价小数位" prop="ctDot">
+                  <Input
+                    type="number"
+                    v-model="formDataInfo.master.ctDot"
+                    maxlength="20"
+                    placeholder="请输入单价小数位"
+                  ></Input>
+            </FormItem></Col>
+          <Col span="6"> <FormItem label="进位方式" prop="priceType">
+                 <optionSearch
+                      v-model="formDataInfo.master.priceType"
+                      :loaddingDataWhen="showWindow"
+                      formKey="priceType"
+                      query="priceType"
+                    />
+            </FormItem></Col>
+          <Col span="6"><FormItem label="最后订单" prop="lastOrderDate">
+                   <DatePicker
+                      type="date"
+                      format="yyyy-MM-dd HH:mm:ss"
+                      v-model="formDataInfo.master.lastOrderDate"
+                    ></DatePicker>
+                </FormItem>
+            </Col>
+          <Col span="6">  <FormItem label="所属行业" prop="trade">
+                  <optionSearch
+                      v-model="formDataInfo.master.trade"
+                      :loaddingDataWhen="showWindow"
+                      formKey="trade"
+                      query="trade"
+                    />
+                </FormItem>
+               </FormItem></Col>
+          <Col span="6"> <FormItem label="金额小数位" prop="amtDot">
               <Input
                type="number"
-                v-model="formDataInfo.master.pointw"
+                v-model="formDataInfo.master.amtDot"
                 maxlength="20"
-                placeholder="请输入位置经度"
+                placeholder="请输入金额小数位"
+              ></Input>
+            </FormItem></Col>
+          <Col span="6"> <FormItem label="进位方式" prop="amtType">
+                    <optionSearch
+                      v-model="formDataInfo.master.amtType"
+                      :loaddingDataWhen="showWindow"
+                      formKey="amtType"
+                      query="amtType"
+                    />
+            </FormItem></Col>
+            <Col span="6"> <FormItem label="注册地址" prop="factName">
+              <Input
+                v-model="formDataInfo.master.factName"
+                maxlength="20"
+                placeholder="请输入注册地址"
+              ></Input>
+            </FormItem></Col>
+          <Col span="6"> <FormItem label="税别" prop="taxTP">
+                  <optionSearch
+                      v-model="formDataInfo.master.taxTP"
+                      :loaddingDataWhen="showWindow"
+                      formKey="taxTP"
+                      query="taxTP"
+                    />
+                </FormItem></Col>
+          <Col span="6"><FormItem label="税率%" prop="taxRate">
+              <Input
+               type="number"
+                v-model="formDataInfo.master.taxRate"
+                maxlength="20"
+                placeholder="请输入税率"
+              ></Input>
+            </FormItem></Col>
+          <Col span="6"><FormItem label="折扣%" prop="discount">
+              <Input
+               type="number"
+                v-model="formDataInfo.master.discount"
+                maxlength="20"
+                placeholder="请输入折扣%"
+              ></Input>
+            </FormItem></Col>
+          <Col span="6"><FormItem label="对账方式" prop="arpType">
+              <optionSearch
+                      v-model="formDataInfo.master.arpType"
+                      :loaddingDataWhen="showWindow"
+                      formKey="arpType"
+                      query="arpType"
+                    />
+            </FormItem></Col>
+          <Col span="6">
+              <FormItem label="附件" prop="attachment">
+                  <!-- <Input
+                      v-model="formDataInfo.master.attachment"
+                    maxlength="20"
+                    placeholder="请输入附件"
+                  ></Input> -->
+                  <Upload action="//jsonplaceholder.typicode.com/posts/">
+                      <Button icon="ios-cloud-upload-outline">附件</Button>
+                  </Upload>
+              </FormItem>
+
+          </Col>
+          <Col span="6"><FormItem label="付款方式" prop="payName">
+                  <!-- <Input
+                    v-model="formDataInfo.master.payCode"
+                    maxlength="20"
+                    placeholder="请输入付款方式"
+                  ></Input> -->
+                  <popup
+                    v-model="formDataInfo.master.payCode"
+                    field-name="payCode"
+                    :disabled="false"
+                    popup-name="PayTypeSingleBox"
+                    :fill-model.sync="formDataInfo.master"
+                    render-fields="payId,payCode,payName"
+                    from-fields="id,payCode,payName"
+                    :suffix="true"
+                    :suffix-model="formDataInfo.master.payName"
+                    :query-params="{}"
+                  ></popup>
+            </FormItem></Col>
+          <Col span="6"><FormItem label="付款天数" prop="monthDays">
+              <Input
+                v-model="formDataInfo.master.monthDays"
+                maxlength="20"
+                placeholder="请输入付款天数"
+              ></Input>
+            </FormItem></Col>
+          <Col span="6"><FormItem label="开户银行" prop="backName">
+              <Input
+                v-model="formDataInfo.master.backName"
+                maxlength="20"
+                placeholder="请输入开户银行"
+              ></Input>
+            </FormItem></Col>
+          <Col span="6"><FormItem label="银行账号" prop="bankNo">
+                  <Input
+                  type="number"
+                    v-model="formDataInfo.master.bankNo"
+                    maxlength="20"
+                    placeholder="请输入银行账号"
+                  ></Input>
+                </FormItem>
+          </Col>
+
+          <Col span="6">
+            <Row>
+               <Col span="12"> <FormItem label="列印重量" prop="printWeight">
+              <i-switch size="default" v-model="formDataInfo.master.printWeight">
+                        <span slot="open">是</span>
+                        <span slot="close">否</span>
+              </i-switch>
+              </Input>
+            </FormItem></Col>
+          <Col span="12 ">   <FormItem label="送货单分PO" prop="poGroup">
+              <i-switch size="default" v-model="formDataInfo.master.poGroup">
+                        <span slot="open">是</span>
+                        <span slot="close">否</span>
+                  </i-switch>
+            </FormItem></Col>
+            </Row>
+          </Col>
+          <Col span="6">
+            <Row>
+              <Col span="12"> <FormItem label="需回签" prop="signBack">
+              <i-switch size="default" v-model="formDataInfo.master.signBack">
+                        <span slot="open">是</span>
+                        <span slot="close">否</span>
+              </i-switch>
+            </FormItem></Col>
+            <Col span="12"> <FormItem label="列印单价" prop="printPrice">
+                  <i-switch size="default" v-model="formDataInfo.master.printPrice">
+                          <span slot="open">是</span>
+                          <span slot="close">否</span>
+                    </i-switch>
+                  </FormItem>
+                </Col>
+            </Row>
+          </Col>
+          <Col span="6"> <FormItem label="内径" prop="bpIsDiameter">
+                  <i-switch size="default" v-model="formDataInfo.master.bpIsDiameter">
+                          <span slot="open">是</span>
+                          <span slot="close">否</span>
+                    </i-switch>
+                  </FormItem>
+          </Col>
+          <Col span="6">
+                  <FormItem label="开单单位" prop="bpUnit">
+                    <optionSearch
+                      v-model="formDataInfo.master.bpUnit"
+                      :loaddingDataWhen="showWindow"
+                      formKey="bpUnit"
+                      query="bpUnit"
+                    />
+                  </FormItem>
+
+          </Col>
+
+         <Col span="6">
+                <FormItem label="助记码" prop="rememberCode">
+                      <Input
+                        v-model="formDataInfo.master.rememberCode"
+                        maxlength="20"
+                        placeholder="请输入助记码"
+                      ></Input>
+                </FormItem>
+            </Col>
+
+          <Col span="6"> <FormItem label="备注" prop="remark">
+              <Input
+                v-model="formDataInfo.master.remark"
+                type="textarea"
+                maxlength="100"
+                :autosize="{ minRows: 2, maxRows: 5 }"
+                placeholder="请输入备注..."
               ></Input>
             </FormItem>
-          </Col>
+            </Col>
+
         </Row>
       </Form>
     </Row>
       <Tabs :animated="false">
+
         <!--  注意:eTable formDataInfo.wareHoaddrSlaveFormDataDTOuseItems.defaultList  ===addrSlaveFormDataDTO=== 需要根据实际接口修改,其它不变-->
-        <TabPane label="客户联系人列表" name="addrList">
+         <TabPane label="客户联系人列表" name="cusList">
           <eTable
-            ref="tableFields"
+            ref="tableFields2"
             unqiue-mark="id"
-            :height="400"
             :index-menu="true"
             :col-start="0"
             :width="200"
-            :row-init-data="tableFieldInitData"
+            :row-init-data="initData.initData.customerContactFm"
+            :data="formDataInfo.contactSlaveFormDataDTO.defaultList"
+            :rules="tableFieldsValidator_cuslist"
+          >
+
+            <template slot="head">
+              <tr>
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">职位</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">联系人</span>
+                  </div>
+                </th>
+                 <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">性别</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">联系人电话</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">联系邮件</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">传真号码</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">联系QQ</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">备注</span>
+                  </div>
+                </th>
+                 <!-- <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">位置经度</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">位置纬度</span>
+                  </div>
+                </th> -->
+
+              </tr>
+            </template>
+            <template
+              slot="body"
+              slot-scope="{ row, index, valueChangeAssign }"
+            >
+             <!-- 职位 -->
+              <td class="ivu-table-column-left" width="100">
+                  <optionSearch
+                      @onChange="item => { valueChangeAssign(item.value, index, row, 'postType')}"
+                      :defaultItem.sync="formDataInfo.contactSlaveFormDataDTO.postType"
+                      :loaddingDataWhen="showWindow"
+                      formKey="postType"
+                      query="postType"
+                  />
+
+              </td>
+                <!-- 联系姓名 -->
+              <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.contactName"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'contactName');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+               <!-- 性别 -->
+              <td class="ivu-table-column-left" width="100">
+               <optionSearch
+                      @onChange="item => { valueChangeAssign(item.value, index, row, 'sex')}"
+                      :defaultItem.sync="formDataInfo.contactSlaveFormDataDTO.sex"
+                      :loaddingDataWhen="showWindow"
+                      formKey="sex"
+                      query="sex"
+                  />
+                <!-- <Select  v-model="row.sex" @onChange="value => {
+                      valueChangeAssign(value, index, row, 'sex');
+                    }">
+                  <Option :value="1">男</Option>
+                  <Option :value="0">女</Option>
+                </Select> -->
+              </td>
+              <!-- 联系电话 -->
+              <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.contactTel"
+                  type="nember"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'contactTel');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+                <!-- 联系邮件 -->
+              <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.contactEmail"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'contactEmail');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+              <!-- 传真号码 -->
+              <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.contactFax"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'contactFax');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+
+              <!-- 联系qq -->
+              <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.contactQQ"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'contactQQ');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+
+              <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.remark"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'remark');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+            </template>
+          </eTable>
+        </TabPane>
+
+        <TabPane label="附加地址列表" name="addrList">
+          <eTable
+            ref="tableFields"
+            unqiue-mark="id"
+            :index-menu="true"
+            :col-start="0"
+            :width="200"
+            :row-init-data="tableInitData?tableInitData.customerAddrFm:{}"
             :data="formDataInfo.addrSlaveFormDataDTO.defaultList"
             :rules="tableFieldsValidator"
           >
-            <template slot="head">
+              <template slot="head">
               <tr>
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">编号</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">名称</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">所属地区</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">详细地址</span>
+                  </div>
+                </th>
+
                 <th class="ivu-table-column-left" width="100">
                   <div class="ivu-table-cell">
                     <span class="">联系人</span>
@@ -93,24 +617,63 @@
                     <span class="">备注</span>
                   </div>
                 </th>
-                 <th class="ivu-table-column-left" width="100">
-                  <div class="ivu-table-cell">
-                    <span class="">位置经度</span>
-                  </div>
-                </th>
-                <th class="ivu-table-column-left" width="100">
-                  <div class="ivu-table-cell">
-                    <span class="">位置纬度</span>
-                  </div>
-                </th>
-                
-                
               </tr>
             </template>
-            <template
-              slot="body"
-              slot-scope="{ row, index, valueChangeAssign }"
-            >
+            <template slot="body"  slot-scope="{ row, index, valueChangeAssign }"  >
+              <!-- 编号 -->
+              <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.addrCode"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'addrCode');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+              <!-- 名称 -->
+              <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.addrName"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'addrName');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+              <!-- 所属地区 -->
+              <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.areaIdsText"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'areaIdsText');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+              <!-- 详细地址 -->
+              <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.addrDetail"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'addrDetail');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+
+              <!-- 	联系人 -->
               <td class="ivu-table-column-left" width="100">
                 <Input
                   v-model="row.vContractor"
@@ -123,9 +686,11 @@
                   :maxlength="20"
                 ></Input>
               </td>
+              <!-- 联系人电话 -->
               <td class="ivu-table-column-left" width="100">
                 <Input
                   v-model="row.vContractorTel"
+                  type="number"
                   @input="
                     value => {
                       valueChangeAssign(value, index, row, 'vContractorTel');
@@ -147,110 +712,13 @@
                   :maxlength="20"
                 ></Input>
               </td>
-              <td class="ivu-table-column-left" width="100">
-                <Input
-                  v-model="row.pointj"
-                  @input="
-                    value => {
-                      valueChangeAssign(value, index, row, 'pointj');
-                    }
-                  "
-                  size="small"
-                  :maxlength="20"
-                ></Input>
-              </td>
-              <td class="ivu-table-column-left" width="100">
-                <Input
-                  v-model="row.pointw"
-                  @input="
-                    value => {
-                      valueChangeAssign(value, index, row, 'pointw');
-                    }
-                  "
-                  size="small"
-                  :maxlength="20"
-                ></Input>
-              </td>
-         
+
             </template>
+
           </eTable>
         </TabPane>
           <!--  注意:eTable formDataInfo.contactSlaveFormDataDTO.defaultList  ===contactSlaveFormDataDTO=== 需要根据实际接口修改,其它不变-->
-        <TabPane label="附加地址列表" name="cusList">
-          <eTable
-            ref="tableFields2"
-            unqiue-mark="id"
-            :height="400"
-            :index-menu="true"
-            :col-start="0"
-            :width="200"
-            :row-init-data="tableFieldInitData"
-            :data="formDataInfo.contactSlaveFormDataDTO.defaultList"
-            :rules="tableFieldsValidator_cuslist"
-          >
-            <template slot="head">
-              <tr>
-                <th class="ivu-table-column-left" width="100">
-                  <div class="ivu-table-cell">
-                    <span class="">联系姓名</span>
-                  </div>
-                </th>
-                <th class="ivu-table-column-left" width="100">
-                  <div class="ivu-table-cell">
-                    <span class="">联系QQ</span>
-                  </div>
-                </th>
-                <th class="ivu-table-column-left" width="100">
-                  <div class="ivu-table-cell">
-                    <span class="">联系电话</span>
-                  </div>
-                </th>
-              </tr>
-            </template>
-            <template
-              slot="body"
-              slot-scope="{ row, index, valueChangeAssign }"
-            >
-              <td class="ivu-table-column-left" width="100">
-                <Input
-                  v-model="row.contactName"
-                  @input="
-                    value => {
-                      valueChangeAssign(value, index, row, 'contactName');
-                    }
-                  "
-                  size="small"
-                  :maxlength="20"
-                ></Input>
-              </td>
-              <td class="ivu-table-column-left" width="100">
-                <Input
-                  v-model="row.contactQQ"
-                  @input="
-                    value => {
-                      valueChangeAssign(value, index, row, 'contactQQ');
-                    }
-                  "
-                  size="small"
-                  :maxlength="20"
-                ></Input>
-              </td>
-              <td class="ivu-table-column-left" width="100">
-                <Input
-                  v-model="row.contactTel"
-                  @input="
-                    value => {
-                      valueChangeAssign(value, index, row, 'contactTel');
-                    }
-                  "
-                  size="small"
-                  :maxlength="20"
-                ></Input>
-              </td>
-           
-            </template>
-          </eTable>
-        </TabPane>
+
       </Tabs>
     </editWindow>
   </div>
@@ -270,214 +738,235 @@
  *
  * @created 2019/11/20 17:07:54
  */
-import editWindow from "@/components/edit-window/edit-window";
+import editWindow from '@/components/edit-window/edit-window'
 // import Form from '@/components/form/form'
-import eTable from "@/components/e-table/e-table";
-import request from "@/libs/request";
-import editBaseMixins from "../../mixins/edit";
+import eTable from '@/components/e-table/e-table'
+import request from '@/libs/request'
+import editBaseMixins from '../../mixins/edit'
+import popup from '@/components/popup/popup'
+import optionSearch from '../../components/optionSearch'
+import dayjs from 'dayjs'
 const default_formDataInfo = {
-        // 主表 更改字段
-        master: {
-         		addrDetail: "",
-            amtDot: "0",
-            amtType: "",
-            amtTypeText: "",
-            areaIds: "",
-            areaIdsText: "",
-            arpType: "",
-            arpTypeText: "",
-            attachment: "",
-            auditTime: "",
-            auditUser: "",
-            backName: "",
-            bankNo: "",
-            // companyId: "0",
-            // createTime: "",
-            // createUser: "",
-            ctDot: "0",
-            ctLevel: "",
-            ctLevelText: "",
-            ctType: "",
-            ctTypeText: "",
-            curyCode: "",
-            curyCodeText: "",
-            cusCode: "",
-            cusName: "",
-            discount: "0",
-            enName: "",
-            factName: "",
-            followerCode: "",
-            followerCodeText: "",
-            hasDelete: true,
-            //id: "0",
-            //iisAudit: "0",
-            lastOrderDate: "",
-            monthDays: "0",
-            orderControl: "",
-            orderControlText: "",
-            payCode: "",
-            payCodeText: "",
-            poGroup: "0",
-            pointj: "",
-            pointw: "",
-            priceType: "",
-            priceTypeText: "",
-            printPrice: "0",
-            printWeight: "0",
-            remark: "",
-            rememberCode: "",
-            salerCode: "",
-            salerCodeText: "",
-            shortName: "",
-            signBack: "0",
-            status: "0",
-            taxRate: "0",
-            taxTP: "",
-            taxTPText: "",
-            tradeCode: "",
-            tradeCodeText: "",
-            // updateTime: "",
-            // updateUser: ""
-        },
-        // 子表 附加地址列表
-        contactSlaveFormDataDTO: {
-          addList: [], // 添加列
-          defaultList: [], // 默认列
-          deleteList: [], // 删除列
-          updateList: [] // 更新列
-        },
-         // 子表 客户联系人列表
-        addrSlaveFormDataDTO: {
-          addList: [], // 添加列
-          defaultList: [], // 默认列
-          deleteList: [], // 删除列
-          updateList: [] // 更新列
-        },
-      }
+  // 主表 更改字段
+  master: {
+    addrDetail: '',
+    amtDot: 0,
+    amtType: '0',
+    amtTypeText: '',
+    areaIds: '',
+    areaIdsText: '0',
+    arpType: '0',
+    arpTypeText: '',
+    attachment: '',
+    auditTime: '',
+    auditUser: '',
+    backName: '',
+    bankNo: '',
+    bpIsDiameter: true,
+    bpUnit: '0',
+    bpUnitText: '',
+    coinCode: '',
+    coinId: '',
+    coinName: '',
+    createTime: '',
+    createUser: '',
+    ctDot: '',
+    ctLevel: '0',
+    ctLevelText: '',
+    ctType: '0',
+    ctTypeText: '',
+    cusCode: '',
+    cusName: '',
+    discount: '',
+    enName: '',
+    factName: '',
+    followerCode: '',
+    followerId: '',
+    followerName: '',
+    iisAudit: '',
+    lastOrderDate: dayjs().format('YYYY-MM-DD HH:mm:ss'),
+    monthDays: '',
+    orderControl: '0',
+    orderControlText: '',
+    payCode: '',
+    payId: '',
+    payName: '',
+    poGroup: true,
+    pointj: '',
+    pointw: '',
+    priceType: '0',
+    priceTypeText: '',
+    printPrice: true,
+    printWeight: true,
+    remark: '',
+    rememberCode: '',
+    salerCode: '',
+    salerId: '',
+    salerName: '',
+    shortName: '',
+    signBack: true,
+    status: '',
+    taxRate: '',
+    taxTP: '0',
+    taxTPText: '',
+    trade: '0',
+    tradeText: '',
+    updateTime: '',
+    updateUser: ''
+
+    // updateTime: "",
+    // updateUser: ""
+  },
+  // 子表 附加地址列表
+  contactSlaveFormDataDTO: {
+    addList: [], // 添加列
+    defaultList: [{
+      addrCode: '',
+      addrDetail: '',
+      addrName: '',
+      areaIds: '',
+      areaIdsText: '',
+      pointj: 0,
+      pointw: 0,
+      remark: '',
+      vContractor: '',
+      vContractorTel: ''
+    }], // 默认列
+    deleteList: [], // 删除列
+    updateList: [] // 更新列
+  },
+  // 子表 客户联系人列表
+  addrSlaveFormDataDTO: {
+    addList: [], // 添加列
+    defaultList: [{
+      contactEmail: '',
+      contactFax: '',
+      contactName: '',
+      contactQQ: '',
+      contactTel: '',
+      postTypeText: '',
+      remark: '',
+      sexText: ''
+    }], // 默认列
+    deleteList: [], // 删除列
+    updateList: [] // 更新列
+  }
+}
 export default {
-  name: "edit-customerInfo",
+  name: 'edit-customerInfo',
   mixins: [editBaseMixins],
   components: {
     editWindow,
+    popup,
+    optionSearch,
     // Form,
     eTable
   },
-  data() {
+  data () {
     return {
-      currentSubItemlength_addr:0, // 当前子表数据个数
-      currentSubItemlength_contact:0, // 当前子表数据个数
-      requestBaseUrl: "/sale/customer", // 请求 查询 操作的基础路径
-      formDataInfo:Object.assign({},default_formDataInfo),// 防止添加和更新数据提交发生冲突
+      formName: 'customerFm',
+      currentSubItemlength_addr: 0, // 当前子表数据个数
+      currentSubItemlength_contact: 0, // 当前子表数据个数
+      requestBaseUrl: '/sale/customer', // 请求 查询 操作的基础路径
+      formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
         cusCode: [
-          { required: true, message: "客户编号不能为空", trigger: "blur" }
+          { required: true, message: '客户编号不能为空', trigger: 'blur' }
         ],
         cusName: [
-          { required: true, message: "客户名称不能为空", trigger: "blur" }
-        ],
-        pointj: [
-          { required: true, message: "位置经度不能为空", trigger: "blur" }
-        ],
-        pointw: [
-          { required: true, message: "位置纬度不能为空", trigger: "blur" }
+          { required: true, message: '客户名称不能为空', trigger: 'blur' }
         ]
+
       },
       tableFieldsValidator: {
-        pointj: [
-          { required: true, message: "位置经度不能为空", trigger: "blur" }
-        ],
-        pointw: [
-          { required: true, message: "位置纬度不能为空", trigger: "blur" }
-        ]
+
       },
-       tableFieldsValidator_cuslist: {
-        // pointj: [
-        //   { required: true, message: "位置经度不能为空", trigger: "blur" }
-        // ],
-        // pointw: [
-        //   { required: true, message: "位置纬度不能为空", trigger: "blur" }
-        // ]
+      tableFieldsValidator_cuslist: {
+
       }
-    };
+    }
   },
 
   methods: {
-     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo(){
-     this.formDataInfo=Object.assign({},default_formDataInfo)
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo () {
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
     },
     // 判断 客户联系人列表 是否添加了数据
-    getCurrentSubItemlength_addr(){
-      let tableData = this.$refs["tableFields"].getCategorizeData();
-      this.currentSubItemlength_addr=0
+    getCurrentSubItemlength_addr () {
+      let tableData = this.$refs['tableFields'].getCategorizeData()
+      this.currentSubItemlength_addr = 0
       // 判断当前字表 添加/更新的 数据个数
-      if(this.action==='add'){
-        if(tableData.addList.length>0){
-           this.currentSubItemlength_addr= Object.keys(tableData.addList[0]).length
+      if (this.action === 'add') {
+        if (tableData.addList.length > 0) {
+          this.currentSubItemlength_addr = Object.keys(tableData.addList[0]).length
         }
-       
-      }else{
-        if(tableData.updateList.length>0){
-           this.currentSubItemlength_addr= Object.keys(tableData.updateList[0]).length
+      } else {
+        if (tableData.updateList.length > 0) {
+          this.currentSubItemlength_addr = Object.keys(tableData.updateList[0]).length
         }
-        if(tableData.addList.length>0){
-           this.currentSubItemlength_addr= Object.keys(tableData.addList[0]).length
+        if (tableData.addList.length > 0) {
+          this.currentSubItemlength_addr = Object.keys(tableData.addList[0]).length
         }
-       
       }
       return this.currentSubItemlength_addr
     },
-     // 判断 附加地址列表 是否添加了数据
-    getCurrentSubItemlength_contact(){
-      let tableData2 = this.$refs["tableFields2"].getCategorizeData();
-      this.currentSubItemlength_contact=0
+    // 判断 附加地址列表 是否添加了数据
+    getCurrentSubItemlength_contact () {
+      let tableData2 = this.$refs['tableFields2'].getCategorizeData()
+      this.currentSubItemlength_contact = 0
       // 判断当前字表 添加/更新的 数据个数
-      if(this.action==='add'){
-        if(tableData2.addList.length>0){
-            this.currentSubItemlength_contact= Object.keys(tableData2.addList[0]).length
+      if (this.action === 'add') {
+        if (tableData2.addList.length > 0) {
+          this.currentSubItemlength_contact = Object.keys(tableData2.addList[0]).length
         }
-      
-      }else{
-         if(tableData2.updateList.length>0){
-            this.currentSubItemlength_contact= Object.keys(tableData2.updateList[0]).length
-         }
-        if(tableData2.addList.length>0){
-            this.currentSubItemlength_contact= Object.keys(tableData2.addList[0]).length
+      } else {
+        if (tableData2.updateList.length > 0) {
+          this.currentSubItemlength_contact = Object.keys(tableData2.updateList[0]).length
+        }
+        if (tableData2.addList.length > 0) {
+          this.currentSubItemlength_contact = Object.keys(tableData2.addList[0]).length
         }
       }
-       return this.currentSubItemlength_contact
+      return this.currentSubItemlength_contact
     },
     // 重写父类,提交数据前 验证数据 ,默认TRUE
-    validateBeforePost() {
+    validateBeforePost () {
       this.getCurrentSubItemlength_addr()
       this.getCurrentSubItemlength_contact()
-      let flag =false
-      if(this.currentSubItemlength_addr>0){
-          // 子表有数据后才验证是否必填数据
-           let subValidate = this.$refs['tableFields'].validate();
-            if(subValidate===true){
-              flag= true;
-            }
+      let flag = false
+      if (this.currentSubItemlength_addr > 0) {
+        // 子表有数据后才验证是否必填数据
+        let subValidate = this.$refs['tableFields'].validate()
+        if (subValidate === true) {
+          flag = true
+        }
       }
       return flag
     },
     // 重写父类,修改提交数据
-    resetformDataInfo(_data) {
+    resetformDataInfo (_data) {
       // 添加了数据才去获取数据
       debugger
-      if(this.currentSubItemlength_addr>0){
-           let tableData = this.$refs["tableFields"].getCategorizeData();
-           this.formDataInfo.addrSlaveFormDataDTO = tableData;
+
+      if (this.currentSubItemlength_addr > 0) {
+        let tableData = this.$refs['tableFields'].getCategorizeData()
+        this.formDataInfo.addrSlaveFormDataDTO = tableData
       }
-      if(this.currentSubItemlength_contact>0){
-           let tableData2 = this.$refs["tableFields2"].getCategorizeData();
-           this.formDataInfo.contactSlaveFormDataDTO = tableData2;
+      if (this.currentSubItemlength_contact > 0) {
+        let tableData2 = this.$refs['tableFields2'].getCategorizeData()
+        this.formDataInfo.contactSlaveFormDataDTO = tableData2
       }
-      return this.formDataInfo;
+      if (_data.master.lastOrderDate) {
+        _data.master.lastOrderDate = dayjs(_data.master.lastOrderDate).format(
+          'YYYY-MM-DD HH:mm:ss'
+        )
+        return this.formDataInfo
+      }
     }
   }
-};
+}
 </script>
 
 <style>

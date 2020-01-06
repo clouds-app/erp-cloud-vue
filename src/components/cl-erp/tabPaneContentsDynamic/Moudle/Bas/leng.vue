@@ -1,174 +1,77 @@
 <template>
   <div class="cl-moudle">
-    <htmlTemplate 
-    :currrentRowItem="currrentRowItem" 
-    @isLoaddingDone="getLoaddingDone" 
-    :requestBaseUrl="functionParams.requestBaseUrl" 
-    :uniqueId="functionParams.uniqueId"
-    :queryParamsDefault="queryParamsDefault"
+    <htmlTemplate
+      :currrentRowItem="currrentRowItem"
+      @isLoaddingDone="getLoaddingDone"
+      :requestBaseUrl="functionParams.requestBaseUrl"
+      :uniqueId="functionParams.uniqueId"
+      :queryParamsDefault="queryParamsDefault"
     >
     </htmlTemplate>
-    <div class="content-container" :style="{'height':tableHeight+'px'}">
-      <vTable :height="tableHeight " ref="master_list_table" columns-url="/bas/leng/baselengFm/columns" url="/bas/leng/page" :pagination="true" @row-click="tableRowClick"></vTable>
+    <div class="content-container" :style="{ height: tableHeight + 'px' }">
+      <vTable
+        :height="tableHeight"
+        ref="master_list_table"
+        :columns-url="functionParams.requestColBaseUrl + '/baselengFm'"
+        url="/bas/leng/page"
+        :pagination="true"
+        @row-click="tableRowClick"
+      ></vTable>
     </div>
-   <editForm  
-   :isLoaddingDone="isLoaddingDone"
-   :form-detail-data="formDetailData"
-    :action="action"
-    @submit-success="search()" 
-    v-model="showEditWindow"/>
+    <editForm
+      :isLoaddingDone="isLoaddingDone"
+      :form-detail-data="formDetailData"
+      :action="action"
+      @submit-success="search()"
+      v-model="showEditWindow"
+    />
   </div>
 </template>
 <script>
 import vTable from '@/components/tables/vTable'
 import htmlTemplate from '../components/htmlTemplate'
 import editForm from './edit/edit-leng'
-import listBaseMixins from "../mixins/list";
-  export default {
-   mixins: [listBaseMixins],
-   components: {
-       editForm,htmlTemplate,vTable
+import listBaseMixins from '../mixins/list'
+export default {
+  mixins: [listBaseMixins],
+  components: {
+    editForm,
+    htmlTemplate,
+    vTable
+  },
+  data () {
+    return {
+      functionParams: {
+        requestBaseUrl: '/bas/leng',
+        uniqueId: 'lengId'
       },
-    data() {
-      return {  
-        functionParams:{
-            requestBaseUrl: '/bas/leng',
-            uniqueId:'lengId'
+      // 查询参数 ,注意格式
+      queryParamsDefault: [
+        {
+          title: '层数',
+          code: 'lpCS',
+          lpCS: ''
         },
-       // 查询参数 ,注意格式
-        queryParamsDefault:[
-            {
-            title: '请输入层数',
-            code:'lpCS',
-            lpCS:''
-           },
-           {
-            title: '请输入楞别',
-            name:'lbCode',
-            lbCode: '',
-          },
-          
-        ],
-        // columns: [
-           
-        //    {
-        //     title: '楞别',
-        //     key: 'lbCode',
-        //     align: 'center'
-        //   },
-        //    {
-        //     title: '单位ID',
-        //     key: 'companyId',
-        //     companyId: 'center'
-        //   },
+        {
+          title: '楞别',
+          name: 'lbCode',
+          lbCode: ''
+        }
+      ]
 
-        //    {
-        //     title: '钉条(cm)',
-        //     key: 'lbDtCm',
-        //     align: 'center'
-        //   },
-        //   {
-        //     title: '钉条(inch)',
-        //     key: 'lbDtInch',
-        //     align: 'center'
-        //   },
-        //   {
-        //     title: '纸长废边mm',
-        //     key: 'lbLengLose',
-        //     align: 'center',
-        //     width:'100'
-        //   },
-        //   {
-        //     title: '纸度废边mm',
-        //     key: 'lbWidthLose',
-        //     align: 'center',
-        //     width:'100'
-        //   },
-        //   {
-        //     title: '压线加分mm',
-        //     key: 'lbYxAdd',
-        //     align: 'center',
-        //     width:'100'
-        //   },
-        //   {
-        //     title: '折面积系数',
-        //     key: 'lpAreaRate',
-        //     align: 'center',
-        //     width:'100' 
-        //   },
-        //    {
-        //     title: '层数',
-        //     key: 'lpCS',
-        //     align: 'center'
-        //   },
-        //    {
-        //     title: '厚度(mm)',
-        //     key: 'lpHeigth',
-        //     align: 'center'
-        //   },
-        //   {
-        //     title: '备注',
-        //     key: 'remark',
-        //     align: 'center'
-        //   },
-        //    {
-        //     title: '审核状态',
-        //     key: 'iisAudit',
-        //     align: 'center'
-        //   },
-        //      {
-        //     title: '状态',
-        //     key: 'status',
-        //     align: 'center'
-        //   },
-        //      {
-        //     title: '创建人',
-        //     key: 'createUser',
-        //     align: 'center'
-        //   },
-        //   {
-        //     title: '创建时间',
-        //     key: 'createTime',
-        //     align: 'center'
-        //   },
-        //      {
-        //     title: '修改人',
-        //     key: 'updateUser',
-        //     align: 'center'
-        //   },
-        //      {
-        //     title: '修改时间',
-        //     key: 'updateTime',
-        //     align: 'center'
-        //   },
-        //   {
-        //     title: '审核人',
-        //     key: 'auditUser',
-        //     align: 'center'
-        //   },
-        //    {
-        //     title: '审核时间',
-        //     key: 'auditTime',
-        //     align: 'center'
-        //   },
-           
-        // ],
-       
+    }
+  },
+  methods: {
+    tableRowClick (rowData, rowIndex) {
+      this.formDetailData = {} // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData
+      if (rowData != null) {
+        // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
+        this.currrentRowItem.rowName = rowData.lpCS + ' ' + rowData.lbCode
       }
-    },
-    methods: {
-      tableRowClick(rowData, rowIndex) {
-       this.formDetailData ={} // 清除上次缓存数据 增加体验良好
-       this.masterRowSelection = rowData;
-       if(rowData!=null){
-          // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
-          this.currrentRowItem.rowName=rowData.lpCS+' '+rowData.lbCode
-       }
-     },
-    },
-   
+    }
   }
+}
 </script>
 
-<style>
-</style>
+<style></style>

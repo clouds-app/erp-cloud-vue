@@ -1,0 +1,408 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-art"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="true"
+      width="66%"
+      :loading="!isLoaddingDone"
+      :spinLoaddingText="spinLoaddingText"
+      @on-ok="formTableDataSubmit()"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-message="true"
+        :model="formDataInfo.master"
+        :rules="ruleValidate"
+        :label-width="100"
+      >
+        <Row>
+          <Col span="18">
+              <Row>
+                  <Col span="12">
+                      <FormItem label="报价单编号">
+                        <Input disabled v-model="formDataInfo.master.artCode" maxlength="20" placeholder="报价单编号(自动生产)"></Input>
+                      </FormItem>
+                </Col>
+                  <Col span="12">
+                      <FormItem label="客户编号">
+                        <Input
+                          v-model="formDataInfo.master.artCS"
+                          type="number"
+                          maxlength="20"
+                          placeholder="客户编号"
+                        ></Input>
+                      </FormItem>
+                  </Col>
+              </Row>
+          </Col>
+
+          <Col span="18">
+                    <Row>
+                        <Col span="12">
+                            <FormItem label="生效日期" >
+                              <Input v-model="formDataInfo.master.artCode" maxlength="20" placeholder="生效日期"></Input>
+                            </FormItem>
+                      </Col>
+                        <Col span="12">
+                            <FormItem label="结算货币" >
+                              <Input
+                                v-model="formDataInfo.master.artCS"
+                                type="number"
+                                maxlength="20"
+                                placeholder="结算货币"
+                              ></Input>
+                            </FormItem>
+                        </Col>
+                    </Row>
+          </Col>
+          <Col span="18">
+            <FormItem label="备注" prop="remark">
+              <Input
+                v-model="formDataInfo.master.remark"
+                type="textarea"
+                maxlength="100"
+                :autosize="{ minRows: 2, maxRows: 5 }"
+                placeholder="备注..."
+              ></Input>
+            </FormItem>
+          </Col>
+
+        </Row>
+      </Form>
+
+      <Tabs>
+        <!--  注意:eTable formDataInfo.artLengs.defaultList  ===artLengs=== 需要根据实际接口修改,其它不变-->
+        <TabPane label="纸质楞别" name="name1">
+          <eTable
+            ref="tableFields"
+            unqiue-mark="id"
+            :index-menu="true"
+            :col-start="0"
+            :width="200"
+            :rowInitData="subTableFieldInitData.itemInitData"
+            :data.sync="formDataInfo.artLengs.defaultList"
+            :rules="tableFieldsValidator"
+          >
+            <template slot="head">
+              <tr>
+                <!-- <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">数据是否删除</span>
+                  </div>
+                </th>-->
+
+                <!-- <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">楞别</span>
+                  </div>
+                </th>-->
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class>楞别</span>
+                  </div>
+                </th>
+
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class>基重</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class>环压指数</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class>耐破度</span>
+                  </div>
+                </th>
+
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class>边压指数</span>
+                  </div>
+                </th>
+
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class>横压指数</span>
+                  </div>
+                </th>
+
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class>直压指数</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class>备注</span>
+                  </div>
+                </th>
+              </tr>
+            </template>
+
+            <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
+
+                 <td class="ivu-table-column-left" width="100">
+                   <popup
+                   :popupClickValidator="clickValuedate"
+                    v-model="row.lbCode"
+                    field-name="lbCode"
+                    :disabled="false"
+                    popup-name="LengMultiBox"
+                    :fill-model.sync="formDataInfo.artLengs.defaultList"
+                    render-fields="lengId,lbCode"
+                    from-fields="id,lbCode"
+                    :index="index"
+                    :init-data="subTableFieldInitData.itemInitData"
+                    :query-params="{lbCS:formDataInfo.master.artCS,'lbCode$ne':row.lbCode}"
+                     @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'lbCode');
+                      }
+                    "
+                  />
+
+                </td>
+
+              <td class="ivu-table-column-center" width="100">
+                <Input
+                  v-model="row.baseWt"
+                  @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'baseWt');
+                      }
+                    "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                <Input
+                  v-model="row.press"
+                  @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'press');
+                      }
+                    "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                <Input
+                  v-model="row.crlimit"
+                  @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'crlimit');
+                      }
+                    "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+
+              <td class="ivu-table-column-center" width="100">
+                <Input
+                  v-model="row.byLimit"
+                  @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'byLimit');
+                      }
+                    "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+
+              <td class="ivu-table-column-center" width="100">
+                <Input
+                  v-model="row.hpress"
+                  @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'hpress');
+                      }
+                    "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                <Input
+                  v-model="row.vpress"
+                  @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'vpress');
+                      }
+                    "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+
+              <td class="ivu-table-column-center" width="100">
+                <Input
+                  v-model="row.remark"
+                  @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'remark');
+                      }
+                    "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+            </template>
+          </eTable>
+        </TabPane>
+      </Tabs>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:07:54
+ */
+import editWindow from '@/components/edit-window/edit-window'
+import popup from '@/components/popup/popup'
+import eTable from '@/components/e-table/e-table'
+import request from '@/libs/request'
+import editBaseMixins from '../../mixins/edit'
+import { customValidator, uniqueValidator } from '@/libs/validator'
+import optionSearch from '../../components/optionSearch'
+const default_formDataInfo = {
+  // 主表 更改字段
+  master: {
+    artCode: '',
+    artCS: 0,
+
+    saleByWt: 'false',
+    remark: ''
+  },
+  // artLengs:{
+
+  // },
+  // 子表 artLengs 根据实际接口更改,其它不变
+  artLengs: {
+    defaultList: [], // 默认列
+    addList: [], // 添加列
+    deleteList: [], // 删除列
+    updateList: [] // 更新列
+  }
+}
+export default {
+  name: 'edit-art',
+  mixins: [editBaseMixins],
+  components: {
+    editWindow,
+    optionSearch,
+    popup,
+    // Form,
+    eTable
+  },
+  data () {
+    return {
+      actionSubtitle: '纸箱产品报价',
+      requestBaseUrl: '/bas/art', // 请求 查询 操作的基础路径
+      formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      subTableFieldInitData: {
+        itemInitData: {
+          baseWt: 0,
+          byLimit: 0,
+          crlimit: 0,
+          hpress: 0,
+          lbCode: '',
+          lengId: 0,
+          press: 0,
+          remark: '',
+          vpress: 0
+        }
+      },
+
+      // 需要验证的数据
+      ruleValidate: {
+        artCode: [
+          { required: true, message: '纸质代号不能为空', trigger: 'blur' },
+          { validator: customValidator,
+            trigger: 'blur',
+            customRule: ['toCDB', 'identifier', 'spaceStr'],
+            fieldDesc: '纸质代号' },
+          {
+            validator: uniqueValidator,
+            trigger: 'blur',
+            fieldDesc: '纸质代号',
+            params: {
+              fieldName: 'artCode',
+              formName: 'basartFm',
+              id: () => {
+                return this.formDataInfo.master.id
+              }
+            }
+          }
+        ],
+        artCS: [
+          { required: true, message: '层数不能为空', trigger: 'blur' },
+          { validator: customValidator,
+            trigger: 'blur',
+            customRule: ['toCDB', 'spaceStr', 'number', 'maxnumber'],
+            fieldDesc: '层数' }
+        ]
+        // artCS: [{ required: true,  message: "层数不能为空", trigger: "blur" }]
+      },
+      tableFieldsValidator: {
+        lbCode: [{ required: true, message: '楞别不能为空', trigger: 'blur' }
+
+        ]
+        // lengId: [{ required: true, message: "", trigger: "blur" }]
+      }
+    }
+  },
+
+  methods: {
+    clickValuedate () {
+      debugger
+      if (!this.formDataInfo.master.artCS || this.formDataInfo.master.artCS == '') {
+        this.$Message.error('层数不能为空')
+        return false
+      }
+      return true
+    },
+
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo () {
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
+    },
+    // 重写父类,修改提交数据
+    resetformDataInfo (_data) {
+      let tableData = this.$refs['tableFields'].getCategorizeData()
+      // debugger
+      this.formDataInfo.artLengs = tableData
+      return this.formDataInfo
+    }
+  }
+}
+</script>
+
+<style>
+.cl-edit-art .ivu-form-item {
+  margin-bottom: 5px !important;
+}
+.cl-edit-art .ivu-select-item {
+  display: block;
+}
+</style>

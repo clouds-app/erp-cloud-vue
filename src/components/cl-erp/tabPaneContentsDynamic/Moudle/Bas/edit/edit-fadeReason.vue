@@ -4,7 +4,7 @@
       :title="actionLableName"
       v-model="showWindow"
       :fullscreen="false"
-      width="30%"
+      width="50%"
       :loading="!isLoaddingDone"
       @on-ok="formDataSubmit()"
     >
@@ -59,37 +59,56 @@
  *
  * @created 2019/11/20 17:07:54
  */
-import editBaseMixins from "../../mixins/edit";
+import editBaseMixins from '../../mixins/edit'
+import { customValidator, uniqueValidator } from '@/libs/validator'
 const default_formDataInfo = {
-  frCode: "",
-  frName: "",
-  remark: ""
-};
+  frCode: '',
+  frName: '',
+  remark: ''
+}
 export default {
-  name: "edit-fadeReason",
+  name: 'edit-fadeReason',
   mixins: [editBaseMixins],
 
-  data() {
+  data () {
     return {
-      requestBaseUrl: "/bas/fadeReason", // 请求 查询 操作的基础路径
+      requestBaseUrl: '/bas/fadeReason', // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
-        frCode: [{ required: true, message: "编码不能为空", trigger: "blur" }],
-        frName: [
-          { required: true, message: "退货原因不能为空", trigger: "blur" }
+        frCode: [{ required: true, message: '编码不能为空', trigger: 'blur' },
+          { validator: customValidator,
+            trigger: 'blur',
+            customRule: ['toCDB', 'identifier', 'spaceStr'],
+            fieldDesc: '编码' },
+          {
+            validator: uniqueValidator,
+            trigger: 'blur',
+            fieldDesc: '编码',
+            params: {
+              fieldName: 'frCode',
+              formName: 'fadereasonFm',
+              id: () => {
+                return this.formDataInfo.id
+              }
+            }
+          }
+
         ]
+        // frName: [
+        //   { required: true, message: "退货原因不能为空", trigger: "blur" }
+        // ]
       }
-    };
+    }
   },
 
   methods: {
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo() {
-      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    HandleFormDataInfo () {
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
     }
   }
-};
+}
 </script>
 
 <style></style>

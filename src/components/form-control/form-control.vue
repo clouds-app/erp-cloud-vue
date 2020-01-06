@@ -17,19 +17,24 @@
       <Input v-if="controlType == 'input' || controlType == 'textarea'" v-model="value" size="small" v-bind="$attrs" v-on="$listeners"></Input>
       <InputNumber v-if="controlType == 'number'" size="small"  v-model="value" v-bind="$attrs" v-on="$listeners"></InputNumber>
       <Checkbox v-if="controlType == 'checkbox'"  size="small"  v-model="value" v-bind="$attrs" v-on="$listeners"></Checkbox>
-
-
+      <popup v-if="controlType == 'popup'" v-model="value" v-bind="$attrs" v-on="$listeners"></popup>
+      <date v-if="controlType == 'date'"  v-model="value" v-bind="$attrs" v-on="$listeners"></date>
   </div>
 </template>
 
 <script>
-  export default{
-    name:'formControl',
-    props:{
-      controlType:String,
-	  value:Object
+import popup from '@/components/popup/popup'
+export default{
+  components: { popup },
+  name: 'formControl',
+  props: {
+    controlType: String,
+    value: {
+      type: [String, Number, Boolean],
+      default: ''
     }
   }
+}
 </script>
 
 <style>

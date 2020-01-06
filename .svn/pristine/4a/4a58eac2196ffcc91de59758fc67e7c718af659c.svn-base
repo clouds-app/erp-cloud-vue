@@ -1,0 +1,143 @@
+<template>
+  <div>
+    <editWindow
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="50%"
+      :loading="!isLoaddingDone"
+      @on-ok="formDataSubmit()"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-massage="false"
+        :model="formDataInfo"
+        :rules="ruleValidate"
+        :label-width="80"
+      >
+        <FormItem label="部门编码" prop="deptCode">
+          <Input
+            v-model="formDataInfo.deptCode"
+            maxlength="20"
+            placeholder="请输入部门编码"
+          ></Input>
+        </FormItem>
+        <FormItem label="部门名称" prop="deptName">
+          <Input
+            v-model="formDataInfo.deptName"
+            maxlength="80"
+            placeholder="请输入部门名称"
+          ></Input>
+        </FormItem>
+        <FormItem label="备注" prop="remark">
+          <Input
+            v-model="formDataInfo.remark"
+            type="textarea"
+            maxlength="100"
+            :autosize="{ minRows: 2, maxRows: 5 }"
+            placeholder="请输入备注..."
+          ></Input>
+        </FormItem>
+      </Form>
+      <!--<clTabs>
+        <clTabPane label="部门信息" 
+            uniqueKey='home'>
+    
+
+         <eTable ref="tableFields_slave"
+                unqiue-mark="id"
+                :height="400"
+                :index-menu="true"
+                :col-start="0"
+                :width="200"
+          >
+            <template slot="head">
+              <tr>
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">部门编码</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">部门名称</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="338">
+                  <div class="ivu-table-cell">
+                    <span class="">备注</span>
+                  </div>
+                </th>
+              </tr>
+            </template>
+           <template slot="body" slot-scope="{row,index,valueChangeAssign}">
+              <td class="ivu-table-column-center" width="100">
+                <Input v-model="row.deptCode" @input="value=>{valueChangeAssign(value,index,row,'deptCode');}" size="small"
+                  :maxlength="20" ></Input>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                <Input v-model="row.deptName" @input="value=>{valueChangeAssign(value,index,row,'deptName');}" size="small"
+                  :maxlength="20" ></Input>
+              </td>
+             <td class="ivu-table-column-center" width="338">
+                <Input v-model="row.remark" @input="value=>{valueChangeAssign(value,index,row,'remark');}" size="small"
+                  :maxlength="20" ></Input>
+              </td>
+            </template>
+          </eTable> 
+        </clTabPane>
+      </clTabs>-->
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:07:54
+ */
+import editBaseMixins from "../../mixins/edit";
+const default_formDataInfo = {
+  deptCode: "",
+  deptName: "",
+  remark: ""
+};
+export default {
+  name: "edit-dept",
+  mixins: [editBaseMixins],
+
+  data() {
+    return {
+      requestBaseUrl: "/bas/dept", // 请求 查询 操作的基础路径
+      formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {
+        deptCode: [
+          { required: true, message: "部门编码不能为空", trigger: "blur" }
+        ],
+        deptName: [
+          { required: true, message: "部门名称不能为空", trigger: "blur" }
+        ]
+      }
+    };
+  },
+
+  methods: {
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo() {
+      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    }
+  }
+};
+</script>
+
+<style></style>

@@ -1,0 +1,216 @@
+<template>
+  <div class="cl-moudle">
+    <htmlTemplate
+      :currrentRowItem="currrentRowItem"
+      @isLoaddingDone="getLoaddingDone"
+      :requestBaseUrl="functionParams.requestBaseUrl"
+      :uniqueId="functionParams.uniqueId"
+      :queryParamsDefault="queryParamsDefault"
+    >
+    </htmlTemplate>
+    <div class="content-container" :style="{ height: tableHeight + 'px' }">
+      <vTable
+        :height="tableHeight"
+        ref="master_list_table"
+       :columns-url="functionParams.requestColBaseUrl + '/dieCuttingPlateFm'"
+        url="/bas/dieCuttingPlate/page"
+        :pagination="true"
+        @row-click="tableRowClick"
+      ></vTable>
+    </div>
+    <editForm
+      :isLoaddingDone="isLoaddingDone"
+      :form-detail-data="formDetailData"
+      :action="action"
+      @submit-success="search()"
+      v-model="showEditWindow"
+    />
+  </div>
+</template>
+<script>
+import vTable from "@/components/tables/vTable";
+import htmlTemplate from "../components/htmlTemplate";
+import editForm from "./edit/edit-dieCuttingPlate";
+import listBaseMixins from "../mixins/list";
+export default {
+  mixins: [listBaseMixins],
+  components: {
+    editForm,
+    htmlTemplate,
+    vTable
+  },
+  data() {
+    return {
+      functionParams: {
+        requestBaseUrl: "/bas/dieCuttingPlate",
+        uniqueId: "dieCuttingPlateId"
+      },
+      // 查询参数 ,注意格式
+
+      queryParamsDefault: [
+        {
+          title: "模切板编号",
+          code: "dpNo",
+          dpNo: ""
+        },
+        {
+          title: "模数",
+          name: "dpDieCuttingQty",
+          dpDieCuttingQty: ""
+        }
+      ]
+      // columns: [
+
+      //    {
+      //     title: '模切板编号',
+      //     key: 'dpNo',
+      //     align: 'center',
+
+      //   },
+      //    {
+      //     title: '模数',
+      //     key: 'dpDieCuttingQty',
+      //     align: 'center',
+      //     width:40
+      //   },
+
+      //   {
+      //     title: '盒式id',
+      //     key: 'boxId',
+      //     align: 'center',
+      //     width:40
+      //   },
+      //    {
+      //     title: '客户id',
+      //     key: 'custId',
+      //     align: 'center',
+      //     width:40
+      //   },
+      //   {
+      //     title: '产品id',
+      //     key: 'productId',
+      //     align: 'center',
+      //     width:40
+      //   },
+      //   {
+      //     title: '图片路径',
+      //     key: 'dpImg',
+      //     align: 'center',
+      //     width:60
+      //   },
+      //    {
+      //     title: '用纸规格(inch)宽',
+      //     key: 'dpLengthInch',
+      //     align: 'center',
+      //     width:110
+      //   },
+      //   {
+      //     title: '用纸规格(cm)宽',
+      //     key: 'dpLengthmm',
+      //     align: 'center',
+      //     width:110
+      //   },
+      //    {
+      //     title: '刀模规格长',
+      //     key: 'dpModelSizeL',
+      //     align: 'center',
+
+      //   },
+      //    {
+      //     title: '用纸规格(cm)宽',
+      //     key: 'dpLengthmm',
+      //     align: 'center',
+      //     width:110
+      //   },
+      //    {
+      //     title: '刀模规格宽',
+      //     key: 'dpModelSizeW',
+      //     align: 'center',
+
+      //   },
+      //   {
+      //     title: '版类:0:平模1圆模',
+      //     key: 'dpVerType',
+      //     align: 'center',
+      //     width:140
+      //   },
+      //    {
+      //     title: '用纸规格(inch)长',
+      //     key: 'dpWidthInch',
+      //     align: 'center',
+      //     width:110
+      //   },
+      //   {
+      //     title: '用纸规格(cm)长',
+      //     key: 'dpWidthmm',
+      //     align: 'center',
+      //     width:110
+      //   },
+
+      //      {
+      //       title:'备注',
+      //       key:'remark',
+      //       align:'center',
+      //       width:60
+      //   },
+      //    {
+      //       title:'审核状态',
+      //       key:'iisAudit',
+      //       align:'center',
+      //       width:60
+      //   },
+      //   {
+      //     title: '审核人',
+      //     key: 'auditUser',
+      //     align: 'center',
+      //     width:60
+      //   },
+      //   {
+      //     title: '审核时间 ',
+      //     key: 'auditTime',
+      //     align: 'center',
+      //     width:60
+      //   },
+      //   {
+      //     title: '创建人',
+      //     key: 'createUser',
+      //     align: 'center',
+      //     width:60
+      //   },
+      //   {
+      //     title: '创建时间',
+      //     key: 'createTime',
+      //     align: 'center',
+      //     width:60
+      //   },
+      //    {
+      //     title: '修改人',
+      //     key: 'updateUser',
+      //     align: 'center',
+      //     width:60
+      //   },
+      //    {
+      //     title: '修改时间',
+      //     key: 'updateTime',
+      //     align: 'center',
+      //     width:60
+      //   },
+
+      // ],
+    };
+  },
+  methods: {
+    tableRowClick(rowData, rowIndex) {
+      this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData;
+      if (rowData != null) {
+        // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
+        this.currrentRowItem.rowName =
+          rowData.cusName + "," +rowData.bpNo + "," + rowData.bpName;
+      }
+    }
+  }
+};
+</script>
+
+<style></style>

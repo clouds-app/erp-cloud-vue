@@ -11,95 +11,115 @@
     >
       <Form
         ref="formDataInfo"
-        :show-message="false"
+        :show-message="true"
         :model="formDataInfo"
         :rules="ruleValidate"
         :label-width="100"
       >
-        <Row :gutter="18">
-          <Col span="12">
-            <FormItem label="楞别" prop="lbCode">
-              <Input
-                v-model="formDataInfo.lbCode"
-                maxlength="20"
-                placeholder="请输入楞别"
-              ></Input>
-            </FormItem>
+        <Row :gutter="18" type="flex" justify="start">
+            <Col span="12">
+                <FormItem label="楞别" prop="lbCode">
+                <Input
+                  v-model="formDataInfo.lbCode"
+                  maxlength="20"
+                  placeholder="请输入楞别"
+                ></Input>
+                </FormItem>
+            </Col>
+            <Col span="12">
+                 <FormItem label="层数" prop="lpCS">
+                  <Input
+                    v-model="formDataInfo.lpCS"
+                    type="number"
+                    maxlength="20"
+                    placeholder="层数"
+                  >
+                  </Input>
+                </FormItem>
+            </Col>
+            <Col span="12">
+                 <FormItem label="厚度(mm)" prop="lpHeigth">
+                  <Input
+                    v-model="formDataInfo.lpHeigth"
+                    type="number"
+                    maxlength="20"
+                    placeholder="厚度(mm)"
+                  ></Input>
+                </FormItem>
+            </Col>
+            <Col span="12">
+                  <FormItem label="钉条(cm)" prop="lbDtCm">
+                    <Input
+                      v-model="formDataInfo.lbDtCm"
+                      type="number"
+                      maxlength="20"
+                      placeholder="请输入钉条(cm)"
+                    ></Input>
+                  </FormItem>
+            </Col>
+            <Col span="12">
+                 <FormItem label="钉条(inch)" prop="lbDtInch">
+                    <Input
+                      v-model="formDataInfo.lbDtInch"
+                      type="number"
+                      maxlength="20"
+                      placeholder="钉条(inch)"
+                    >
+                    </Input>
+                  </FormItem>
+            </Col>
+            <Col span="12">
+                <FormItem label="纸度废边mm" prop="lbWidthLose">
+                  <Input
+                    v-model="formDataInfo.lbWidthLose"
+                    type="number"
+                    maxlength="20"
+                    placeholder="纸度废边mm"
+                  ></Input>
+                </FormItem>
+            </Col>
+            <Col span="12">
+                <FormItem label="纸长废边mm" prop="lbLengLose">
+                  <Input
+                    v-model="formDataInfo.lbLengLose"
+                    type="number"
+                    maxlength="20"
+                    placeholder="纸长废边mm"
+                  ></Input>
+                </FormItem>
+            </Col>
+            <Col span="12">
+                 <FormItem label="压线加分mm" prop="lbYxAdd">
+                  <Input
+                    v-model="formDataInfo.lbYxAdd"
+                    type="number"
+                    maxlength="20"
+                    placeholder="压线加分mm"
+                  ></Input>
+                </FormItem>
+            </Col>
+            <Col span="12">
+                 <FormItem label="折面积系数" prop="lpAreaRate">
+                    <Input
+                      v-model="formDataInfo.lpAreaRate"
+                      type="number"
+                      maxlength="20"
+                      placeholder="折面积系数"
+                    ></Input>
+                  </FormItem>
+            </Col>
+            <Col span="12">
+                <FormItem label="备注" prop="remark">
+                  <Input
+                    v-model="formDataInfo.remark"
+                    type="textarea"
+                    maxlength="100"
+                    :autosize="{ minRows: 2, maxRows: 5 }"
+                    placeholder="请输入备注..."
+                  ></Input>
+                </FormItem>
+            </Col>
 
-            <FormItem label="钉条(cm)" prop="lbDtCm">
-              <Input
-                v-model="formDataInfo.lbDtCm"
-                type="number"
-                maxlength="20"
-                placeholder="请输入钉条(cm)"
-              ></Input>
-            </FormItem>
-
-            <FormItem label="钉条(inch)" prop="lbDtInch">
-              <Input
-                v-model="formDataInfo.lbDtInch"
-                type="number"
-                maxlength="20"
-                placeholder="钉条(inch)"
-              >
-              </Input>
-            </FormItem>
-
-            <FormItem label="纸度废边mm" prop="lbWidthLose">
-              <Input
-                v-model="formDataInfo.lbWidthLose"
-                type="number"
-                maxlength="20"
-                placeholder="纸度废边mm"
-              ></Input>
-            </FormItem>
-
-            <FormItem label="备注" prop="remark">
-              <Input
-                v-model="formDataInfo.remark"
-                type="textarea"
-                maxlength="100"
-                :autosize="{ minRows: 2, maxRows: 5 }"
-                placeholder="请输入备注..."
-              ></Input>
-            </FormItem>
-          </Col>
-
-          <Col span="12">
-            <FormItem label="压线加分mm" prop="lbYxAdd">
-              <Input
-                v-model="formDataInfo.lbYxAdd"
-                type="number"
-                maxlength="20"
-                placeholder="压线加分mm"
-              ></Input>
-            </FormItem>
-            <FormItem label="折面积系数" prop="lpAreaRate">
-              <Input
-                v-model="formDataInfo.lpAreaRate"
-                type="number"
-                maxlength="20"
-                placeholder="折面积系数"
-              ></Input>
-            </FormItem>
-            <FormItem label="层数" prop="lpCS">
-              <Input
-                v-model="formDataInfo.lpCS"
-                type="number"
-                maxlength="20"
-                placeholder="层数"
-              >
-              </Input>
-            </FormItem>
-            <FormItem label="厚度(mm)" prop="lpHeigth">
-              <Input
-                v-model="formDataInfo.lpHeigth"
-                type="number"
-                maxlength="20"
-                placeholder="厚度(mm)"
-              ></Input>
-            </FormItem>
-          </Col>
         </Row>
       </Form>
     </editWindow>
@@ -121,43 +141,56 @@
  * @created 2019/11/20 17:07:54
  */
 
-import editBaseMixins from "../../mixins/edit";
+import editBaseMixins from '../../mixins/edit'
+import { customValidator } from '@/libs/validator'
 const default_formDataInfo = {
-  lbCode: "",
-  remark: "",
+  lbCode: '',
+  remark: '',
   lpHeigth: 0,
   lpCS: 0,
+  lbLengLose: 0,
   lpAreaRate: 0,
   lbYxAdd: 0,
   lbWidthLose: 0,
   lbDtInch: 0,
   lbDtCm: 0
-};
+}
 export default {
-  name: "edit-leng",
+  name: 'edit-leng',
   mixins: [editBaseMixins],
 
-  data() {
+  data () {
     return {
-      requestBaseUrl: "/bas/leng", // 请求 查询 操作的基础路径
+      requestBaseUrl: '/bas/leng', // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
-        lbCode: [{ required: true, message: "楞别不能为空", trigger: "blur" }]
-        // companyId: [
-        //   { required: true, message: "单位ID不能为空", trigger: "blur" }
-        // ],
+        lbCode: [{ required: true, message: '楞别不能为空', trigger: 'blur' },
+          {
+            validator: customValidator,
+            trigger: 'blur',
+            customRule: ['toCDB', 'leng', 'spaceStr'],
+            fieldDesc: '楞别'
+          }
+        ],
+        lpCS: [
+          { required: true, message: '层数不能为空', trigger: 'blur' },
+          { validator: customValidator,
+            trigger: 'blur',
+            customRule: ['toCDB', 'spaceStr', 'number'],
+            fieldDesc: '层数' }
+        ]
       }
-    };
+    }
   },
 
   methods: {
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo() {
-      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    HandleFormDataInfo () {
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
     }
   }
-};
+}
 </script>
 
 <style>

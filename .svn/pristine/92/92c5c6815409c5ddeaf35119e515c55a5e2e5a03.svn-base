@@ -1,0 +1,350 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-boxAreaPrice"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="60%"
+      :loading="!isLoaddingDone"
+      :spinLoaddingText="spinLoaddingText"
+      @on-ok="formTableDataSubmit()"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-message="false"
+        :model="formDataInfo.master"
+        :rules="ruleValidate"
+        :label-width="100"
+      >
+
+
+      <Row> 
+        <Col span="12">
+              <FormItem label="报价单号" prop="bpNo">
+                              <Input
+                                v-model="formDataInfo.master.bpNo"
+                                maxlength="20"
+                                placeholder="请输入面积报价单号"
+                              ></Input>
+              </FormItem>
+              
+
+               <FormItem label="计价单位" prop="priceUnitText">
+                        <Input
+                          v-model="formDataInfo.master.priceUnitText"
+                          maxlength="20"
+                          placeholder="请输入计价单位"
+                        ></Input>
+              </FormItem>
+        </Col>
+        <Col span="12">
+              <FormItem label="客户" prop="cusName">
+                      <div>
+                      <popup
+                        v-model="formDataInfo.custCode"
+                        field-name="custCode"
+                        :disabled="false"
+                        popup-name="CustomerSingleBox"
+                        :fill-model.sync="formDataInfo"
+                        render-fields="custId,custCode,custName"
+                        from-fields="id,custCode,deptName"
+                        :suffix="true"
+                        :suffix-model="formDataInfo.custName"
+                        :query-params="{}"
+                      />
+                  </div>
+              </FormItem>
+              
+             
+              <FormItem label="生效日期">
+                    <DatePicker
+                      type="date"
+                      placeholder="选择合同结束日期"
+                      v-model="formDataInfo.master.effectDate"
+                    ></DatePicker>
+                </FormItem>
+        </Col>
+      </Row>
+              
+              
+              
+             
+      </Form>
+
+      <Tabs>
+        <!--  注意:eTable formDataInfo.artLengs.defaultList  ===artLengs=== 需要根据实际接口修改,其它不变-->
+        <TabPane label="纸箱报价明细" name="name1">
+          <eTable
+            ref="tableFields"
+            unqiue-mark="id"
+            :height="400"
+            :index-menu="true"
+            :col-start="0"
+            :width="200"
+            :row-init-data="tableFieldInitData"
+            :data="formDataInfo.boxArePriceItems.defaultList"
+            :rules="tableFieldsValidator"
+          >
+             <template slot="head"> 
+              <tr>
+                <!-- <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">数据是否删除</span>
+                  </div>
+                </th> -->
+                
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">报价纸质</span>
+                  </div>
+                </th>  
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">生产纸质</span>
+                  </div>
+                </th>  
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">报价</span>
+                  </div>
+                </th>  
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">单价数量优惠</span>
+                  </div>
+                </th>  
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">上次报价	</span>
+                  </div>
+                </th>  
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">	涨幅(%)</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-left" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">	备注</span>
+                  </div>
+                </th>
+                  
+              </tr>  
+          </template> 
+           
+            <template
+              slot="body"
+              slot-scope="{ row, index, valueChangeAssign }"
+            >
+              
+             
+              <td class="ivu-table-column-left" width="100">
+                  <Input
+                    v-model="row.bpArtCode"
+                    @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'bpArtCode');
+                      }
+                    "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+              <td class="ivu-table-column-left" width="100">
+                  <Input
+                    v-model="row.mrpArtCode"
+                    @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'mrpArtCode');
+                      }
+                    "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+              <td class="ivu-table-column-left" width="100">
+                  <Input
+                    v-model="row.quotePrice"
+                    @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'quotePrice');
+                      }
+                    "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+              <td class="ivu-table-column-left" width="100">
+                  <Input
+                    v-model="row.priceLess"
+                    @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'priceLess');
+                      }
+                    "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+              <td class="ivu-table-column-left" width="100">
+                  <Input
+                    v-model="row.lastPrice"
+                    @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'lastPrice');
+                      }
+                    "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+              <td class="ivu-table-column-left" width="100">
+                  <Input
+                    v-model="row.increaseRate"
+                    @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'increaseRate');
+                      }
+                    "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+             
+                  
+              <td class="ivu-table-column-left" width="100">
+                  <Input
+                    v-model="row.remark"
+                    @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'remark');
+                      }
+                    "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+            </template>
+          </eTable>
+        </TabPane>
+      </Tabs>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:07:54
+ */
+import popup from "@/components/popup/popup";
+import editWindow from "@/components/edit-window/edit-window";
+// import Form from '@/components/form/form'
+import eTable from "@/components/e-table/e-table";
+import request from "@/libs/request";
+import editBaseMixins from "../../mixins/edit";
+import dayjs from "dayjs";
+const default_formDataInfo = {
+        // 主表 更改字段
+        master: {
+          bpNo:"",
+          custCode:"",
+          custName:"",
+          effectDate: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+          priceUnitText: "",
+          remark: ""
+        },
+        // 子表 artLengs 根据实际接口更改,其它不变
+        boxArePriceItems: {
+          addList: [], // 添加列
+          defaultList: [], // 默认列
+          deleteList: [], // 删除列
+          updateList: [] // 更新列
+        }
+      }
+export default {
+  name: "edit-boxAreaPrice",
+  mixins: [editBaseMixins],
+  components: {
+    editWindow,
+    popup,
+    // Form,
+    eTable
+  },
+  data() {
+    return {
+      requestBaseUrl: "/sale/boxAreaPrice", // 请求 查询 操作的基础路径
+      formDataInfo:Object.assign({},default_formDataInfo),// 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {
+         artCode: [
+          { required: true, message: "纸质代号不能为空", trigger: "blur" }
+        ],
+        artCS: [{ required: true, message: "层数不能为空", trigger: "blur" }]
+      },
+       boxArePriceItems: {
+        artId: [
+          { required: true, message: "纸质id不能为空", trigger: "blur" }
+        ],
+        lengId: [
+          { required: true, message: "楞别id不能为空", trigger: "blur" }
+        ],
+      },
+    
+    };
+  },
+
+  methods: {
+     // 重写父类,添加时候,清空数据
+    HandleFormDataInfo(){
+     this.formDataInfo=Object.assign({},default_formDataInfo)
+    },
+    // 重写父类,修改提交数据
+    resetformDataInfo(_data) {
+      let tableData = this.$refs["tableFields"].getCategorizeData();
+      // debugger
+      this.formDataInfo.artLengs = tableData;
+      return this.formDataInfo;
+
+      if (!!_data.borthDay) {
+        _data.borthDay = dayjs(_data.borthDay).format("YYYY-MM-DD");
+      }
+      if (!!_data.workLabourPactSDate) {
+        _data.workLabourPactSDate = dayjs(_data.workLabourPactSDate).format(
+          "YYYY-MM-DD"
+        );
+      }
+      if (!!_data.workLabourPactEDate) {
+        _data.workLabourPactEDate = dayjs(_data.workLabourPactEDate).format(
+          "YYYY-MM-DD"
+        );
+      }
+      if (!!_data.workInDate) {
+        _data.workInDate = dayjs(_data.workInDate).format(
+          "YYYY-MM-DD HH:mm:ss"
+        );
+      }
+
+    }
+  }
+};
+</script>
+
+<style>
+.cl-edit-boxArePrice .ivu-form-item {
+  margin-bottom: 5px !important;
+}
+.cl-edit-boxArePrice .ivu-select-item {
+  display: block;
+}
+</style>

@@ -1,0 +1,223 @@
+<template>
+  <form ref="form" :class="classes" :autocomplete="autocomplete">
+    <slot></slot>
+  </form>
+</template>
+<script>
+  import {
+    oneOf
+  } from 'view-design/src/utils/assist';
+  import {
+    getElementIsDR
+  } from '../../utils/dom.js';
+  const prefixCls = 'ivu-form';
+
+  export default {
+    name: 'iForm',
+    props: {
+      model: {
+        type: Object
+      },
+      rules: {
+        type: Object
+      },
+      labelWidth: {
+        type: Number|String
+      },
+      labelPosition: {
+        validator(value) {
+          return oneOf(value, ['left', 'right', 'top']);
+        },
+        default: 'right'
+      },
+      inline: {
+        type: Boolean,
+        default: false
+      },
+      showMessage: {
+        type: Boolean,
+        default: true
+      },
+      autocomplete: {
+        validator(value) {
+          return oneOf(value, ['on', 'off']);
+        },
+        default: 'off'
+      },
+      // 4.0.0
+      hideRequiredMark: {
+        type: Boolean,
+        default: false
+      },
+      // 4.0.0
+      labelColon: {
+        type: [Boolean, String],
+        default: false
+      },
+      // 4.0.0
+      disabled: {
+        type: Boolean,
+        default: false
+      },
+      //白羊
+      enterEvent: {
+        type: Boolean,
+        default: true
+      },
+      captureFocus: {
+        type: Boolean,
+        default: true
+      }
+    },
+    provide() {
+      return {
+        FormInstance: this
+      };
+    },
+    data() {
+      return {
+        fields: [],
+        fieldElement: [],
+        fieldLength: 0
+      };
+    },
+    computed: {
+      classes() {
+        return [
+          `${prefixCls}`,
+          `${prefixCls}-label-${this.labelPosition}`,
+          {
+            [`${prefixCls}-inline`]: this.inline,
+            [`${prefixCls}-hide-required-mark`]: this.hideRequiredMark
+          }
+        ];
+      },
+      colon() {
+        let colon = '';
+        if (this.labelColon) {
+          colon = (typeof this.labelColon === 'boolean') ? ':' : this.labelColon;
+        }
+        return colon;
+      }
+    },
+    methods: {
+      resetFields() {
+        this.fields.forEach(field => {
+          field.resetField();
+        });
+      },
+      validate(callback) {
+        return new Promise(resolve => {
+          let valid = true;
+          let count = 0;
+          this.fields.forEach(field => {
+            field.validate('', errors => {
+              if (errors) {
+                valid = false;
+              }
+              if (++count === this.fields.length) {
+                // all finish
+                resolve(valid);
+                if (typeof callback === 'function') {
+                  callback(valid);
+                }
+              }
+            });
+          });
+        });
+      },
+      validateField(prop, cb) {
+        const field = this.fields.filter(field => field.prop === prop)[0];
+        if (!field) {
+          throw new Error('[iView warn]: must call validateField with valid prop string!');
+        }
+
+        field.validate('', cb);
+      },
+      formEnterEvent() {
+        //fieldElement
+        this.$refs.form.addEventListener('keydown', (event) => {
+          if (event.keyCode == 13) {
+            this.setEnterFocus(event.target, true);
+          }
+        });
+      },
+      setEnterFields() {
+        this.fieldLength = this.$refs.form.length;
+        this.fieldElement = [];
+        for (let i = 0; i < this.fieldLength; i++) {
+          let element = this.$refs.form[i];
+          if ((element.tagName == 'INPUT' || element.tagName == 'TEXTAREA') && !getElementIsDR(element)) {
+            this.fieldElement.push(element);
+          }
+        }
+      },
+      setCaptureFocus() {
+        //自动获取第一个表单控件焦点
+        if (this.fieldElement.length > 0) {
+          this.$nextTick(() => {
+            this.fieldElement[0].focus();
+          })
+        }
+      },
+      setEnterFocus(target) {
+        debugger;
+        this.fieldLength = this.$refs.form.length;
+        for (let j = 0; j < this.fieldElement.length; j++) {
+          let node = this.fieldElement[j];
+          if (node.getAttribute('type') == 'hidden') {
+            node = node.parentNode;
+          }
+          let elementIndex = j + 1;
+          if (node == target || node == target.parentNode) {
+            if (elementIndex == this.fieldElement.length) {
+              this.$emit('on-enter-over');
+            } else {
+              this.getFocusElementByIndex(elementIndex).focus();
+            }
+            break;
+          }
+        }
+      },
+      getFocusElementByIndex(index) {
+        for (let elementIndex = index; elementIndex < this.fieldElement.length; elementIndex++) {
+          let node = this.fieldElement[elementIndex];
+          if (node.getAttribute('type') == 'hidden') {
+            node = node.parentNode;
+          }
+          if (node.disabled || node.readonly) {
+            continue;
+          }
+          return node;
+        }
+      }
+    },
+    watch: {
+      rules() {
+        this.validate();
+      },
+      fieldLength(n, o) {
+        this.setEnterFields();
+      }
+    },
+    created() {
+      this.$on('on-form-item-add', (field) => {
+        if (field) this.fields.push(field);
+        return false;
+      });
+      this.$on('on-form-item-remove', (field) => {
+        if (field.prop) this.fields.splice(this.fields.indexOf(field), 1);
+        return false;
+      });
+    },
+    mounted() {
+      this.setEnterFields();
+      if (this.enterEvent) {
+        this.formEnterEvent();
+      }
+      if (this.captureFocus) {
+        this.setCaptureFocus();
+      }
+    }
+  };
+</script>

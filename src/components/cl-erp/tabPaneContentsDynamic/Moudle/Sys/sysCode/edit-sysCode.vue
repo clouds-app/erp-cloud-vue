@@ -49,12 +49,29 @@
           </Col>
           <Col span="6">
             <FormItem label="编码方式" prop="scStyle">
-              <Input
+                <Select
+                      v-model="formDataInfo.master.scStyle"
+                      placeholder="请选择编码方式"
+                    >
+                     <Option value="0">
+                        0:流水顺序
+                        </Option>
+                      <Option value="1">
+                        1:按年复位
+                        </Option>
+                      <Option value="2">
+                         2:按月复位
+                        </Option>
+                      <Option value="3">
+                         3:按日复位
+                        </Option>
+                    </Select>
+              <!-- <Input
                type="number"
                 v-model="formDataInfo.master.scStyle"
                 maxlength="20"
                 placeholder="请输入编码方式"
-              ></Input>
+              ></Input> -->
             </FormItem>
           </Col>
         </Row>
@@ -128,14 +145,18 @@
           </Col>
           <Col span="6">
             <FormItem label="启用前缀码">
-               <Select
+              <i-switch size="default"  v-model="formDataInfo.master.scNoPrep" true-value="1" false-value="0">
+                <span slot="open">是</span>
+                <span slot="close">否</span>
+            </i-switch>
+               <!-- <Select
                       v-model="formDataInfo.master.scNoPrep"
                       placeholder="请选择启用前缀码"
                     >
                       <Option value="1">是</Option>
                       <Option value="0">否</Option>
                     </Select>
-             
+              -->
             </FormItem>
           </Col>
         </Row>
@@ -204,7 +225,7 @@
                     ></Input>
                   </td>
                   <td class="ivu-table-column-left" width="100">
-                   
+
                      <DatePicker  @input="
                         value => {
                           valueChangeAssign(value, index, row, 'sciDate');
@@ -219,8 +240,8 @@
 
         <Col span="12">
           <Tabs value="ruleDesc">
-            <TabPane label="字段描述" name="ruleDesc"> 
-                   
+            <TabPane label="字段描述" name="ruleDesc">
+
                     <felddescription></felddescription>
             </TabPane>
           </Tabs>
@@ -244,30 +265,29 @@
  *
  * @created 2019/11/20 17:07:54
  */
-import editWindow from "@/components/edit-window/edit-window";
+import editWindow from '@/components/edit-window/edit-window'
 // import Form from '@/components/form/form'
 import dayjs from 'dayjs'
-import eTable from "@/components/e-table/e-table";
-import request from "@/libs/request";
-import editBaseMixins from "../../mixins/edit";
-import { forEach } from '../../../../../../libs/tools';
-import felddescription from'@/components/cl-erp/Fielddescription/felddescription';
-
+import eTable from '@/components/e-table/e-table'
+import request from '@/libs/request'
+import editBaseMixins from '../../mixins/edit'
+import { forEach } from '../../../../../../libs/tools'
+import felddescription from '@/components/cl-erp/Fielddescription/felddescription'
 
 const default_formDataInfo = {
   // 主表 更改字段
   master: {
-    scCode: "",
-    scDate: "",
-    scDesc: "",
-    scInitValue: 0,
-    scLength: 0,
-    scName: "",
-    scNo: 0,
-    scNoPrep: 0,
-    scRule: "",
-     scStep: 0,
-    scStyle: 0
+    scCode: '',
+    scDate: '',
+    scDesc: '',
+    scInitValue: '0',
+    scLength: '0',
+    scName: '',
+    scNo: '0',
+    scNoPrep: '0',
+    scRule: '',
+    scStep: '0',
+    scStyle: '0'
   },
   // 子表 wareHouseItems 根据实际接口更改,其它不变
   codeItems: {
@@ -276,34 +296,34 @@ const default_formDataInfo = {
     deleteList: [], // 删除列
     updateList: [] // 更新列
   }
-};
+}
 export default {
-  name: "edit-warehouse",
+  name: 'edit-warehouse',
   mixins: [editBaseMixins],
   components: {
     editWindow,
-    //字段描述
+    // 字段描述
     felddescription,
     // Form,
     eTable
   },
-  data() {
+  data () {
     return {
-      requestBaseUrl: "/sys/code", // 请求 查询 操作的基础路径
+      requestBaseUrl: '/sys/code', // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
         scCode: [
-          { required: true, message: "编码编号不能为空", trigger: "blur" }
+          { required: true, message: '编码编号不能为空', trigger: 'blur' }
         ],
         scName: [
-          { required: true, message: "编码名称不能为空", trigger: "blur" }
+          { required: true, message: '编码名称不能为空', trigger: 'blur' }
         ],
         scRule: [
-          { required: true, message: "编码规则不能为空", trigger: "blur" }
+          { required: true, message: '编码规则不能为空', trigger: 'blur' }
         ],
         scStyle: [
-          { required: true, message: "编码方式不能为空", trigger: "blur" }
+          { required: true, message: '编码方式不能为空', trigger: 'blur' }
         ]
       },
       tableFieldsValidator: {
@@ -316,40 +336,40 @@ export default {
         // wsOwner: [
         //   { required: true, message: "所属厂区不能为空", trigger: "blur" }
         // ]
-      },
-     
-    };
+      }
+
+    }
   },
 
   methods: {
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo() {
-      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    HandleFormDataInfo () {
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
     },
     // 重写父类,修改提交数据
-    resetformDataInfo(_data) {
-      let tableData = this.$refs["tableFields"].getCategorizeData();
-       debugger
-      this.formDataInfo.codeItems = tableData;
-       if(!!_data.master.scDate){
-         _data.master.scDate = dayjs(_data.master.scDate).format('YYYY-MM-DD')
-       }
-       //格式化时间格式
-       if(_data.codeItems.addList && _data.codeItems.addList.length>0){
-         _data.codeItems.addList.forEach(item=>{
-           item.sciDate=dayjs(item.sciDate).format('YYYY-MM-DD')
-         })
-       }
-       //格式化时间格式
-       if(_data.codeItems.updateList && _data.codeItems.updateList.length>0){
-           _data.codeItems.updateList.forEach(item=>{
-           item.sciDate=dayjs(item.sciDate).format('YYYY-MM-DD')
-         })
-       }
-      return this.formDataInfo;
+    resetformDataInfo (_data) {
+      let tableData = this.$refs['tableFields'].getCategorizeData()
+      debugger
+      this.formDataInfo.codeItems = tableData
+      if (_data.master.scDate) {
+        _data.master.scDate = dayjs(_data.master.scDate).format('YYYY-MM-DD')
+      }
+      // 格式化时间格式
+      if (_data.codeItems.addList && _data.codeItems.addList.length > 0) {
+        _data.codeItems.addList.forEach(item => {
+          item.sciDate = dayjs(item.sciDate).format('YYYY-MM-DD')
+        })
+      }
+      // 格式化时间格式
+      if (_data.codeItems.updateList && _data.codeItems.updateList.length > 0) {
+        _data.codeItems.updateList.forEach(item => {
+          item.sciDate = dayjs(item.sciDate).format('YYYY-MM-DD')
+        })
+      }
+      return this.formDataInfo
     }
   }
-};
+}
 </script>
 
 <style>

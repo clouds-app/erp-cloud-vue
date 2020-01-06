@@ -4,13 +4,13 @@
       :title="actionLableName"
       v-model="showWindow"
       :fullscreen="false"
-      width="30%"
+      width="50%"
       :loading="!isLoaddingDone"
       @on-ok="formDataSubmit()"
     >
       <Form
         ref="formDataInfo"
-        :show-message="false"
+        :show-message="true"
         :model="formDataInfo"
         :rules="ruleValidate"
         :label-width="80"
@@ -23,15 +23,7 @@
             placeholder="请输入纸度"
           ></Input>
         </FormItem>
-        <FormItem label="开料" prop="plkarat">
-          <Input
-            v-model="formDataInfo.plkarat"
-            type="number"
-            maxlength="20"
-            placeholder="请输入部门名称"
-          ></Input>
-        </FormItem>
-          <FormItem label="毫米对照" prop="plWidthMM">
+        <FormItem label="毫米对照" prop="plWidthMM">
           <Input
             v-model="formDataInfo.plWidthMM"
             type="number"
@@ -39,6 +31,19 @@
             placeholder="请输入部门名称"
           ></Input>
         </FormItem>
+        <FormItem label="开料">
+           <i-switch size="default"  v-model="formDataInfo.plkarat" true-value="true" false-value="false">
+            <span slot="open">是</span>
+            <span slot="close">否</span>
+        </i-switch>
+          <!-- <Input
+            v-model="formDataInfo.plkarat"
+            type="number"
+            maxlength="20"
+            placeholder="请输入部门名称"
+          ></Input> -->
+        </FormItem>
+
         <FormItem label="备注" prop="remark">
           <Input
             v-model="formDataInfo.remark"
@@ -49,7 +54,7 @@
           ></Input>
         </FormItem>
       </Form>
-      
+
     </editWindow>
   </div>
 </template>
@@ -68,40 +73,55 @@
  *
  * @created 2019/11/20 17:07:54
  */
-import editBaseMixins from "../../mixins/edit";
+import editBaseMixins from '../../mixins/edit'
+import { customValidator } from '@/libs/validator'
 const default_formDataInfo = {
-  plWidth: "0",
-  plkarat: "0",
-  p1WidthMM:"0",
-  remark: ""
-};
+  plWidth: 0,
+  plkarat: 0,
+  p1WidthMM: 0,
+  plWidthMM: 0,
+  remark: ''
+}
 export default {
-  name: "edit-paperLimit",
+  name: 'edit-paperLimit',
   mixins: [editBaseMixins],
 
-  data() {
+  data () {
     return {
-      requestBaseUrl: "/bas/paperLimit", // 请求 查询 操作的基础路径
+      requestBaseUrl: '/bas/paperLimit', // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
         plWidth: [
-          { required: true, message: "", trigger: "blur" }
+          { required: true, message: '纸度不能为空', trigger: 'blur' },
+          {
+            validator: customValidator,
+            trigger: 'blur',
+            customRule: ['toCDB', 'number', 'spaceStr'],
+            fieldDesc: '纸度'
+          }
         ],
-        plkarat: [
-          { required: true, message: "", trigger: "blur" }
+        plWidthMM: [
+          { required: false, message: '毫米对照不能为空', trigger: 'blur' }, {
+
+            validator: customValidator,
+            trigger: 'blur',
+            customRule: ['number', 'spaceStr'],
+            fieldDesc: '毫米对照'
+
+          }
         ]
       }
-    };
+    }
   },
 
   methods: {
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo() {
-      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    HandleFormDataInfo () {
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
     }
   }
-};
+}
 </script>
 
 <style></style>

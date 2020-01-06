@@ -3,7 +3,7 @@
 <!-- <div style="padding: 50px;">
 <br/>
   <Button type="primary" @click="formDesign">表单设计</Button>
-  <Button type="primary" @click="formDesign">表单设计</Button> 
+  <Button type="primary" @click="formDesign">表单设计</Button>
 <br/>
 <Divider>弹出框示例</Divider>
    <Row :gutter="20">
@@ -34,32 +34,58 @@
      </Col>
    </Row>
 </div> -->
-
+<div style="padding: 50px;">
+  <Row>
+    <Col span="5">
+      <Button @click="showBoxExpression = true" size='default' type="primary">盒式公式</Button>
+    </Col>
+    <Col span="5">
+      <Button @click="showPreferential = true" size='default' type="primary">优惠方式</Button>
+    </Col>
+  </Row>
+  <boxExpression v-model="showBoxExpression" @expression-ok="expressionOk"></boxExpression>
+  <preferential v-model="showPreferential" @preferential-ok="preferentialOk"></preferential>
+</div>
 
 </template>
 
 <script>
-    import popup from '@/components/popup/popup'
-    export default{
-      components:{popup},
-      data(){
-        return {
-          editFormItem:{
-            main:{
-              piRemark:'',
-              piNo:''
-            }
-          }
-        }
-      },
-      methods:{
-        formDesign(){
-          this.$router.push({
-            name:'formDesign'
-          })
+import popup from '@/components/popup/popup'
+import boxExpression from '@/components/box-expression/boxExpression'
+import preferential from '@/components/preferential/preferential'
+export default{
+  components: { popup, boxExpression, preferential },
+  data () {
+    return {
+      showBoxExpression: false,
+      showPreferential: false,
+      editFormItem: {
+        main: {
+          piRemark: '',
+          piNo: ''
         }
       }
     }
+  },
+  methods: {
+    formDesign () {
+      this.$router.push({
+        name: 'formDesign'
+      })
+    },
+    expressionOk (text, value, json) {
+      this.$Message.info(text)
+      console.log(text)
+      console.log(value)
+      console.log(json)
+    },
+    preferentialOk (text, value) {
+      this.$Message.info(`text=${text}`)
+      this.$Message.info('value值看console')
+      console.log(value)
+    }
+  }
+}
 </script>
 
 <style>

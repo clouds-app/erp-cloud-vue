@@ -12,7 +12,7 @@
     >
       <Form
         ref="formDataInfo"
-        :show-message="false"
+        :show-message="true"
         :model="formDataInfo.master"
         :rules="ruleValidate"
         :label-width="100"
@@ -36,12 +36,9 @@
               ></Input>
             </FormItem>
           </Col>
-           
-        </Row>
-        <Row>
            <Col span="12">
             <FormItem label="仓库类型" prop="whType">
-               <optionSearch @onChange="optionOnChangeBy" :defaultItem="formDataInfo.master.whType" :loaddingDataWhen="showWindow" formKey="whType" query="whereWork"/>
+               <optionSearch @onChange="optionOnChangeBy" :defaultItem="formDataInfo.master.whType" :loaddingDataWhen="showWindow" formKey="whType" query="wareHouseType"/>
               <!-- <Input
                 v-model="formDataInfo.master.whType"
                 maxlength="20"
@@ -58,7 +55,9 @@
               ></Input>
             </FormItem>
           </Col>
+
         </Row>
+
       </Form>
 
       <Tabs>
@@ -67,42 +66,27 @@
           <eTable
             ref="tableFields"
             unqiue-mark="id"
-            :height="400"
             :index-menu="true"
             :col-start="0"
             :width="300"
-            :row-init-data="tableFieldInitData"
+            :row-init-data="tableInitData?tableInitData.wareHouseItemFm:{}"
             :data="formDataInfo.wareHouseItems.defaultList"
             :rules="tableFieldsValidator"
           >
             <template slot="head">
               <tr>
-                <th class="ivu-table-column-left" width="150">
+                <th class="ivu-table-column-center" width="150">
                   <div class="ivu-table-cell">
                     <span class="">仓位编号</span>
                   </div>
                 </th>
-                <th class="ivu-table-column-left" width="150">
+                <th class="ivu-table-column-center" width="150">
                   <div class="ivu-table-cell">
                     <span class="">仓位名称</span>
                   </div>
                 </th>
-                <!-- <th class="ivu-table-column-left" width="100">
-                  <div class="ivu-table-cell">
-                    <span class="">所属厂区</span>
-                  </div>
-                </th>
-                <th class="ivu-table-column-left" width="100">
-                  <div class="ivu-table-cell">
-                    <span class="">体积</span>
-                  </div>
-                </th>
-                <th class="ivu-table-column-left" width="100">
-                  <div class="ivu-table-cell">
-                    <span class="">面积</span>
-                  </div>
-                </th> -->
-                <th class="ivu-table-column-left" width="150">
+
+                <th class="ivu-table-column-center" width="150">
                   <div class="ivu-table-cell">
                     <span class="">备注</span>
                   </div>
@@ -113,7 +97,7 @@
               slot="body"
               slot-scope="{ row, index, valueChangeAssign }"
             >
-              <td class="ivu-table-column-left" width="150">
+              <td class="ivu-table-column-center" width="150">
                 <Input
                   v-model="row.wsCode"
                   @input="
@@ -125,7 +109,7 @@
                   :maxlength="20"
                 ></Input>
               </td>
-              <td class="ivu-table-column-left" width="150">
+              <td class="ivu-table-column-center" width="150">
                 <Input
                   v-model="row.wsName"
                   @input="
@@ -137,43 +121,8 @@
                   :maxlength="20"
                 ></Input>
               </td>
-              <!-- <td class="ivu-table-column-left" width="100">
-                <Input
-                  v-model="row.wsOwner"
-                  @input="
-                    value => {
-                      valueChangeAssign(value, index, row, 'wsOwner');
-                    }
-                  "
-                  size="small"
-                  :maxlength="20"
-                ></Input>
-              </td>
-              <td class="ivu-table-column-left" width="100">
-                <Input
-                  v-model="row.wsCube"
-                  @input="
-                    value => {
-                      valueChangeAssign(value, index, row, 'wsCube');
-                    }
-                  "
-                  size="small"
-                  :maxlength="20"
-                ></Input>
-              </td>
-              <td class="ivu-table-column-left" width="100">
-                <Input
-                  v-model="row.wsArea"
-                  @input="
-                    value => {
-                      valueChangeAssign(value, index, row, 'wsArea');
-                    }
-                  "
-                  size="small"
-                  :maxlength="20"
-                ></Input>
-              </td> -->
-              <td class="ivu-table-column-left" width="100">
+
+              <td class="ivu-table-column-center" width="100">
                 <Input
                   v-model="row.remark"
                   @input="
@@ -208,29 +157,30 @@
  * @created 2019/11/20 17:07:54
  */
 import optionSearch from '../../components/optionSearch'
-import editWindow from "@/components/edit-window/edit-window";
+import editWindow from '@/components/edit-window/edit-window'
 // import Form from '@/components/form/form'
-import eTable from "@/components/e-table/e-table";
-import request from "@/libs/request";
-import editBaseMixins from "../../mixins/edit";
+import eTable from '@/components/e-table/e-table'
+import request from '@/libs/request'
+import editBaseMixins from '../../mixins/edit'
+import { customValidator, uniqueValidator } from '@/libs/validator'
 const default_formDataInfo = {
-        // 主表 更改字段
-        master: {
-          whCode: "",
-          whName: "",
-          whType: "",
-          remark: ""
-        },
-        // 子表 wareHouseItems 根据实际接口更改,其它不变
-        wareHouseItems: {
-          addList: [], // 添加列
-          defaultList: [], // 默认列
-          deleteList: [], // 删除列
-          updateList: [] // 更新列
-        }
-      }
+  // 主表 更改字段
+  master: {
+    whCode: '',
+    whName: '',
+    whType: '2',
+    remark: ''
+  },
+  // 子表 wareHouseItems 根据实际接口更改,其它不变
+  wareHouseItems: {
+    addList: [], // 添加列
+    defaultList: [], // 默认列
+    deleteList: [], // 删除列
+    updateList: [] // 更新列
+  }
+}
 export default {
-  name: "edit-warehouse",
+  name: 'edit-warehouse',
   mixins: [editBaseMixins],
   components: {
     editWindow,
@@ -238,50 +188,75 @@ export default {
     // Form,
     eTable
   },
-  data() {
+  data () {
     return {
-      requestBaseUrl: "/bas/warehouse", // 请求 查询 操作的基础路径
-      formDataInfo:Object.assign({},default_formDataInfo),// 防止添加和更新数据提交发生冲突
+      formName: 'warehouseFm', // 主表的formName名称
+      requestBaseUrl: '/bas/warehouse', // 请求 查询 操作的基础路径
+      formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
         whCode: [
-          { required: true, message: "部门编码不能为空", trigger: "blur" }
+          { required: true, message: '部门编码不能为空', trigger: 'blur' },
+          {
+            validator: customValidator,
+            trigger: 'blur',
+            customRule: ['toCDB', 'identifier', 'spaceStr'],
+            fieldDesc: '部门编码'
+          },
+          {
+            validator: uniqueValidator,
+            trigger: 'blur',
+            fieldDesc: '部门编号',
+            params: {
+              fieldName: 'whCode',
+              formName: 'warehouseFm',
+              id: () => {
+                return this.formDataInfo.id
+              }
+            }
+          }
         ],
         whName: [
-          { required: true, message: "部门名称不能为空", trigger: "blur" }
+          { required: true, message: '部门名称不能为空', trigger: 'blur' },
+          {
+            validator: customValidator,
+            trigger: 'blur',
+            customRule: ['toCDB', 'spaceStr'],
+            fieldDesc: '部门名称'
+          }
         ],
         whType: [
-          { required: true, message: "班组类型不能为空", trigger: "blur" }
+          { required: true, message: '班组类型不能为空', trigger: 'blur' }
         ]
       },
       tableFieldsValidator: {
         wsCode: [
-          { required: true, message: "仓位编号不能为空", trigger: "blur" }
+          { required: true, message: '仓位编号不能为空', trigger: 'blur' }
         ],
         wsName: [
-          { required: true, message: "仓位名称不能为空", trigger: "blur" }
+          { required: true, message: '仓位名称不能为空', trigger: 'blur' }
         ],
         wsOwner: [
-          { required: true, message: "所属厂区不能为空", trigger: "blur" }
+          { required: true, message: '所属厂区不能为空', trigger: 'blur' }
         ]
       }
-    };
+    }
   },
 
   methods: {
-     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo(){
-     this.formDataInfo=Object.assign({},default_formDataInfo)
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo () {
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
     },
     // 重写父类,修改提交数据
-    resetformDataInfo(_data) {
-      let tableData = this.$refs["tableFields"].getCategorizeData();
+    resetformDataInfo (_data) {
+      let tableData = this.$refs['tableFields'].getCategorizeData()
       // debugger
-      this.formDataInfo.wareHouseItems = tableData;
-      return this.formDataInfo;
+      this.formDataInfo.wareHouseItems = tableData
+      return this.formDataInfo
     }
   }
-};
+}
 </script>
 
 <style>

@@ -1,5 +1,5 @@
 <template>
-  <Modal v-model="show" :mask-closable="maskClosable"  class="edit-window"
+  <Modal :styles="{top: fullscreen?'0':'45px'}" v-model="show" :mask-closable="maskClosable"  class="edit-window"
 
   :scrollable="scrollable" :fullscreen="fullscreen"  :title="title"
     @on-ok="onOk" @on-cancel="onCancel" :width="width">
@@ -15,74 +15,75 @@
 </template>
 
 <script>
-  export default {
-    data() {
-      return {
-        show: false,
-        html: ''
-      }
+export default {
+  data () {
+    return {
+      show: false,
+      html: ''
+    }
+  },
+  props: {
+    spinLoaddingText: {
+      type: String,
+      default: ''
     },
-    props: {
-      spinLoaddingText:{
-          type: String,
-          default: ''
-      },
-      loading:{
-        type: Boolean,
-        default: false
-      },
-      maskClosable: {
-        type: Boolean,
-        default: false
-      },
-      scrollable: {
-        type: Boolean,
-        default: true
-      },
-      fullscreen: {
-        type: Boolean,
-        default: true
-      },
-      title: {
-        type: String,
-        default: '窗口'
-      },
-      value: {
-        type: Boolean,
-        default: false
-      },
-      width: {
-        type: String | Number,
-        default: 'auto'
-      },
-      lazyTime: {
-        required: false,
-        default: 0
-      }
+    loading: {
+      type: Boolean,
+      default: false
     },
-    watch: {
-      show(n, o) {
-        this.$emit('input', n);
-      },
-      value(n, o) {
-       // debugger
-        this.show = n;
-      }
+    maskClosable: {
+      type: Boolean,
+      default: false
     },
-    methods: {
-      onOk() {
-        this.$emit('on-ok');
-      },
-      onCancel() {
-        this.show = false;
-        this.$emit('on-cancel');
-      }
+    scrollable: {
+      type: Boolean,
+      default: true
     },
-    created() {}
-  }
+    fullscreen: {
+      type: Boolean,
+      default: true
+    },
+    title: {
+      type: String,
+      default: '窗口'
+    },
+    value: {
+      type: Boolean,
+      default: false
+    },
+    width: {
+      type: String | Number,
+      default: 'auto'
+    },
+    lazyTime: {
+      required: false,
+      default: 0
+    }
+  },
+  watch: {
+    show (n, o) {
+      this.$emit('input', n)
+    },
+    value (n, o) {
+      // debugger
+      this.show = n
+    }
+  },
+  methods: {
+    onOk () {
+      this.$emit('on-ok')
+    },
+    onCancel () {
+      this.show = false
+      this.$emit('on-cancel')
+    }
+  },
+  created () {}
+}
 </script>
 
 <style>
+
 .edit-window .ivu-modal-body{
   padding: 10px 10px 0 10px !important;
 }

@@ -1,178 +1,185 @@
 <template>
   <div class="cl-moudle">
-    <htmlTemplate 
-    :currrentRowItem="currrentRowItem" 
-    @isLoaddingDone="getLoaddingDone" 
-    :requestBaseUrl="functionParams.requestBaseUrl" 
-    :uniqueId="functionParams.uniqueId"
-    :queryParamsDefault="queryParamsDefault"
+    <htmlTemplate
+      :currrentRowItem="currrentRowItem"
+      @isLoaddingDone="getLoaddingDone"
+      :requestBaseUrl="functionParams.requestBaseUrl"
+      :uniqueId="functionParams.uniqueId"
+      :queryParamsDefault="queryParamsDefault"
     >
     </htmlTemplate>
-    <div class="content-container" :style="{'height':tableHeight+'px'}">
-      <vTable :height="tableHeight " ref="master_list_table" columns-url="/bas/worker/workerFm/columns" url="/bas/worker/page" :pagination="true" @row-click="tableRowClick"></vTable>
+    <div class="content-container" :style="{ height: tableHeight + 'px' }">
+      <vTable
+        :height="tableHeight"
+        ref="master_list_table"
+       :columns-url="functionParams.requestColBaseUrl + '/workerFm'"
+        url="/bas/worker/page"
+        :pagination="true"
+        @row-click="tableRowClick"
+      ></vTable>
     </div>
-   <editForm  
-    :isLoaddingDone="isLoaddingDone"
-    :form-detail-data="formDetailData"
+    <editForm
+      :isLoaddingDone="isLoaddingDone"
+      :form-detail-data="formDetailData"
       :action="action"
-      @submit-success="search()" 
-      v-model="showEditWindow"/>
+      @submit-success="search()"
+      v-model="showEditWindow"
+    />
   </div>
 </template>
 <script>
 import vTable from '@/components/tables/vTable'
 import htmlTemplate from '../components/htmlTemplate'
 import editForm from './edit/edit-worker'
-import listBaseMixins from "../mixins/list";
-  export default {
-   mixins: [listBaseMixins],
-   components: {
-       editForm,htmlTemplate,vTable
+import listBaseMixins from '../mixins/list'
+export default {
+  mixins: [listBaseMixins],
+  components: {
+    editForm,
+    htmlTemplate,
+    vTable
+  },
+  data () {
+    return {
+      functionParams: {
+        requestBaseUrl: '/bas/worker',
+        uniqueId: 'workerId'
       },
-    data() {
-      return {
-        functionParams:{
-            requestBaseUrl: '/bas/worker',
-            uniqueId:'workerId'
+      // 查询参数 ,注意格式
+      queryParamsDefault: [
+        {
+          title: '人员编号',
+          code: 'workCode',
+          workCode: ''
         },
-       // 查询参数 ,注意格式
-        queryParamsDefault:[
-            {
-            title: '请输入人员编号',
-            code:'workCode',
-            workCode:''
-           },
-           {
-            title: '请输入人员名称',
-            name:'workName',
-            workName: '',
-          },
-        ],
-        columns: [
-           {
-            title: '人员编号',
-            key: 'workCode',
-            align: 'center'
-          },
-           {
-            title: '人员名称',
-            key: 'workName',
-            align: 'center'
-          },
-           {
-            title: '职别',
-            key: 'workOptType',
-            align: 'center'
-          },
-           {
-            title: '部门名称',
-            key: 'deptName',
-            align: 'center'
-          },
-           {
-            title: '班组名称',
-            key: 'teamName',
-            align: 'center'
-          },
-           {
-            title: '性别',
-            key: 'sex',
-            align: 'center'
-          },
-           {
-            title: '出生日期',
-            key: 'borthDay',
-            align: 'center'
-          },
-           {
-            title: '籍贯',
-            key: 'borthAdress',
-            align: 'center'
-          },
-           {
-            title: '民族',
-            key: 'nation',
-            align: 'center'
-          },
-           {
-            title: '婚否',
-            key: 'iisMarried',
-            align: 'center'
-          },
-           {
-            title: '入职日期',
-            key: 'workInDate',
-            align: 'center'
-          },
-           {
-            title: '手机号码',
-            key: 'mob',
-            align: 'center'
-          },
-          {
-            title: '备注',
-            key: 'remark',
-            align: 'center'
-          },
-           {
-            title: '审核状态',
-            key: 'iisAudit',
-            align: 'center'
-          },
-             {
-            title: '状态',
-            key: 'status',
-            align: 'center'
-          },
-             {
-            title: '创建人',
-            key: 'createUser',
-            align: 'center'
-          },
-          {
-            title: '创建时间',
-            key: 'createTime',
-            align: 'center'
-          },
-             {
-            title: '修改人',
-            key: 'updateUser',
-            align: 'center'
-          },
-             {
-            title: '修改时间',
-            key: 'updateTime',
-            align: 'center'
-          },
-          {
-            title: '审核人',
-            key: 'auditUser',
-            align: 'center'
-          },
-           {
-            title: '审核时间',
-            key: 'auditTime',
-            align: 'center'
-          },
-        ],
-       
-      }
-    },
-    methods: {
-      tableRowClick(rowData, rowIndex) {
+        {
+          title: '人员名称',
+          name: 'workName',
+          workName: ''
+        }
+      ],
+      columns: [
+        {
+          title: '人员编号',
+          key: 'workCode',
+          align: 'center'
+        },
+        {
+          title: '人员名称',
+          key: 'workName',
+          align: 'center'
+        },
+        {
+          title: '职别',
+          key: 'workOptType',
+          align: 'center'
+        },
+        {
+          title: '部门名称',
+          key: 'deptName',
+          align: 'center'
+        },
+        {
+          title: '班组名称',
+          key: 'teamName',
+          align: 'center'
+        },
+        {
+          title: '性别',
+          key: 'sex',
+          align: 'center'
+        },
+        {
+          title: '出生日期',
+          key: 'borthDay',
+          align: 'center'
+        },
+        {
+          title: '籍贯',
+          key: 'borthAdress',
+          align: 'center'
+        },
+        {
+          title: '民族',
+          key: 'nation',
+          align: 'center'
+        },
+        {
+          title: '婚否',
+          key: 'iisMarried',
+          align: 'center'
+        },
+        {
+          title: '入职日期',
+          key: 'workInDate',
+          align: 'center'
+        },
+        {
+          title: '手机号码',
+          key: 'mob',
+          align: 'center'
+        },
+        {
+          title: '备注',
+          key: 'remark',
+          align: 'center'
+        },
+        {
+          title: '审核状态',
+          key: 'iisAudit',
+          align: 'center'
+        },
+        {
+          title: '状态',
+          key: 'status',
+          align: 'center'
+        },
+        {
+          title: '创建人',
+          key: 'createUser',
+          align: 'center'
+        },
+        {
+          title: '创建时间',
+          key: 'createTime',
+          align: 'center'
+        },
+        {
+          title: '修改人',
+          key: 'updateUser',
+          align: 'center'
+        },
+        {
+          title: '修改时间',
+          key: 'updateTime',
+          align: 'center'
+        },
+        {
+          title: '审核人',
+          key: 'auditUser',
+          align: 'center'
+        },
+        {
+          title: '审核时间',
+          key: 'auditTime',
+          align: 'center'
+        }
+      ]
+    }
+  },
+  methods: {
+    tableRowClick (rowData, rowIndex) {
       //  debugger
-       this.formDetailData ={} // 清除上次缓存数据 增加体验良好
-       this.masterRowSelection = rowData;
-       if(rowData!=null){
-          // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
-          this.currrentRowItem.rowName=rowData.workCode+' '+rowData.workName // 要修改成对应的 列
-       }
-     },
-    },
-   
+      this.formDetailData = {} // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData
+      if (rowData != null) {
+        // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
+        this.currrentRowItem.rowName =
+          rowData.workCode + ' ' + rowData.workName // 要修改成对应的 列
+      }
+    }
   }
+}
 </script>
 
-<style>
-
-</style>
+<style></style>

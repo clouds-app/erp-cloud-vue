@@ -47,6 +47,13 @@
              <InputNumber :min="0" v-model="formModel.master.formSort" size="small"></InputNumber>
             </FormItem>
           </Col>
+
+          <Col span="5">
+            <FormItem label="页大小" prop="master.pageSize">
+             <InputNumber :min="10" v-model="formModel.master.pageSize" size="small"></InputNumber>
+            </FormItem>
+          </Col>
+
         </Row>
       </Form>
       <Tabs>
@@ -176,7 +183,6 @@
                   </div>
                 </th>
 
-
               </tr>
             </template>
 
@@ -208,7 +214,9 @@
               </td>
 
             <td class="ivu-table-column-center" width="100">
-              <Input v-model="row.fieldOrder" @input="value=>{valueChangeAssign(value,index,row,'fieldOrder');}" size="small"
+              <Input v-if="row.fieldOrder == -1" v-model="row.fieldOrder = (index + 1)*10" @input="value=>{valueChangeAssign(value,index,row,'fieldOrder');}" size="small"
+                :maxlength="20" ></Input>
+              <Input v-else v-model="row.fieldOrder" @input="value=>{valueChangeAssign(value,index,row,'fieldOrder');}" size="small"
                 :maxlength="20" ></Input>
             </td>
 
@@ -292,7 +300,6 @@
                 <Input v-model="row.fieldI18n" @input="value=>{valueChangeAssign(value,index,row,'fieldI18n');}" size="small"
                   :maxlength="20" ></Input>
               </td>
-
 
             </template>
           </eTable>
@@ -456,329 +463,336 @@
 </template>
 
 <script>
-  import editWindow from '@/components/edit-window/edit-window'
-  import Form from '@/components/form/form'
-  import eTable from '@/components/e-table/e-table'
-  import request from '@/libs/request'
-  import tableSelect from '@/components/table-select/table-select'
-  export default {
-    name: 'sysEdit',
-    components: {
-      editWindow,
-      Form,
-      eTable,
-      tableSelect
-    },
-    data() {
-      return {
-        spinShow:true,
-        showWindow: false,
-        formInitData:{//表单初始化数据
-          master:{
-            tableName:'',
-            tableAlias:'',
-            tableDesc:'',
-            tableType:'',
-            parentTable:'',
-            tableDescI18n:'',
-            formName:'',
-            formSort:0
-          },
-          slave:{
-            tableFields:{
-              fieldName:'',
-              fieldDesc:'',
-              fieldDataType:'',
-              fieldLength:'',
-              fieldDefault:'',
-              fieldPk:false,
-              fieldNotnull:false,
-              fieldOrder:0
-            },
-            tablePages:{
-              fieldName:'',
-              fieldDesc:'',
-              listShow:true,
-              editShow:true,
-              detailShow:true,
-              width:100,
-              titleAlign:'center',
-              align:'left',
-              fixed:'',
-              ellipsis:true,
-              resizable:true,
-              query:false,
-              queryType:0,
-              queryCondition:'',
-              readOnly:false,
-              controlType:'input',
-              virtual:false,
-              parentField:'',
-              format:'',
-              fieldI18n:'',
-              fieldOrder:-1
-            },
-            tableForeigners:{
-              fieldName:'',
-              masterTableName:'',
-              masterTableField:''
-            },
-            pageVirtualList:[]//虚拟节点
-          }
+import editWindow from '@/components/edit-window/edit-window'
+import Form from '@/components/form/form'
+import eTable from '@/components/e-table/e-table'
+import request from '@/libs/request'
+import tableSelect from '@/components/table-select/table-select'
+export default {
+  name: 'sysEdit',
+  components: {
+    editWindow,
+    Form,
+    eTable,
+    tableSelect
+  },
+  data () {
+    return {
+      spinShow: true,
+      showWindow: false,
+      formInitData: {// 表单初始化数据
+        master: {
+          tableName: '',
+          tableAlias: '',
+          tableDesc: '',
+          tableType: '',
+          parentTable: '',
+          tableDescI18n: '',
+          formName: '',
+          formSort: 0,
+          pageSize: 50
         },
-        formModel:{
-          master:{
-            tableName:'',
-            tableAlias:'',
-            tableDesc:'',
-            tableType:'',
-            parentTable:'',
-            tableDescI18n:'',
-            formName:'',
-            formSort:0
+        slave: {
+          tableFields: {
+            fieldName: '',
+            fieldDesc: '',
+            fieldDataType: '',
+            fieldLength: '',
+            fieldDefault: '',
+            fieldPk: false,
+            fieldNotnull: false,
+            fieldOrder: 0
           },
-          tableFields:[],
-          tablePages:[],
-          tableForeigners:[]
+          tablePages: {
+            fieldName: '',
+            fieldDesc: '',
+            listShow: true,
+            editShow: true,
+            detailShow: true,
+            width: 100,
+            titleAlign: 'center',
+            align: 'left',
+            fixed: '',
+            ellipsis: true,
+            resizable: true,
+            query: false,
+            queryType: 0,
+            queryCondition: '',
+            readOnly: false,
+            controlType: 'input',
+            virtual: false,
+            parentField: '',
+            format: '',
+            fieldI18n: '',
+            fieldOrder: -1
+          },
+          tableForeigners: {
+            fieldName: '',
+            masterTableName: '',
+            masterTableField: ''
+          },
+          pageVirtualList: []// 虚拟节点
+        }
+      },
+      formModel: {
+        master: {
+          tableName: '',
+          tableAlias: '',
+          tableDesc: '',
+          tableType: '',
+          parentTable: '',
+          tableDescI18n: '',
+          formName: '',
+          formSort: 0,
+          pageSize: 50
         },
-        dataType:['int','bigint','varchar','decimal','boolean','datetime','date','text','char'],
-        tableFieldsValidator:{
-          fieldName:[
-            {required: true, message: '列名不能为空', trigger: 'blur'},
-            {required:true,type:'string',pattern:/^[a-zA-Z]{1}[a-zA-Z0-9_]*$/,message:'列名只能包含字母数字和_且以字母开头',trigger: 'blur'},
-          ],
-          fieldDesc:[
-             {required: true, message: '列说明不能为空', trigger: 'blur'}
-          ],
-          fieldDataType:[
-             {required: true, message: '数据类型不能为空', trigger: 'change'}
-          ],
-          fieldLength:[
-             {message: '数据长度必须为数字', trigger: 'blur',pattern:/^\d+|(,\d)+$/}
-          ]
-        },
-        tablePagesValidator:{
-          fieldName:[
-            {required: true, message: '列名不能为空', trigger: 'blur'},
-            {required:true,type:'string',pattern:/^[a-zA-Z]{1}[a-zA-Z0-9_]*$/,message:'列名只能包含字母数字和_且以字母开头',trigger: 'blur'},
-          ],
-          fieldDesc:[
-             {required: true, message: '列说明不能为空', trigger: 'blur'}
-          ]
-        },tableList:[],
-        action:'add',
-        loadding:true,
-        masterTableDefaultPages:[
-          {
-            fieldName:'status',
-            fieldDesc:'状态'
-          },
-          {
-            fieldName:'createUser',
-            fieldDesc:'创建人'
-          },
-          {
-            fieldName:'createTime',
-            fieldDesc:'创建时间'
-          },{
-            fieldName:'updateUser',
-            fieldDesc:'修改人'
-          },{
-            fieldName:'updateTime',
-            fieldDesc:'修改时间'
-          },{
-            fieldName:'iisAudit',
-            fieldDesc:'审核状态'
-          },{
-            fieldName:'auditUser',
-            fieldDesc:'审核人'
-          },{
-            fieldName:'auditTime',
-            fieldDesc:'审核时间'
-          },{
-            fieldName:'status',
-            fieldDesc:'状态'
-          }
-        ],masterTableDefaultFields:[
-          {
-            fieldName:'createUser',
-            fieldDesc:'创建人',
-            fieldDataType:'varchar',
-            fieldLength:'20'
-          },{
-            fieldName:'createTime',
-            fieldDesc:'创建时间',
-            fieldDataType:'datetime',
-            fieldLength:''
-          },{
-            fieldName:'updateUser',
-            fieldDesc:'修改人',
-            fieldDataType:'varchar',
-            fieldLength:'20'
-          },{
-            fieldName:'updateTime',
-            fieldDesc:'修改时间',
-            fieldDataType:'datetime',
-            fieldLength:''
-          },{
-            fieldName:'iisAudit',
-            fieldDesc:'审核状态',
-            fieldDataType:'boolean',
-            fieldLength:'',
-            fieldDefault:'false'
-          },{
-            fieldName:'auditUser',
-            fieldDesc:'审核人',
-            fieldDataType:'varchar',
-            fieldLength:'20'
-          },{
-            fieldName:'auditTime',
-            fieldDesc:'审核时间',
-            fieldDataType:'datetime',
-            fieldLength:''
-          }
+        tableFields: [],
+        tablePages: [],
+        tableForeigners: []
+      },
+      dataType: ['int', 'bigint', 'varchar', 'decimal', 'boolean', 'datetime', 'date', 'text', 'char'],
+      tableFieldsValidator: {
+        fieldName: [
+          { required: true, message: '列名不能为空', trigger: 'blur' },
+          { required: true, type: 'string', pattern: /^[a-zA-Z]{1}[a-zA-Z0-9_]*$/, message: '列名只能包含字母数字和_且以字母开头', trigger: 'blur' }
         ],
-        defaultAdd:false
-      }
-    },
-    props: {
-      value: {
-        type: Boolean,
-        default: false
+        fieldDesc: [
+          { required: true, message: '列说明不能为空', trigger: 'blur' }
+        ],
+        fieldDataType: [
+          { required: true, message: '数据类型不能为空', trigger: 'change' }
+        ],
+        fieldLength: [
+          { message: '数据长度必须为数字', trigger: 'blur', pattern: /^\d+|(,\d)+$/ }
+        ]
       },
-      formDetailData:{
-        default:()=>{
-          return {};
-        }
-      }
-    },
-    watch: {
-      showWindow(n, o) {
-        this.$emit('input', n);
+      tablePagesValidator: {
+        fieldName: [
+          { required: true, message: '列名不能为空', trigger: 'blur' },
+          { required: true, type: 'string', pattern: /^[a-zA-Z]{1}[a-zA-Z0-9_]*$/, message: '列名只能包含字母数字和_且以字母开头', trigger: 'blur' }
+        ],
+        fieldDesc: [
+          { required: true, message: '列说明不能为空', trigger: 'blur' }
+        ]
       },
-      value(n, o) {
-        this.showWindow = n;
-        //窗体显示，文本框获取焦点
-        debugger;
-        this.$refs.editFormItem.setCaptureFocus();
-        if(this.action == 'add'){
-          this.formModel.master = JSON.parse(JSON.stringify(this.formInitData.master));
-          //this.spinShow = false;
-        }else{
-
-        }
-        this.$refs['tableFields_slave'].reset();
-        this.$refs['tablePages_slave'].reset();
-        this.$refs['tableForeigners_slave'].reset();
-
-      },formDetailData:{
-        handler(n,o){
-          if(n.master){
-            this.formModel.master = n.master;
-            this.formModel.tableFields = n.tableFields.defaultList;
-            this.formModel.tablePages = n.tablePages.defaultList;
-            this.formModel.tableForeigners = n.tableForeigners.defaultList;
-          }
-          this.loadding = false;
+      tableList: [],
+      action: 'add',
+      loadding: true,
+      masterTableDefaultPages: [
+        {
+          fieldName: 'createUser',
+          fieldDesc: '创建人'
         },
-        deep:true
-      },salaveTableFields:{
-        handler(n,o){
-          //当字段发生了变化，页面配置也是要发生变化的
-        },
-        deep:true
-      },'formModel.master.tableType':{
-        handler(n,o){
-          if(this.action != 'add' && (n == 2)){
-            return;
-          }
-          if(this.defaultAdd){
-            return;
-          }
-          this.masterTableDefaultPages.forEach((item)=>{
-             let pageData = Object.assign(JSON.parse(JSON.stringify(this.formInitData.slave.tablePages)),item);
-             this.$refs['tablePages_slave'].set(pageData);
-             this.defaultAdd = true;
-          })
-
+        {
+          fieldName: 'createTime',
+          fieldDesc: '创建时间'
+        }, {
+          fieldName: 'updateUser',
+          fieldDesc: '修改人'
+        }, {
+          fieldName: 'updateTime',
+          fieldDesc: '修改时间'
+        }, {
+          fieldName: 'iisAudit',
+          fieldDesc: '审核状态'
+        }, {
+          fieldName: 'auditUser',
+          fieldDesc: '审核人'
+        }, {
+          fieldName: 'auditTime',
+          fieldDesc: '审核时间'
+        }, {
+          fieldName: 'status',
+          fieldDesc: '状态'
         }
-      }
-    },
-    computed:{
-        virtualFields(){
-          //获取虚拟字段
-          return this.formModel.tablePages.filter((item)=>{
-            return item.virtual;
-          });
-        },getTableHeight(){
-          return window.innerHeight - 200;
+      ],
+      masterTableDefaultFields: [
+        {
+          fieldName: 'createUser',
+          fieldDesc: '创建人',
+          fieldDataType: 'varchar',
+          fieldLength: '20'
+        }, {
+          fieldName: 'createTime',
+          fieldDesc: '创建时间',
+          fieldDataType: 'datetime',
+          fieldLength: ''
+        }, {
+          fieldName: 'updateUser',
+          fieldDesc: '修改人',
+          fieldDataType: 'varchar',
+          fieldLength: '20'
+        }, {
+          fieldName: 'updateTime',
+          fieldDesc: '修改时间',
+          fieldDataType: 'datetime',
+          fieldLength: ''
+        }, {
+          fieldName: 'iisAudit',
+          fieldDesc: '审核状态',
+          fieldDataType: 'boolean',
+          fieldLength: '',
+          fieldDefault: 'false'
+        }, {
+          fieldName: 'auditUser',
+          fieldDesc: '审核人',
+          fieldDataType: 'varchar',
+          fieldLength: '20'
+        }, {
+          fieldName: 'auditTime',
+          fieldDesc: '审核时间',
+          fieldDataType: 'datetime',
+          fieldLength: ''
         }
-    },
-    methods:{
-      formEnterOver(){
-        this.$refs['tableFields_slave'].focusInit();
-      },formDataSubmit(){
-        //提交表单数据
-        this.$refs.editFormItem.validate(valid=>{
-        				if(!valid){//主表校验
-        					return;
-        				}
-        				//子表校验
-        				let subValidate = this.$refs['tableFields_slave'].validate();
-        				//数据组装
-        				let data = {
-        						master:this.formModel.master
-        				};
-        				//提示一下,存在子表中有校验，但未通过
-        				if(subValidate){
-        					return;
-        				}else{
-        					//校验通过
-        					//子表数据组装
-                  data['tableFields'] = this.$refs['tableFields_slave'].getCategorizeData();
-                  data['tablePages'] = this.$refs['tablePages_slave'].getCategorizeData();
-                  data['tableForeigners'] = this.$refs['tableForeigners_slave'].getCategorizeData();
-        					let url = `/sys/table`;
-        					request.post(url,data).then(res=>{
-        						this.$Message.success('操作成功');
-                    this.$emit('submit-success');
-                    this.showWindow = false;
-        					});
-        				}
-        			});
-      },pagesTableChange(data){
-        let reallyFields = data.filter((item)=>{
-          return !item.virtual;
-        })
-        //console.log(reallyFields);
-        reallyFields.forEach((item,index)=>{
-          debugger;
-          this.$refs.tableFields_slave.set({fieldName:item.fieldName,fieldDesc:item.fieldDesc},index);
-        });
-      },syncDbField(){
-        //同步数据库字段
-        let reallyFields = this.$refs.tablePages_slave.get().filter((item)=>{
-          return !item.virtual;
-        });
-         this.$refs.tableFields_slave.reset();
-        if(reallyFields.length == 0){
-          this.$Message.warning('没有实体字段');
-          return;
-        }
-        reallyFields.forEach((item,index)=>{
-          if(index > 0){
-            this.$refs.tableFields_slave.insertRow(index);
-          }
-          this.$refs.tableFields_slave.set({fieldName:item.fieldName,fieldDesc:item.fieldDesc,fieldOrder:item.fieldOrder},index);
-        });
-      }
-    },created() {
-      //加载列表
-      request.post('/sys/table/list').then(res=>{
-        this.tableList = res;
-      })
+      ],
+      defaultAdd: false
     }
+  },
+  props: {
+    value: {
+      type: Boolean,
+      default: false
+    },
+    formDetailData: {
+      default: () => {
+        return {}
+      }
+    }
+  },
+  watch: {
+    showWindow (n, o) {
+      this.$emit('input', n)
+    },
+    value (n, o) {
+      this.showWindow = n
+      // 窗体显示，文本框获取焦点
+      this.$refs.editFormItem.setCaptureFocus()
+      if (this.action == 'add') {
+        this.formModel.master = JSON.parse(JSON.stringify(this.formInitData.master))
+        // this.spinShow = false;
+      } else {
+
+      }
+      this.$refs['tableFields_slave'].reset()
+      this.$refs['tablePages_slave'].reset()
+      this.$refs['tableForeigners_slave'].reset()
+    },
+    formDetailData: {
+      handler (n, o) {
+        if (n.master) {
+          this.formModel.master = n.master
+          this.formModel.tableFields = n.tableFields.defaultList
+          this.formModel.tablePages = n.tablePages.defaultList
+          this.formModel.tableForeigners = n.tableForeigners.defaultList
+        }
+        this.loadding = false
+      },
+      deep: true
+    },
+    salaveTableFields: {
+      handler (n, o) {
+        // 当字段发生了变化，页面配置也是要发生变化的
+      },
+      deep: true
+    },
+    'formModel.master.tableType': {
+      handler (n, o) {
+        if (this.action == 'update' || n == 2) {
+          return
+        }
+        if (this.defaultAdd) {
+          return
+        }
+        this.masterTableDefaultPages.forEach((item) => {
+          let pageData = Object.assign(JSON.parse(JSON.stringify(this.formInitData.slave.tablePages)), item)
+          this.$refs['tablePages_slave'].set(pageData)
+          this.defaultAdd = true
+        })
+      }
+    }
+  },
+  computed: {
+    virtualFields () {
+      // 获取虚拟字段
+      return this.formModel.tablePages.filter((item) => {
+        return item.virtual
+      })
+    },
+    getTableHeight () {
+      return window.innerHeight - 215
+    }
+  },
+  methods: {
+    formEnterOver () {
+      this.$refs['tableFields_slave'].focusInit()
+    },
+    formDataSubmit () {
+      // 提交表单数据
+      this.$refs.editFormItem.validate(valid => {
+        				if (!valid) { // 主表校验
+        					return
+        				}
+        				// 子表校验
+        				let subValidate = this.$refs['tableFields_slave'].validate()
+        				// 数据组装
+        				let data = {
+        						master: this.formModel.master
+        				}
+        				// 提示一下,存在子表中有校验，但未通过
+        				if (subValidate) {
+
+        				} else {
+        					// 校验通过
+        					// 子表数据组装
+          data['tableFields'] = this.$refs['tableFields_slave'].getCategorizeData()
+          data['tablePages'] = this.$refs['tablePages_slave'].getCategorizeData()
+          data['tableForeigners'] = this.$refs['tableForeigners_slave'].getCategorizeData()
+        					let url = `/sys/table`
+        					request.post(url, data).then(res => {
+        						this.$Message.success('操作成功')
+            this.$emit('submit-success')
+            this.showWindow = false
+        					})
+        				}
+        			})
+    },
+    pagesTableChange (data) {
+      let reallyFields = data.filter((item) => {
+        return !item.virtual
+      })
+      // console.log(reallyFields);
+      reallyFields.forEach((item, index) => {
+        this.$refs.tableFields_slave.set({ fieldName: item.fieldName, fieldDesc: item.fieldDesc }, index)
+      })
+    },
+    syncDbField () {
+      // 同步数据库字段
+      let reallyFields = this.$refs.tablePages_slave.get().filter((item) => {
+        return !item.virtual
+      })
+      this.$refs.tableFields_slave.reset()
+      if (reallyFields.length == 0) {
+        this.$Message.warning('没有实体字段')
+        return
+      }
+      reallyFields.forEach((item, index) => {
+        if (index > 0) {
+          this.$refs.tableFields_slave.insertRow(index)
+        }
+        this.$refs.tableFields_slave.set({ fieldName: item.fieldName, fieldDesc: item.fieldDesc, fieldOrder: item.fieldOrder }, index)
+      })
+    },
+    changeSortIndex (value) {
+      console.log(value)
+    }
+  },
+  created () {
+    // 加载列表
+    request.post('/sys/table/list').then(res => {
+      this.tableList = res
+    })
   }
+}
 </script>
 
 <style>

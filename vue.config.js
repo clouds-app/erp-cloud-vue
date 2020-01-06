@@ -16,8 +16,8 @@ const devServerPort = 9527
 const mockServerPort = 9528
 
 module.exports = {
-   // 去掉文件名中的 hash
-   filenameHashing: false,
+  // 去掉文件名中的 hash
+  filenameHashing: false,
   // Project deployment base
   // By default we assume your app will be deployed at the root of a domain,
   // e.g. https://www.my-app.com/
@@ -39,11 +39,11 @@ module.exports = {
   productionSourceMap: false,
   // 这里写你调用接口的基础路径，来解决跨域，如果设置了代理，那你本地开发环境的axios的baseUrl要写为 '' ，即空字符串
   devServer: {
-    //before: app => {}
-    //https: true,
-    //hotOnly: false,
-    //host: 'localhost',
-    //port: 8080,//固定端口
+    // before: app => {}
+    // https: true,
+    // hotOnly: false,
+    // host: 'localhost',
+    // port: 8080,//固定端口
     open: true, // 自动开启浏览器
     compress: false, // 开启压缩
     overlay: {
@@ -51,41 +51,49 @@ module.exports = {
       errors: true
     },
     proxy: {
+      '/purchase': {
+        target: 'http://134.175.53.247/erp/', // 对应自己的接口
+        changeOrigin: true, // 是否跨域
+        ws: true,
+        pathRewrite: {
+          '^/': ''
+        }
+      },
       '/sale': {
-        target: 'http://134.175.53.247/erp/', //对应自己的接口
-        changeOrigin: true,//是否跨域
+        target: 'http://134.175.53.247/erp/', // 对应自己的接口
+        changeOrigin: true, // 是否跨域
         ws: true,
         pathRewrite: {
           '^/': ''
         }
       },
       '/sys': {
-        target: 'http://192.168.168.101:9999/', //对应自己的接口 http://192.168.168.101:8080/
-        changeOrigin: true,//是否跨域
+        target: 'http://134.175.53.247/erp/', // 对应自己的接口
+        changeOrigin: true, // 是否跨域
         ws: true,
         pathRewrite: {
           '^/': ''
         }
       },
       '/bas': {
-        target: 'http://192.168.168.101:8080/', //对应自己的接口 http://192.168.168.224:8081/
-        changeOrigin: true,//是否跨域
+        target: 'http://134.175.53.247/erp/', // 对应自己的接口 http://192.168.168.224:8081/
+        changeOrigin: true, // 是否跨域
         ws: true,
         pathRewrite: {
           '^/': ''
         }
       },
       '/common': {
-        target: 'http://134.175.53.247/erp/', //对应自己的接口
-        changeOrigin: true,//是否跨域
+        target: 'http://134.175.53.247/erp/', // 对应自己的接口
+        changeOrigin: true, // 是否跨域
         ws: true,
         pathRewrite: {
           '^/': ''
         }
       },
       '/file': {
-        target: 'http://134.175.53.247/erp/', //对应自己的接口
-        changeOrigin: true,//是否跨域
+        target: 'http://134.175.53.247/erp/', // 对应自己的接口
+        changeOrigin: true, // 是否跨域
         ws: true,
         pathRewrite: {
           '^/': ''

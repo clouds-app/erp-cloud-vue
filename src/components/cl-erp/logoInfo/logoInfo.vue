@@ -1,70 +1,36 @@
 <template>
-    
+
     <div class="cl-logoInfo" @click="turnToHome()">
-        <Row>
-            <Col span="4">
-                
-                    <div class="logo-con">
-                        <img style="height:35px;width:35px;" alt="Brand" :src="maxLogo" key="max-logo" />
-                    </div>
-            </Col>
-
-            <div id="logofont">
-                <span class="companyInfo">晨龙云ERP</span>&nbsp;
-                
-                <span class="company-subInfo" >纸箱普及版</span>
-            </div>
-
-<!--                 
-                    <Col span="14 ">
-                                
-                                    <span class="companyInfo">
-                                        晨龙云ERP
-                                    </span>
-                        
-                    </Col>
-                 
-                    <Col span="6">
-                        <span class="company-subInfo">
-                            纸箱普及版
-                        </span>
-                    </Col> -->
-           
-        </Row>
-       
-            
-         
+        <img style="height:35px;" alt="Brand" :src="maxLogo" key="max-logo" />
     </div>
 </template>
 
-
 <script>
 import baseMixin from '@/mixins'
-import maxLogo from '@/assets/images/logo.png'
+import maxLogo from '@/assets/images/logoInfo.png'
 
 export default {
-    data(){
-        return {
-            maxLogo
-        }
-    },
-    mixins:[baseMixin],
-    methods:{
-        turnToHome(){
-            if(this.currentCurrentPage !='home'){
-                console.log('========turnToHome=====_home====setGoHome========')
-                this.setGoHome()
-            }
-            
-        }
+  data () {
+    return {
+      maxLogo
     }
+  },
+  mixins: [baseMixin],
+  methods: {
+    turnToHome () {
+      if (this.currentCurrentPage != 'home') {
+        console.log('========turnToHome=====_home====setGoHome========')
+        this.setGoHome()
+      }
+    }
+  }
 }
 </script>
 
 <style>
 
 #logofont{
-   
+
     width: 400px;
 }
 

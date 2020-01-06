@@ -1,0 +1,159 @@
+<template>
+  <div class="cl-moudle">
+    <htmlTemplate
+      :currrentRowItem="currrentRowItem"
+      @isLoaddingDone="getLoaddingDone"
+      :requestBaseUrl="functionParams.requestBaseUrl"
+      :uniqueId="functionParams.uniqueId"
+      :queryParamsDefault="queryParamsDefault"
+    >
+    </htmlTemplate>
+    <div :style="{ height: tableHeight + 'px' }">
+      <Row>
+        <vTable
+          :height="tableHeight / 3 - 60"
+          ref="master_list_table"
+         :columns-url="functionParams.requestColBaseUrl + '/purSupplierArtFm'"   
+          url="/purchase/supplierArt/page"
+          :pagination="true"
+          @row-click="tableRowClick"
+        ></vTable>
+      </Row>
+      <Row>
+        <Tabs>
+          <TabPane label="供应商纸质明细" name="name1">
+            <vTable
+              :height="tableHeight / 3 - 30"
+              ref="master_list_table"
+             :columns-url="functionParams.requestColBaseUrl + '/purSupplierArtItemFm'"  
+              url="/purchase/supplierArt/page"
+              :pagination="true"
+              @row-click="tableRowClick"
+            ></vTable>
+          </TabPane>
+        </Tabs>
+      </Row>
+      <Row>
+        <Tabs>
+          <TabPane label="供应商纸质配纸" name="name1">
+            <vTable
+              :height="tableHeight / 3"
+              ref="master_list_table"
+              :columns-url="functionParams.requestColBaseUrl + '/purSupplierArtPZFm'"  
+              url="/purchase/supplierArt/page"
+              :pagination="true"
+              @row-click="tableRowClick"
+            ></vTable>
+          </TabPane>
+        </Tabs>
+      </Row>
+    </div>
+        <editForm
+        :isLoaddingDone="isLoaddingDone"
+        :form-detail-data="formDetailData"
+        moduleName="worker"
+        :action="action"
+        @submit-success="search()"
+        v-model="showEditWindow"
+        />
+    </div>
+</template>
+<script>
+import vTable from "@/components/tables/vTable";
+import htmlTemplate from "../components/htmlTemplate";
+//import editForm from "./edit/edit-warehouse";
+import listBaseMixins from "../mixins/list";
+import request from "@/libs/request";
+export default {
+  mixins: [listBaseMixins],
+  components: {
+    'editForm':function(resolve) { //组件的异步加载
+                require(["./edit/edit-supplierArt"], resolve);
+            },
+    htmlTemplate,
+    vTable,
+  },
+  data() {
+    return {
+      functionParams: {
+        requestBaseUrl: "/purchase/supplierArt",
+        uniqueId: "supplierArtId"
+      },
+      // 查询参数 ,注意格式
+      queryParamsDefault: [
+        {
+          title: "请输入供应商编号",
+          code: "purCode",
+          purCode: ""
+        },
+        {
+          title: "请输入供应商名称",
+          name: "purName",
+          purName: ""
+        }
+      ],
+      columns: [
+       
+      ],
+      tableFieldColuns: [
+        
+      ]
+    };
+  },
+  methods: {
+    tableRowClick(rowData, rowIndex) {
+      this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData;
+      if (rowData != null) {
+        //debugger
+        // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
+        this.currrentRowItem.rowName = rowData.purCode + " " + rowData.purName;
+      }
+      if (this.masterRowSelection) {
+        this.getItemDataById();
+      }
+    },
+    // 供应商纸质明细
+    getItemDataById() {
+      //debugger
+      let url = `/purchase/supplierArt/item/list`;
+      let data = {
+        supplierArtId: this.masterRowSelection.id
+      };
+      let _self = this;
+      request.post(url, data).then(res => {
+        //debugger
+        _self.tableFieldData = res;
+      });
+    },
+    //重写父类方法, 更新操作
+    // handleUpdateEvent() {
+    //   debugger;
+    //   this.getItemDataById();
+    // },
+
+
+    // 供应商纸质配置
+    getItemDataById_1() {
+      //debugger
+      let url = `/purchase/supplierArt/pz/list`;
+      let data = {
+        supplierArtItemId: this.masterRowSelection.id
+      };
+      let _self = this;
+      request.post(url, data).then(res => {
+        //debugger
+        _self.tableFieldData = res;
+      });
+    },
+    //重写父类方法, 更新操作
+    handleUpdateEvent() {
+      debugger;
+      this.getItemDataById();
+      this.getItemDataById_1();
+    }
+  }
+};
+</script>
+
+<style></style>

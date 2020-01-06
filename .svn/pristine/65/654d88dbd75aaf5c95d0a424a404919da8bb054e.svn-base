@@ -1,0 +1,258 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-art"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="70%"
+      :loading="!isLoaddingDone"
+      @on-ok="formDataSubmit()"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-message="false"
+        :model="formDataInfo"
+        :rules="ruleValidate"
+        :label-width="130"
+      >
+            <Row :gutter="16">
+                
+                    <Col span="18">
+                        <Row :gutter="16">
+                            <Col span="12">
+                                 <FormItem label="刀模规格宽" prop="dpModelSizeW">
+                                    <Input
+                                        v-model="formDataInfo.dpModelSizeW"
+                                        type="number"
+                                        maxlength="20"
+                                        placeholder="请输入刀模规格宽"
+                                    ></Input>
+                                    </FormItem>
+
+
+                                     <FormItem label="版类" prop="dpVerType">
+                                      <Select
+                                        v-model="formDataInfo.dpVerType"
+                                        placeholder="请选择"
+                                        >
+                                        <Option value="0">
+                                            0：平模
+                                        </Option>
+                                        <Option value="1"> 
+                                            1：圆模
+                                        </Option>
+                                         
+                                    
+                                    </Select>
+                                    </FormItem>
+
+                                     <FormItem label="版类Text" prop="dpVerTypeText">
+                                    <Input
+                                        v-model="formDataInfo.dpVerTypeText"
+                                        type="number"
+                                        maxlength="20"
+                                        placeholder="请输入版类Text"
+                                    ></Input>
+                                    </FormItem>
+
+
+                                     <FormItem label="用纸规格(inch)长" prop="dpWidthInch">
+                                    <Input
+                                        v-model="formDataInfo.dpWidthInch"
+                                        type="number"
+                                        maxlength="20"
+                                        placeholder="请输入用纸规格(inch)长"
+                                    ></Input>
+                                    </FormItem>
+
+                                    
+
+                                      <FormItem label="用纸规格(cm)长" prop="dpWidthmm">
+                                    <Input
+                                        v-model="formDataInfo.dpWidthmm"
+                                        type="number"
+                                        maxlength="20"
+                                        placeholder="请输入用纸规格(cm)长"
+                                    ></Input>
+                                    </FormItem>
+
+
+                                    
+
+                                     
+
+                            </Col>
+                            <Col span="12">
+
+                                <FormItem label="模切板编号" prop="dpNo" >
+                                    <Input
+                                        v-model="formDataInfo.dpNo"
+                                        maxlength="20"
+                                        placeholder="请输入模切板编号"
+                                    ></Input>
+                                </FormItem>
+                                    
+                                    <FormItem label="用纸规格(inch)宽" prop="dpLengthInch">
+                                    <Input
+                                        v-model="formDataInfo.dpLengthInch"
+                                        type="number"
+                                        maxlength="20"
+                                        placeholder="请输入用纸规格(inch)宽"
+                                    ></Input>
+                                    </FormItem>
+
+                                    <FormItem label="用纸规格(cm)宽" prop="dpLengthmm">
+                                    <Input
+                                        v-model="formDataInfo.dpLengthmm"
+                                        type="number"
+                                        maxlength="20"
+                                        placeholder="请输入用纸规格(cm)宽"
+                                    ></Input>
+                                    </FormItem>
+
+                                     <FormItem label="刀模规格长" prop="dpModelSizeL">
+                                    <Input
+                                        v-model="formDataInfo.dpModelSizeL"
+                                        type="number"
+                                        maxlength="20"
+                                        placeholder="请输入刀模规格长"
+                                    ></Input>
+                                    </FormItem>
+                            </Col>
+                        </Row>
+                        <Row :gutter="16">
+                            <Col span="24">
+                                <FormItem label="备注" prop="remark">
+                                <Input
+                                    v-model="formDataInfo.remark"
+                                    type="textarea"
+                                    maxlength="100"
+                                    :autosize="{ minRows: 2, maxRows: 5 }"
+                                    placeholder="请输入备注..."
+                                ></Input>
+                                </FormItem>
+                            </Col>
+                        </Row>
+                    </Col>
+                
+
+                    <Col span="6">
+                              <FormItem label="图片路径" prop="dpImg" >
+                                    <Input
+                                        v-model="formDataInfo.dpImg"
+                                        maxlength="20"
+                                        placeholder="请输入图片路径"
+                                    ></Input>
+                              </FormItem>
+
+                                <FormItem label="模数" prop="dpDieCuttingQty" >
+                                    <Input
+                                        v-model="formDataInfo.dpDieCuttingQty"
+                                        tyoe="number"
+                                        maxlength="20"
+                                        placeholder="请输入模模数"
+                                    ></Input>
+                                </FormItem>
+
+                                <FormItem label="产品" prop="productId" >
+                                     <Select
+                                        v-model="formDataInfo.productId"
+                                        placeholder="请选择"
+                                        >
+                                        <Option value="0">
+                                            0
+                                        </Option>
+                                        <Option value="1"> 
+                                            1
+                                        </Option>
+                                         <Option value="2"> 
+                                            2
+                                        </Option>
+                                    
+                                    </Select>
+                                </FormItem>
+
+                                <FormItem label="盒式" prop="boxId">
+                                    <Select
+                                        v-model="formDataInfo.boxId"
+                                        placeholder="请选择"
+                                        >
+                                        <Option value="0">
+                                            0
+                                        </Option>
+                                        <Option value="1"> 
+                                            1
+                                        </Option>
+                                         <Option value="2"> 
+                                            2
+                                        </Option>
+                                    
+                                    </Select>
+                                </FormItem>
+
+
+
+
+                        
+                    </Col>
+            </Row>
+
+
+      </Form>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:07:54
+ */
+import editBaseMixins from "../../mixins/edit";
+const default_formDataInfo ={
+      
+
+        remark: ""
+      }
+export default {
+  name: "edit-dieCuttingPlate",
+  mixins: [editBaseMixins],
+
+  data() {
+    return {
+      requestBaseUrl: "/bas/dieCuttingPlate", // 请求 查询 操作的基础路径
+      formDataInfo:Object.assign({},default_formDataInfo),// 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {
+        dpNo: [
+          { required: true, message: "", trigger: "blur" }
+        ],
+        dpDieCuttingQty: [{ required: true, message: "", trigger: "blur" }]
+      }
+    };
+  },
+
+  methods: {
+      // 重写父类,添加时候,清空数据
+    HandleFormDataInfo(){
+     this.formDataInfo=Object.assign({},default_formDataInfo)
+    },
+  }
+};
+</script>
+
+<style>
+.cl-edit-art .ivu-select-item{
+  display: block
+}
+</style>

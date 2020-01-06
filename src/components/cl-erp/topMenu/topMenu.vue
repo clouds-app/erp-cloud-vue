@@ -1,5 +1,5 @@
 <template>
-     
+
       <div class="cl-top-menu">
                <div class="topMenuDiv" :class="{ active: currentSelected==='sale'}"  @mouseover="menuMouceOver('sale')" @mouseleave="menuMouseLeave('sale')" @click="clickTopMenu('sale')">
                     <img  class="menuImg" :src="sale" key="max-sale" />
@@ -43,16 +43,17 @@
                         基础数据
                     </div>
                </div>
-                 <div class="topMenuDiv" :class="{ active: currentSelected==='Sys'}"  @mouseover="menuMouceOver('Sys')" @mouseleave="menuMouseLeave('Sys')" @click="clickTopMenu('Sys')">
+                 <div class="topMenuDiv" :class="{ active: currentSelected==='Sys'}"  @mouseover="menuMouceOver('Sys')" @mouseleave="menuMouseLeave('Sys')" @click="clickSys()">
                           <img class="menuImg" :src="Sys" key="max-Sys" />
                      <div class="menuText" :class="{ menuTextMouseOver: currentMouseOver==='Sys'}">
                         系统设置
                     </div>
                </div>
+
     </div>
 </template>
 <script>
-// 后期 做成一个控件 
+// 后期 做成一个控件
 import Account from '@/assets/images/topMenu/Account.png'
 import Bas from '@/assets/images/topMenu/Bas.png'
 import Mrp from '@/assets/images/topMenu/Mrp.png'
@@ -63,46 +64,61 @@ import Stock from '@/assets/images/topMenu/Stock.png'
 import Sys from '@/assets/images/topMenu/Sys.png'
 import baseMixin from '@/mixins'
 export default {
-    data(){
-        return {
-            Account,Bas,Mrp,Purchase,report,sale,Stock,Sys,//图片路径
-            currentMouseOver:'', //默认经过菜单 sale
-            isSelected:false,
-        }
-    },
-    mixins:[baseMixin],
-    computed:{
-        // 默认 选中菜单
-         currentSelected(){
-             return this.$store.state.app.currentTopMenu
-         },
-        
-    },
-    methods:{
-        //选中菜单
-        clickTopMenu(val){
-            // debugger
-            this.$store.commit('setCurrentTopMenu', val)
-            if(this.currentCurrentPage!='main'){
-                 this.$store.commit('setCurrentPage','main')
-                 this.$router.push({name:'main',params:{menuType:val}})
-                
-            }
-        
-        },
-        //经过菜单
-        menuMouceOver(val){
-            this.currentMouseOver =  val
-        },
-        //离开菜单
-        menuMouseLeave(val){
-             this.currentMouseOver =  ''
-        }
-    },
-    
-    beforeDestroy(){
-        
+  data () {
+    return {
+      Account,
+      Bas,
+      Mrp,
+      Purchase,
+      report,
+      sale,
+      Stock,
+      Sys, // 图片路径
+      currentMouseOver: '', // 默认经过菜单 sale
+      isSelected: false
     }
+  },
+  mixins: [baseMixin],
+  computed: {
+    // 默认 选中菜单
+    currentSelected () {
+      return this.$store.state.app.currentTopMenu
+    }
+
+  },
+  methods: {
+    clickSys () {
+      // debugger
+      let ex = prompt('请输入密码')
+      if (ex == 321) {
+        this.clickTopMenu('Sys')
+      } else {
+        this.$Message.error('密码错误,请重新输入密码')
+      }
+    },
+
+    // 选中菜单
+    clickTopMenu (val) {
+      // debugger
+      this.$store.commit('setCurrentTopMenu', val)
+      if (this.currentCurrentPage != 'main') {
+        this.$store.commit('setCurrentPage', 'main')
+        this.$router.push({ name: 'main', params: { menuType: val } })
+      }
+    },
+    // 经过菜单
+    menuMouceOver (val) {
+      this.currentMouseOver = val
+    },
+    // 离开菜单
+    menuMouseLeave (val) {
+      this.currentMouseOver = ''
+    }
+  },
+
+  beforeDestroy () {
+
+  }
 }
 </script>
 <style>
@@ -117,7 +133,7 @@ export default {
 .menuText{
     font-weight: bold;
     vertical-align: top;
-   
+
 }
 .menuTextMouseOver {
     color: #0e67b7;
@@ -129,7 +145,7 @@ export default {
 }
 
 .topMenuDiv img{
-    
+
      /* border: 1px solid pink; */
      margin-top: 8px;
 }

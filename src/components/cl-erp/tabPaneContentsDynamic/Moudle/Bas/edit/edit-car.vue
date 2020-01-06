@@ -6,19 +6,58 @@
       v-model="showWindow"
       :fullscreen="false"
       width="60%"
-      
+
       :loading="!isLoaddingDone"
       @on-ok="formDataSubmit()"
     >
       <Form
         ref="formDataInfo"
-        :show-message="false"
+        :show-message="true"
         :model="formDataInfo"
         :rules="ruleValidate"
         :label-width="100"
       >
         <Row :gutter="18">
           <Col span="12">
+              <FormItem label="车牌号" prop="carNo">
+              <Input
+                v-model="formDataInfo.carNo"
+                maxlength="20"
+                placeholder="车牌号"
+              ></Input>
+            </FormItem>
+          </Col>
+          <Col span="12">
+              <FormItem label="车主" prop="owner">
+              <Input
+                v-model="formDataInfo.owner"
+                maxlength="20"
+                placeholder="车主"
+              >
+              </Input>
+            </FormItem>
+          </Col>
+          <Col span="12">
+            <FormItem label="车主电话" prop="ownerTel">
+              <Input
+                v-model="formDataInfo.ownerTel"
+
+                maxlength="20"
+                placeholder="车主电话"
+              ></Input>
+            </FormItem>
+          </Col>
+          <Col span="12">
+              <FormItem label="司机名称" prop="driver">
+              <Input
+                v-model="formDataInfo.driver"
+                maxlength="20"
+                placeholder="司机名称"
+              ></Input>
+
+            </FormItem>
+          </Col>
+           <Col span="12">
             <FormItem label="面积" prop="carArea">
               <Input
                 v-model="formDataInfo.carArea"
@@ -27,7 +66,8 @@
                 placeholder="请输入面积"
               ></Input>
             </FormItem>
-
+          </Col>
+          <Col span="12">
             <FormItem label="体积" prop="carCube">
               <Input
                 v-model="formDataInfo.carCube"
@@ -36,27 +76,54 @@
                 placeholder="请输入体积"
               ></Input>
             </FormItem>
- <Switch size="small" />
-              <FormItem label="外车" prop="outSide">
-                <!-- <Select
-                      v-model="formDataInfo.outSide"
-                      placeholder="请选择外车"
-                    >
-                      <Option value=true>是</Option>
-                      <Option value=false>否</Option>
-                </Select> -->
+          </Col>
+          <Col span="12">
+            <FormItem label="备注" prop="remark">
+              <Input
+                v-model="formDataInfo.remark"
+                type="textarea"
+                maxlength="100"
+                :autosize="{ minRows: 2, maxRows: 5 }"
+                placeholder="请输入备注..."
+              ></Input>
+            </FormItem>
+          </Col>
+          <Col span="12">
+            <FormItem label="外车" prop="outSide">
+
                  <i-switch size="default" v-model="formDataInfo.outSide">
                     <span slot="open">是</span>
                     <span slot="close">否</span>
                 </i-switch>
-                  
-              </FormItem>
 
-            <FormItem label="车牌号" prop="carNo">
+              </FormItem>
+          </Col>
+
+        </Row>
+
+        <!-- <Row :gutter="18">
+          <FormItem label="车主电话" prop="ownerTel">
               <Input
-                v-model="formDataInfo.carNo"
+                v-model="formDataInfo.ownerTel"
+                type="number"
                 maxlength="20"
-                placeholder="车牌号"
+                placeholder="车主电话"
+              ></Input>
+            </FormItem>
+            <FormItem label="司机电话" prop="driverTel">
+              <Input
+                v-model="formDataInfo.driverTel"
+                type="number"
+                maxlength="20"
+                placeholder="司机电话"
+              ></Input>
+            </FormItem>
+            <FormItem label="面积" prop="carArea">
+              <Input
+                v-model="formDataInfo.carArea"
+                type="number"
+                maxlength="20"
+                placeholder="请输入面积"
               ></Input>
             </FormItem>
 
@@ -71,23 +138,10 @@
             </FormItem>
           </Col>
 
+          </Col>
+
           <Col span="12">
-            <FormItem label="司机名称" prop="driver">
-              <Input
-                v-model="formDataInfo.driver"
-                maxlength="20"
-                placeholder="司机名称"
-              ></Input>
-            </FormItem>
-            <FormItem label="司机电话" prop="driverTel">
-              <Input
-                v-model="formDataInfo.driverTel"
-                type="number"
-                maxlength="20"
-                placeholder="司机电话"
-              ></Input>
-            </FormItem>
-            <FormItem label="车主" prop="owner">
+               <FormItem label="车主" prop="owner">
               <Input
                 v-model="formDataInfo.owner"
                 maxlength="20"
@@ -95,16 +149,33 @@
               >
               </Input>
             </FormItem>
-            <FormItem label="车主电话" prop="ownerTel">
+            <FormItem label="司机名称" prop="driver">
               <Input
-                v-model="formDataInfo.ownerTel"
-                type="number"
+                v-model="formDataInfo.driver"
                 maxlength="20"
-                placeholder="车主电话"
+                placeholder="司机名称"
               ></Input>
             </FormItem>
+            <FormItem label="体积" prop="carCube">
+              <Input
+                v-model="formDataInfo.carCube"
+                type="number"
+                maxlength="20"
+                placeholder="请输入体积"
+              ></Input>
+            </FormItem>
+            <Switch size="small" />
+              <FormItem label="外车" prop="outSide">
+
+                 <i-switch size="default" v-model="formDataInfo.outSide">
+                    <span slot="open">是</span>
+                    <span slot="close">否</span>
+                </i-switch>
+
+              </FormItem>
+
           </Col>
-        </Row>
+        </Row> -->
       </Form>
     </editWindow>
   </div>
@@ -124,49 +195,74 @@
  *
  * @created 2019/11/20 17:07:54
  */
+import editBaseMixins from '../../mixins/edit'
+import { customValidator } from '@/libs/validator'
 const default_formDataInfo = {
-  carNo: "",
-  driver: "",
-  driverTel: "",
-  owner: "",
-  ownerTel: "",
-  remark: "",
-  outSide:false,
-};
-import editBaseMixins from "../../mixins/edit";
+  carNo: '',
+  driver: '',
+  driverTel: '',
+  owner: '',
+  carArea: 0,
+  carCube: 0,
+  ownerTel: '',
+  remark: '',
+  outSide: false
+}
 
 export default {
-  name: "edit-car",
+  name: 'edit-car',
   mixins: [editBaseMixins],
 
-  data() {
+  data () {
     return {
-      requestBaseUrl: "/bas/car", // 请求 查询 操作的基础路径
+      requestBaseUrl: '/bas/car', // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
-        carNo: [{ required: true, message: "车牌号不能为空", trigger: "blur" }],
+        carNo: [{ required: true, message: '车牌号不能为空', trigger: 'blur' }
+        ],
         driver: [
-          { required: true, message: "司机姓名不能为空", trigger: "blur" }
+          { required: true, message: '司机姓名不能为空', trigger: 'blur' },
+          {
+            validator: customValidator,
+            trigger: 'blur',
+            customRule: ['isChinse', 'spaceStr'],
+            fieldDesc: '司机姓名'
+          }
         ],
         driverTel: [
-          { required: true, message: "司机电话不能为空", trigger: "blur" }
+          { required: true, message: '司机电话不能为空', trigger: 'blur' }
+
         ],
-        owner: [{ required: true, message: "车主不能为空", trigger: "blur" }],
+        owner: [{ required: true, message: '车主不能为空', trigger: 'blur' },
+          {
+            validator: customValidator,
+            trigger: 'blur',
+            customRule: ['isChinse', 'spaceStr'],
+            fieldDesc: '车主'
+          }
+        ],
+
         ownerTel: [
-          { required: true, message: "车主电话不能为空", trigger: "blur" }
+          { required: true, message: '车主电话不能为空', trigger: 'blur' },
+          {
+            validator: customValidator,
+            trigger: 'blur',
+            customRule: ['phone', 'spaceStr'],
+            fieldDesc: '车主电话'
+          }
         ]
       }
-    };
+    }
   },
 
   methods: {
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo() {
-      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    HandleFormDataInfo () {
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
     }
   }
-};
+}
 </script>
 
 <style>

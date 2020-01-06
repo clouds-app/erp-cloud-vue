@@ -4,40 +4,40 @@
       :title="actionLableName"
       v-model="showWindow"
       :fullscreen="false"
-      width="30%"
+      width="50%"
       :loading="!isLoaddingDone"
       @on-ok="formDataSubmit()"
     >
       <Form
         ref="formDataInfo"
-        :show-message="false"
+        :show-message="true"
         :model="formDataInfo"
         :rules="ruleValidate"
         :label-width="80"
       >
-        <FormItem label="职位编号" prop="poCode">
-          <Input
-            v-model="formDataInfo.poCode"
-            maxlength="20"
-            placeholder="请输入职位编号"
-          ></Input>
-        </FormItem>
-        <FormItem label="职位名称" prop="poName">
-          <Input
-            v-model="formDataInfo.poName"
-            maxlength="80"
-            placeholder="请输入职位名称"
-          ></Input>
-        </FormItem>
-        <FormItem label="备注" prop="remark">
-          <Input
-            v-model="formDataInfo.remark"
-            type="textarea"
-            maxlength="100"
-            :autosize="{ minRows: 2, maxRows: 5 }"
-            placeholder="请输入备注..."
-          ></Input>
-        </FormItem>
+        <Row :gutter="18">
+          <Col span="24">
+            <FormItem label="职位编号" prop="poCode">
+              <Input v-model="formDataInfo.poCode" maxlength="20" placeholder="请输入职位编号"></Input>
+            </FormItem>
+          </Col>
+          <Col span="24">
+            <FormItem label="职位名称" prop="poName">
+              <Input v-model="formDataInfo.poName" maxlength="80" placeholder="请输入职位名称"></Input>
+            </FormItem>
+          </Col>
+          <Col span="24">
+            <FormItem label="备注" prop="remark">
+              <Input
+                v-model="formDataInfo.remark"
+                type="textarea"
+                maxlength="100"
+                :autosize="{ minRows: 2, maxRows: 5 }"
+                placeholder="请输入备注..."
+              ></Input>
+            </FormItem>
+          </Col>
+        </Row>
       </Form>
     </editWindow>
   </div>
@@ -57,39 +57,64 @@
  *
  * @created 2019/11/20 17:07:54
  */
-import editBaseMixins from "../../mixins/edit";
+import editBaseMixins from '../../mixins/edit'
+import { customValidator, uniqueValidator } from '@/libs/validator'
 const default_formDataInfo = {
-  poCode: "",
-  poName: "",
-  remark: ""
-};
+  poCode: '',
+  poName: '',
+  remark: ''
+}
 export default {
-  name: "edit-position",
+  name: 'edit-position',
   mixins: [editBaseMixins],
 
-  data() {
+  data () {
     return {
-      requestBaseUrl: "/bas/position", // 请求 查询 操作的基础路径
+      requestBaseUrl: '/bas/position', // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
         poCode: [
-          { required: true, message: "职位编号不能为空", trigger: "blur" }
+          { required: true, message: '职位编号不能为空', trigger: 'blur' },
+          {
+            validator: customValidator,
+            trigger: 'blur',
+            customRule: ['identifier', 'spaceStr'],
+            fieldDesc: '职位编号'
+          },
+          {
+            validator: uniqueValidator,
+            trigger: 'blur',
+            fieldDesc: '职位编号',
+            params: {
+              fieldName: 'poCode',
+              formName: 'positionFm',
+              id: () => {
+                return this.formDataInfo.id
+              }
+            }
+          }
         ],
         poName: [
-          { required: true, message: "职位名称不能为空", trigger: "blur" }
+          { required: true, message: '职位名称不能为空', trigger: 'blur' },
+          {
+            validator: customValidator,
+            trigger: 'blur',
+            customRule: ['toCDB', 'spaceStr'],
+            fieldDesc: '职位名称'
+          }
         ]
       }
-    };
+    }
   },
 
   methods: {
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo() {
-      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    HandleFormDataInfo () {
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
     }
   }
-};
+}
 </script>
 
 <style></style>
