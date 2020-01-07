@@ -23,18 +23,18 @@
 </template>
 
 <script>
-import popup from '@/components/popup/popup'
-export default{
-  components: { popup },
-  name: 'formControl',
-  props: {
-    controlType: String,
-    value: {
-      type: [String, Number, Boolean],
-      default: ''
+  import popup from "@/components/popup/popup";
+  export default{
+    components:{popup},
+    name:'formControl',
+    props:{
+      controlType:String,
+      value: {
+          type: [String, Number,Boolean],
+          default: ''
+      }
     }
   }
-}
 </script>
 
 <style>

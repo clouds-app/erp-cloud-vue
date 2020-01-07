@@ -97,143 +97,142 @@
 </template>
 
 <script>
-import editWindow from '../edit-window/edit-window'
-import eTable from '@/components/e-table/e-table'
-import InputNumber from '@/components/input-number/input-number'
-export default {
-  name: 'preferential',
-  components: {
-    editWindow, eTable, InputNumber
-  },
-  data () {
-    return {
-      showWindow: false,
-      priceUnitItems: ['按数量[张]', '按面积[平方米]', '按面积[平方英寸]'],
-      priceModeItems: ['加减数量', '加减百分比'],
-      preferential: {
-        priceUnit: 0,
-        priceMode: 0,
-        items: []
-      },
-      itemInitData: {
-        min: null,
-        max: null,
-        oper: '+',
-        price: null,
-        unit: 0
-      },
-      preferentialText: '',
-      preferentialValue: ''
-    }
-  },
-  watch: {
-    'preferential.items': {
-      handler (n, o) {
-        this.getPreferentialText()
-      },
-      deep: true
+  import editWindow from '../edit-window/edit-window'
+  import eTable from '@/components/e-table/e-table'
+  import InputNumber from '@/components/input-number/input-number'
+  export default {
+    name: 'preferential',
+    components: {
+      editWindow,eTable,InputNumber
     },
-    showWindow (n, o) {
-      this.$emit('input', n)
+    data() {
+      return {
+        showWindow:false,
+        priceUnitItems: ['按数量[张]', '按面积[平方米]', '按面积[平方英寸]'],
+        priceModeItems: ['加减数量', '加减百分比'],
+        preferential: {
+          priceUnit: 0,
+          priceMode: 0,
+          items: []
+        },
+        itemInitData: {
+          min: null,
+          max: null,
+          oper: '+',
+          price: null,
+          unit: 0
+        },
+        preferentialText: '',
+        preferentialValue:''
+      }
     },
-    value (n, o) {
-      this.showWindow = n
-    }
-  },
-  created () {
+    watch: {
+      'preferential.items': {
+        handler(n, o) {
+          this.getPreferentialText();
+        },
+        deep: true
+      },
+      showWindow(n,o){
+        this.$emit('input',n);
+      },value(n,o){
+        this.showWindow = n;
+      }
+    },
+    created() {
 
-  },
-  props: {
-    value: false
-  },
-  computed: {
-    priceUnitTextComptued () {
-      if (this.preferential.priceMode == 0) {
-        return '分'
+    },
+    props:{
+      value:false
+    },
+    computed: {
+      priceUnitTextComptued() {
+        if (this.preferential.priceMode == 0) {
+          return '分';
+        }
+        return '%';
+      },
+      preferentialTextComptued() {
+        return this.priceUnitItems[this.preferential.priceUnit] + this.getPreferentialText();
       }
-      return '%'
     },
-    preferentialTextComptued () {
-      return this.priceUnitItems[this.preferential.priceUnit] + this.getPreferentialText()
-    }
-  },
-  methods: {
-    preferentialOk () {
-      // 校验数据和转换为文本
-      let result = this.preferentialValidator()
-      if (!result) {
-        return
-      }
-      this.$emit('preferential-ok', this.preferentialText, JSON.stringify(this.preferential))
-      this.showWindow = false
-    },
-    getNullDefault (value) {
-      if (value == null) {
-        return 0
-      }
-      return value
-    },
-    getPreferentialText () {
-      let textArray = []
-      let valueArray = []
-      this.preferential.items.forEach((item, index) => {
-        if ((item.min == 0 || item.min == null) && (item.max == 0 || item.max == null)) {
-          		return
+    methods: {
+      preferentialOk() {
+        //校验数据和转换为文本
+        let result = this.preferentialValidator();
+        if(!result){
+          return;
         }
-        let text = ''
-        let oper = item.oper == '+' ? '加' : '减'
-        let min = this.getNullDefault(item.min)
-        let max = this.getNullDefault(item.max)
-        let price = this.getNullDefault(item.price)
-        if (index == 0 && item.min == 0) {
-          text += `${max}以下${oper}${price}${this.priceUnitTextComptued}`
-        } else {
-          text += `${min}到${max}${oper}${price}${this.priceUnitTextComptued}`
+        this.$emit('preferential-ok',this.preferentialText,JSON.stringify(this.preferential));
+        this.showWindow = false;
+      },
+      getNullDefault(value){
+        if(value == null){
+          return 0;
         }
-        textArray.push(text)
-        valueArray.push(`${min}#${max}#${item.oper}#${price}`)
-      })
-      this.preferentialText = `${this.priceUnitItems[this.preferential.priceUnit]}:` + textArray.toString()
-      this.preferentialValue = `${this.preferential.priceUnit},${this.preferential.priceMode}|` + valueArray.toString()
-    },
-    preferentialValidator () {
-      for (let i = 0; i < this.preferential.items.length; i++) {
-        // 最大最小值为0，就不判断了
-        let item = this.preferential.items[i]
-        if (item.min == 0 && item.max == 0) {
-          return true
-        }
-        let str = '第' + (i + 1) + '行:'
-        // 0.不能为负数
-        if (!/^\d+$/.test(item.min) || !/^\d+$/.test(item.max) || !/^\d+$/.test(item.price)) {
-          this.$Message.error(str + '数值必须大于等于0')
-          return false
-        }
-        // 1.最大小值不能相等
-        if (item.max == item.min) {
-          this.$Message.error(str + '区间值不能相等')
-          return false
-        }
-        // 2.小不能大于大
-        if (item.min >= item.max) {
-          this.$Message.error(str + '最小值不能大于最大值')
-          return false
-        }
-        // 3.最大小值是否在之前区间存在
-        let min = item.min
-        let max = item.max
-        for (let j = 0; j < i; j++) {
-          let subItem = this.preferential.items[j]
-          if (subItem.min <= min && subItem.max > min) {
-            this.$Message.error(str + '最小值已在区间存在')
-            return false
+        return value;
+      },
+      getPreferentialText() {
+        let textArray = [];
+        let valueArray = [];
+        this.preferential.items.forEach((item,index)=>{
+          if((item.min == 0 || item.min == null) && (item.max == 0 || item.max == null)){
+          		return;
+          }
+          let text = '';
+          let oper = item.oper == '+'?'加':'减';
+          let min = this.getNullDefault(item.min);
+          let max = this.getNullDefault(item.max);
+          let price = this.getNullDefault(item.price);
+          if(index == 0 && item.min == 0){
+            text += `${max}以下${oper}${price}${this.priceUnitTextComptued}`;
+          }else{
+            text += `${min}到${max}${oper}${price}${this.priceUnitTextComptued}`;
+          }
+          textArray.push(text);
+          valueArray.push(`${min}#${max}#${item.oper}#${price}`);
+        });
+        this.preferentialText = `${this.priceUnitItems[this.preferential.priceUnit]}:`+textArray.toString();
+        this.preferentialValue = `${this.preferential.priceUnit},${this.preferential.priceMode}|`+valueArray.toString();
+      },
+      preferentialValidator() {
+        for (let i = 0; i < this.preferential.items.length; i++) {
+          //最大最小值为0，就不判断了
+          let item = this.preferential.items[i];
+          if (item.min == 0 && item.max == 0) {
+            return true;
+          }
+          let str = "第" + (i + 1) + '行:'
+          //0.不能为负数
+          if (!/^\d+$/.test(item.min) || !/^\d+$/.test(item.max) || !/^\d+$/.test(item.price)) {
+            this.$Message.error(str + '数值必须大于等于0');
+            return false;
+          }
+          //1.最大小值不能相等
+          if (item.max == item.min) {
+             this.$Message.error(str + '区间值不能相等');
+            return false;
+          }
+          //2.小不能大于大
+          if (item.min >= item.max) {
+             this.$Message.error(str + '最小值不能大于最大值');
+            return false;
+          }
+          //3.最大小值是否在之前区间存在
+          let min = item.min;
+          let max = item.max;
+          for (let j = 0; j < i; j++) {
+            let subItem = this.preferential.items[j];
+            if (subItem.min <= min && subItem.max > min) {
+               this.$Message.error(str + '最小值已在区间存在');
+              return false;
+            }
           }
         }
+        return true;
       }
-      return true
     }
   }
-}
 </script>
 
 <style>

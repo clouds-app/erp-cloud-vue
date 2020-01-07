@@ -1,36 +1,38 @@
 <template>
-
+    
     <div class="cl-logoInfo" @click="turnToHome()">
         <img style="height:35px;" alt="Brand" :src="maxLogo" key="max-logo" />
     </div>
 </template>
+
 
 <script>
 import baseMixin from '@/mixins'
 import maxLogo from '@/assets/images/logoInfo.png'
 
 export default {
-  data () {
-    return {
-      maxLogo
+    data(){
+        return {
+            maxLogo
+        }
+    },
+    mixins:[baseMixin],
+    methods:{
+        turnToHome(){
+            if(this.currentCurrentPage !='home'){
+                console.log('========turnToHome=====_home====setGoHome========')
+                this.setGoHome()
+            }
+            
+        }
     }
-  },
-  mixins: [baseMixin],
-  methods: {
-    turnToHome () {
-      if (this.currentCurrentPage != 'home') {
-        console.log('========turnToHome=====_home====setGoHome========')
-        this.setGoHome()
-      }
-    }
-  }
 }
 </script>
 
 <style>
 
 #logofont{
-
+   
     width: 400px;
 }
 

@@ -47,45 +47,44 @@
   <preferential v-model="showPreferential" @preferential-ok="preferentialOk"></preferential>
 </div>
 
+
 </template>
 
 <script>
-import popup from '@/components/popup/popup'
-import boxExpression from '@/components/box-expression/boxExpression'
-import preferential from '@/components/preferential/preferential'
-export default{
-  components: { popup, boxExpression, preferential },
-  data () {
-    return {
-      showBoxExpression: false,
-      showPreferential: false,
-      editFormItem: {
-        main: {
-          piRemark: '',
-          piNo: ''
+    import popup from '@/components/popup/popup'
+    import boxExpression from '@/components/box-expression/boxExpression'
+    import preferential from '@/components/preferential/preferential'
+    export default{
+      components:{popup,boxExpression,preferential},
+      data(){
+        return {
+          showBoxExpression:false,
+          showPreferential:false,
+          editFormItem:{
+            main:{
+              piRemark:'',
+              piNo:''
+            }
+          }
+        }
+      },
+      methods:{
+        formDesign(){
+          this.$router.push({
+            name:'formDesign'
+          })
+        },expressionOk(text,value,json){
+          this.$Message.info(text);
+          console.log(text);
+          console.log(value);
+          console.log(json);
+        },preferentialOk(text,value){
+          this.$Message.info(`text=${text}`);
+          this.$Message.info('value值看console');
+          console.log(value);
         }
       }
     }
-  },
-  methods: {
-    formDesign () {
-      this.$router.push({
-        name: 'formDesign'
-      })
-    },
-    expressionOk (text, value, json) {
-      this.$Message.info(text)
-      console.log(text)
-      console.log(value)
-      console.log(json)
-    },
-    preferentialOk (text, value) {
-      this.$Message.info(`text=${text}`)
-      this.$Message.info('value值看console')
-      console.log(value)
-    }
-  }
-}
 </script>
 
 <style>

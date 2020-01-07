@@ -39,6 +39,7 @@
                         <Input v-model="formDataInfo.enName" maxlength="20" placeholder="请输入英文名称"></Input>
                         </FormItem>
                     </Col>
+          
 
                 </Row>
             </Col>
@@ -52,7 +53,7 @@
                         <Input v-model="formDataInfo.vContractorTel" maxlength="20" type="number" placeholder="请输入联系人电话"></Input>
                         </FormItem>
                     </Col>
-
+                    
           <Col span="6">
             <FormItem label="结算货币：" prop="coinId">
                 <optionSearch
@@ -108,7 +109,7 @@
           </Col>
           <Col span="6">
             <FormItem label="纸板金额：" prop="priceAreaMode">
-
+             
               <i-switch
                 @input="
                                     value => {
@@ -129,7 +130,7 @@
               ></Input>
             </FormItem>
           </Col>
-
+          
           <Col span="6">
             <FormItem label="月结方式：" prop="arpType">
                <optionSearch
@@ -169,7 +170,8 @@
               placeholder="请输入税率%"></Input>
             </FormItem>
           </Col>
-
+          
+          
           <Col span="6">
             <FormItem label="税别：" prop="taxTP">
               <optionSearch
@@ -193,7 +195,7 @@
                 />
             </FormItem>
           </Col>
-
+         
           <Col span="6">
             <FormItem label="业务类型：" prop="vType">
               <optionSearch
@@ -205,7 +207,7 @@
                 />
             </FormItem>
           </Col>
-
+          
           <Col span="6">
             <FormItem label="开户银行：" prop="backName">
               <Input v-model="formDataInfo.backName" maxlength="20" placeholder="请输入开户银行："></Input>
@@ -221,7 +223,7 @@
               <Input v-model="formDataInfo.taxLicence" maxlength="20" placeholder="请输入税号"></Input>
             </FormItem>
           </Col>
-
+          
           <Col span="6">
             <FormItem label="电话：" prop="vTel">
               <Input v-model="formDataInfo.vTel" maxlength="20" type="number" placeholder="请输入电话"></Input>
@@ -249,7 +251,7 @@
                 />
             </FormItem>
           </Col>
-
+                   
           <Col span="6">
             <FormItem label="计量单位：" prop="unitId">
               <!-- <Input v-model="formDataInfo.unitId" maxlength="20" placeholder="请输入计量单位"></Input> -->
@@ -278,7 +280,7 @@
               <Input v-model="formDataInfo.addrDetail" maxlength="20" placeholder="请输入详细地址"></Input>
             </FormItem>
           </Col>
-
+         
           <Col span="6">
             <FormItem label="备注:" prop="remark">
               <Input
@@ -290,7 +292,7 @@
               ></Input>
             </FormItem>
           </Col>
-
+          
         </Row>
       </Form>
     </editWindow>
@@ -311,61 +313,61 @@
  *
  * @created 2019/11/20 17:07:54
  */
-import editBaseMixins from '../../mixins/edit'
-import popup from '@/components/popup/popup'
-import optionSearch from '../../components/optionSearch'
+import editBaseMixins from "../../mixins/edit";
+import popup from "@/components/popup/popup";
+import optionSearch from "../../components/optionSearch"
 
 const default_formDataInfo = {
-  addrDetail: '',
+  addrDetail: "",
   amtDot: 0,
-  areaIds: '',
-  arpType: '',
-  backName: '',
-  bankNo: '',
-  coinId: 0,
-  coinCode: '',
-  coinName: '',
+  areaIds: "",
+  arpType: "",
+  backName: "",
+  bankNo: "",
+  coinId:0,
+  coinCode:"",
+  coinName:"",
   ctDot: 0,
-  curyCode: '',
+  curyCode: "",
   discount: 0,
-  enName: '',
+  enName: "",
   iisAudit: 0,
   monthDays: 0,
   monthEnd: 0,
-  payCode: '',
+  payCode: "",
   poType: 0,
   pointj: 0,
   pointw: 0,
   priceAreaMode: 0,
-  priceMode: '',
-  priceWay: '',
-  purCode: '',
-  purName: '',
-  remark: '',
-  shortName: '',
+  priceMode: "",
+  priceWay: "",
+  purCode: "",
+  purName: "",
+  remark: "",
+  shortName: "",
   status: 0,
-  taxLicence: '',
+  taxLicence: "",
   taxRate: 0,
-  taxTP: '',
-  unitId: '',
-  vContractor: '',
-  vContractorTel: '',
-  vFax: '',
-  vLevel: '',
-  vTel: '',
-  vType: ''
-}
+  taxTP: "",
+  unitId: "",
+  vContractor: "",
+  vContractorTel: "",
+  vFax: "",
+  vLevel: "",
+  vTel: "",
+  vType: ""
+};
 export default {
-  name: 'edit-supplier',
+  name: "edit-supplier",
   mixins: [editBaseMixins],
-  components: {
-    optionSearch,
-    popup
+  components:{
+      optionSearch,
+      popup,
   },
 
-  data () {
+  data() {
     return {
-      requestBaseUrl: '/purchase/supplier', // 请求 查询 操作的基础路径
+      requestBaseUrl: "/purchase/supplier", // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
@@ -376,22 +378,22 @@ export default {
         //     { required: true, message: "位置纬度不能为空", trigger: "blur" }
         // ],
         purCode: [
-          { required: true, message: '供应商编号不能为空', trigger: 'blur' }
+          { required: true, message: "供应商编号不能为空", trigger: "blur" }
         ],
         purName: [
-          { required: true, message: '供应商名称不能为空', trigger: 'blur' }
+          { required: true, message: "供应商名称不能为空", trigger: "blur" }
         ]
       }
-    }
+    };
   },
 
   methods: {
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo () {
-      this.formDataInfo = Object.assign({}, default_formDataInfo)
+    HandleFormDataInfo() {
+      this.formDataInfo = Object.assign({}, default_formDataInfo);
     }
   }
-}
+};
 </script>
 
 <style>

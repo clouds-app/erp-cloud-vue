@@ -55,135 +55,135 @@
 </template>
 
 <script>
-/**
+  /**
     编辑页面简单table封装
     */
-import AsyncValidator from 'async-validator'
-import {
-  parentNode,
-  childNode,
-  getElementIsDR
-} from '../../utils/dom.js'
-import rightMenu from './right-menu'
-export default {
-  name: 'eTable',
-  components: {
-    rightMenu
-  },
-  data () {
-    return {
-      direction: {
-        left: 'l',
-        right: 'r',
-        up: 'u',
-        down: 'd'
-      },
-      editIndex: -1,
-      addRowLength: 1,
-      cloneData: [],
-      dataChangeMark: { // 保存数据改变的信息
-        count: 0,
-        data: {}
-      },
-      dataCategorize: { // 数据分类
-        addList: [], // 添加的数据
-        updateList: [], // 修改的数据
-        deleteList: [] // 删除的数据
-      },
-      updateCategorizeMark: { // 更新分类
+  import AsyncValidator from 'async-validator'
+  import {
+    parentNode,
+    childNode,
+    getElementIsDR
+  } from '../../utils/dom.js'
+  import rightMenu from './right-menu'
+  export default {
+    name: 'eTable',
+    components: {
+      rightMenu
+    },
+    data() {
+      return {
+        direction: {
+          left: 'l',
+          right: 'r',
+          up: 'u',
+          down: 'd'
+        },
+        editIndex: -1,
+        addRowLength: 1,
+        cloneData: [],
+        dataChangeMark: { //保存数据改变的信息
+          count: 0,
+          data: {}
+        },
+        dataCategorize: { //数据分类
+          addList: [], //添加的数据
+          updateList: [], //修改的数据
+          deleteList: [] //删除的数据
+        },
+        updateCategorizeMark: { //更新分类
 
+        },
+        errorInfo: [],
+        errorMark: false,
+        headRowCount: 1,
+        tableWidth: 100,
+        columnGroup: [],
+        eventIsInit:false, //事件是否初始化
+        shiftIsLongPress:false,//shift 是否被长按
+        ctrlIsLongPress:false, //ctrl是否被长按
+        mulDelete:{//多选删除
+          previousEditIndex:-1,//上一次选中的表格下标
+          excludeSelectedIndex:[]//多选排除的下标
+        }
+      }
+    },
+    props: {
+      data: Array,
+      height: {
+        type: Number,
+        default: 200
       },
-      errorInfo: [],
-      errorMark: false,
-      headRowCount: 1,
-      tableWidth: 100,
-      columnGroup: [],
-      eventIsInit: false, // 事件是否初始化
-      shiftIsLongPress: false, // shift 是否被长按
-      ctrlIsLongPress: false, // ctrl是否被长按
-      mulDelete: {// 多选删除
-        previousEditIndex: -1, // 上一次选中的表格下标
-        excludeSelectedIndex: []// 多选排除的下标
-      }
-    }
-  },
-  props: {
-    data: Array,
-    height: {
-      type: Number,
-      default: 200
-    },
-    width: Number,
-    colStart: { // 列起始位置
-      type: Number,
-      default: 0
-    },
-    tableEvent: { // 是否启用table事件
-      type: Boolean,
-      default: () => {
-        return true
-      }
-    },
-    rowInitData: {
-      type: Object,
-      default: () => {
-        return {}
-      }
-    },
-    copyPreviousRow: { // 新增行内容来源与上一行内容
-      type: Boolean,
-      default: false
-    },
-    copyPreviousExclude: { // copy需要排除字段
-      type: Array,
-      default: function () {
-        return []
-      }
-    },
-    deleteValidator: Function,
-    unqiueMark: String, // 唯一标识
-    rowSpan: {
-      type: Number,
-      default: 1
-    },
-    rules: { // 校验规则
-      type: Object,
-      default: () => {
-        return {}
-      }
-    }
-  },
-  computed: {
-    changeMark () {
-      return this.dataChangeMark.count
-    }
-  },
-  watch: {
-    cloneData: {
-      handler (newValue, oldValue) {
-        this.$emit('update:data', newValue)
-        this.$emit('on-table-change', newValue)
+      width: Number,
+      colStart: { //列起始位置
+        type: Number,
+        default: 0
       },
-      deep: true
-    },
-    data: {
-      handler (newValue, oldValue) {
-        this.cloneData = newValue
-        if (newValue.length == 0) {
-          this.addRow()
+      tableEvent: { //是否启用table事件
+        type: Boolean,
+        default: () => {
+          return true;
         }
       },
-      deep: true
+      rowInitData: {
+        type: Object,
+        default: () => {
+          return {};
+        }
+      },
+      copyPreviousRow: { //新增行内容来源与上一行内容
+        type: Boolean,
+        default: false
+      },
+      copyPreviousExclude: { //copy需要排除字段
+        type: Array,
+        default: function() {
+          return [];
+        }
+      },
+      deleteValidator: Function,
+      unqiueMark: String, //唯一标识
+      rowSpan: {
+        type: Number,
+        default: 1
+      },
+      rules: { //校验规则
+        type: Object,
+        default: () => {
+          return {};
+        }
+      }
     },
-    changeMark: function (n, o) {
-      this.$set(this.cloneData[this.dataChangeMark.data.index], this.dataChangeMark.data.key, this.dataChangeMark.data
-        .value)
-      let data = this.dataChangeMark.data.row // 一行的数据
-      if (this.unqiueMark && data[this.unqiueMark] &&
-          data[this.unqiueMark] != null && data[this.unqiueMark] != '') { // 更新
-        // 得到数据的唯一标识，一般是主键ID，其实
-        let mark = data[this.unqiueMark]
-        /*
+    computed: {
+      changeMark() {
+        return this.dataChangeMark.count;
+      },
+    },
+    watch: {
+      cloneData: {
+        handler(newValue, oldValue) {
+          this.$emit('update:data', newValue);
+          this.$emit('on-table-change', newValue);
+        },
+        deep: true
+      },
+      data: {
+        handler(newValue, oldValue) {
+          this.cloneData = newValue;
+          if (newValue.length == 0) {
+            this.addRow();
+          }
+        },
+        deep: true
+      },
+      changeMark: function(n, o) {
+        this.$set(this.cloneData[this.dataChangeMark.data.index], this.dataChangeMark.data.key, this.dataChangeMark.data
+          .value);
+        let data = this.dataChangeMark.data.row; //一行的数据
+        if (this.unqiueMark && data[this.unqiueMark] &&
+          data[this.unqiueMark] != null && data[this.unqiueMark] != '') { //更新
+          //得到数据的唯一标识，一般是主键ID，其实
+          let mark = data[this.unqiueMark];
+          /*
           let temp = {};
           //updateCategorizeMark 存放着，修改数据的记录
           //不存在这个标记,说明还没有被修改过,所以初始化一个数组，然后添加数据
@@ -195,466 +195,461 @@ export default {
           temp[this.dataChangeMark.data.key] = this.dataChangeMark.data.value;
           //每次数据变化都存放到数组中，最终组合出，所有被修改的数据
           //this.updateCategorizeMark[mark].push(temp); */
-        // 在后台处理数据的过程中，需要用到其它的数据，所以直接保留被修改数据的一整行
-        this.updateCategorizeMark[mark] = data
+          //在后台处理数据的过程中，需要用到其它的数据，所以直接保留被修改数据的一整行
+          this.updateCategorizeMark[mark] = data;
+        }
+        this.$emit('on-row-change', this.dataChangeMark.data);
+      },
+      errorInfo: {
+        handler(newValue, oldValue) {
+          if (newValue.length > 0) {
+            this.$Message.error(newValue[0]);
+          }
+        },
+        deep: true
+      },rowInitData:{
+        deep:true,
+        handler(n,o){
+          if(!(this.data && this.data.length > 0 ) && Object.keys(n).length > 0){
+           this.addRow();
+          }
+        }
       }
-      this.$emit('on-row-change', this.dataChangeMark.data)
     },
-    errorInfo: {
-      handler (newValue, oldValue) {
-        if (newValue.length > 0) {
-          this.$Message.error(newValue[0])
+    created() {
+      if(this.data && this.data.length > 0){
+        this.cloneData = this.data;
+      }else{
+        this.addRow();
+      }
+    },
+    methods: {
+      addRow() {
+        //添加一行
+        debugger;
+        if(Object.keys(this.rowInitData).length > 0){
+          for (let i = 0; i < this.addRowLength; i++) {
+            this.cloneData.push(JSON.parse(JSON.stringify(this.rowInitData)));
+          }
+        }else{
+          //this.$Message.warning('表单编辑提示:rowInitData为空');
         }
       },
-      deep: true
-    },
-    rowInitData: {
-      deep: true,
-      handler (n, o) {
-        if (!(this.data && this.data.length > 0) && Object.keys(n).length > 0) {
-          this.addRow()
-        }
-      }
-    }
-  },
-  created () {
-    if (this.data && this.data.length > 0) {
-      this.cloneData = this.data
-    } else {
-      this.addRow()
-    }
-  },
-  methods: {
-    addRow () {
-      // 添加一行
-      // debugger;
-      if (Object.keys(this.rowInitData).length > 0) {
-        for (let i = 0; i < this.addRowLength; i++) {
-          this.cloneData.push(JSON.parse(JSON.stringify(this.rowInitData)))
-        }
-      } else {
-        // this.$Message.warning('表单编辑提示:rowInitData为空');
-      }
-    },
-    tableEventInit () {
-      // table事件初始化
-      this.$refs.editTable.addEventListener('keydown', (event) => {
-        if (!event.ctrlKey && event.keyCode == 37) { // 左
-          this.setTransverseFocus(event.target, this.direction.left)
-        }
-        if (event.keyCode == 38) { // 上
-          this.setVerticalFocus(event.target, this.direction.up)
-        }
-        if (!event.ctrlKey && event.keyCode == 39) { // 右
-          this.setTransverseFocus(event.target, this.direction.right)
-        }
+      tableEventInit() {
+        //table事件初始化
+        this.$refs.editTable.addEventListener('keydown', (event) => {
+          if (!event.ctrlKey && event.keyCode == 37) { //左
+            this.setTransverseFocus(event.target, this.direction.left);
+          }
+          if (event.keyCode == 38) { //上
+            this.setVerticalFocus(event.target, this.direction.up);
+          }
+          if (!event.ctrlKey && event.keyCode == 39) { //右
+            this.setTransverseFocus(event.target, this.direction.right);
+          }
 
-        if (event.keyCode == 40) { // 下
-          this.setVerticalFocus(event.target, this.direction.down)
-        }
+          if (event.keyCode == 40) { //下
+            this.setVerticalFocus(event.target, this.direction.down);
+          }
 
-        if (event.keyCode == 13) { // enter
-          this.setEnterFocus(event.target)
-        }
-        if (event.keyCode == 46) { // delete
-          this.deleteEvent()
-        }
-        if (event.keyCode == 45) { // insert
-          this.insertEvent()
-        }
-        if (event.keyCode == 16) {
-          this.shiftIsLongPress = true
-        }
+          if (event.keyCode == 13) { //enter
+            this.setEnterFocus(event.target);
+          }
+          if(event.keyCode == 46){//delete
+            this.deleteEvent();
+          }
+          if(event.keyCode == 45){//insert
+            this.insertEvent();
+          }
+          if(event.keyCode == 16){
+            this.shiftIsLongPress = true;
+          }
 
-        if (event.keyCode == 17) {
-          this.ctrlIsLongPress = true
-        }
+          if(event.keyCode == 17){
+            this.ctrlIsLongPress = true;
+          }
 
-        // event.preventDefault();
-      })
-      // shiftIsLongPress
-      this.$refs.editTable.addEventListener('keyup', (event) => {
-        if (event.keyCode == 16) {
-          this.shiftIsLongPress = false
-        }
+          //event.preventDefault();
+        });
+        //shiftIsLongPress
+        this.$refs.editTable.addEventListener('keyup', (event) => {
+          if(event.keyCode == 16){
+            this.shiftIsLongPress = false;
+          }
 
-        if (event.keyCode == 17) {
-          this.ctrlIsLongPress = false
+          if(event.keyCode == 17){
+            this.ctrlIsLongPress = false;
+          }
+        })
+      },deleteEvent(){
+        //快捷键删除行
+        if(this.editIndex >= 0){
+          this.menuDelete(this.editIndex);
         }
-      })
-    },
-    deleteEvent () {
-      // 快捷键删除行
-      if (this.editIndex >= 0) {
-        this.menuDelete(this.editIndex)
-      }
-    },
-    insertEvent () {
-      if (this.editIndex >= 0) {
-        this.menuInsert(this.editIndex)
-      }
-    },
-    setTransverseFocus (target, direction) {
-      // 设置横向焦点
-      let parentOfTd = parentNode('td', target) || target
-      if (parentOfTd != null) {
-        let focusTd = null
-        if (direction == this.direction.left) {
-          focusTd = parentOfTd.previousElementSibling
-        } else if (direction == this.direction.right) {
-          focusTd = parentOfTd.nextElementSibling
+      },insertEvent(){
+        if(this.editIndex >= 0){
+          this.menuInsert(this.editIndex);
         }
-        this.setTdFocus(focusTd, direction)
-      }
-    },
-    setVerticalFocus (target, direction, toFirst) {
-      // 纵向移动
-      if (direction == this.direction.up && this.editIndex <= 0) {
-        return
-      }
-      if (target.parentNode.className.indexOf('select') != -1 || target.tagName == 'SELECT') {
-        return
-      }
-      let parentOfTd = parentNode('td', target)
-      let parentOfTr = parentNode('tr', parentOfTd)
-      let focusTr = null
-      if (direction == this.direction.up) {
-        this.editIndex = parentOfTr.sectionRowIndex - 1
-        focusTr = parentOfTr.previousElementSibling
-      } else if (direction == this.direction.down) {
-        focusTr = parentOfTr.nextElementSibling
-        if (focusTr == null) {
-          this.addRow()
-          this.emitRowInsert(this.editIndex + 1)
-        } else {
-          this.editIndex = parentOfTr.sectionRowIndex + 1
+      },
+      setTransverseFocus(target, direction) {
+        //设置横向焦点
+        let parentOfTd = parentNode('td', target) || target;
+        if (parentOfTd != null) {
+          let focusTd = null;
+          if (direction == this.direction.left) {
+            focusTd = parentOfTd.previousElementSibling;
+          } else if (direction == this.direction.right) {
+            focusTd = parentOfTd.nextElementSibling;
+          }
+          this.setTdFocus(focusTd, direction);
         }
-      }
-      if (focusTr == null || focusTr.children.length == 0) {
-        return
-      }
-      let tdIndex = parentOfTd.cellIndex
-      if (toFirst) {
-        tdIndex = this.colStart
-      }
-      this.$nextTick(() => {
-        this.setTdFocus(focusTr.children[tdIndex], this.direction.right)
-      })
-    },
-    setTdFocus (tdTarget, direction) {
-      // debugger;
-      if (tdTarget != null) {
-        let inputNode = childNode('input', tdTarget) || childNode('select', tdTarget)
-        if (inputNode != null && (getElementIsDR(inputNode[0]))) {
-          this.setTransverseFocus(inputNode[0], direction)
-        } else if (inputNode != null) {
-          let node = inputNode[0]
-          if (node.getAttribute('type') == 'hidden') {
-            node.parentNode.focus()
+      },
+      setVerticalFocus(target, direction, toFirst) {
+        //纵向移动
+        if (direction == this.direction.up && this.editIndex <= 0) {
+          return;
+        }
+        if (target.parentNode.className.indexOf('select') != -1 || target.tagName == 'SELECT') {
+          return;
+        }
+        let parentOfTd = parentNode('td', target);
+        let parentOfTr = parentNode('tr', parentOfTd);
+        let focusTr = null;
+        if (direction == this.direction.up) {
+          this.editIndex = parentOfTr.sectionRowIndex - 1;
+          focusTr = parentOfTr.previousElementSibling;
+        } else if (direction == this.direction.down) {
+          focusTr = parentOfTr.nextElementSibling;
+          if (focusTr == null) {
+            this.addRow();
+            this.emitRowInsert(this.editIndex  + 1);
           } else {
-            inputNode[0].focus()
+            this.editIndex = parentOfTr.sectionRowIndex + 1;
+          }
+        }
+        if (focusTr == null || focusTr.children.length == 0) {
+          return;
+        }
+        let tdIndex = parentOfTd.cellIndex;
+        if (toFirst) {
+          tdIndex = this.colStart;
+        }
+        this.$nextTick(() => {
+          this.setTdFocus(focusTr.children[tdIndex], this.direction.right);
+        });
+      },
+      setTdFocus(tdTarget, direction) {
+       // debugger;
+        if (tdTarget != null) {
+          let inputNode = childNode('input', tdTarget) || childNode('select', tdTarget);
+          if (inputNode != null && (getElementIsDR(inputNode[0]))) {
+            this.setTransverseFocus(inputNode[0], direction);
+          } else if (inputNode != null) {
+            let node = inputNode[0];
+            if (node.getAttribute('type') == 'hidden') {
+              node.parentNode.focus();
+            } else {
+              inputNode[0].focus();
+            }
+          }else{
+            //这行可能是空列
+             this.setTransverseFocus(tdTarget, direction);
+          }
+        }
+      },
+      setEnterFocus(target) {
+        let parentOfTd = parentNode('td', target);
+        if (parentOfTd != null) {
+          let focusTd = parentOfTd.nextElementSibling;
+          if (focusTd == null) {
+            this.setVerticalFocus(target, this.direction.down, true);
+          } else {
+            this.setTdFocus(focusTd, this.direction.right);
+          }
+        }
+      },
+      focusInit() {
+        //焦点初始化 默认为1行一列
+        let rows = this.$refs.tableBody.rows;
+        if (rows.length == 0) {
+          return;
+        }
+        this.editIndex = 0;
+        this.$nextTick(() => {
+          this.setTdFocus(rows[0].children[this.colStart], this.direction.right);
+        })
+      },
+      set(item, index) {
+        let replaceData;
+        let pushData = [];
+        if (Array.isArray(item)) {
+          if (index >= 0 && item.length > 0) {
+            replaceData = Object.assign(JSON.parse(JSON.stringify(item.shift())));
+            pushData = item;
+          } else {
+            pushData = item;
           }
         } else {
-          // 这行可能是空列
-          this.setTransverseFocus(tdTarget, direction)
-        }
-      }
-    },
-    setEnterFocus (target) {
-      let parentOfTd = parentNode('td', target)
-      if (parentOfTd != null) {
-        let focusTd = parentOfTd.nextElementSibling
-        if (focusTd == null) {
-          this.setVerticalFocus(target, this.direction.down, true)
-        } else {
-          this.setTdFocus(focusTd, this.direction.right)
-        }
-      }
-    },
-    focusInit () {
-      // 焦点初始化 默认为1行一列
-      let rows = this.$refs.tableBody.rows
-      if (rows.length == 0) {
-        return
-      }
-      this.editIndex = 0
-      this.$nextTick(() => {
-        this.setTdFocus(rows[0].children[this.colStart], this.direction.right)
-      })
-    },
-    set (item, index) {
-      let replaceData
-      let pushData = []
-      if (Array.isArray(item)) {
-        if (index >= 0 && item.length > 0) {
-          replaceData = Object.assign(JSON.parse(JSON.stringify(item.shift())))
-          pushData = item
-        } else {
-          pushData = item
-        }
-      } else {
-        if (index >= 0) {
-          if (this.cloneData.length < (index + 1)) {
-            this.insertRow(index)
+          if (index >= 0) {
+            if (this.cloneData.length < (index + 1)) {
+              this.insertRow(index);
+            }
+            replaceData = Object.assign(this.cloneData[index], item);
+          } else {
+            pushData.push(item);
           }
-          replaceData = Object.assign(this.cloneData[index], item)
+        }
+        if (replaceData) {
+          this.$set(this.cloneData, index, replaceData);
+        }
+        if (pushData && pushData.length > 0) {
+          this.cloneData = this.cloneData.concat(...pushData);
+        }
+      },
+      delete(index) {
+        if (index >= 0 && index < this.cloneData.length) {
+          this.pushDeleteData(index, JSON.parse(JSON.stringify(this.cloneData[index])));
+          this.cloneData.splice(index, 1);
+        }
+      },
+      deleteRow(index) {
+        this.delete(index);
+      },
+      insertRow(index) {
+        let initData = {};
+        if (this.copyPreviousRow && index > 0) { //copy上一行
+          initData = JSON.prase(JSON.stringify(this.cloneData[index - 1]));
+          for (let i = 0; i < this.copyPreviousExclude.length; i++) { //删除排除字段
+            let deleteParam = this.copyPreviousExclude[i];
+            delete initData[deleteParam];
+          }
         } else {
-          pushData.push(item)
+          initData = JSON.parse(JSON.stringify(this.rowInitData));
         }
-      }
-      if (replaceData) {
-        this.$set(this.cloneData, index, replaceData)
-      }
-      if (pushData && pushData.length > 0) {
-        this.cloneData = this.cloneData.concat(...pushData)
-      }
-    },
-    delete (index) {
-      if (index >= 0 && index < this.cloneData.length) {
-        this.pushDeleteData(index, JSON.parse(JSON.stringify(this.cloneData[index])))
-        this.cloneData.splice(index, 1)
-      }
-    },
-    deleteRow (index) {
-      this.delete(index)
-    },
-    insertRow (index) {
-      let initData = {}
-      if (this.copyPreviousRow && index > 0) { // copy上一行
-        initData = JSON.prase(JSON.stringify(this.cloneData[index - 1]))
-        for (let i = 0; i < this.copyPreviousExclude.length; i++) { // 删除排除字段
-          let deleteParam = this.copyPreviousExclude[i]
-          delete initData[deleteParam]
+        this.cloneData.splice(index, 0, initData);
+      },
+      replace(items) {
+        this.cloneData = items;
+      },
+      reset() {
+        this.cloneData = [];
+        this.dataCategorize.addList = [];
+        this.dataCategorize.updateList = [];
+        this.dataCategorize.deleteList = [];
+        this.updateCategorizeMark = {};
+        this.addRow();
+      },
+      pushDeleteData(index, data) {
+        //dataCategorize
+        //删除判断是否是新增的
+        if (this.unqiueMark && data[this.unqiueMark] != null && data[this.unqiueMark] != '') {
+          //这说明是对已有的数据删除，保存下来
+          this.dataCategorize.deleteList.push(data);
         }
-      } else {
-        initData = JSON.parse(JSON.stringify(this.rowInitData))
-      }
-      this.cloneData.splice(index, 0, initData)
-    },
-    replace (items) {
-      this.cloneData = items
-    },
-    reset () {
-      this.cloneData = []
-      this.dataCategorize.addList = []
-      this.dataCategorize.updateList = []
-      this.dataCategorize.deleteList = []
-      this.updateCategorizeMark = {}
-      this.addRow()
-    },
-    pushDeleteData (index, data) {
-      // dataCategorize
-      // 删除判断是否是新增的
-      if (this.unqiueMark && data[this.unqiueMark] != null && data[this.unqiueMark] != '') {
-        // 这说明是对已有的数据删除，保存下来
-        this.dataCategorize.deleteList.push(data)
-      }
-    },
-    get () {
-      if (this.cloneData) {
-        return this.cloneData
-      }
-      return []
-    },
-    getCategorizeData () {
-      // 找到是添加的数据
-      if (!this.unqiueMark) {
-        console.error('没有unqiueMark标识')
-        return []
-      }
-      this.dataCategorize.addList = []
-      this.dataCategorize.updateList = []
-      // 主键没有值的，就是添加，这个好理解
-      let _self = this
-      this.cloneData.forEach(item => {
-        let isUpdate = item[_self.unqiueMark] && item[_self.unqiueMark] != null && item[_self.unqiueMark] != ''
-        if (!isUpdate && Object.keys(item).length > 0) { // 添加
-          _self.dataCategorize.addList.push(item)
+      },
+      get() {
+        if (this.cloneData) {
+          return this.cloneData;
         }
-      })
-      // 更新的数据
-      Object.values(this.updateCategorizeMark).forEach(item => {
-        /* let updateObj = {};
+        return [];
+      },
+      getCategorizeData() {
+        //找到是添加的数据
+        if (!this.unqiueMark) {
+          console.error('没有unqiueMark标识');
+          return [];
+        }
+        this.dataCategorize.addList = [];
+        this.dataCategorize.updateList = [];
+        //主键没有值的，就是添加，这个好理解
+        let _self = this;
+        this.cloneData.forEach(item => {
+          let isUpdate = item[_self.unqiueMark] && item[_self.unqiueMark] != null && item[_self.unqiueMark] != '';
+          if (!isUpdate && Object.keys(item).length > 0) { //添加
+            _self.dataCategorize.addList.push(item);
+          }
+        });
+        //更新的数据
+        Object.values(this.updateCategorizeMark).forEach(item => {
+          /* let updateObj = {};
           for (let i = 0; i < item.length; i++) {
             Object.assign(updateObj, item[i]);
           }
           if (Object.keys(updateObj).length > 0) {
             this.dataCategorize.updateList.push(updateObj);
           } */
-        this.dataCategorize.updateList.push(item)
-      })
-      // let returnData = JSON.parse(JSON.stringify());
-      return this.dataCategorize
-    },
-    getTableEditData () {
-      // 获取表格编辑的数据
-      // 将之前的add update delete 合并为一个数据
-      let data = this.getCategorizeData()
-      let editData = data.addList.concat(data.updateList)
-      // 需要对删除的数据，打上标识
-      data.deleteList.forEach((item) => {
-        item['hasDelete'] = true
-        editData.push(item)
-      })
-      return editData
-    },
-    valueChangeAssign (value, index, row, key) {
-      let oldValue = row[key]
-      row[key] = value
-      let validatorData = {}
-      let data = {
-        index: index,
-        row: row,
-        oldValue: oldValue,
-        key: key,
-        value: value
-      }
-      this.valueChangeValidator(key, value, index)
-      this.dataChangeMark.data = data
-      this.dataChangeMark.count++
-    },
-    valueChangeValidator (key, value, rowIndex) {
-      if (this.rules[key]) {
-        let rule = {}
-        rule[key] = this.rules[key]
+          this.dataCategorize.updateList.push(item);
+        });
+        //let returnData = JSON.parse(JSON.stringify());
+        return this.dataCategorize;
+      },getTableEditData(){
+        //获取表格编辑的数据
+        //将之前的add update delete 合并为一个数据
+        let data = this.getCategorizeData();
+        let editData = data.addList.concat(data.updateList);
+        //需要对删除的数据，打上标识
+        data.deleteList.forEach((item)=>{
+          item['hasDelete'] = true;
+          editData.push(item);
+        });
+        return editData;
+      },
+      valueChangeAssign(value, index, row, key) {
+        let oldValue = row[key];
+        row[key] = value;
+        let validatorData = {};
+        let data = {
+          index: index,
+          row: row,
+          oldValue: oldValue,
+          key: key,
+          value: value
+        };
+        this.valueChangeValidator(key, value, index);
+        this.dataChangeMark.data = data;
+        this.dataChangeMark.count++;
+      },
+      valueChangeValidator(key, value, rowIndex) {
+        if (this.rules[key]) {
+          let rule = {};
+          rule[key] = this.rules[key];
 
-        let validator = new AsyncValidator(rule)
-        let valueItem = {}
-        valueItem[key] = value
-        validator.validate(valueItem, (errors, fields) => {
-          this.errorMark = errors && errors.length > 0
-          if (this.errorMark) {
-            errors.forEach(({
-              message,
-              field
-            }) => {
-              // errorsItem[field] = message;
-              this.$Message.error(message)
-            })
-          }
-        })
-      }
-    },
-    validate () {
-      if (Object.keys(this.rules).length > 0) {
-        let validator = new AsyncValidator(this.rules)
-        for (let i = 0; i < this.cloneData.length; i++) {
-          validator.validate(this.cloneData[i], (errors, fields) => {
-            let errorsItem = {}
-            this.errorInfo = []
-            this.errorMark = errors && errors.length > 0
+          let validator = new AsyncValidator(rule);
+          let valueItem = {};
+          valueItem[key] = value;
+          validator.validate(valueItem, (errors, fields) => {
+            this.errorMark = errors && errors.length > 0;
             if (this.errorMark) {
               errors.forEach(({
                 message,
                 field
               }) => {
-                errorsItem[field] = message
-                this.errorInfo.push(message)
-              })
-            }
-            if (Object.keys(errorsItem).length > 0) {
-
+                //errorsItem[field] = message;
+                this.$Message.error(message);
+              });
             }
           })
-          if (this.errorMark) {
-            break
-          }
         }
-      }
-      return this.errorMark
-    },
-    menuDelete (index) {
-      let bakDeleteData = JSON.parse(JSON.stringify(this.cloneData[index]))
-      if (this.deleteValidator) {
-        this.deleteValidator(bakDeleteData, index, this.deleteRow)
-      } else {
-        this.deleteRow(index)
-      }
-      this.$emit('row-delete', index, bakDeleteData)
-    },
-    menuInsert (index) {
-      this.insertRow(index)
-      this.emitRowInsert(index)
-      // this.$parent.$emit("row-insert",index);
-    },
-    setTableWidth () {
-      let rows = []
-      let tableWidth = 0
-      for (let i = 0; i < this.$refs.head.children.length; i++) {
-        let cells = this.$refs.head.children[i].cells // 行中的所有列
-        if (cells) {
-          let cellsAry = []
-          for (let j = 0; j < cells.length; j++) {
-            cellsAry.push(cells[j])
-          }
-          rows.push(cellsAry)
-        }
-      }
-      this.columnGroup = this.setTableWidth2(rows)
-    },
-    setTableWidth2 (rows) {
-      let columnGroup = []
-      let stopIndex = rows.length
-      if (stopIndex > 1) {
-        stopIndex = stopIndex - 1
-      }
-      for (let i = 0; i < stopIndex; i++) {
-        let cells = rows[i]
-        let endIndex = 0
-        for (let j = 0; j < cells.length; j++) {
-          if (cells[j].style.display == 'none') { // 列被隐藏 不计算
-            continue
-          }
-          if (cells[j].colSpan > 1) {
-            let newRows = rows.slice(i + 1, rows.length)
-            endIndex += cells[j].colSpan
-            newRows[0] = newRows[0].slice(endIndex - cells[j].colSpan, endIndex)
-            let children = this.setTableWidth2(newRows)
-            columnGroup.push({
-              span: cells[j].colSpan,
-              children: children
-            })
-          } else if ((cells[j].rowSpan == 1 && cells[j].colSpan == 1) || (cells[j].rowSpan > 1 && cells[j].rowSpan ==
-                this.$refs.head.children.length)) {
-            let width = 100
-            if (cells[j].width && cells[j].width != '') {
-              width = cells[j].width
+      },
+      validate() {
+        if (Object.keys(this.rules).length > 0) {
+          let validator = new AsyncValidator(this.rules);
+          for (let i = 0; i < this.cloneData.length; i++) {
+            validator.validate(this.cloneData[i], (errors, fields) => {
+              let errorsItem = {};
+              this.errorInfo = [];
+              this.errorMark = errors && errors.length > 0;
+              if (this.errorMark) {
+                errors.forEach(({
+                  message,
+                  field
+                }) => {
+                  errorsItem[field] = message;
+                  this.errorInfo.push(message);
+                });
+              }
+              if (Object.keys(errorsItem).length > 0) {
+
+              }
+            });
+            if (this.errorMark) {
+              break;
             }
-            columnGroup.push({
-              width: width
-            })
-            this.tableWidth += Number(width)
           }
         }
+        return this.errorMark;
+      },
+      menuDelete(index) {
+        let bakDeleteData = JSON.parse(JSON.stringify(this.cloneData[index]));
+        if (this.deleteValidator) {
+          this.deleteValidator(bakDeleteData, index, this.deleteRow);
+        } else {
+          this.deleteRow(index);
+        }
+        this.$emit('row-delete', index, bakDeleteData);
+      },
+      menuInsert(index) {
+        this.insertRow(index);
+        this.emitRowInsert(index);
+        //this.$parent.$emit("row-insert",index);
+      },
+      setTableWidth() {
+        let rows = [];
+        let tableWidth = 0;
+        for (let i = 0; i < this.$refs.head.children.length; i++) {
+          let cells = this.$refs.head.children[i].cells; //行中的所有列
+          if(cells){
+            let cellsAry = [];
+            for (let j = 0; j < cells.length; j++) {
+              cellsAry.push(cells[j]);
+            }
+            rows.push(cellsAry);
+          }
+        }
+        this.columnGroup = this.setTableWidth2(rows);
+      },
+      setTableWidth2(rows) {
+        let columnGroup = [];
+        let stopIndex = rows.length;
+        if (stopIndex > 1) {
+          stopIndex = stopIndex - 1;
+        }
+        for (let i = 0; i < stopIndex; i++) {
+          let cells = rows[i];
+          let endIndex = 0;
+          for (let j = 0; j < cells.length; j++) {
+            if (cells[j].style.display == 'none') { //列被隐藏 不计算
+              continue;
+            }
+            if (cells[j].colSpan > 1) {
+              let newRows = rows.slice(i + 1, rows.length);
+              endIndex += cells[j].colSpan;
+              newRows[0] = newRows[0].slice(endIndex - cells[j].colSpan, endIndex);
+              let children = this.setTableWidth2(newRows);
+              columnGroup.push({
+                span: cells[j].colSpan,
+                children: children
+              });
+            } else if ((cells[j].rowSpan == 1 && cells[j].colSpan == 1) || (cells[j].rowSpan > 1 && cells[j].rowSpan ==
+                this.$refs.head.children.length)) {
+              let width = 100;
+              if (cells[j].width && cells[j].width != '') {
+                width = cells[j].width;
+              }
+              columnGroup.push({
+                width: width
+              });
+              this.tableWidth += Number(width);
+            }
+          }
+        }
+        return columnGroup;
+      },rowClick(index){
+
+      },emitRowInsert(index){
+        this.$emit('row-insert',index);
       }
-      return columnGroup
     },
-    rowClick (index) {
+    mounted() {
+      if (!this.eventIsInit) {
+        this.tableEventInit();
+        this.eventIsInit = true;
+      }
+      //tableHead  tableBody
+      let _self = this;
+      this.$refs.tables.addEventListener('scroll', function(e) {
+        _self.$refs.tableHead.style.left = (50 - e.target.scrollLeft) + 'px';
+        _self.$refs.tableIndex.style.top = (0 - e.target.scrollTop) + 'px';
+      });
 
-    },
-    emitRowInsert (index) {
-      this.$emit('row-insert', index)
-    }
-  },
-  mounted () {
-    if (!this.eventIsInit) {
-      this.tableEventInit()
-      this.eventIsInit = true
-    }
-    // tableHead  tableBody
-    let _self = this
-    this.$refs.tables.addEventListener('scroll', function (e) {
-      _self.$refs.tableHead.style.left = (50 - e.target.scrollLeft) + 'px'
-      _self.$refs.tableIndex.style.top = (0 - e.target.scrollTop) + 'px'
-    })
+      //计算表格宽度
+      this.setTableWidth();
+      //计算表头高度
+      //this.$refs.tableHead.childElementCount
+      this.headRowCount = this.$refs.head.childElementCount;
 
-    // 计算表格宽度
-    this.setTableWidth()
-    // 计算表头高度
-    // this.$refs.tableHead.childElementCount
-    this.headRowCount = this.$refs.head.childElementCount
+    }
   }
-}
 </script>
 
 <style>

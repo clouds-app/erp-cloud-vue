@@ -16,7 +16,7 @@
 </template>
 
 <script>
-/**
+  /**
    * 数据填充逻辑：
    *  1.弹窗如果是单选返回的是对象，多选返回的数组
    *  2.本控件会在表单以及编辑表格中使用
@@ -24,262 +24,259 @@
    *  4.如果填充的目标数据是数组，需要替换修改的行，以及添加行
    *
    */
-import popupField from '../popup-field/popup-field'
-import popupWindow from '../popup-window/popup-window'
-export default {
-  components: {
-    popupField,
-    popupWindow
-  },
-  name: 'popup',
-  props: {
-    value: {
-      type: [String, Number, Date, Boolean]
+  import popupField from '../popup-field/popup-field'
+  import popupWindow from '../popup-window/popup-window'
+  export default {
+    components: {
+      popupField,
+      popupWindow
+    },
+    name: 'popup',
+    props: {
+      value: {
+        type: [String, Number, Date, Boolean]
 
-    },
-    queryParams: {
-      default: () => {
-        return {}
-      }
-    },
-    popupName: String,
-    fieldName: String,
-    disabled: {
-      type: Boolean,
-      default: false
-    },
-    index: {
-      type: Number,
-      default: -1
-    },
-    fillModel: {
-      type: Object | Array,
-      default: () => {
-        return {}
-      }
-    }, // 数据对象
-    fillMappingList: {
-      type: Array,
-      default: () => {
-        return []
-      }
-    }, // 填充映射{a返回字段:b要填充的字段}
-    fromFields: String,
-    renderFields: String,
-    initData: Object,
-    suffix: {
-      type: Boolean,
-      default: false
-    },
-    suffixModel: {
-      type: [String, Number, Date, Boolean]
-    },
-    suffixFromField: String,
-    popupClickValidator: Function
-  },
-  data () {
-    return {
-      popupShow: false,
-      isResize: false,
-      suffixValue: '',
-      fillModelObj: {},
-      popupFieldValue: '',
-      popupQueryParams: {},
-      tableData: [],
-      fillData: []
-    }
-  },
-  watch: {
-    value (n, o) {
-      this.popupFieldValue = n
-      if (n == '') {
-        this.suffixValue = ''
-      }
-    },
-    suffixModel (n, o) {
-      this.suffixValue = n
-    },
-    fillMode: {
-      // immediate:true,
-      deep: true,
-      handler (n, o) {
-        this.fillModelObj = this.fillModel
-      }
-    },
-    popupFieldValue (n, o) {
-      this.$emit('input', n)
-    },
-    queryParams: {
-      handler (n, o) {
-        this.popupQueryParams = n
       },
-      deep: true,
-      immediate: true
-    }
-  },
-  methods: {
-    onFill (item, isArray) {
-      this.fillModelObj = this.fillModel
-      // debugger;
-      // 数据填充
-      let fillData = []
-      // 如果没有返回数据，那么所有相关的都应该置为空
-      if (!isArray && (!item || Object.keys(item).length == 0)) {
-        this.fillMappingList.forEach((item1, index) => {
-          item[item1.renderField] = null
-        })
-      }
-      // 判断要填充的目标是数组还是对象,采取不能的策略
-      let fillObjIsArray = Array.isArray(this.fillModelObj)
-      if (fillObjIsArray) {
-        fillData = this.arrayFill(item, isArray)
-      } else {
-        fillData = [{ data: this.objFill(item, isArray) }]
-      }
-      if (fillData) {
-        this.$emit('on-fill', fillData, item.length)
+      queryParams: {
+        default: () => {
+          return {};
+        }
+      },
+      popupName: String,
+      fieldName: String,
+      disabled: {
+        type: Boolean,
+        default: false
+      },
+      index: {
+        type: Number,
+        default: -1
+      },
+      fillModel: {
+        type: Object|Array,
+        default: () => {
+          return {};
+        }
+      }, //数据对象
+      fillMappingList: {
+        type: Array,
+        default: () => {
+          return [];
+        }
+      }, //填充映射{a返回字段:b要填充的字段}
+      fromFields: String,
+      renderFields: String,
+      initData: Object,
+      suffix: {
+        type: Boolean,
+        default: false
+      },
+      suffixModel: {
+        type: [String, Number, Date, Boolean]
+      },
+      suffixFromField: String,
+      popupClickValidator: Function
+    },
+    data() {
+      return {
+        popupShow: false,
+        isResize: false,
+        suffixValue: '',
+        fillModelObj: {},
+        popupFieldValue: '',
+        popupQueryParams: {},
+        tableData: [],
+        fillData:[]
       }
     },
-    setDataByIndex (item, index) {
+    watch: {
+      value(n, o) {
+        this.popupFieldValue = n;
+        if (n == '') {
+          this.suffixValue = '';
+        }
+      },
+      suffixModel(n, o) {
+        this.suffixValue = n;
+      },
+      fillMode: {
+        //immediate:true,
+        deep: true,
+        handler(n, o) {
+          this.fillModelObj = this.fillModel;
+        }
+      },
+      popupFieldValue(n, o) {
+        this.$emit('input', n);
+      },
+      queryParams: {
+        handler(n, o) {
+          this.popupQueryParams = n;
+        },
+        deep: true,
+        immediate: true
+      }
+    },
+    methods: {
+      onFill(item, isArray) {
+        this.fillModelObj = this.fillModel;
+        //debugger;
+        //数据填充
+        let fillData = [];
+        //如果没有返回数据，那么所有相关的都应该置为空
+        if(!isArray && (!item || Object.keys(item).length == 0)){
+          this.fillMappingList.forEach((item1, index) => {
+            item[item1.renderField] = null;
+          });
+        }
+        //判断要填充的目标是数组还是对象,采取不能的策略
+        let fillObjIsArray = Array.isArray(this.fillModelObj);
+        if(fillObjIsArray){
+          fillData = this.arrayFill(item,isArray);
+        }else{
+          fillData = [{data:this.objFill(item,isArray)}];
+        }
+        if(fillData){
+          this.$emit('on-fill', fillData,item.length);
+        }
+      },
+      setDataByIndex(item,index){
 
-    },
-    onClick () {
-      if (this.popupClickValidator) {
-        let result = false
-        if (this.index != -1 && Array.isArray(this.fillModelObj)) {
-          result = this.popupClickValidator(this.fillModelObj[this.index])
-        } else {
-          result = this.popupClickValidator(this.fillModelObj)
-        }
-        if (!result) {
-          return
-        }
-      }
-      if (!this.isResize) {
-        this.$refs.popupWindow.resize()
-        this.isResize = true
-      }
-      this.popupShow = true
-    },
-    onOk (item, isArray) {
-      this.onFill(item, isArray)
-    },
-    mappingReplace (replaceItem) {
-      // 返回结果替换
-      if (this.fillMappingList && this.fillMappingList.length > 0) {
-        let data = {}
-        this.fillMappingList.forEach((item, index) => {
-          let orignData = replaceItem[item.fromField]
-          if (Array.isArray(orignData)) {
-            orignData = orignData.toString()
+      },
+      onClick() {
+        if (this.popupClickValidator) {
+          let result = false;
+          if (this.index != -1 && Array.isArray(this.fillModelObj)) {
+            result = this.popupClickValidator(this.fillModelObj[this.index]);
+          } else {
+            result = this.popupClickValidator(this.fillModelObj);
           }
-          data[item.renderField] = orignData
-        })
-        // return Object.assign(data,item);
-        return data
-      }
-      return replaceItem
-    },
-    inputEvent (value) {
-      this.$emit('input', value)
-    },
-    arrayToObj (items) {
-      // 数组转换为对象，值用,分割
-      let keys = Object.keys(items[0])
-      let data = {}
-      for (let i = 0; i < keys.length; i++) {
-        let key = keys[i]
-        items.forEach(item => {
-          if (!data[key]) {
-            data[key] = []
+          if (!result) {
+            return;
           }
-          data[key].push(item[key])
-        })
-      }
-      return data
-    },
-    onFillMultiple (resItems) {
-      // popup中返回了，多条数据，返回了多个值
-      this.tableData = resItems
-      this.popupShow = true
-    },
-    objFill (items, isArray) {
-      // 对象填充，
-      // 数组需要转换
-      // 没有数据，把所有需要填充的值清空
-      let data
-      if (isArray) {
-        let convertData = this.arrayToObj(items)
-        data = this.mappingReplace(convertData)
-      } else {
-        data = this.mappingReplace(items)
-      }
-      this.fillModelObj = Object.assign(this.fillModelObj, data)
-      this.$emit('update:fillModel', this.fillModelObj)
-      return data
-    },
-    arrayFill (items, isArray) {
-      // 数组需要替换当前行添加新行
-      if (this.index < 0) {
-        console.error('表格中使用popup没有传递index或index错误 < 0')
-        return
-      }
-      let data = items
-      let fillData = []
-      if (!isArray) {
-        data = [items]
-      }
-      // 大于0，先替换当前行
-      if (data.length > 0) {
-        let newData = Object.assign(this.fillModelObj[this.index], this.mappingReplace(data[0]))
-        this.$set(this.fillModelObj, this.index, newData)
-        fillData.push({ index: this.index, data: newData })
-      }
-      if (this.initData) {
-        for (let i = 1; i < data.length; i++) {
-          let newData = Object.assign(JSON.parse(JSON.stringify(this.initData)), this.mappingReplace(data[i]))
-          this.fillModelObj.push(newData)
-          fillData.push({ index: this.fillModelObj.length - 1, data: newData })
         }
-      } else {
-        console.error('在添加行时没有传递initData,发生错误')
-        return
+        if (!this.isResize) {
+          this.$refs.popupWindow.resize();
+          this.isResize = true;
+        }
+        this.popupShow = true;
+      },
+      onOk(item, isArray) {
+        this.onFill(item, isArray);
+      },
+      mappingReplace(replaceItem) {
+        //返回结果替换
+        if (this.fillMappingList && this.fillMappingList.length > 0) {
+          let data = {};
+          this.fillMappingList.forEach((item, index) => {
+            let orignData = replaceItem[item.fromField];
+            if(Array.isArray(orignData)){
+              orignData = orignData.toString();
+            }
+            data[item.renderField] = orignData;
+
+          });
+          //return Object.assign(data,item);
+          return data;
+        }
+        return replaceItem;
+      },
+      inputEvent(value) {
+        this.$emit('input', value);
+      },
+      arrayToObj(items) {
+        //数组转换为对象，值用,分割
+        let keys = Object.keys(items[0]);
+        let data = {};
+        for(let i = 0;i < keys.length;i++){
+          let key = keys[i];
+          items.forEach(item=>{
+            if(!data[key]){
+              data[key] = [];
+            }
+            data[key].push(item[key]);
+          });
+        }
+        return data;
+      },
+      onFillMultiple(resItems) {
+        //popup中返回了，多条数据，返回了多个值
+        this.tableData = resItems;
+        this.popupShow = true;
+      },objFill(items,isArray){
+        //对象填充，
+        //数组需要转换
+        //没有数据，把所有需要填充的值清空
+       let data;
+        if(isArray){
+          let convertData = this.arrayToObj(items);
+          data = this.mappingReplace(convertData);
+        }else{
+          data = this.mappingReplace(items);
+        }
+        this.fillModelObj = Object.assign(this.fillModelObj,data);
+        this.$emit('update:fillModel', this.fillModelObj);
+        return data;
+      },arrayFill(items,isArray){
+        //数组需要替换当前行添加新行
+        if(this.index < 0){
+          console.error('表格中使用popup没有传递index或index错误 < 0');
+          return;
+        }
+        let data = items;
+        let fillData = [];
+        if(!isArray){
+          data = [items];
+        }
+        //大于0，先替换当前行
+        if(data.length > 0){
+          let newData = Object.assign(this.fillModelObj[this.index],this.mappingReplace(data[0]));
+          this.$set(this.fillModelObj, this.index, newData);
+          fillData.push({index:this.index,data:newData});
+        }
+        if (this.initData) {
+           for (let i = 1; i < data.length; i++) {
+             let newData = Object.assign(JSON.parse(JSON.stringify(this.initData)),this.mappingReplace(data[i]));
+             this.fillModelObj.push(newData);
+             fillData.push({index:this.fillModelObj.length - 1,data:newData});
+           }
+        }else{
+          console.error('在添加行时没有传递initData,发生错误');
+          return;
+        }
+        return fillData;
+      },itemArrayToObj(item){
+        //数组转换为对象，值用,分割
+        let keys = Object.keys(item[0]);
+
+      },onFillMultiple(resItems){
+        //返回了多个值
+        this.tableData = resItems;
+        this.popupShow = true;
+      },itemArrayToObj(item){
+        //数组转换为对象，值用,分割
+        let keys = Object.keys(item[0]);
+
+      },onFillMultiple(resItems){
+        //返回了多个值
+        this.tableData = resItems;
+        this.popupShow = true;
       }
-      return fillData
     },
-    itemArrayToObj (item) {
-      // 数组转换为对象，值用,分割
-      let keys = Object.keys(item[0])
-    },
-    onFillMultiple (resItems) {
-      // 返回了多个值
-      this.tableData = resItems
-      this.popupShow = true
-    },
-    itemArrayToObj (item) {
-      // 数组转换为对象，值用,分割
-      let keys = Object.keys(item[0])
-    },
-    onFillMultiple (resItems) {
-      // 返回了多个值
-      this.tableData = resItems
-      this.popupShow = true
-    }
-  },
-  created () {
-    this.popupFieldValue = this.value
-    if (this.fromFields && this.renderFields) {
-      let fromFields = this.fromFields.split(',')
-      let renderField = this.renderFields.split(',')
-      for (let i = 0; i < fromFields.length; i++) {
-        this.fillMappingList.push({
-          fromField: fromFields[i],
-          renderField: renderField[i]
-        })
+    created() {
+      this.popupFieldValue = this.value;
+      if (this.fromFields && this.renderFields) {
+        let fromFields = this.fromFields.split(',');
+        let renderField = this.renderFields.split(',');
+        for (let i = 0; i < fromFields.length; i++) {
+          this.fillMappingList.push({
+            fromField: fromFields[i],
+            renderField: renderField[i]
+          });
+        }
       }
     }
   }
-}
 </script>
 
 <style>

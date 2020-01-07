@@ -1,16 +1,16 @@
-import { getUnicode } from '@/api/sys'
+import {getUnicode} from '@/api/sys'
 
 export default {
   state: {
     hasGetInfo: false
   },
   mutations: {
-
+  
   },
   actions: {
     // 获取唯一编码
-    getUnicodeAction ({ commit }, params) {
-      // debugger
+    getUnicodeAction ({commit},params) {
+      //debugger
       return new Promise((resolve, reject) => {
         try {
           getUnicode(params).then(res => {

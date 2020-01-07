@@ -87,17 +87,6 @@
           >
             <template slot="head">
               <tr>
-                <!-- <th class="ivu-table-column-left" width="100">
-                  <div class="ivu-table-cell">
-                    <span class="">数据是否删除</span>
-                  </div>
-                </th>-->
-
-                <!-- <th class="ivu-table-column-left" width="100">
-                  <div class="ivu-table-cell">
-                    <span class="">楞别</span>
-                  </div>
-                </th>-->
                 <th class="ivu-table-column-center" width="100">
                   <div class="ivu-table-cell">
                     <span class>楞别</span>
@@ -146,7 +135,6 @@
             </template>
 
             <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
-
                  <td class="ivu-table-column-left" width="100">
                    <popup
                    :popupClickValidator="clickValuedate"
@@ -288,25 +276,24 @@ import optionSearch from '../../components/optionSearch'
 const default_formDataInfo = {
   // 主表 更改字段
   master: {
-    artCode: '',
-    artCS: 0,
-
-    saleByWt: 'false',
-    remark: ''
+    bpNo:"",
+		coinName:"",
+		custCode:"",
+		custId:0,
+		custName:"",
+		effectDate:"",
+		remark:"",
   },
-  // artLengs:{
-
-  // },
-  // 子表 artLengs 根据实际接口更改,其它不变
-  artLengs: {
-    defaultList: [], // 默认列
-    addList: [], // 添加列
-    deleteList: [], // 删除列
-    updateList: [] // 更新列
-  }
+  saleBoxProductPriceItems: [
+    {
+        master:{},
+        saleBoxProductPriceSubs:[]
+    }
+  ]
+  
 }
 export default {
-  name: 'edit-art',
+  name: 'edit-boxProductPrice',//销售==> 纸箱产品报价
   mixins: [editBaseMixins],
   components: {
     editWindow,

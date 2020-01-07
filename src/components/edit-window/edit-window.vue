@@ -15,71 +15,71 @@
 </template>
 
 <script>
-export default {
-  data () {
-    return {
-      show: false,
-      html: ''
-    }
-  },
-  props: {
-    spinLoaddingText: {
-      type: String,
-      default: ''
+  export default {
+    data() {
+      return {
+        show: false,
+        html: ''
+      }
     },
-    loading: {
-      type: Boolean,
-      default: false
+    props: {
+      spinLoaddingText:{
+          type: String,
+          default: ''
+      },
+      loading:{
+        type: Boolean,
+        default: false
+      },
+      maskClosable: {
+        type: Boolean,
+        default: false
+      },
+      scrollable: {
+        type: Boolean,
+        default: true
+      },
+      fullscreen: {
+        type: Boolean,
+        default: true
+      },
+      title: {
+        type: String,
+        default: '窗口'
+      },
+      value: {
+        type: Boolean,
+        default: false
+      },
+      width: {
+        type: String | Number,
+        default: 'auto'
+      },
+      lazyTime: {
+        required: false,
+        default: 0
+      }
     },
-    maskClosable: {
-      type: Boolean,
-      default: false
+    watch: {
+      show(n, o) {
+        this.$emit('input', n);
+      },
+      value(n, o) {
+       // debugger
+        this.show = n;
+      }
     },
-    scrollable: {
-      type: Boolean,
-      default: true
+    methods: {
+      onOk() {
+        this.$emit('on-ok');
+      },
+      onCancel() {
+        this.show = false;
+        this.$emit('on-cancel');
+      }
     },
-    fullscreen: {
-      type: Boolean,
-      default: true
-    },
-    title: {
-      type: String,
-      default: '窗口'
-    },
-    value: {
-      type: Boolean,
-      default: false
-    },
-    width: {
-      type: String | Number,
-      default: 'auto'
-    },
-    lazyTime: {
-      required: false,
-      default: 0
-    }
-  },
-  watch: {
-    show (n, o) {
-      this.$emit('input', n)
-    },
-    value (n, o) {
-      // debugger
-      this.show = n
-    }
-  },
-  methods: {
-    onOk () {
-      this.$emit('on-ok')
-    },
-    onCancel () {
-      this.show = false
-      this.$emit('on-cancel')
-    }
-  },
-  created () {}
-}
+    created() {}
+  }
 </script>
 
 <style>
