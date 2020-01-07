@@ -28,10 +28,10 @@
   </div>
 </template>
 <script>
-import vTable from '@/components/tables/vTable'
-import htmlTemplate from '../components/htmlTemplate'
-import editForm from './edit/edit-dieCuttingPlate'
-import listBaseMixins from '../mixins/list'
+import vTable from "@/components/tables/vTable";
+import htmlTemplate from "../components/htmlTemplate";
+import editForm from "./edit/edit-dieCuttingPlate";
+import listBaseMixins from "../mixins/list";
 export default {
   mixins: [listBaseMixins],
   components: {
@@ -39,24 +39,24 @@ export default {
     htmlTemplate,
     vTable
   },
-  data () {
+  data() {
     return {
       functionParams: {
-        requestBaseUrl: '/bas/dieCuttingPlate',
-        uniqueId: 'dieCuttingPlateId'
+        requestBaseUrl: "/bas/dieCuttingPlate",
+        uniqueId: "dieCuttingPlateId"
       },
       // 查询参数 ,注意格式
 
       queryParamsDefault: [
         {
-          title: '模切板编号',
-          code: 'dpNo',
-          dpNo: ''
+          title: "模切板编号",
+          code: "dpNo",
+          dpNo: ""
         },
         {
-          title: '模数',
-          name: 'dpDieCuttingQty',
-          dpDieCuttingQty: ''
+          title: "模数",
+          name: "dpDieCuttingQty",
+          dpDieCuttingQty: ""
         }
       ]
       // columns: [
@@ -197,20 +197,20 @@ export default {
       //   },
 
       // ],
-    }
+    };
   },
   methods: {
-    tableRowClick (rowData, rowIndex) {
-      this.formDetailData = {} // 清除上次缓存数据 增加体验良好
-      this.masterRowSelection = rowData
+    tableRowClick(rowData, rowIndex) {
+      this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData;
       if (rowData != null) {
         // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
         this.currrentRowItem.rowName =
-          rowData.cusName + ',' + rowData.bpNo + ',' + rowData.bpName
+          rowData.cusName + "," +rowData.bpNo + "," + rowData.bpName;
       }
     }
   }
-}
+};
 </script>
 
 <style></style>

@@ -47,78 +47,78 @@
   </div>
 </template>
 <script>
-import vTable from '@/components/tables/vTable'
-import htmlTemplate from '../components/htmlTemplate'
-// import editForm from "./edit/edit-warehouse";
-import listBaseMixins from '../mixins/list'
-import request from '@/libs/request'
+import vTable from "@/components/tables/vTable";
+import htmlTemplate from "../components/htmlTemplate";
+//import editForm from "./edit/edit-warehouse";
+import listBaseMixins from "../mixins/list";
+import request from "@/libs/request";
 export default {
   mixins: [listBaseMixins],
   components: {
-    'editForm': function (resolve) {
-      // 组件的异步加载
-      require(['./edit/edit-box'], resolve)
+    'editForm': function(resolve) {
+      //组件的异步加载
+      require(["./edit/edit-box"], resolve);
     },
     htmlTemplate,
     vTable
   },
-  data () {
+  data() {
     return {
       // who:'editForm', // 动态指定编辑控件
       functionParams: {
-        requestBaseUrl: '/bas/box',
-        uniqueId: 'boxId'
+        requestBaseUrl: "/bas/box",
+        uniqueId: "boxId"
       },
       // 查询参数 ,注意格式
       queryParamsDefault: [
         {
-          title: '盒式编号',
-          code: 'boxCode',
-          boxCode: ''
+          title: "盒式编号",
+          code: "boxCode",
+          boxCode: ""
         },
         {
-          title: '盒式名称',
-          name: 'boxName',
-          boxName: ''
+          title: "盒式名称",
+          name: "boxName",
+          boxName: ""
         }
       ],
       columns: [],
       tableFieldColuns: []
-    }
+    };
   },
   methods: {
-    tableRowClick (rowData, rowIndex) {
-      this.formDetailData = {} // 清除上次缓存数据 增加体验良好
-      this.masterRowSelection = rowData
+    tableRowClick(rowData, rowIndex) {
+      this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData;
       if (rowData != null) {
-        // debugger
+        //debugger
         // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
-        this.currrentRowItem.rowName = rowData.boxCode + ' ' + rowData.boxName
+        this.currrentRowItem.rowName = rowData.boxCode + " " + rowData.boxName;
       }
       if (this.masterRowSelection) {
-        this.getItemDataById()
+        this.getItemDataById();
       }
     },
     // 获取纸质规格
-    getItemDataById () {
-      // debugger
-      let url = `/bas/box/item/list`
+    getItemDataById() {
+      //debugger
+      let url = `/bas/box/item/list`;
       let data = {
         boxId: this.masterRowSelection.id
-      }
-      let _self = this
+      };
+      let _self = this;
       request.post(url, data).then(res => {
-        // debugger
-        _self.tableFieldData = res
-      })
+        //debugger
+        _self.tableFieldData = res;
+      });
     },
-    // 重写父类方法, 更新操作
-    handleUpdateEvent () {
-      debugger
-      this.getItemDataById()
+    //重写父类方法, 更新操作
+    handleUpdateEvent() {
+      debugger;
+      this.getItemDataById();
     }
   }
-}
+};
 </script>
 
 <style></style>

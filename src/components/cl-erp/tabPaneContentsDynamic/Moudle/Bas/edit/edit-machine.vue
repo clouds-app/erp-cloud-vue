@@ -146,69 +146,69 @@
  *
  * @created 2019/11/20 17:07:54
  */
-import optionSearch from '../../components/optionSearch'
-import editBaseMixins from '../../mixins/edit'
-import { customValidator, uniqueValidator } from '@/libs/validator'
+import optionSearch from "../../components/optionSearch";
+import editBaseMixins from "../../mixins/edit";
+import { customValidator,uniqueValidator } from "@/libs/validator";
 
 const default_formDataInfo = {
-  moCode: '',
-  moName: '',
-  bwpiUnitText: '',
-  moInteral: '',
-  remark: '',
+  moCode: "",
+  moName: "",
+  bwpiUnitText: "",
+  moInteral: "",
+  remark: "",
   bwpiParamNum: 0,
   bwpiUnit: 0,
   maxLength: 0,
   maxWidth: 0,
   minLength: 0,
   minWidth: 0
-}
+};
 export default {
-  name: 'edit-machine',
+  name: "edit-machine",
   mixins: [editBaseMixins],
   components: { optionSearch, optionSearch },
-  data () {
+  data() {
     return {
-      requestBaseUrl: '/bas/machine', // 请求 查询 操作的基础路径
+      requestBaseUrl: "/bas/machine", // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
-        moCode: [{ required: true, message: '机台编号不能为空', trigger: 'blur' },
-          { validator: customValidator,
-            trigger: 'blur',
-            customRule: ['toCDB', 'identifier', 'spaceStr'],
-            fieldDesc: '机台编号' },
-          {
-            validator: uniqueValidator,
-            trigger: 'blur',
-            fieldDesc: '机台编号',
-            params: {
-              fieldName: 'moCode',
-              formName: 'machine',
-              id: () => {
-                return this.formDataInfo.id
-              }
-            }
-          }
+        moCode: [{ required: true, message: "机台编号不能为空", trigger: "blur" },
+                {validator:customValidator,
+                            trigger:"blur",
+                            customRule:["toCDB","identifier","spaceStr"],
+                            fieldDesc:"机台编号"},
+                             {
+                  validator:uniqueValidator,
+                  trigger: "blur",
+                  fieldDesc: "机台编号",
+                  params:{
+                    fieldName:'moCode',
+                    formName:'machine',
+                    id:()=>{
+                      return this.formDataInfo.id;
+                    }
+                  }
+                }
         ],
-        moName: [{ required: true, message: '机台名称不能为空', trigger: 'blur' },
-          { validator: customValidator,
-            trigger: 'blur',
-            customRule: ['toCDB', 'spaceStr'],
-            fieldDesc: '机台名称' }
-
+        moName: [{ required: true, message: "机台名称不能为空", trigger: "blur" },
+                {validator:customValidator,
+                    trigger:"blur",
+                    customRule:["toCDB","spaceStr"],
+                    fieldDesc:"机台名称"}
+        
         ]
       }
-    }
+    };
   },
 
   methods: {
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo () {
-      this.formDataInfo = Object.assign({}, default_formDataInfo)
+    HandleFormDataInfo() {
+      this.formDataInfo = Object.assign({}, default_formDataInfo);
     }
   }
-}
+};
 </script>
 
 <style>

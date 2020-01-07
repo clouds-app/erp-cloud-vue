@@ -26,29 +26,29 @@
                     <p>
                         <Button @click="handleSubMenuEvent('paperLimit','Bas-paperLimit','纸度')" type="success">纸度</Button>
                     </p>
-
+                    
                 </div>
 
-        <div id="Bas_one">
+        <div id="Bas_one">    
                     <p>
                         <Button @click="handleSubMenuEvent('car','bas-car','车辆')" type="success">车辆</Button>
                     </p>
-
+            
                 <br/> <br/>
                     <p>
                         <Button @click="handleSubMenuEvent('warehouse','bas-warehouse','仓库')" type="success">仓库</Button>
                     </p>
-
+            
                 <br/> <br/>
                     <p>
                         <Button @click="handleSubMenuEvent('leng','bas-leng','楞别')" type="success">楞别</Button>
                     </p>
-
+            
                 <br> <br/>
                     <p>
                         <Button @click="handleSubMenuEvent('bank','bas-bank','银行')" type="success">银行</Button>
                     </p>
-
+            
                 <br/> <br/>
                     <p>
                         <Button @click="handleSubMenuEvent('unit','bas-unit','计量单位')" type="success">计量单位</Button>
@@ -57,16 +57,17 @@
                 <p>
                 <Button @click="handleSubMenuEvent('dieCuttingPlate','bas-dieCuttingPlate','模切板')" type="success">模切板</Button>
                 </p>
+            
+        </div> 
+        
+        <div id="Bas_one">   
 
-        </div>
-
-        <div id="Bas_one">
 
             <p>
                 <Button @click="handleSubMenuEvent('coin','bas-coin','货币')" type="success">货币</Button>
             </p>
             <br/> <br/>
-
+            
             <p>
                 <Button @click="handleSubMenuEvent('fadeReason','bas-fadeReason','退货原因')" type="success">退货原因</Button>
             </p>
@@ -79,18 +80,18 @@
                 <Button @click="handleSubMenuEvent('resume','bas-resume','摘要说明')" type="success">摘要说明</Button>
             </p>
             <br/> <br/>
-
+            
             <p>
                 <Button @click="handleSubMenuEvent('printMarks','bas-printMarks','印唛')" type="success">印唛</Button>
             </p>
             <br/> <br/>
-
+            
             <!-- <p>
                 <Button @click="handleSubMenuEvent('supplier','bas-supplier','供应商')" type="success">供应商</Button>
             </p> -->
 
-        </div>
-        <div id="Bas_one" >
+        </div> 
+        <div id="Bas_one" >  
             <p>
                 <Button @click="handleSubMenuEvent('art','bas-art','纸质')" type="success">纸质</Button>
             </p>
@@ -110,7 +111,8 @@
             <p>
                 <Button @click="handleSubMenuEvent('workPro','Bas-workPro','工序资料')" type="success">工序资料</Button>
             </p>
-
+            
+            
             </div>
 
             <div id="Bas_one">
@@ -118,7 +120,7 @@
                 <Button @click="handleSubMenuEvent('machine','bas-machine','机台')" type="success">机台</Button>
                 </p>
                 <br> <br/>
-
+                
                 <p>
                 <Button @click="handleSubMenuEvent('box','bas-box','盒式公式')" type="success">盒式公式</Button>
                 </p>
@@ -131,84 +133,97 @@
                 <Button @click="handleSubMenuEvent('boxSizeSet','bas-boxSizeSet','纸箱内外径设置')" type="success">纸箱内外径设置</Button>
                 </p>
                 <br> <br/>
-
+                
                 <p>
                 <Button @click="handleSubMenuEvent('specPrice','bas-specPrice','客户化计价盒式')" type="success">客户化计价盒式</Button>
                 </p>
-
-            </div>
-        </div>
+                
+                
+            </div> 
+        </div>       
 
     </div>
+
+    
+    
+
 
 </template>
 
 <script>
 import globleMixin from '@/mixins'
-// import subMenuMixin from './mixins'
+//import subMenuMixin from './mixins'
 export default {
-  mixins: [globleMixin],
-  data () {
-    return {
+    mixins:[globleMixin],
+    data() {
+        return {
 
-    }
-  },
-  methods: {
-    // 子页面 参数: 页面.vue,唯一区别ID,TAB 标签显示名称
-    handleSubMenuEvent (currentPage, uniqueKey, tabName) {
-      //  debugger
-      let subItem = {
-        uniqueKey: uniqueKey,
-        lable: tabName
-      }
-      let params = {
-        type: 'Bas',
-        page: currentPage, // 显示控件页面
-        uniqueKey: subItem.uniqueKey,
-        lable: subItem.lable,
-        isActive: true
-      }
-      // 判断是否已经存在,不要重复添加菜单
-      let isExist = false
-      let currentOperateMenu = this.currentSelectedSubMenu.Bas
-      if (this.currentSelectedSubMenu && currentOperateMenu.length > 0) {
-        currentOperateMenu.forEach((item) => {
-          item.isActive = false // 重置其它菜单为 未选中
-          if (item.uniqueKey == params.uniqueKey) {
-            isExist = true
-            item.isActive = true // 当前的设置为 TRUE
-          }
-        })
-      }
+        }
+    },
+    methods:{
+      // 子页面 参数: 页面.vue,唯一区别ID,TAB 标签显示名称
+      handleSubMenuEvent(currentPage,uniqueKey,tabName){
+        //  debugger
+       let subItem = {
+           uniqueKey:uniqueKey,
+           lable:tabName
+       }  
+       let params = {
+           type:'Bas',
+           page:currentPage, //显示控件页面
+           uniqueKey:subItem.uniqueKey,
+           lable:subItem.lable,
+           isActive:true
+       }
+       //判断是否已经存在,不要重复添加菜单
+       let isExist =false;
+       let currentOperateMenu= this.currentSelectedSubMenu.Bas
+       if(this.currentSelectedSubMenu && currentOperateMenu.length>0){
+             currentOperateMenu.forEach((item)=>{
+                 item.isActive =false //重置其它菜单为 未选中
+                 if(item.uniqueKey ==params.uniqueKey){
+                     isExist = true
+                     item.isActive =true // 当前的设置为 TRUE
+                 }
+             })
+       }
 
-      // 不存在则添加 子页面
-      if (!isExist) {
-        currentOperateMenu = Object.assign(currentOperateMenu, currentOperateMenu.push(params))
-      }
-      this.$store.commit('setCurrentSubMenu', this.currentSelectedSubMenu)
-      // 打开指定页面
-      this.$emit('openSubMenu', params)
-    }
+       // 不存在则添加 子页面
+       if(!isExist){
+         currentOperateMenu =Object.assign(currentOperateMenu,currentOperateMenu.push(params))
+       }
+       this.$store.commit('setCurrentSubMenu', this.currentSelectedSubMenu)
+       //打开指定页面
+       this.$emit('openSubMenu',params)
+ 
+      },
   }
 }
 </script>
 
 <style >
 #Bas_sun{
-
+    
     margin-top: 4%;
     margin-left: 16%;
-
+    
      text-align:center;
      height:600px;
      width: 100%;
-
+    
+     
+     
+      
+     
 }
 #Bas_one{
-
+    
     float: left;
-    padding-left: 100px;
-
+    padding-left: 100px; 
+    
+   
+     
+    
 }
 
 </style>

@@ -82,113 +82,109 @@
 </template>
 
 <script>
-import vTable from '@/components/tables/vTable'
-import request from '@/libs/request'
-import popupEdit from './popup-edit'
-export default {
-  components: {
-    vTable,
-    popupEdit
-  },
-  data () {
-    return {
-      splitModel: 0.5,
-      showEditWindow: false,
-      queryParams: {
+  import vTable from '@/components/tables/vTable'
+  import request from '@/libs/request'
+  import popupEdit from './popup-edit'
+  export default {
+    components: {
+      vTable,
+      popupEdit
+    },
+    data() {
+      return {
+        splitModel:0.5,
+        showEditWindow: false,
+        queryParams: {
 
-      },
-      edit: {
-        window: {
-          show: false
         },
-        initData: {}
+        edit:{
+          window:{
+            show:false
+          },
+          initData:{}
+        },
+        tableFieldColuns: [],
+        tableFieldData: [],
+        masterRowSelection: {},
+        formDetailData: {},
+        action: 'add',
+        tableHeight:0,
+      }
+    },
+    methods: {
+      tableRowClick(rowData, rowIndex) {
+        this.masterRowSelection = rowData;
+        this.detailAction();
       },
-      tableFieldColuns: [],
-      tableFieldData: [],
-      masterRowSelection: {},
-      formDetailData: {},
-      action: 'add',
-      tableHeight: 0
-    }
-  },
-  methods: {
-    tableRowClick (rowData, rowIndex) {
-      this.masterRowSelection = rowData
-      this.detailAction()
-    },
-    getMasterSelectId () {
-      if (Object.keys(this.masterRowSelection).length == 0) {
-        this.$Message.warning('请选择需要操作的数据')
-        return false
-      }
-      return this.masterRowSelection.id
-    },
-    editAction () {
-      let selectionId = this.getMasterSelectId()
-      if (!selectionId) {
-        return
-      }
-      // 编辑窗口展示
-      this.edit.window.show = true
-      this.$refs.popupEdit.getDetailData(selectionId)
-    },
-    detailAction () {
-      // 加载详情数据
-      let url = `/sys/popup/detail/${this.masterRowSelection.id}`
-      let _self = this
-      request.get(url).then(res => {
-        _self.tableFieldData = res.popupFields.defaultList
-      })
-    },
-    addAction () {
-      // 数据添加
-      this.edit.window.show = true
-    },
-    search () {
-      // 表单搜索
-      this.$refs['master_list_table'].search(this.queryParams)
-    },
-    deleteAction () {
-      let selectionId = this.getMasterSelectId()
-      if (!selectionId) {
-        return
-      }
-      this.$Modal.confirm({
-        title: '删除确认',
-        content: '确定要删除当前选中数据吗？',
-        onOk: () => {
-          let url = `/sys/popup/delete`
-          let _self = this
-          request.post(url, { popupId: selectionId }, { popupId: selectionId }).then(res => {
-            _self.search()
-          })
+      getMasterSelectId() {
+        if (Object.keys(this.masterRowSelection).length == 0) {
+          this.$Message.warning('请选择需要操作的数据');
+          return false;
         }
-      })
-    },
-    comptuedTableHeight () {
-      // 计算table高度
-      let height = document.body.offsetHeight
-      this.tableHeight = height - (46 + 40 + 48 + 6 + 25)
-    },
-    getInitData () {
-      // 加载初始化数据
-      let url = '/sys/form/init/syspopupFm'
-      let _self = this
-      request.get(url).then(res => {
-        _self.edit.initData = res
-      })
-    },
-    popupSubmitSuccess () {
-      // 表单提交成功
-      this.search()
-      this.detailAction()
+        return this.masterRowSelection.id;
+      },
+      editAction() {
+        let selectionId = this.getMasterSelectId();
+        if (!selectionId) {
+          return;
+        }
+        //编辑窗口展示
+       this.edit.window.show = true;
+       this.$refs.popupEdit.getDetailData(selectionId);
+      },
+      detailAction() {
+        //加载详情数据
+        let url = `/sys/popup/detail/${this.masterRowSelection.id}`;
+        let _self = this;
+        request.get(url).then(res => {
+          _self.tableFieldData = res.popupFields.defaultList;
+        });
+      },
+      addAction() {
+        //数据添加
+        this.edit.window.show = true;
+      },
+      search() {
+        //表单搜索
+        this.$refs['master_list_table'].search(this.queryParams);
+      },
+      deleteAction() {
+        let selectionId = this.getMasterSelectId();
+        if (!selectionId) {
+          return;
+        }
+        this.$Modal.confirm({
+          title: '删除确认',
+          content: '确定要删除当前选中数据吗？',
+          onOk: () => {
+            let url = `/sys/popup/delete`;
+            let _self = this;
+            request.post(url,{popupId:selectionId},{popupId:selectionId}).then(res => {
+              _self.search();
+            });
+          }
+        });
+      },comptuedTableHeight(){
+        //计算table高度
+        let height = document.body.offsetHeight;
+        this.tableHeight = height - (46 + 40 + 48 + 6 + 25);
+      },getInitData(){
+        //加载初始化数据
+        let url = '/sys/form/init/syspopupFm';
+        let _self = this;
+        request.get(url).then(res => {
+          _self.edit.initData = res;
+        });
+      },popupSubmitSuccess(){
+        //表单提交成功
+         this.search();
+         this.detailAction();
+      }
+    },created() {
+      this.comptuedTableHeight();
+      this.getInitData();
     }
-  },
-  created () {
-    this.comptuedTableHeight()
-    this.getInitData()
   }
-}
 </script>
 
 <style>

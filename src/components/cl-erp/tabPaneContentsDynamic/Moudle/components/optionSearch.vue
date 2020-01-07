@@ -1,97 +1,94 @@
 <template>
       <Select @on-change="onChange" v-model="defaultValue">
-          <Option v-for="(item) in optionList" :key="item.dicValue"  :value="item.dicValue">{{item.dicLabel}}</Option>
+          <Option v-for="(item) in optionList" :key="item.dicValue"  :value="item.dicValue">{{item.dicLabel}}</Option>   
      </Select>
 </template>
 <script>
-// 字典数据获取公用接口
-import request from '@/libs/request'
+//字典数据获取公用接口
+import request from "@/libs/request";
 export default {
-  name: 'optionSearch',
-  props: {
-    defaultItem: {
-      type: String | Number,
-      default: '0'
+    name:'optionSearch',
+    props:{
+        defaultItem:{
+              type:String|Number,
+              default:'0'      
+        },
+        // 回填数据字段 ,默认 回填query 字段,否则formKey 字段
+        formKey:{
+            type:String,
+            default:'' 
+        },
+        loaddingDataWhen:{
+            type:Boolean,
+            default:false
+        },
+        requestBaseUrl:{
+             type:String,
+            default:'common/sys/dic/childList'
+        },
+        query:{
+            type:String,
+            default:'' 
+        },
+        path:{
+            type:String,
+            default:'pValue' 
+        },
+        value:{
+            type:Object
+        }
     },
-    // 回填数据字段 ,默认 回填query 字段,否则formKey 字段
-    formKey: {
-      type: String,
-      default: ''
+    data(){
+        return {
+              // 默认选择
+           // defaultItem:"0",
+            optionList:[],
+            defaultValue:0
+        }
     },
-    loaddingDataWhen: {
-      type: Boolean,
-      default: false
+    watch:{
+        loaddingDataWhen(n,o){
+            if(n){
+                this.getItemData()
+            }
+        },defaultValue(n,o){
+            this.$emit('update:defaultItem',n);
+        },defaultItem(n,o){
+            this.defaultValue = this.defaultItem;
+        },value(n,o){
+            this.defaultValue = n;
+        }
     },
-    requestBaseUrl: {
-      type: String,
-      default: 'common/sys/dic/childList'
+    mounted(){
+        this.defaultValue = this.defaultItem;
+        //this.getItemData()
     },
-    query: {
-      type: String,
-      default: ''
-    },
-    path: {
-      type: String,
-      default: 'pValue'
-    },
-    value: {
-      type: Object
+    methods:{
+        // 当前选中项
+        onChange(item){
+            //console.log('当前选中项'+item)
+            let itemObj={
+                key:this.formKey != ''? this.formKey: this.query,
+                value:item
+            }
+            this.$emit('onChange',itemObj);
+            this.$emit('input',item);
+        },
+     
+        // 根据父ID或节点值获取子节点列表
+        getItemData(){
+                if(!!this.query && this.optionList && this.optionList.length===0){
+                        let url = `${this.requestBaseUrl}/${this.query}?qt=${this.path}`;
+                        request.get(url).then(res => {
+                            this.optionList =res
+                             let itemObj={
+                                key:this.formKey != ''? this.formKey: this.query,
+                                value:this.defaultItem
+                            }
+                            this.$emit('onChange',itemObj)
+                        });
+                } 
+        }
     }
-  },
-  data () {
-    return {
-      // 默认选择
-      // defaultItem:"0",
-      optionList: [],
-      defaultValue: 0
-    }
-  },
-  watch: {
-    loaddingDataWhen (n, o) {
-      if (n) {
-        this.getItemData()
-      }
-    },
-    defaultValue (n, o) {
-      this.$emit('update:defaultItem', n)
-    },
-    defaultItem (n, o) {
-      this.defaultValue = this.defaultItem
-    },
-    value (n, o) {
-      this.defaultValue = n
-    }
-  },
-  mounted () {
-    this.defaultValue = this.defaultItem
-    // this.getItemData()
-  },
-  methods: {
-    // 当前选中项
-    onChange (item) {
-      // console.log('当前选中项'+item)
-      let itemObj = {
-        key: this.formKey != '' ? this.formKey : this.query,
-        value: item
-      }
-      this.$emit('onChange', itemObj)
-      this.$emit('input', item)
-    },
-
-    // 根据父ID或节点值获取子节点列表
-    getItemData () {
-      if (!!this.query && this.optionList && this.optionList.length === 0) {
-        let url = `${this.requestBaseUrl}/${this.query}?qt=${this.path}`
-        request.get(url).then(res => {
-          this.optionList = res
-          let itemObj = {
-            key: this.formKey != '' ? this.formKey : this.query,
-            value: this.defaultItem
-          }
-          this.$emit('onChange', itemObj)
-        })
-      }
-    }
-  }
 }
 </script>

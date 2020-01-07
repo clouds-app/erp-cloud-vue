@@ -40,7 +40,7 @@
                   />
                 </FormItem>
               </Col>
-          </Row>
+          </Row> 
 
               <Col span="24">
                 <Row :gutter="18">
@@ -68,11 +68,11 @@
                           </i-switch>
                         </FormItem>
                     </Col>
-                </Row>
+                </Row> 
               </Col>
-
+                
               <Col span="12">
-
+                
                 <FormItem label="正唛(一)" prop="pmZMRemark1">
                   <Input
                     v-model="formDataInfo.pmZMRemark1"
@@ -93,7 +93,7 @@
                     placeholder="请输入正唛(二)"
                   ></Input>
                 </FormItem>
-
+                
               </Col>
                <Col span="12">
               <FormItem label="侧唛(一)" prop="pmCMRemark1">
@@ -105,7 +105,7 @@
                     placeholder="请输入侧唛(一)"
                   ></Input>
                 </FormItem>
-
+                
               </Col>
               <Col span="12">
               <FormItem label="侧唛(二)" prop="pmCMRemark2">
@@ -117,8 +117,9 @@
                     placeholder="请输入侧唛(二)"
                   ></Input>
                 </FormItem>
-
+                
               </Col>
+
 
               <Col span="12">
                 <FormItem label="上摇(一)" prop="pmSYRemark1">
@@ -152,7 +153,7 @@
                   ></Input>
                 </FormItem>
               </Col>
-
+             
               <Col span="12">
                 <FormItem label="下摇(二)" prop="pmXYRemark2">
                   <Input
@@ -164,7 +165,7 @@
                   ></Input>
                 </FormItem>
               </Col>
-
+              
               <Col span="12">
                 <FormItem label="备注" prop="remark">
                   <Input
@@ -176,7 +177,10 @@
                   ></Input>
                 </FormItem>
               </Col>
-
+              
+              
+             
+            
           </Col>
 
           <Col span="8">
@@ -218,101 +222,101 @@
  *
  * @created 2019/11/20 17:07:54
  */
-import popup from '@/components/popup/popup'
-import uploadImg from '@/components/cl-erp/uploadImg'
-import dayjs from 'dayjs'
-import editBaseMixins from '../../mixins/edit'
-import { customValidator, uniqueValidator } from '@/libs/validator'
+import popup from "@/components/popup/popup";
+import uploadImg from "@/components/cl-erp/uploadImg";
+import dayjs from "dayjs";
+import editBaseMixins from "../../mixins/edit";
+import { customValidator,uniqueValidator } from "@/libs/validator";
 const default_formDataInfo = {
-  bpDPNo: '',
-  bpName: '', // 产品名称
-  bpNo: '', // 产品编号
-  bpPPNo: '',
+  bpDPNo: "",
+  bpName: "", //产品名称
+  bpNo: "", //产品编号
+  bpPPNo: "",
   // colorName: "",
-  cusName: '',
-  cusCode: '', // done
-  custId: '',
-  pmCMRemark1: '',
-  pmCMRemark2: '',
-  pmDocNo1: '',
-  pmDocNo2: '',
-  pmImg: '',
-  pmImg2: '',
-  pmNo: '',
-  pmSYRemark1: '',
-  pmSYRemark2: '',
-  pmXYRemark1: '',
-  pmXYRemark2: '',
-  pmZMRemark1: '',
-  pmZMRemark2: '',
-  productId: '',
-  remark: ''
-}
+  cusName: "",
+  cusCode: "", // done
+  custId: "",
+  pmCMRemark1: "",
+  pmCMRemark2: "",
+  pmDocNo1: "",
+  pmDocNo2: "",
+  pmImg: "",
+  pmImg2: "",
+  pmNo: "",
+  pmSYRemark1: "",
+  pmSYRemark2: "",
+  pmXYRemark1: "",
+  pmXYRemark2: "",
+  pmZMRemark1: "",
+  pmZMRemark2: "",
+  productId: "",
+  remark: ""
+};
 export default {
-  name: 'edit-printMarks',
+  name: "edit-printMarks",
   mixins: [editBaseMixins],
   components: { uploadImg, popup },
-  data () {
+  data() {
     return {
-      requestBaseUrl: '/bas/printMarks', // 请求 查询 操作的基础路径
+      requestBaseUrl: "/bas/printMarks", // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
-        pmNo: [{ required: true, message: '印唛不能为空', trigger: 'blur' },
-          { validator: customValidator,
-            trigger: 'blur',
-            customRule: ['toCDB', 'identifier', 'spaceStr'],
-            fieldDesc: '印唛编码' },
-          {
-            validator: uniqueValidator,
-            trigger: 'blur',
-            fieldDesc: '印唛编码',
-            params: {
-              fieldName: 'pmNo',
-              formName: 'printMarksFm',
-              id: () => {
-                return this.formDataInfo.id
+        pmNo: [{ required: true, message: "印唛不能为空", trigger: "blur" },
+                  {validator:customValidator,
+                    trigger:"blur",
+                    customRule:["toCDB","identifier","spaceStr"],
+                    fieldDesc:"印唛编码"},
+              {
+                validator:uniqueValidator,
+                trigger: "blur",
+                fieldDesc: "印唛编码",
+                params:{
+                  fieldName:'pmNo',
+                  formName:'printMarksFm',
+                  id:()=>{
+                    return this.formDataInfo.id;
+                  }
+                }
               }
-            }
-          }
-        ]
+        ],
         // productId: [
         //   { required: true, message: "产编号不能为空", trigger: "blur" }
         // ]
       }
-    }
+    };
   },
 
   methods: {
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo () {
-      this.formDataInfo = Object.assign({}, default_formDataInfo)
+    HandleFormDataInfo() {
+      this.formDataInfo = Object.assign({}, default_formDataInfo);
     },
     // 唛头图片路径上传成功后 回调事件 返回图片地址
-    uploadSuccessHeads (res) {
+    uploadSuccessHeads(res) {
       // debugger
       if (!res.success) {
-        this.$Message.error(res.message)
-        return
+        this.$Message.error(res.message);
+        return;
       }
-      let picUrl = res.result
-      if (picUrl) {
-        this.formDataInfo.pmImg = picUrl
+      let picUrl = res.result;
+      if (!!picUrl) {
+        this.formDataInfo.pmImg = picUrl;
       }
     },
-    // 侧唛图片路径上传成功后 回调事件 返回图片地址
-    uploadSuccessTails (res) {
+    //侧唛图片路径上传成功后 回调事件 返回图片地址
+    uploadSuccessTails(res) {
       if (!res.success) {
-        this.$Message.error(res.message)
-        return
+        this.$Message.error(res.message);
+        return;
       }
-      let picUrl = res.result
-      if (picUrl) {
-        this.formDataInfo.pmImg2 = picUrl
+      let picUrl = res.result;
+      if (!!picUrl) {
+        this.formDataInfo.pmImg2 = picUrl;
       }
     }
   }
-}
+};
 </script>
 
 <style>

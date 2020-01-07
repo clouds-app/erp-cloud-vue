@@ -28,10 +28,10 @@
   </div>
 </template>
 <script>
-import vTable from '@/components/tables/vTable'
-import htmlTemplate from '../components/htmlTemplate'
-import editForm from './edit/edit-fadeReason'
-import listBaseMixins from '../mixins/list'
+import vTable from "@/components/tables/vTable";
+import htmlTemplate from "../components/htmlTemplate";
+import editForm from "./edit/edit-fadeReason";
+import listBaseMixins from "../mixins/list";
 export default {
   mixins: [listBaseMixins],
   components: {
@@ -39,23 +39,23 @@ export default {
     htmlTemplate,
     vTable
   },
-  data () {
+  data() {
     return {
       functionParams: {
-        requestBaseUrl: '/bas/fadeReason',
-        uniqueId: 'fadeReasonId'
+        requestBaseUrl: "/bas/fadeReason",
+        uniqueId: "fadeReasonId"
       },
       // 查询参数 ,注意格式
       queryParamsDefault: [
         {
-          title: '编号',
-          code: 'frCode',
-          companyId: ''
+          title: "编号",
+          code: "frCode",
+          companyId: ""
         },
         {
-          title: '退货原因',
-          name: 'frName',
-          lbCode: ''
+          title: "退货原因",
+          name: "frName",
+          lbCode: ""
         }
       ]
       // columns: [
@@ -118,19 +118,19 @@ export default {
       //   },
 
       // ],
-    }
+    };
   },
   methods: {
-    tableRowClick (rowData, rowIndex) {
-      this.formDetailData = {} // 清除上次缓存数据 增加体验良好
-      this.masterRowSelection = rowData
+    tableRowClick(rowData, rowIndex) {
+      this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData;
       if (rowData != null) {
         // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
-        this.currrentRowItem.rowName = rowData.frCode + ' ' + rowData.frName
+        this.currrentRowItem.rowName = rowData.frCode + " " + rowData.frName;
       }
     }
   }
-}
+};
 </script>
 
 <style></style>

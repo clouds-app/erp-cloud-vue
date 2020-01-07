@@ -17,13 +17,13 @@ import functionBtnList from '../components/functionBtnList.vue'
 import searchForm from '../components/searchForm.vue'
 
 export default {
-  name: 'htmlInfo',
-  components: {
-    functionBtnList, searchForm
-  }
+    name:'htmlInfo',
+    components: {
+        functionBtnList,searchForm
+      },
 }
 </script>
-
+  
 <style>
 .toolbar-container .queryParamsDefault input{
   font-size: 13px;

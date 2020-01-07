@@ -172,31 +172,31 @@
  *
  * @created 2019/11/20 17:07:54
  */
-import editWindow from '@/components/edit-window/edit-window'
+import editWindow from "@/components/edit-window/edit-window";
 // import Form from '@/components/form/form'
-import eTable from '@/components/e-table/e-table'
-import request from '@/libs/request'
-import editBaseMixins from '../../mixins/edit'
-import formControl from '@/components/form-control/form-control'
-import popup from '@/components/popup/popup'
+import eTable from "@/components/e-table/e-table";
+import request from "@/libs/request";
+import editBaseMixins from "../../mixins/edit";
+ import formControl from '@/components/form-control/form-control'
+  import popup from "@/components/popup/popup";
 const default_formDataInfo = {
-  // 主表 更改字段
-  master: {
-    whCode: '',
-    whName: '',
-    whType: '',
-    remark: ''
-  },
-  // 子表 wareHouseItems 根据实际接口更改,其它不变
-  wareHouseItems: {
-    addList: [], // 添加列
-    defaultList: [], // 默认列
-    deleteList: [], // 删除列
-    updateList: [] // 更新列
-  }
-}
+        // 主表 更改字段
+        master: {
+          whCode: "",
+          whName: "",
+          whType: "",
+          remark: ""
+        },
+        // 子表 wareHouseItems 根据实际接口更改,其它不变
+        wareHouseItems: {
+          addList: [], // 添加列
+          defaultList: [], // 默认列
+          deleteList: [], // 删除列
+          updateList: [] // 更新列
+        }
+      }
 export default {
-  name: 'edit-warehouse',
+  name: "edit-warehouse",
   mixins: [editBaseMixins],
   components: {
     editWindow,
@@ -205,85 +205,84 @@ export default {
     formControl,
     popup
   },
-  data () {
+  data() {
     return {
-      formName: 'productUnionFm',
-      requestBaseUrl: '/basic/productUnion', // 请求 查询 操作的基础路径
-      formDataInfo: {
-        master: {},
-        productUnionSlaves: []
-      }, // 防止添加和更新数据提交发生冲突
-      productUnionSubList: [],
+      formName:'productUnionFm',
+      requestBaseUrl: "/basic/productUnion", // 请求 查询 操作的基础路径
+      formDataInfo:{
+        master:{},
+        productUnionSlaves:[]
+      },// 防止添加和更新数据提交发生冲突
+      productUnionSubList:[],
       // 需要验证的数据
       ruleValidate: {
         whCode: [
-          { required: true, message: '部门编码不能为空', trigger: 'blur' }
+          { required: true, message: "部门编码不能为空", trigger: "blur" }
         ],
         whName: [
-          { required: true, message: '部门名称不能为空', trigger: 'blur' }
+          { required: true, message: "部门名称不能为空", trigger: "blur" }
         ],
         whType: [
-          { required: true, message: '班组类型不能为空', trigger: 'blur' }
+          { required: true, message: "班组类型不能为空", trigger: "blur" }
         ]
       },
       tableFieldsValidator: {
         wsCode: [
-          { required: true, message: '仓位编号不能为空', trigger: 'blur' }
+          { required: true, message: "仓位编号不能为空", trigger: "blur" }
         ],
         wsName: [
-          { required: true, message: '仓位名称不能为空', trigger: 'blur' }
+          { required: true, message: "仓位名称不能为空", trigger: "blur" }
         ],
         wsOwner: [
-          { required: true, message: '所属厂区不能为空', trigger: 'blur' }
+          { required: true, message: "所属厂区不能为空", trigger: "blur" }
         ]
       }
-    }
+    };
   },
-  watch: {
-    initData: {
-      handler (n, o) {
-        if (n.initData) {
-          this.formDataInfo.master = n.initData.productUnionFm
-        }
-      },
-      deep: true
-    }
-  },
-  computed: {
-    productUnionList () {
-      let temp = []
-      this.formDataInfo.productUnionSlaves.forEach((item, index) => {
-        temp.push(item.master)
-      })
-      return temp
+watch:{
+  initData:{
+    handler(n,o){
+      if(n.initData){
+        this.formDataInfo.master = n.initData.productUnionFm;
+      }
     },
-    productUnionItemFmProdNoList () {
-    // 获取产品编号	列表，转换为 "",""格式，用于弹出框排除数据
-      let temp = []
-      this.formDataInfo.productUnionSlaves.forEach((item, index) => {
-        temp.push(item.master.prodNo)
-      })
-      return temp.toString()
-    }
-  },
+    deep:true
+  }
+},
+computed:{
+  productUnionList(){
+    let temp = [];
+   this.formDataInfo.productUnionSlaves.forEach((item,index)=>{
+      temp.push(item.master);
+    });
+    return temp;
+  },productUnionItemFmProdNoList(){
+    //获取产品编号	列表，转换为 "",""格式，用于弹出框排除数据
+    let temp = [];
+    this.formDataInfo.productUnionSlaves.forEach((item,index)=>{
+       temp.push(item.master.prodNo);
+     });
+     return temp.toString();
+  }
+},
   methods: {
-    // 重写父类,添加时候,清空数据
-    HandleFormDataInfo () {
-      this.formDataInfo = Object.assign({}, default_formDataInfo)
+     // 重写父类,添加时候,清空数据
+    HandleFormDataInfo(){
+     this.formDataInfo=Object.assign({},default_formDataInfo)
     },
     // 重写父类,修改提交数据
-    resetformDataInfo (_data) {
-      let tableData = this.$refs['tableFields'].getCategorizeData()
+    resetformDataInfo(_data) {
+      let tableData = this.$refs["tableFields"].getCategorizeData();
       // debugger
-      this.formDataInfo.wareHouseItems = tableData
-      return this.formDataInfo
+      this.formDataInfo.wareHouseItems = tableData;
+      return this.formDataInfo;
     },
-    fillProductUnionSubFm (data) {
-      // 填充第三层表的数据，根据第二层表中的产品编号（productId）和产品类型
-      // 去查询第三层的数据
+    fillProductUnionSubFm(data){
+      //填充第三层表的数据，根据第二层表中的产品编号（productId）和产品类型
+      //去查询第三层的数据
     }
   }
-}
+};
 </script>
 
 <style>

@@ -43,7 +43,7 @@
             placeholder="请输入部门名称"
           ></Input> -->
         </FormItem>
-
+          
         <FormItem label="备注" prop="remark">
           <Input
             v-model="formDataInfo.remark"
@@ -54,7 +54,7 @@
           ></Input>
         </FormItem>
       </Form>
-
+      
     </editWindow>
   </div>
 </template>
@@ -73,55 +73,55 @@
  *
  * @created 2019/11/20 17:07:54
  */
-import editBaseMixins from '../../mixins/edit'
-import { customValidator } from '@/libs/validator'
+import editBaseMixins from "../../mixins/edit";
+import { customValidator } from "@/libs/validator"
 const default_formDataInfo = {
   plWidth: 0,
   plkarat: 0,
-  p1WidthMM: 0,
-  plWidthMM: 0,
-  remark: ''
-}
+  p1WidthMM:0,
+  plWidthMM:0,
+  remark: ""
+};
 export default {
-  name: 'edit-paperLimit',
+  name: "edit-paperLimit",
   mixins: [editBaseMixins],
 
-  data () {
+  data() {
     return {
-      requestBaseUrl: '/bas/paperLimit', // 请求 查询 操作的基础路径
+      requestBaseUrl: "/bas/paperLimit", // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
         plWidth: [
-          { required: true, message: '纸度不能为空', trigger: 'blur' },
-          {
-            validator: customValidator,
-            trigger: 'blur',
-            customRule: ['toCDB', 'number', 'spaceStr'],
-            fieldDesc: '纸度'
-          }
+          { required: true, message: "纸度不能为空", trigger: "blur" },
+            {
+              validator:customValidator,
+              trigger: "blur",
+              customRule:["toCDB","number","spaceStr"],
+              fieldDesc:"纸度"
+            }
         ],
         plWidthMM: [
-          { required: false, message: '毫米对照不能为空', trigger: 'blur' }, {
-
+          { required: false, message: "毫米对照不能为空", trigger: "blur" },{
+             
             validator: customValidator,
-            trigger: 'blur',
-            customRule: ['number', 'spaceStr'],
-            fieldDesc: '毫米对照'
-
+            trigger: "blur",
+            customRule: ["number","spaceStr"],
+            fieldDesc: "毫米对照"
+          
           }
         ]
       }
-    }
+    };
   },
 
   methods: {
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo () {
-      this.formDataInfo = Object.assign({}, default_formDataInfo)
+    HandleFormDataInfo() {
+      this.formDataInfo = Object.assign({}, default_formDataInfo);
     }
   }
-}
+};
 </script>
 
 <style></style>

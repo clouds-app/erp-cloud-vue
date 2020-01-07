@@ -34,12 +34,12 @@
                       formKey="tpVerType"
                       query="tpVerType"
                     />
-
+                    
                   </FormItem>
-                </Col>
+                </Col>    
                 </Row>
               </Col>
-
+               
                 <Col span="12">
                   <FormItem label="客户" prop="custId">
                     <popup
@@ -55,6 +55,7 @@
                       :query-params="{}"
                     />
 
+                
                   </FormItem>
                 </Col>
                 <Col span="12">
@@ -71,7 +72,7 @@
                       :suffix-model="formDataInfo.bpName"
                       :query-params="{}"
                     />
-
+                
                   </FormItem>
                 </Col>
                 <Col span="12">
@@ -104,7 +105,7 @@
                     ></Input>
                   </FormItem>
                 </Col>
-
+               
                 <Col span="12">
                   <FormItem label="公用" prop="iisPublicCompany">
                           <i-switch size="default" v-model="formDataInfo.iisPublicCompany">
@@ -137,7 +138,7 @@
                 />
               </div>
           </Col>
-
+                
         </Row>
       </Form>
     </editWindow>
@@ -158,63 +159,63 @@
  *
  * @created 2019/11/20 17:07:54
  */
-import optionSearch from '../../components/optionSearch'
-import editBaseMixins from '../../mixins/edit'
-import popup from '@/components/popup/popup'
-import uploadImg from '@/components/cl-erp/uploadImg'
-import { customValidator, uniqueValidator } from '@/libs/validator'
+import optionSearch from "../../components/optionSearch";
+import editBaseMixins from "../../mixins/edit";
+import popup from "@/components/popup/popup";
+import uploadImg from "@/components/cl-erp/uploadImg";
+import { customValidator,uniqueValidator } from "@/libs/validator";
 const default_formDataInfo = {
-  tpNo: '',
-  tpVerType: '0',
-  tpImg: '',
-  tpPly: '0',
-  tpItemL: '0',
-  tpItemW: '0',
-  custId: '',
-  productId: '',
-  remark: ''
-}
+  tpNo: "",
+  tpVerType: "0",
+  tpImg: "",
+  tpPly: "0",
+  tpItemL: "0",
+  tpItemW: "0",
+  custId: "",
+  productId: "",
+  remark: ""
+};
 export default {
-  name: 'edit-print',
+  name: "edit-print",
   mixins: [editBaseMixins],
   components: { optionSearch, popup, uploadImg },
-  data () {
+  data() {
     return {
-      requestBaseUrl: '/bas/print', // 请求 查询 操作的基础路径
+      requestBaseUrl: "/bas/print", // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
         tpNo: [
-          { required: true, message: '印版编码不能为空', trigger: 'blur' },
-          { validator: customValidator,
-            trigger: 'blur',
-            customRule: ['toCDB', 'identifier', 'spaceStr'],
-            fieldDesc: '印版编号' },
+          { required: true, message: "印版编码不能为空", trigger: "blur" },
+          {validator:customValidator,
+                    trigger:"blur",
+                    customRule:["toCDB","identifier","spaceStr"],
+                    fieldDesc:"印版编号"},
           {
-            validator: uniqueValidator,
-            trigger: 'blur',
-            fieldDesc: '印版编号',
-            params: {
-              fieldName: 'tpNo',
-              formName: 'printFm',
-              id: () => {
-                return this.formDataInfo.id
-              }
+          validator:uniqueValidator,
+          trigger: "blur",
+          fieldDesc: "印版编号",
+          params:{
+            fieldName:'tpNo',
+            formName:'printFm',
+            id:()=>{
+              return this.formDataInfo.id;
             }
           }
-        ]
-
+        }
+        ],
+        
       }
-    }
+    };
   },
 
   methods: {
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo () {
-      this.formDataInfo = Object.assign({}, default_formDataInfo)
+    HandleFormDataInfo() {
+      this.formDataInfo = Object.assign({}, default_formDataInfo);
     }
   }
-}
+};
 </script>
 
 <style></style>

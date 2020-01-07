@@ -12,7 +12,7 @@
       <vTable
         :height="tableHeight"
         ref="master_list_table"
-       :columns-url="functionParams.requestColBaseUrl + '/colorFm'"
+       :columns-url="functionParams.requestColBaseUrl + '/colorFm'" 
         url="/bas/color/page"
         :pagination="true"
         @row-click="tableRowClick"
@@ -28,10 +28,10 @@
   </div>
 </template>
 <script>
-import vTable from '@/components/tables/vTable'
-import htmlTemplate from '../components/htmlTemplate'
-import editForm from './edit/edit-color'
-import listBaseMixins from '../mixins/list'
+import vTable from "@/components/tables/vTable";
+import htmlTemplate from "../components/htmlTemplate";
+import editForm from "./edit/edit-color";
+import listBaseMixins from "../mixins/list";
 export default {
   mixins: [listBaseMixins],
   components: {
@@ -39,23 +39,23 @@ export default {
     htmlTemplate,
     vTable
   },
-  data () {
+  data() {
     return {
       functionParams: {
-        requestBaseUrl: '/bas/color',
-        uniqueId: 'colorId'
+        requestBaseUrl: "/bas/color",
+        uniqueId: "colorId"
       },
       // 查询参数 ,注意格式
       queryParamsDefault: [
         {
-          title: '颜色编号',
-          code: 'colorCode',
-          companyId: ''
+          title: "颜色编号",
+          code: "colorCode",
+          companyId: ""
         },
         {
-          title: '颜色名称',
-          name: 'colorName',
-          lbCode: ''
+          title: "颜色名称",
+          name: "colorName",
+          lbCode: ""
         }
       ]
       // columns: [
@@ -128,20 +128,20 @@ export default {
       //   },
 
       // ],
-    }
+    };
   },
   methods: {
-    tableRowClick (rowData, rowIndex) {
-      this.formDetailData = {} // 清除上次缓存数据 增加体验良好
-      this.masterRowSelection = rowData
+    tableRowClick(rowData, rowIndex) {
+      this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData;
       if (rowData != null) {
         // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
         this.currrentRowItem.rowName =
-          rowData.colorCode + ' ' + rowData.colorName
+          rowData.colorCode + " " + rowData.colorName;
       }
     }
   }
-}
+};
 </script>
 
 <style></style>

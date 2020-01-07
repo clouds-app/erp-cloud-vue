@@ -76,251 +76,247 @@
 </template>
 
 <script>
-import request from '@/libs/request'
-import vTable from '@/components/tables/vTable'
-import editWindow from '@/components/edit-window/edit-window'
-export default {
-  components: {
-    vTable,
-    editWindow
-  },
-  data () {
-    return {
-      editWindowShow: false,
-      resourceTreeData: [],
-      treeLoading: false,
-      resourceFlagItems: [{
-        text: '添加',
-        value: 'iisAdd'
-      }, {
-        text: '编辑',
-        value: 'iisEdit'
-      }, {
-        text: '删除',
-        value: 'iisDel'
-      }, {
-        text: '禁用',
-        value: 'iisDisabled'
-      }, {
-        text: '打印',
-        value: 'iisPrint'
-      }, {
-        text: '审核',
-        value: 'iisAudit'
-      }, {
-        text: '反审',
-        value: 'iisNotAudit'
-      }, {
-        text: '导出',
-        value: 'iisExport'
-      }, {
-        text: '导入',
-        value: 'iisImport'
-      }],
-      initDataModel: {
-        parentId: '',
-        iisPublic: true,
-        resourceName: '',
-        resourceType: 0,
-        resourceLink: '',
-        resourceSort: 0,
-        resourceIcon: '',
-        resourceI18n: '',
-        parentPath: '',
-        status: true,
-        resourceFlag: ''
-      },
-      formModel: {
-        parentId: '',
-        iisPublic: true,
-        resourceName: '',
-        resourceType: 0,
-        resourceLink: '',
-        resourceSort: 0,
-        resourceIcon: '',
-        resourceI18n: '',
-        parentPath: '',
-        status: true,
-        resourceFlag: ''
-      },
-      columns: [{
-        title: '状态',
-        key: 'status',
-        align: 'center',
-        width: 40,
-        render: (h, params) => {
-          return h('Checkbox', {
-            props: {
-              disabled: true,
-              size: 'small',
-              value: params.row.status
+  import request from '@/libs/request'
+  import vTable from '@/components/tables/vTable'
+  import editWindow from "@/components/edit-window/edit-window"
+  export default {
+    components: {
+      vTable,
+      editWindow
+    },
+    data() {
+      return {
+        editWindowShow:false,
+        resourceTreeData: [],
+        treeLoading: false,
+        resourceFlagItems:[{
+          text:'添加',
+          value:'iisAdd'
+        },{
+          text:'编辑',
+          value:'iisEdit'
+        },{
+          text:'删除',
+          value:'iisDel'
+        },{
+          text:'禁用',
+          value:'iisDisabled'
+        },{
+          text:'打印',
+          value:'iisPrint'
+        },{
+          text:'审核',
+          value:'iisAudit'
+        },{
+          text:'反审',
+          value:'iisNotAudit'
+        },{
+          text:'导出',
+          value:'iisExport'
+        },{
+          text:'导入',
+          value:'iisImport'
+        }],
+        initDataModel:{
+          parentId:'',
+          iisPublic:true,
+          resourceName:'',
+          resourceType:0,
+          resourceLink:'',
+          resourceSort:0,
+          resourceIcon:'',
+          resourceI18n:'',
+          parentPath:'',
+          status:true,
+          resourceFlag:''
+        },
+        formModel:{
+          parentId:'',
+          iisPublic:true,
+          resourceName:'',
+          resourceType:0,
+          resourceLink:'',
+          resourceSort:0,
+          resourceIcon:'',
+          resourceI18n:'',
+          parentPath:'',
+          status:true,
+          resourceFlag:''
+        },
+        columns: [{
+          title: '状态',
+          key: 'status',
+          align: 'center',
+          width:40,
+          render:(h,params)=>{
+            return h('Checkbox',{
+              props:{
+                disabled:true,
+                size:'small',
+                value:params.row.status
+              }
+            })
+          }
+        }, {
+          title: '资源名称',
+          key: 'resourceName',
+          align: 'left',
+          titleAlign: 'center',
+          width:200
+        }, {
+          title: '资源类型',
+          key: 'resourceType',
+          align: 'center',
+          titleAlign: 'center',
+          width:100,
+          render:(h,params)=>{
+            //资源类型0菜单1按钮2功能
+            let text;
+            switch (params.row.resourceType){
+              case 0:
+                  text = '菜单';
+                break;
+              case 1:
+                  text = '按钮';
+                  break;
+              case 2:
+                  text = '功能';
+                  break;
             }
-          })
-        }
-      }, {
-        title: '资源名称',
-        key: 'resourceName',
-        align: 'left',
-        titleAlign: 'center',
-        width: 200
-      }, {
-        title: '资源类型',
-        key: 'resourceType',
-        align: 'center',
-        titleAlign: 'center',
-        width: 100,
-        render: (h, params) => {
-          // 资源类型0菜单1按钮2功能
-          let text
-          switch (params.row.resourceType) {
-            case 0:
-              text = '菜单'
-              break
-            case 1:
-              text = '按钮'
-              break
-            case 2:
-              text = '功能'
-              break
-          }
 
-          return h('span', text)
-        }
-      }, {
-        title: '资源属性',
-        key: 'iisPublic',
-        align: 'center',
-        titleAlign: 'center',
-        width: 80,
-        render: (h, params) => {
-          return h('span', params.row.iisPublic ? '公有' : '私有')
-        }
-      }, {
-        title: '资源链接',
-        key: 'resourceLink',
-        align: 'left',
-        titleAlign: 'center'
-      }, {
-        title: '资源顺序',
-        key: 'resourceSort',
-        align: 'center',
-        titleAlign: 'center'
-      }],
-      selectNode: {},
-      rowSelectData: {}
-    }
-  },
-  computed: {
-    tableData () {
-      let data = []
-      if (Object.keys(this.selectNode).length == 0) {
-        return data
-      }
-      this.selectNode.children.forEach((item, index) => {
-        data.push(item.data)
-      })
-      return data
-    },
-    getTableHeight () {
-      return window.innerHeight - 120
-    }
-  },
-  methods: {
-    addAction () {
-      // this.$refs.editFormItem.resetFields();
-      this.formModel = JSON.parse(JSON.stringify(this.initDataModel))
-      this.editWindowShow = true
-    },
-    editAction () {
-      if (Object.keys(this.rowSelectData).length == 0) {
-        this.$Message.warning('请选择需要操作的数据')
-        return
-      }
-      this.formModel = JSON.parse(JSON.stringify(this.rowSelectData))
-      this.editWindowShow = true
-    },
-    treeSelectEvent (a, b) {
-      this.selectNode = b
-      this.rowSelectData = {}
-    },
-    loaddingTree () {
-      request.get('/sys/resource/platform/tree').then(res => {
-        let node = {
-          id: '0',
-          parentId: '0',
-          children: res,
-          expand: true,
-          title: '顶级资源',
-          data: {
-            id: '0',
-            parentPath: ''
+            return h('span',text);
           }
-        }
-        this.resourceTreeData = [node]
+        }, {
+          title: '资源属性',
+          key: 'iisPublic',
+          align: 'center',
+          titleAlign: 'center',
+          width:80,
+          render:(h,params)=>{
+            return h('span',params.row.iisPublic?'公有':'私有');
+          }
+        },{
+          title: '资源链接',
+          key: 'resourceLink',
+          align: 'left',
+          titleAlign: 'center'
+        }, {
+          title: '资源顺序',
+          key: 'resourceSort',
+          align: 'center',
+          titleAlign: 'center'
+        }],
+        selectNode: {},
+        rowSelectData:{}
+      }
+    },
+    computed: {
+      tableData() {
+        let data = [];
         if (Object.keys(this.selectNode).length == 0) {
-          this.selectNode = node
-        } else {
-          this.setResourceSelectNode(node)
+          return data;
         }
-      })
-    },
-    setResourceSelectNode (res) {
-      let _self = this
-      res.children.forEach((item, index) => {
-        if (_self.selectNode.data.id == item.data.id) {
-          _self.selectNode = item
-        } else {
-          this.setResourceSelectNode(item)
-        }
-      })
-    },
-    resourceSubmit () {
-      let _self = this
-      this.$refs.editFormItem.validate(valid => {
-        debugger
-        if (!valid) { // 主表校验
-          return
-        }
-        let url = '/sys/resource/saveOrUpdate'
-        _self.formModel.parentId = _self.selectNode.data.id
-        if (_self.selectNode.data.id == '0') {
-          _self.formModel.parentPath = `${_self.selectNode.data.id}`
-        } else {
-          _self.formModel.parentPath = `${_self.selectNode.data.parentPath},${_self.selectNode.data.id}`
-        }
-
-        request.post(url, _self.formModel).then(res => {
-          _self.$Message.success('操作成功')
-          _self.loaddingTree()
-          this.editWindowShow = false
-        })
-      })
-    },
-    deleteResource () {
-      if (Object.keys(this.rowSelectData).length == 0) {
-        this.$Message.warning('请选择需要操作的数据')
-        return
+        this.selectNode.children.forEach((item, index) => {
+          data.push(item.data);
+        });
+        return data;
+      },getTableHeight(){
+        return window.innerHeight - 120;
       }
-      this.$Modal.confirm({
-        title: '删除确认',
-        content: '确定要删除当前选中数据吗？',
-        onOk: () => {
-          let url = `/sys/resource/delete`
-          let _self = this
-          request.post(url, { id: this.rowSelectData.id }).then(res => {
-            this.loaddingTree()
-          })
-        }
-      })
     },
-    rowClick (rowData, rowIndex) {
-      this.rowSelectData = rowData
+    methods: {
+      addAction(){
+        //this.$refs.editFormItem.resetFields();
+        this.formModel = JSON.parse(JSON.stringify(this.initDataModel));
+        this.editWindowShow = true;
+      },
+      editAction(){
+        if (Object.keys(this.rowSelectData).length == 0) {
+          this.$Message.warning('请选择需要操作的数据');
+          return;
+        }
+        this.formModel = JSON.parse(JSON.stringify(this.rowSelectData));
+        this.editWindowShow = true;
+      },
+      treeSelectEvent(a, b) {
+        this.selectNode = b;
+        this.rowSelectData = {};
+      },
+      loaddingTree() {
+        request.get('/sys/resource/platform/tree').then(res => {
+          let node = {
+            id:'0',
+            parentId:'0',
+            children:res,
+            expand:true,
+            title:'顶级资源',
+            data:{
+              id:'0',
+              parentPath:''
+            }
+          }
+           this.resourceTreeData = [node];
+          if(Object.keys(this.selectNode).length == 0){
+            this.selectNode = node;
+          }else{
+            this.setResourceSelectNode(node);
+          }
+        });
+      },setResourceSelectNode(res){
+        let _self = this;
+        res.children.forEach((item,index)=>{
+          if(_self.selectNode.data.id == item.data.id){
+            _self.selectNode = item;
+            return;
+          }else{
+            this.setResourceSelectNode(item);
+          }
+        });
+      },resourceSubmit(){
+        let _self = this;
+        this.$refs.editFormItem.validate(valid=>{
+          debugger;
+          if(!valid){//主表校验
+            return;
+          }
+          let url = '/sys/resource/saveOrUpdate';
+          _self.formModel.parentId = _self.selectNode.data.id;
+          if(_self.selectNode.data.id == '0'){
+            _self.formModel.parentPath = `${_self.selectNode.data.id}`;
+          }else{
+            _self.formModel.parentPath = `${_self.selectNode.data.parentPath},${_self.selectNode.data.id}`;
+          }
+
+          request.post(url,_self.formModel).then(res=>{
+            _self.$Message.success('操作成功');
+            _self.loaddingTree();
+             this.editWindowShow = false;
+          });
+         });
+      },deleteResource(){
+          if (Object.keys(this.rowSelectData).length == 0) {
+            this.$Message.warning('请选择需要操作的数据');
+            return;
+          }
+          this.$Modal.confirm({
+            title: '删除确认',
+            content: '确定要删除当前选中数据吗？',
+            onOk: () => {
+              let url = `/sys/resource/delete`;
+              let _self = this;
+              request.post(url,{id:this.rowSelectData.id}).then(res => {
+                this.loaddingTree();
+              });
+            }
+          });
+      },rowClick(rowData, rowIndex){
+        this.rowSelectData = rowData;
+      }
+    },
+    created() {
+      this.loaddingTree();
     }
-  },
-  created () {
-    this.loaddingTree()
   }
-}
 </script>
 
 <style>

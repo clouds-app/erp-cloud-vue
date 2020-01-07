@@ -33,7 +33,7 @@
                     :suffix-model="formDataInfo.cusName"
                     :query-params="{}"
                   />
-
+                
                 </FormItem>
               </Col>
               <Col span="12">
@@ -50,12 +50,14 @@
                     :suffix-model="formDataInfo.boxName"
                     :query-params="{}"
                   />
-
+               
                 </FormItem>
               </Col>
             </Row>
           </Col>
-
+          
+          
+             
           <Col span="12">
             <FormItem label="增量宽度" prop="bsSizeW">
               <Input
@@ -66,7 +68,7 @@
               ></Input>
             </FormItem>
           </Col>
-
+         
           <Col span="12">
                <FormItem label="楞别" prop="lbCode">
                   <popup
@@ -78,7 +80,7 @@
                     render-fields="lbCode"
                     from-fields="lbCode"
                   />
-
+               
                 </FormItem>
             <!-- <FormItem label="楞别代号" prop="lbCode">
               <Input
@@ -89,7 +91,7 @@
               ></Input>
             </FormItem> -->
           </Col>
-
+          
           <Col span="12">
             <FormItem label="增量长度" prop="bsSizeL">
               <Input
@@ -103,7 +105,7 @@
           <Col span="12">
             <FormItem label="单位" prop="bsUnit">
               <optionSearch
-
+                
                 @onChange="optionOnChange"
                 :defaultItem="formDataInfo.bsUnit"
                 :loaddingDataWhen="showWindow"
@@ -112,7 +114,7 @@
               />
             </FormItem>
           </Col>
-
+          
           <Col span="12">
             <FormItem label="增量高度" prop="bsSizeH">
               <Input
@@ -154,44 +156,44 @@
  *
  * @created 2019/11/20 17:07:54
  */
-import editBaseMixins from '../../mixins/edit'
-import popup from '@/components/popup/popup'
-import optionSearch from '../../components/optionSearch'
+import editBaseMixins from "../../mixins/edit";
+import popup from "@/components/popup/popup";
+import optionSearch from "../../components/optionSearch";
 const default_formDataInfo = {
-  cusCode: '',
-  boxCode: '',
-  lbCode: '',
-  cusName: '',
-  boxName: '',
-  bsUnit: '3',
+  cusCode: "",
+  boxCode: "",
+  lbCode: "",
+  cusName: "",
+  boxName: "",
+  bsUnit: "3",
   bsSizeL: 0,
   bsSizeH: 0,
   bsSizeW: 0,
-  remark: ''
-}
+  remark: ""
+};
 export default {
-  name: 'edit-boxSizeSet',
+  name: "edit-boxSizeSet",
   mixins: [editBaseMixins],
   components: { optionSearch, popup },
 
-  data () {
+  data() {
     return {
-      requestBaseUrl: '/bas/boxSizeSet', // 请求 查询 操作的基础路径
+      requestBaseUrl: "/bas/boxSizeSet", // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
-
+       
       }
-    }
+    };
   },
 
   methods: {
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo () {
-      this.formDataInfo = Object.assign({}, default_formDataInfo)
+    HandleFormDataInfo() {
+      this.formDataInfo = Object.assign({}, default_formDataInfo);
     }
   }
-}
+};
 </script>
 
 <style>

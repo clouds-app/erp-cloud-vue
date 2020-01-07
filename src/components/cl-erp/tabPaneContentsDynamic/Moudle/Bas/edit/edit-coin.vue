@@ -70,72 +70,72 @@
  * @created 2019/11/20 17:07:54
  */
 import dayjs from 'dayjs'
-import editBaseMixins from '../../mixins/edit'
-import { customValidator, uniqueValidator } from '@/libs/validator'
+import editBaseMixins from "../../mixins/edit";
+import { customValidator ,uniqueValidator} from "@/libs/validator"
 const default_formDataInfo = {
-  coinCode: '',
-  coinName: '',
-  coinRate: 0,
-  coinDate: dayjs().format('YYYY-MM-DD HH:mm:ss'),
-  remark: ''
-}
+  coinCode: "",
+  coinName: "",
+  coinRate:0,
+  coinDate:dayjs().format('YYYY-MM-DD HH:mm:ss'),
+  remark: ""
+};
 export default {
-  name: 'edit-coin',
+  name: "edit-coin",
   mixins: [editBaseMixins],
 
-  data () {
+  data() {
     return {
-      requestBaseUrl: '/bas/coin', // 请求 查询 操作的基础路径
+      requestBaseUrl: "/bas/coin", // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
         coinCode: [
-          { required: true, message: '货币编码不能为空', trigger: 'blur' },
-          { validator: customValidator,
-            trigger: 'blur',
-            customRule: ['toCDB', 'identifier', 'spaceStr'],
-            fieldDesc: '货币编码' },
-          {
-            validator: uniqueValidator,
-            trigger: 'blur',
-            fieldDesc: '货币编码',
-            params: {
-              fieldName: 'coinCode',
-              formName: 'coinFm',
-              id: () => {
-                return this.formDataInfo.id
-              }
-            }
-          }
+          { required: true, message: "货币编码不能为空", trigger: "blur" },
+          {validator:customValidator,
+          trigger:"blur",
+          customRule:["toCDB","identifier","spaceStr"],
+              fieldDesc:"货币编码"},
+               {
+                  validator:uniqueValidator,
+                  trigger: "blur",
+                  fieldDesc: "货币编码",
+                  params:{
+                    fieldName:'coinCode',
+                    formName:'coinFm',
+                    id:()=>{
+                      return this.formDataInfo.id;
+                    }
+                  }
+                }
         ],
         coinName: [
-          { required: true, message: '货币名称不能为空', trigger: 'blur' },
-          {
-            validator: customValidator,
-            trigger: 'blur',
-            customRule: ['toCDB', 'spaceStr'],
-            fieldDesc: '货币名称'
+          { required: true, message: "货币名称不能为空", trigger: "blur" },
+           {
+              validator:customValidator,
+              trigger: "blur",
+              customRule:["toCDB","spaceStr"],
+              fieldDesc:"货币名称"
           }
         ]
       }
-    }
+    };
   },
 
   methods: {
     // 重写父类,添加时候,清空数据,附加默认值
-    HandleFormDataInfo () {
-      this.formDataInfo = Object.assign({}, default_formDataInfo)
+    HandleFormDataInfo() {
+      this.formDataInfo = Object.assign({}, default_formDataInfo);
     },
-    // 重写父类 修改一些提交的数据
-    resetformDataInfo (_data) {
+     //重写父类 修改一些提交的数据
+    resetformDataInfo(_data){
       // 时间格式化
-      if (_data.coinDate) {
-        _data.coinDate = dayjs(_data.coinDate).format('YYYY-MM-DD HH:mm:ss')
-      }
+       if(!!_data.coinDate){
+         _data.coinDate =dayjs(_data.coinDate).format('YYYY-MM-DD HH:mm:ss')
+       }
       return _data
-    }
+    },
   }
-}
+};
 </script>
 
 <style></style>

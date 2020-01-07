@@ -83,206 +83,204 @@
 </template>
 
 <script>
-import vTable from '@/components/tables/vTable'
-import request from '@/libs/request'
-import sysEdit from './edit'
-import page from '@/components/page/page'
-export default {
-  components: {
-    vTable,
-    sysEdit,
-    page
-  },
-  data () {
-    return {
-      splitModel: 0.5,
-      showEditWindow: false,
-      queryParams: {
+  import vTable from '@/components/tables/vTable'
+  import request from '@/libs/request'
+  import sysEdit from './edit'
+  import page from '@/components/page/page'
+  export default {
+    components: {
+      vTable,
+      sysEdit,
+      page
+    },
+    data() {
+      return {
+        splitModel:0.5,
+        showEditWindow: false,
+        queryParams: {
 
-      },
-      columns: [{
-        title: '表名',
-        key: 'tableName',
-        titleAlign: 'center',
-        align: 'left',
-        resizable: true,
-        width: 200
-      },
-      {
-        title: '说明',
-        key: 'tableDesc',
-        titleAlign: 'center',
-        align: 'left',
-        resizable: true,
-        width: 200
-      }, {
-        title: '表单名',
-        key: 'formName',
-        align: 'center',
-        resizable: true,
-        width: 200
-      },
-      {
-        title: '是否创建',
-        key: 'tableCreated',
-        render: (h, params) => {
-          return h('div', params.row.tableCreated ? '是' : '否')
         },
-        align: 'center',
-        width: 200
+        columns: [{
+            title: '表名',
+            key: 'tableName',
+            titleAlign:'center',
+            align: 'left',
+            resizable:true,
+            width:200
+          },
+          {
+            title: '说明',
+            key: 'tableDesc',
+            titleAlign:'center',
+            align: 'left',
+            resizable:true,
+          width:200
+          }, {
+            title: '表单名',
+            key: 'formName',
+            align: 'center',
+            resizable:true,
+          width:200
+          },
+          {
+            title: '是否创建',
+            key: 'tableCreated',
+            render: (h, params) => {
+              return h('div', params.row.tableCreated ? '是' : '否');
+            },
+            align: 'center',
+          width:200
+          }
+        ],
+        tableFieldColuns: [{
+          title: '列名',
+          key: 'fieldName',
+          align: 'center',
+            resizable:true
+        }, {
+          title: '说明',
+          key: 'fieldDesc',
+          align: 'center',
+            resizable:true
+        }, {
+          title: '数据类型',
+          key: 'fieldDataType',
+          align: 'center',
+            resizable:true
+        }, {
+          title: '数据长度',
+          key: 'fieldLength',
+          align: 'center',
+            resizable:true
+        }, {
+          title: '默认值',
+          key: 'fieldDefault',
+          align: 'center',
+          resizable:true
+        }, {
+          title: '是否主键',
+          key: 'fieldPk',
+          align: 'center',
+          render: (h, params) => {
+            return params.row.fieldPk ? h('span', '是') : h('span', '否');
+          },
+          resizable:true
+        }, {
+          title: '不为空',
+          key: 'fieldNotnull',
+          align: 'center',
+          render: (h, params) => {
+            return params.row.fieldNotnull ? h('span', '是') : h('span', '否');
+          },
+          resizable:true
+        }, {
+          title: '字段顺序',
+          key: 'fieldOrder',
+          align: 'center',
+          resizable:true,
+          width:200
+        }, {
+          title: '国际化KEY',
+          key: 'fieldI18n',
+          align: 'center',
+          resizable:true,
+          width:200
+        }],
+        tableFieldData: [],
+        masterRowSelection: {},
+        formDetailData: {},
+        action: 'add',
+        tableHeight:0
       }
-      ],
-      tableFieldColuns: [{
-        title: '列名',
-        key: 'fieldName',
-        align: 'center',
-        resizable: true
-      }, {
-        title: '说明',
-        key: 'fieldDesc',
-        align: 'center',
-        resizable: true
-      }, {
-        title: '数据类型',
-        key: 'fieldDataType',
-        align: 'center',
-        resizable: true
-      }, {
-        title: '数据长度',
-        key: 'fieldLength',
-        align: 'center',
-        resizable: true
-      }, {
-        title: '默认值',
-        key: 'fieldDefault',
-        align: 'center',
-        resizable: true
-      }, {
-        title: '是否主键',
-        key: 'fieldPk',
-        align: 'center',
-        render: (h, params) => {
-          return params.row.fieldPk ? h('span', '是') : h('span', '否')
-        },
-        resizable: true
-      }, {
-        title: '不为空',
-        key: 'fieldNotnull',
-        align: 'center',
-        render: (h, params) => {
-          return params.row.fieldNotnull ? h('span', '是') : h('span', '否')
-        },
-        resizable: true
-      }, {
-        title: '字段顺序',
-        key: 'fieldOrder',
-        align: 'center',
-        resizable: true,
-        width: 200
-      }, {
-        title: '国际化KEY',
-        key: 'fieldI18n',
-        align: 'center',
-        resizable: true,
-        width: 200
-      }],
-      tableFieldData: [],
-      masterRowSelection: {},
-      formDetailData: {},
-      action: 'add',
-      tableHeight: 0
-    }
-  },
-  methods: {
-    tableRowClick (rowData, rowIndex) {
-      this.masterRowSelection = rowData
-      let url = `/sys/table/${rowData.id}`
-      let _self = this
-      request.get(url).then(res => {
-        _self.tableFieldData = res.tableFields.defaultList
-      })
     },
-    getMasterSelectId () {
-      if (Object.keys(this.masterRowSelection).length == 0) {
-        this.$Message.warning('请选择需要操作的数据')
-        return false
-      }
-      return this.masterRowSelection.id
-    },
-    editAction () {
-      let selectionId = this.getMasterSelectId()
-      if (!selectionId) {
-        return
-      }
-      // 编辑窗口展示
-      this.showEditWindow = true
-      this.$refs.sysEdit.action = 'update'
-      this.$refs.sysEdit.loadding = true
-      this.detailAction()
-    },
-    detailAction () {
-      // 加载详情数据
-      let url = `/sys/table/${this.masterRowSelection.id}`
-      let _self = this
-      request.get(url).then(res => {
-        _self.formDetailData = res
-      })
-    },
-    addAction () {
-      // 数据添加
-      debugger
-      this.$refs.sysEdit.action = 'add'
-      this.$refs.sysEdit.loadding = false
-      this.formDetailData = []
-      this.showEditWindow = true
-    },
-    search () {
-      // 表单搜索
-      this.$refs['master_list_table'].search(this.queryParams)
-    },
-    deleteAction () {
-      let selectionId = this.getMasterSelectId()
-      if (!selectionId) {
-        return
-      }
-      this.$Modal.confirm({
-        title: '删除确认',
-        content: '确定要删除当前选中数据吗？',
-        onOk: () => {
-          let url = `/sys/table/delete/${selectionId}`
-          let _self = this
-          request.post(url).then(res => {
-            _self.search()
-          })
+    methods: {
+      tableRowClick(rowData, rowIndex) {
+        this.masterRowSelection = rowData;
+        let url = `/sys/table/${rowData.id}`;
+        let _self = this;
+        request.get(url).then(res => {
+          _self.tableFieldData = res.tableFields.defaultList;
+
+        });
+      },
+      getMasterSelectId() {
+        if (Object.keys(this.masterRowSelection).length == 0) {
+          this.$Message.warning('请选择需要操作的数据');
+          return false;
         }
-      })
-    },
-    createTableAction () {
-      let selectionId = this.getMasterSelectId()
-      if (!selectionId) {
-        return
+        return this.masterRowSelection.id;
+      },
+      editAction() {
+        let selectionId = this.getMasterSelectId();
+        if (!selectionId) {
+          return;
+        }
+        //编辑窗口展示
+        this.showEditWindow = true;
+        this.$refs.sysEdit.action = 'update';
+        this.$refs.sysEdit.loadding = true;
+        this.detailAction();
+      },
+      detailAction() {
+        //加载详情数据
+        let url = `/sys/table/${this.masterRowSelection.id}`;
+        let _self = this;
+        request.get(url).then(res => {
+          _self.formDetailData = res;
+        });
+      },
+      addAction() {
+        //数据添加
+        debugger;
+        this.$refs.sysEdit.action = 'add';
+        this.$refs.sysEdit.loadding = false;
+        this.formDetailData = [];
+        this.showEditWindow = true;
+      },
+      search() {
+        //表单搜索
+        this.$refs['master_list_table'].search(this.queryParams);
+      },
+      deleteAction() {
+        let selectionId = this.getMasterSelectId();
+        if (!selectionId) {
+          return;
+        }
+        this.$Modal.confirm({
+          title: '删除确认',
+          content: '确定要删除当前选中数据吗？',
+          onOk: () => {
+            let url = `/sys/table/delete/${selectionId}`;
+            let _self = this;
+            request.post(url).then(res => {
+              _self.search();
+            });
+          }
+        });
+      },createTableAction(){
+        let selectionId = this.getMasterSelectId();
+        if (!selectionId) {
+          return;
+        }
+        if(this.masterRowSelection.tableCreated){
+          this.$Message.info('表已经被创建');
+          return;
+        }
+        let url = `/sys/table/${selectionId}/created`;
+        let _self = this;
+        request.post(url).then(res => {
+          _self.$Message.success('数据库表创建成功');
+          _self.search();
+        });
+      },comptuedTableHeight(){
+        //计算table高度
+        let height = document.body.offsetHeight;
+        this.tableHeight = height - (46 + 40 + 48 + 6 + 25);
       }
-      if (this.masterRowSelection.tableCreated) {
-        this.$Message.info('表已经被创建')
-        return
-      }
-      let url = `/sys/table/${selectionId}/created`
-      let _self = this
-      request.post(url).then(res => {
-        _self.$Message.success('数据库表创建成功')
-        _self.search()
-      })
-    },
-    comptuedTableHeight () {
-      // 计算table高度
-      let height = document.body.offsetHeight
-      this.tableHeight = height - (46 + 40 + 48 + 6 + 25)
+    },created() {
+      this.comptuedTableHeight();
     }
-  },
-  created () {
-    this.comptuedTableHeight()
   }
-}
 </script>
 
 <style>

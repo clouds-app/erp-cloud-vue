@@ -51,7 +51,8 @@
                     </Col>
               </Row>
           </Col>
-
+         
+          
           <Col span="6"><FormItem label="业务类型" prop="ctType">
               <optionSearch
                   v-model="formDataInfo.master.ctType"
@@ -61,7 +62,7 @@
                 />
             </FormItem>
           </Col>
-          <Col span="6">
+          <Col span="6"> 
                   <FormItem label="客户等级" prop="ctLevel">
                     <optionSearch
                           v-model="formDataInfo.master.ctLevel"
@@ -70,7 +71,8 @@
                           query="ctLevel"
                         />
                   </FormItem>
-
+                  
+                  
             </Col>
           <Col span="6"> <FormItem label="所属地区" prop="areaIdsText">
                   <Input
@@ -79,7 +81,7 @@
                     placeholder="请输入所属地区"
                   ></Input>
                 </FormItem>
-
+                
           </Col>
           <Col span="6"><FormItem label="详细地址" prop="addrDetail">
                   <Input
@@ -88,7 +90,7 @@
                     placeholder="请输入详细地址"
                   ></Input>
                 </FormItem></Col>
-          <Col span="6">
+          <Col span="6"> 
             <!-- <FormItem label="跟单员" prop="followerId">
               <Input
                 type="number"
@@ -111,7 +113,7 @@
                     :suffix-model="formDataInfo.master.followerName"
                     :query-params="{}"
                   ></popup>
-                </FormItem>
+                </FormItem>      
           </Col>
           <Col span="6"> <FormItem label="业务员" prop="salerCode">
               <!-- <Input
@@ -153,7 +155,7 @@
                     :query-params="{}"
                   ></popup>
                 </FormItem></Col>
-          <Col span="6">
+          <Col span="6">     
                 <FormItem label="接单控制" prop="orderControl">
                   <optionSearch
                       v-model="formDataInfo.master.orderControl"
@@ -250,7 +252,7 @@
                       query="arpType"
                     />
             </FormItem></Col>
-          <Col span="6">
+          <Col span="6"> 
               <FormItem label="附件" prop="attachment">
                   <!-- <Input
                       v-model="formDataInfo.master.attachment"
@@ -261,7 +263,7 @@
                       <Button icon="ios-cloud-upload-outline">附件</Button>
                   </Upload>
               </FormItem>
-
+               
           </Col>
           <Col span="6"><FormItem label="付款方式" prop="payName">
                   <!-- <Input
@@ -347,7 +349,7 @@
                     </i-switch>
                   </FormItem>
           </Col>
-          <Col span="6">
+          <Col span="6"> 
                   <FormItem label="开单单位" prop="bpUnit">
                     <optionSearch
                       v-model="formDataInfo.master.bpUnit"
@@ -356,9 +358,9 @@
                       query="bpUnit"
                     />
                   </FormItem>
-
+                  
           </Col>
-
+         
          <Col span="6">
                 <FormItem label="助记码" prop="rememberCode">
                       <Input
@@ -368,7 +370,7 @@
                       ></Input>
                 </FormItem>
             </Col>
-
+          
           <Col span="6"> <FormItem label="备注" prop="remark">
               <Input
                 v-model="formDataInfo.master.remark"
@@ -379,12 +381,14 @@
               ></Input>
             </FormItem>
             </Col>
-
+            
+            
+         
         </Row>
       </Form>
     </Row>
       <Tabs :animated="false">
-
+        
         <!--  注意:eTable formDataInfo.wareHoaddrSlaveFormDataDTOuseItems.defaultList  ===addrSlaveFormDataDTO=== 需要根据实际接口修改,其它不变-->
          <TabPane label="客户联系人列表" name="cusList">
           <eTable
@@ -397,6 +401,8 @@
             :data="formDataInfo.contactSlaveFormDataDTO.defaultList"
             :rules="tableFieldsValidator_cuslist"
           >
+            
+            
 
             <template slot="head">
               <tr>
@@ -450,7 +456,8 @@
                     <span class="">位置纬度</span>
                   </div>
                 </th> -->
-
+                
+                
               </tr>
             </template>
             <template
@@ -466,7 +473,7 @@
                       formKey="postType"
                       query="postType"
                   />
-
+                    
               </td>
                 <!-- 联系姓名 -->
               <td class="ivu-table-column-left" width="100">
@@ -551,7 +558,7 @@
                   :maxlength="20"
                 ></Input>
               </td>
-
+                      
               <td class="ivu-table-column-left" width="100">
                 <Input
                   v-model="row.remark"
@@ -567,7 +574,7 @@
             </template>
           </eTable>
         </TabPane>
-
+        
         <TabPane label="附加地址列表" name="addrList">
           <eTable
             ref="tableFields"
@@ -601,7 +608,9 @@
                     <span class="">详细地址</span>
                   </div>
                 </th>
-
+                
+                
+                
                 <th class="ivu-table-column-left" width="100">
                   <div class="ivu-table-cell">
                     <span class="">联系人</span>
@@ -672,7 +681,7 @@
                   :maxlength="20"
                 ></Input>
               </td>
-
+              
               <!-- 	联系人 -->
               <td class="ivu-table-column-left" width="100">
                 <Input
@@ -712,13 +721,13 @@
                   :maxlength="20"
                 ></Input>
               </td>
-
+           
             </template>
-
+            
           </eTable>
         </TabPane>
           <!--  注意:eTable formDataInfo.contactSlaveFormDataDTO.defaultList  ===contactSlaveFormDataDTO=== 需要根据实际接口修改,其它不变-->
-
+       
       </Tabs>
     </editWindow>
   </div>
@@ -738,122 +747,122 @@
  *
  * @created 2019/11/20 17:07:54
  */
-import editWindow from '@/components/edit-window/edit-window'
+import editWindow from "@/components/edit-window/edit-window";
 // import Form from '@/components/form/form'
-import eTable from '@/components/e-table/e-table'
-import request from '@/libs/request'
-import editBaseMixins from '../../mixins/edit'
-import popup from '@/components/popup/popup'
-import optionSearch from '../../components/optionSearch'
-import dayjs from 'dayjs'
+import eTable from "@/components/e-table/e-table";
+import request from "@/libs/request";
+import editBaseMixins from "../../mixins/edit";
+import popup from "@/components/popup/popup";
+import optionSearch from "../../components/optionSearch";
+import dayjs from "dayjs";
 const default_formDataInfo = {
-  // 主表 更改字段
-  master: {
-    addrDetail: '',
-    amtDot: 0,
-    amtType: '0',
-    amtTypeText: '',
-    areaIds: '',
-    areaIdsText: '0',
-    arpType: '0',
-    arpTypeText: '',
-    attachment: '',
-    auditTime: '',
-    auditUser: '',
-    backName: '',
-    bankNo: '',
-    bpIsDiameter: true,
-    bpUnit: '0',
-    bpUnitText: '',
-    coinCode: '',
-    coinId: '',
-    coinName: '',
-    createTime: '',
-    createUser: '',
-    ctDot: '',
-    ctLevel: '0',
-    ctLevelText: '',
-    ctType: '0',
-    ctTypeText: '',
-    cusCode: '',
-    cusName: '',
-    discount: '',
-    enName: '',
-    factName: '',
-    followerCode: '',
-    followerId: '',
-    followerName: '',
-    iisAudit: '',
-    lastOrderDate: dayjs().format('YYYY-MM-DD HH:mm:ss'),
-    monthDays: '',
-    orderControl: '0',
-    orderControlText: '',
-    payCode: '',
-    payId: '',
-    payName: '',
-    poGroup: true,
-    pointj: '',
-    pointw: '',
-    priceType: '0',
-    priceTypeText: '',
-    printPrice: true,
-    printWeight: true,
-    remark: '',
-    rememberCode: '',
-    salerCode: '',
-    salerId: '',
-    salerName: '',
-    shortName: '',
-    signBack: true,
-    status: '',
-    taxRate: '',
-    taxTP: '0',
-    taxTPText: '',
-    trade: '0',
-    tradeText: '',
-    updateTime: '',
-    updateUser: ''
+        // 主表 更改字段
+        master: {
+            addrDetail: "",
+            amtDot: 0,
+            amtType: "0",
+            amtTypeText: "",
+            areaIds: "",
+            areaIdsText: "0",
+            arpType: "0",
+            arpTypeText: "",
+            attachment: "",
+            auditTime: "",
+            auditUser: "",
+            backName: "",
+            bankNo: "",
+            bpIsDiameter: true,
+            bpUnit: "0",
+            bpUnitText: "",
+            coinCode: "",
+            coinId:"" ,
+            coinName: "",
+            createTime: "",
+            createUser: "",
+            ctDot:"" ,
+            ctLevel: "0",
+            ctLevelText: "",
+            ctType: "0",
+            ctTypeText: "",
+            cusCode: "",
+            cusName: "",
+            discount: "",
+            enName: "",
+            factName: "",
+            followerCode: "",
+            followerId: "",
+            followerName: "",
+            iisAudit: "",
+            lastOrderDate:dayjs().format("YYYY-MM-DD HH:mm:ss"),
+            monthDays: "",
+            orderControl: "0",
+            orderControlText: "",
+            payCode: "",
+            payId: "",
+            payName: "",
+            poGroup: true,
+            pointj: "",
+            pointw: "",
+            priceType: "0",
+            priceTypeText: "",
+            printPrice: true,
+            printWeight: true,
+            remark: "",
+            rememberCode: "",
+            salerCode: "",
+            salerId: "",
+            salerName: "",
+            shortName: "",
+            signBack: true,
+            status: "",
+            taxRate: "",
+            taxTP: "0",
+            taxTPText: "",
+            trade: "0",
+            tradeText: "",
+            updateTime: "",
+            updateUser: ""
 
-    // updateTime: "",
-    // updateUser: ""
-  },
-  // 子表 附加地址列表
-  contactSlaveFormDataDTO: {
-    addList: [], // 添加列
-    defaultList: [{
-      addrCode: '',
-      addrDetail: '',
-      addrName: '',
-      areaIds: '',
-      areaIdsText: '',
-      pointj: 0,
-      pointw: 0,
-      remark: '',
-      vContractor: '',
-      vContractorTel: ''
-    }], // 默认列
-    deleteList: [], // 删除列
-    updateList: [] // 更新列
-  },
-  // 子表 客户联系人列表
-  addrSlaveFormDataDTO: {
-    addList: [], // 添加列
-    defaultList: [{
-      contactEmail: '',
-      contactFax: '',
-      contactName: '',
-      contactQQ: '',
-      contactTel: '',
-      postTypeText: '',
-      remark: '',
-      sexText: ''
-    }], // 默认列
-    deleteList: [], // 删除列
-    updateList: [] // 更新列
-  }
-}
+            // updateTime: "",
+            // updateUser: ""
+        },
+        // 子表 附加地址列表
+        contactSlaveFormDataDTO: {
+          addList: [], // 添加列
+          defaultList: [{
+            addrCode: "",
+            addrDetail: "",
+            addrName: "",
+            areaIds: "",
+            areaIdsText: "",
+            pointj: 0,
+            pointw: 0,
+            remark: "",
+            vContractor: "",
+            vContractorTel: ""
+          }], // 默认列
+          deleteList: [], // 删除列
+          updateList: [] // 更新列
+        },
+         // 子表 客户联系人列表
+        addrSlaveFormDataDTO: {
+          addList: [], // 添加列
+          defaultList: [{
+              contactEmail: "",
+              contactFax: "",
+              contactName: "",
+              contactQQ: "",
+              contactTel: "",    
+              postTypeText: "",
+              remark: "",        
+              sexText: ""
+          }], // 默认列
+          deleteList: [], // 删除列
+          updateList: [] // 更新列
+        },
+      }
 export default {
-  name: 'edit-customerInfo',
+  name: "edit-customerInfo",
   mixins: [editBaseMixins],
   components: {
     editWindow,
@@ -862,111 +871,114 @@ export default {
     // Form,
     eTable
   },
-  data () {
+  data() {
     return {
-      formName: 'customerFm',
-      currentSubItemlength_addr: 0, // 当前子表数据个数
-      currentSubItemlength_contact: 0, // 当前子表数据个数
-      requestBaseUrl: '/sale/customer', // 请求 查询 操作的基础路径
-      formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      formName:"customerFm",
+      currentSubItemlength_addr:0, // 当前子表数据个数
+      currentSubItemlength_contact:0, // 当前子表数据个数
+      requestBaseUrl: "/sale/customer", // 请求 查询 操作的基础路径
+      formDataInfo:Object.assign({},default_formDataInfo),// 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
         cusCode: [
-          { required: true, message: '客户编号不能为空', trigger: 'blur' }
+          { required: true, message: "客户编号不能为空", trigger: "blur" }
         ],
         cusName: [
-          { required: true, message: '客户名称不能为空', trigger: 'blur' }
-        ]
-
+          { required: true, message: "客户名称不能为空", trigger: "blur" }
+        ],
+        
       },
       tableFieldsValidator: {
-
+       
       },
-      tableFieldsValidator_cuslist: {
-
+       tableFieldsValidator_cuslist: {
+        
       }
-    }
+    };
   },
 
   methods: {
-    // 重写父类,添加时候,清空数据
-    HandleFormDataInfo () {
-      this.formDataInfo = Object.assign({}, default_formDataInfo)
+     // 重写父类,添加时候,清空数据
+    HandleFormDataInfo(){
+     this.formDataInfo=Object.assign({},default_formDataInfo)
     },
     // 判断 客户联系人列表 是否添加了数据
-    getCurrentSubItemlength_addr () {
-      let tableData = this.$refs['tableFields'].getCategorizeData()
-      this.currentSubItemlength_addr = 0
+    getCurrentSubItemlength_addr(){
+      let tableData = this.$refs["tableFields"].getCategorizeData();
+      this.currentSubItemlength_addr=0
       // 判断当前字表 添加/更新的 数据个数
-      if (this.action === 'add') {
-        if (tableData.addList.length > 0) {
-          this.currentSubItemlength_addr = Object.keys(tableData.addList[0]).length
+      if(this.action==='add'){
+        if(tableData.addList.length>0){
+           this.currentSubItemlength_addr= Object.keys(tableData.addList[0]).length
         }
-      } else {
-        if (tableData.updateList.length > 0) {
-          this.currentSubItemlength_addr = Object.keys(tableData.updateList[0]).length
+       
+      }else{
+        if(tableData.updateList.length>0){
+           this.currentSubItemlength_addr= Object.keys(tableData.updateList[0]).length
         }
-        if (tableData.addList.length > 0) {
-          this.currentSubItemlength_addr = Object.keys(tableData.addList[0]).length
+        if(tableData.addList.length>0){
+           this.currentSubItemlength_addr= Object.keys(tableData.addList[0]).length
         }
+       
       }
       return this.currentSubItemlength_addr
     },
-    // 判断 附加地址列表 是否添加了数据
-    getCurrentSubItemlength_contact () {
-      let tableData2 = this.$refs['tableFields2'].getCategorizeData()
-      this.currentSubItemlength_contact = 0
+     // 判断 附加地址列表 是否添加了数据
+    getCurrentSubItemlength_contact(){
+      let tableData2 = this.$refs["tableFields2"].getCategorizeData();
+      this.currentSubItemlength_contact=0
       // 判断当前字表 添加/更新的 数据个数
-      if (this.action === 'add') {
-        if (tableData2.addList.length > 0) {
-          this.currentSubItemlength_contact = Object.keys(tableData2.addList[0]).length
+      if(this.action==='add'){  
+        if(tableData2.addList.length>0){
+            this.currentSubItemlength_contact= Object.keys(tableData2.addList[0]).length
         }
-      } else {
-        if (tableData2.updateList.length > 0) {
-          this.currentSubItemlength_contact = Object.keys(tableData2.updateList[0]).length
-        }
-        if (tableData2.addList.length > 0) {
-          this.currentSubItemlength_contact = Object.keys(tableData2.addList[0]).length
+      
+      }else{
+         if(tableData2.updateList.length>0){
+            this.currentSubItemlength_contact= Object.keys(tableData2.updateList[0]).length
+         }
+        if(tableData2.addList.length>0){
+            this.currentSubItemlength_contact= Object.keys(tableData2.addList[0]).length
         }
       }
-      return this.currentSubItemlength_contact
+       return this.currentSubItemlength_contact
     },
     // 重写父类,提交数据前 验证数据 ,默认TRUE
-    validateBeforePost () {
+    validateBeforePost() {
       this.getCurrentSubItemlength_addr()
       this.getCurrentSubItemlength_contact()
-      let flag = false
-      if (this.currentSubItemlength_addr > 0) {
-        // 子表有数据后才验证是否必填数据
-        let subValidate = this.$refs['tableFields'].validate()
-        if (subValidate === true) {
-          flag = true
-        }
+      let flag =false
+      if(this.currentSubItemlength_addr>0){
+          // 子表有数据后才验证是否必填数据
+           let subValidate = this.$refs['tableFields'].validate();
+            if(subValidate===true){
+              flag= true;
+            }
       }
       return flag
     },
     // 重写父类,修改提交数据
-    resetformDataInfo (_data) {
+    resetformDataInfo(_data) {
       // 添加了数据才去获取数据
       debugger
-
-      if (this.currentSubItemlength_addr > 0) {
-        let tableData = this.$refs['tableFields'].getCategorizeData()
-        this.formDataInfo.addrSlaveFormDataDTO = tableData
+      
+      if(this.currentSubItemlength_addr>0){
+           let tableData = this.$refs["tableFields"].getCategorizeData();
+           this.formDataInfo.addrSlaveFormDataDTO = tableData;
       }
-      if (this.currentSubItemlength_contact > 0) {
-        let tableData2 = this.$refs['tableFields2'].getCategorizeData()
-        this.formDataInfo.contactSlaveFormDataDTO = tableData2
+      if(this.currentSubItemlength_contact>0){
+           let tableData2 = this.$refs["tableFields2"].getCategorizeData();
+           this.formDataInfo.contactSlaveFormDataDTO = tableData2;
       }
-      if (_data.master.lastOrderDate) {
+       if (!!_data.master.lastOrderDate) {
         _data.master.lastOrderDate = dayjs(_data.master.lastOrderDate).format(
-          'YYYY-MM-DD HH:mm:ss'
-        )
-        return this.formDataInfo
-      }
+          "YYYY-MM-DD HH:mm:ss"
+        );
+      return this.formDataInfo;
+       }  
     }
   }
-}
+};
 </script>
 
 <style>

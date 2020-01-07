@@ -121,7 +121,8 @@
               </Col>
                 </Row>
               </Col>
-
+              
+             
               <Col span="8">
                 <FormItem label="政治面貌">
                   <optionSearch
@@ -212,7 +213,7 @@
                     <span slot="open">是</span>
                     <span slot="close">否</span>
                   </i-switch>
-                  &nbsp;&nbsp;
+                  &nbsp;&nbsp; 
                   <Input
                     :disabled="!formDataInfo.iisInsurance"
                     style="width:70px;"
@@ -323,175 +324,175 @@
  *
  * @created 2019/11/20 17:07:54
  */
-import popup from '@/components/popup/popup'
-import optionSearch from '../../components/optionSearch'
-import uploadImg from '@/components/cl-erp/uploadImg'
-import dayjs from 'dayjs'
-import editBaseMixins from '../../mixins/edit'
-import { customValidator, uniqueValidator } from '@/libs/validator'
+import popup from "@/components/popup/popup";
+import optionSearch from "../../components/optionSearch";
+import uploadImg from "@/components/cl-erp/uploadImg";
+import dayjs from "dayjs";
+import editBaseMixins from "../../mixins/edit";
+import { customValidator,uniqueValidator } from "@/libs/validator";
 const default_formDataInfo = {
-  borthAdress: '',
-  borthDay: '',
-  workLabourPactSDate: dayjs().format('YYYY-MM-DD'),
-  workLabourPactEDate: '',
-  positionId: '1', // 职位
-  positionCode: '',
-  positionName: '',
-  degreeSchool: '大专', // 文化程度
-  deptId: '0',
-  deptCode: '',
-  deptName: '',
-  borthAdress: '',
-  eys: '0',
-  height: '0',
-  homeAddress: '',
-  idNumber: '',
+  borthAdress: "",
+  borthDay: "",
+  workLabourPactSDate: dayjs().format("YYYY-MM-DD"),
+  workLabourPactEDate: "",
+  positionId: "1", // 职位
+  positionCode: "",
+  positionName: "",
+  degreeSchool: "大专", //文化程度
+  deptId: "0",
+  deptCode: "",
+  deptName: "",
+  borthAdress: "",
+  eys: "0",
+  height: "0",
+  homeAddress: "",
+  idNumber: "",
   iisInsurance: false,
-  iisMarried: '0', // 婚否：0未婚1已婚3离异
-  iisWork: '1', // 是否在职0离职1在职
-  insuranceAmt: '0',
-  major: '',
-  mob: '',
-  nation: '',
-  nowAdress: '',
-  nowAdress: '',
-  homeAddress: '',
-  photo: '',
-  idPhoto: '',
-  political: '群众', // 政治面貌
-  remark: '',
-  salary: '0',
-  sex: '1', // 性别：0女1男
-  // status: "0",
-  teamId: '0',
-  teamCode: '',
-  nation: '',
-  teamName: '',
-  salary: '',
-  workCode: '',
-  idNumber: '',
-  height: '',
-  major: '',
-  eys: '',
-  workInDate: dayjs().format('YYYY-MM-DD HH:mm:ss'),
-  workName: '',
-  workOptType: '0' // 职别
-}
+  iisMarried: "0", //婚否：0未婚1已婚3离异
+  iisWork: "1", //是否在职0离职1在职
+  insuranceAmt: "0",
+  major: "",
+  mob: "",
+  nation: "",
+  nowAdress: "",
+  nowAdress: "",
+  homeAddress: "",
+  photo: "",
+  idPhoto: "",
+  political: "群众", //政治面貌
+  remark: "",
+  salary: "0",
+  sex: "1", //性别：0女1男
+  //status: "0",
+  teamId: "0",
+  teamCode: "",
+  nation: "",
+  teamName: "",
+  salary: "",
+  workCode: "",
+  idNumber: "",
+  height: "",
+  major: "",
+  eys: "",
+  workInDate: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+  workName: "",
+  workOptType: "0" // 职别
+};
 export default {
-  name: 'edit-position',
+  name: "edit-position",
   mixins: [editBaseMixins],
   components: { uploadImg, optionSearch, popup },
-  data () {
+  data() {
     return {
-      requestBaseUrl: '/bas/worker', // 请求 查询 操作的基础路径
+      requestBaseUrl: "/bas/worker", // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
-
-        deptId: [{ required: true, message: '部门不能为空', trigger: 'blur' }],
-
-        sex: [{ required: true, message: '性别不能为空', trigger: 'blur' }],
+        
+        deptId: [{ required: true, message: "部门不能为空", trigger: "blur" }],
+        
+        sex: [{ required: true, message: "性别不能为空", trigger: "blur" }],
         workCode: [
-          { required: true, message: '编号不能为空', trigger: 'blur' },
+          { required: true, message: "编号不能为空", trigger: "blur" },
           {
             validator: customValidator,
-            trigger: 'blur',
-            customRule: ['identifier', 'spaceStr'],
-            fieldDesc: '职位编码'
+            trigger: "blur",
+            customRule: ["identifier","spaceStr"],
+            fieldDesc: "职位编码"
           },
           {
-            validator: uniqueValidator,
-            trigger: 'blur',
-            fieldDesc: '职位编码',
-            params: {
-              fieldName: 'workCode',
-              formName: 'workerFm',
-              id: () => {
-                return this.formDataInfo.id
+                validator:uniqueValidator,
+                trigger: "blur",
+                fieldDesc: "职位编码",
+                params:{
+                  fieldName:'workCode',
+                  formName:'workerFm',
+                  id:()=>{
+                    return this.formDataInfo.id;
+                  }
+                }
               }
-            }
-          }
         ],
         mob: [
-          { required: true, message: '车主电话不能为空', trigger: 'blur' },
-          {
-            validator: customValidator,
-            trigger: 'blur',
-            customRule: ['phone', 'spaceStr'],
-            fieldDesc: '车主电话'
-          }
+          { required: true, message: "车主电话不能为空", trigger: "blur" },
+           {
+              validator:customValidator,
+              trigger: "blur",
+              customRule:["phone","spaceStr"],
+              fieldDesc:"车主电话"
+            }
         ],
         workName: [
-          { required: true, message: '名称不能为空', trigger: 'blur' },
+          { required: true, message: "名称不能为空", trigger: "blur" },
           {
             validator: customValidator,
-            trigger: 'blur',
-            customRule: ['toCDB', 'spaceStr'],
-            fieldDesc: '职位名称'
+            trigger: "blur",
+            customRule: ["toCDB","spaceStr"],
+            fieldDesc: "职位名称"
           }
-        ]
-
+        ],
+        
       }
-    }
+    };
   },
   methods: {
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo () {
-      this.formDataInfo = Object.assign({}, default_formDataInfo)
+    HandleFormDataInfo() {
+      this.formDataInfo = Object.assign({}, default_formDataInfo);
     },
     // 身份证===图片上传成功后 回调事件 返回图片地址
-    uploadSuccessHeads (res) {
+    uploadSuccessHeads(res) {
       if (!res.success) {
-        this.$Message.error(res.message)
-        return
+        this.$Message.error(res.message);
+        return;
       }
-      let picUrl = res.result
-      if (picUrl) {
-        this.formDataInfo.idPhoto = picUrl
+      let picUrl = res.result;
+      if (!!picUrl) {
+        this.formDataInfo.idPhoto = picUrl;
       }
     },
-    // 个人===图片上传成功后 回调事件 返回图片地址
-    uploadSuccessTails (res) {
+    //个人===图片上传成功后 回调事件 返回图片地址
+    uploadSuccessTails(res) {
       if (!res.success) {
-        this.$Message.error(res.message)
-        return
+        this.$Message.error(res.message);
+        return;
       }
-      let picUrl = res.result
-      if (picUrl) {
-        this.formDataInfo.photo = picUrl
+      let picUrl = res.result;
+      if (!!picUrl) {
+        this.formDataInfo.photo = picUrl;
       }
     },
-    // 重写父类 添加时,修改一些提交的数据
-    resetAddformDataInfo (_data) {
-      return this.resetformDataInfo(_data)
+    //重写父类 添加时,修改一些提交的数据
+    resetAddformDataInfo(_data) {
+      return this.resetformDataInfo(_data);
     },
-    // 重写父类 更新时,修改一些提交的数据
-    resetformDataInfo (_data) {
-      debugger
+    //重写父类 更新时,修改一些提交的数据
+    resetformDataInfo(_data) {
+      debugger;
       // 时间格式化
-      if (_data.borthDay) {
-        _data.borthDay = dayjs(_data.borthDay).format('YYYY-MM-DD')
+      if (!!_data.borthDay) {
+        _data.borthDay = dayjs(_data.borthDay).format("YYYY-MM-DD");
       }
-      if (_data.workLabourPactSDate) {
+      if (!!_data.workLabourPactSDate) {
         _data.workLabourPactSDate = dayjs(_data.workLabourPactSDate).format(
-          'YYYY-MM-DD'
-        )
+          "YYYY-MM-DD"
+        );
       }
-      if (_data.workLabourPactEDate) {
+      if (!!_data.workLabourPactEDate) {
         _data.workLabourPactEDate = dayjs(_data.workLabourPactEDate).format(
-          'YYYY-MM-DD'
-        )
+          "YYYY-MM-DD"
+        );
       }
-      if (_data.workInDate) {
+      if (!!_data.workInDate) {
         _data.workInDate = dayjs(_data.workInDate).format(
-          'YYYY-MM-DD HH:mm:ss'
-        )
+          "YYYY-MM-DD HH:mm:ss"
+        );
       }
 
-      return _data
+      return _data;
     }
   }
-}
+};
 </script>
 
 <style>

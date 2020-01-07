@@ -23,6 +23,7 @@
           ></Input>
         </FormItem>
 
+
         <FormItem label="摘要说明" prop="resumeName">
           <Input
             v-model="formDataInfo.resumeName"
@@ -40,6 +41,8 @@
             placeholder="请输入摘要分类 "
           ></Input> -->
         </FormItem>
+
+        
 
          <FormItem label="备注" prop="remark">
           <Input
@@ -70,56 +73,56 @@
  * @created 2019/11/20 17:07:54
  */
 import optionSearch from '../../components/optionSearch'
-import editBaseMixins from '../../mixins/edit'
-import { customValidator, uniqueValidator } from '@/libs/validator'
+import editBaseMixins from "../../mixins/edit";
+import { customValidator ,uniqueValidator} from "@/libs/validator"; 
 const default_formDataInfo = {
-  resumeCode: '',
-  resumeName: '',
-  resumeType: 'A',
-  remark: ''
-}
+        resumeCode: "",
+        resumeName: "",
+        resumeType: "A",
+        remark: ""
+      }
 export default {
-  name: 'edit-resume',
+  name: "edit-resume",
   mixins: [editBaseMixins],
-  components: { optionSearch },
-  data () {
+  components:{optionSearch},
+  data() {
     return {
-      requestBaseUrl: '/bas/resume', // 请求 查询 操作的基础路径
-      formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      requestBaseUrl: "/bas/resume", // 请求 查询 操作的基础路径
+      formDataInfo:Object.assign({},default_formDataInfo),// 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
         resumeCode: [
-          { required: true, message: '摘要编号不能为空', trigger: 'blur' },
-          { validator: customValidator,
-            trigger: 'blur',
-            customRule: ['toCDB', 'identifier', 'spaceStr'],
-            fieldDesc: '摘要编号' },
-          {
-            validator: uniqueValidator,
-            trigger: 'blur',
-            fieldDesc: '摘要编号',
-            params: {
-              fieldName: 'resumeCode',
-              formName: 'resumeFm',
-              id: () => {
-                return this.formDataInfo.id
+          { required: true, message: "摘要编号不能为空", trigger: "blur" },
+            {validator:customValidator,
+                      trigger:"blur",
+                      customRule:["toCDB","identifier","spaceStr"],
+                          fieldDesc:"摘要编号"},
+             {
+                validator:uniqueValidator,
+                trigger: "blur",
+                fieldDesc: "摘要编号",
+                params:{
+                  fieldName:'resumeCode',
+                  formName:'resumeFm',
+                  id:()=>{
+                    return this.formDataInfo.id;
+                  }
+                }
               }
-            }
-          }
         ],
-        resumeType: [{ required: true, message: '摘要分类不能为空', trigger: 'blur' }],
-        resumeName: [{ required: true, message: '摘要说明不能为空', trigger: 'blur' }]
+        resumeType: [{ required: true, message: "摘要分类不能为空", trigger: "blur" }],
+        resumeName: [{ required: true, message: "摘要说明不能为空", trigger: "blur" }]
       }
-    }
+    };
   },
 
   methods: {
-    // 重写父类,添加时候,清空数据
-    HandleFormDataInfo () {
-      this.formDataInfo = Object.assign({}, default_formDataInfo)
-    }
+      // 重写父类,添加时候,清空数据
+    HandleFormDataInfo(){
+     this.formDataInfo=Object.assign({},default_formDataInfo)
+    },
   }
-}
+};
 </script>
 
 <style></style>

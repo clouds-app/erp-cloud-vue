@@ -14,7 +14,7 @@
           <vTable
             :height="tableHeight / 2"
             ref="master_list_table"
-           :columns-url="functionParams.requestColBaseUrl + '/productFm'"
+           :columns-url="functionParams.requestColBaseUrl + '/productFm'"    
             url="/bas/product/page"
             :pagination="true"
             @row-click="tableRowClick"
@@ -27,7 +27,7 @@
                 :height="tableHeight / 2"
                 ref="tableFieldRef"
                 :table-data="tableFieldData"
-                :columns-url="functionParams.requestColBaseUrl + '/productMDataFm'"
+                :columns-url="functionParams.requestColBaseUrl + '/productMDataFm'"   
                 :pagination="false"
               ></vTable>
             </TabPane>
@@ -37,7 +37,7 @@
                 :height="tableHeight / 2"
                 ref="tableFieldRef2"
                 :table-data="tableFieldData2"
-                :columns-url="functionParams.requestColBaseUrl + '/productWorkProcFm'"
+                :columns-url="functionParams.requestColBaseUrl + '/productWorkProcFm'"   
                 :pagination="false"
               ></vTable>
             </tabPane>
@@ -57,110 +57,110 @@
   </div>
 </template>
 <script>
-import vTable from '@/components/tables/vTable'
-import htmlTemplate from '../components/htmlTemplate'
-// import editForm from "./edit/edit-warehouse";
-import listBaseMixins from '../mixins/list'
-import request from '@/libs/request'
+import vTable from "@/components/tables/vTable";
+import htmlTemplate from "../components/htmlTemplate";
+//import editForm from "./edit/edit-warehouse";
+import listBaseMixins from "../mixins/list";
+import request from "@/libs/request";
 
 export default {
   mixins: [listBaseMixins],
   components: {
-    editForm: function (resolve) {
-      // 组件的异步加载
-      require(['./edit/edit-product'], resolve)
+    editForm: function(resolve) {
+      //组件的异步加载
+      require(["./edit/edit-product"], resolve);
     },
     htmlTemplate,
     vTable
   },
-  data () {
+  data() {
     return {
       // who:'editForm', // 动态指定编辑控件
-      tableFieldData: [], // 纸板规格
-      tableFieldData2: [], // 产品生产工序
-      currentTabName: 'ProductMData', // 当前TABL名称
+      tableFieldData: [], //纸板规格
+      tableFieldData2: [], //产品生产工序
+      currentTabName: "ProductMData", //当前TABL名称
       functionParams: {
-        requestBaseUrl: '/bas/product',
-        uniqueId: 'productId'
+        requestBaseUrl: "/bas/product",
+        uniqueId: "productId"
       },
       // 查询参数 ,注意格式
       queryParamsDefault: [
         {
-          title: '产品编号',
-          code: 'bpNo',
-          bpNo: ''
+          title: "产品编号",
+          code: "bpNo",
+          bpNo: ""
         },
         {
-          title: '产品名称',
-          name: 'bpName',
-          bpName: ''
+          title: "产品名称",
+          name: "bpName",
+          bpName: ""
         }
       ]
-    }
+    };
   },
   methods: {
     // tab 点击切换事件
-    TabsClickEvent (name) {
+    TabsClickEvent(name) {
       // debugger
-      this.currentTabName = name
+      this.currentTabName = name;
       if (
         this.masterRowSelection &&
         this.masterRowSelection.id != null &&
-        this.masterRowSelection.id != ''
+        this.masterRowSelection.id != ""
       ) {
-        if (name === 'ProductWorkProc') {
-          this.getProductWorkProc()
+        if (name === "ProductWorkProc") {
+          this.getProductWorkProc();
         } else {
-          this.getProductMData()
+          this.getProductMData();
         }
       }
     },
-    tableRowClick (rowData, rowIndex) {
-      this.formDetailData = {} // 清除上次缓存数据 增加体验良好
-      this.masterRowSelection = rowData
+    tableRowClick(rowData, rowIndex) {
+      this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData;
       if (rowData != null) {
-        // debugger
+        //debugger
         // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
-        this.currrentRowItem.rowName = rowData.bpNo + ' ' + rowData.bpName
+        this.currrentRowItem.rowName = rowData.bpNo + " " + rowData.bpName;
       }
       if (this.masterRowSelection) {
-        this.TabsClickEvent(this.currentTabName)
+        this.TabsClickEvent(this.currentTabName);
       }
     },
 
     // 获取查询产品纸板规格列表信息
-    getProductMData () {
+    getProductMData() {
       // debugger
-      let url = `/bas/product/productMData/list`
+      let url = `/bas/product/productMData/list`;
       let data = {
         productId: this.masterRowSelection.id
-      }
-      let _self = this
+      };
+      let _self = this;
       request.post(url, data).then(res => {
-        // debugger
-        _self.tableFieldData = res
-      })
+        //debugger
+        _self.tableFieldData = res;
+      });
     },
     // 获取查询产品生产工序列表信息
-    getProductWorkProc (item) {
-      // debugger
-      let url = `/bas/product/productWorkProc/list`
+    getProductWorkProc(item) {
+      //debugger
+      let url = `/bas/product/productWorkProc/list`;
       let data = {
         productId: this.masterRowSelection.id
-      }
-      let _self = this
+      };
+      let _self = this;
       request.post(url, data).then(res => {
-        // debugger
-        _self.tableFieldData2 = res
-      })
+        //debugger
+        _self.tableFieldData2 = res;
+      });
     },
-    // 重写父类方法, 更新操作
-    handleUpdateEvent () {
+    //重写父类方法, 更新操作
+    handleUpdateEvent() {
       // debugger
-      this.TabsClickEvent(this.currentTabName)
+      this.TabsClickEvent(this.currentTabName);
     }
   }
-}
+};
 </script>
 
 <style></style>

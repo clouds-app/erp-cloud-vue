@@ -28,10 +28,10 @@
   </div>
 </template>
 <script>
-import vTable from '@/components/tables/vTable'
-import htmlTemplate from '../components/htmlTemplate'
-import editForm from './edit/edit-bank'
-import listBaseMixins from '../mixins/list'
+import vTable from "@/components/tables/vTable";
+import htmlTemplate from "../components/htmlTemplate";
+import editForm from "./edit/edit-bank";
+import listBaseMixins from "../mixins/list";
 export default {
   mixins: [listBaseMixins],
   components: {
@@ -39,23 +39,23 @@ export default {
     htmlTemplate,
     vTable
   },
-  data () {
+  data() {
     return {
       functionParams: {
-        requestBaseUrl: '/bas/bank',
-        uniqueId: 'bankId'
+        requestBaseUrl: "/bas/bank",
+        uniqueId: "bankId"
       },
       // 查询参数 ,注意格式
       queryParamsDefault: [
         {
-          title: '编码',
-          code: 'bankCode',
-          bankCode: ''
+          title: "编码",
+          code: "bankCode",
+          bankCode: ""
         },
         {
-          title: '名称',
-          name: 'bankName',
-          bankName: ''
+          title: "名称",
+          name: "bankName",
+          bankName: ""
         }
       ]
       // columns: [
@@ -133,20 +133,20 @@ export default {
       //       align:'center'
       //   },
       // ],
-    }
+    };
   },
   methods: {
-    tableRowClick (rowData, rowIndex) {
-      this.formDetailData = {} // 清除上次缓存数据 增加体验良好
-      this.masterRowSelection = rowData
+    tableRowClick(rowData, rowIndex) {
+      this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData;
       if (rowData != null) {
         // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
         this.currrentRowItem.rowName =
-          rowData.bankCode + ' ' + rowData.bankName
+          rowData.bankCode + " " + rowData.bankName;
       }
     }
   }
-}
+};
 </script>
 
 <style></style>

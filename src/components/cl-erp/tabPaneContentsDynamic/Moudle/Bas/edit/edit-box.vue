@@ -44,14 +44,14 @@
               </Col>
 
               <Col span="12">
-
+                
                     <FormItem label="纸宽废边" prop="boxIsBorder">
                       <i-switch size="default" v-model="formDataInfo.master.boxIsBorder">
                         <span slot="open">是</span>
                         <span slot="close">否</span>
                       </i-switch>
                     </FormItem>
-
+                  
               </Col>
               <Col span="12">
                     <FormItem label="纸长废边" prop="boxIsLBorder">
@@ -116,7 +116,7 @@
                   ></Input>
                 </FormItem>
               </Col>
-
+              
               <Col span="12">
                 <FormItem label="客户面积公式" prop=" boxCAreaExprMsg">
                   <Input
@@ -128,7 +128,7 @@
                   ></Input>
                 </FormItem>
               </Col>
-
+             
               <Col span="12">
                 <FormItem label="体积公式" prop=" boxCubeExprMsg">
                   <Input
@@ -140,7 +140,8 @@
                   ></Input>
                 </FormItem>
               </Col>
-
+             
+             
               <Col span="12"></Col>
               <Col span="12"></Col>
               <Col span="12"></Col>
@@ -231,7 +232,7 @@
                     <span class>双片纸长</span>
                   </div>
                 </th>
-
+                
                 <th class="ivu-table-column-center" width="150">
                   <div class="ivu-table-cell">
                     <span class>双片压线</span>
@@ -348,7 +349,7 @@
                   @on-click="showExpression('boxYS1Expr',index)"
                 ></Input>
               </td>
-
+               
               <td class="ivu-table-column-center" width="100">
                 <Input
                   v-model="row.boxW2ExprMsg"
@@ -363,6 +364,7 @@
                   @on-click="showExpression('boxW2Expr',index)"
                 ></Input>
               </td>
+
 
               <td class="ivu-table-column-center" width="100">
                 <Input
@@ -417,7 +419,7 @@
                   "
                   size="small"
                   :maxlength="20"
-
+                  
                 ></Input>
               </td>
             </template>
@@ -443,62 +445,62 @@
  *
  * @created 2019/11/20 17:07:54
  */
-import boxExpression from '@/components/box-expression/boxExpression'
-import optionSearch from '../../components/optionSearch'
-import editWindow from '@/components/edit-window/edit-window'
+import boxExpression from "@/components/box-expression/boxExpression";
+import optionSearch from "../../components/optionSearch";
+import editWindow from "@/components/edit-window/edit-window";
 // import Form from '@/components/form/form'
-import eTable from '@/components/e-table/e-table'
-import request from '@/libs/request'
-import editBaseMixins from '../../mixins/edit'
-import uploadImg from '@/components/cl-erp/uploadImg'
-import { customValidator, uniqueValidator } from '@/libs/validator'
+import eTable from "@/components/e-table/e-table";
+import request from "@/libs/request";
+import editBaseMixins from "../../mixins/edit";
+import uploadImg from "@/components/cl-erp/uploadImg";
+import { customValidator,uniqueValidator } from "@/libs/validator";
 const default_formDataInfo = {
   master: {
-    boxAreaExpr: '',
-    boxAreaExprJson: '',
-    boxAreaExprMsg: '',
-    boxCAreaExpr: '',
-    boxCAreaExprJson: '',
-    boxCAreaExprMsg: '',
-    boxCMExpr: '',
-    boxCMExprJson: '',
-    boxCMExprMsg: '',
-    boxCWeightExpr: '',
-    boxCWeightExprJson: '',
-    boxCWeightExprMsg: '',
-    boxCode: '',
-    boxCubeExpr: '',
-    boxCubeExprJson: '',
-    boxCubeExprMsg: '',
-    boxImage: '',
-    boxImage2: '',
-    boxInchExpr: '',
-    boxInchExprJson: '',
-    boxInchExprMsg: '',
+    boxAreaExpr: "",
+    boxAreaExprJson: "",
+    boxAreaExprMsg: "",
+    boxCAreaExpr: "",
+    boxCAreaExprJson: "",
+    boxCAreaExprMsg: "",
+    boxCMExpr: "",
+    boxCMExprJson: "",
+    boxCMExprMsg: "",
+    boxCWeightExpr: "",
+    boxCWeightExprJson: "",
+    boxCWeightExprMsg: "",
+    boxCode: "",
+    boxCubeExpr: "",
+    boxCubeExprJson: "",
+    boxCubeExprMsg: "",
+    boxImage: "",
+    boxImage2: "",
+    boxInchExpr: "",
+    boxInchExprJson: "",
+    boxInchExprMsg: "",
     boxIsBorder: true,
     boxIsLBorder: true,
-    boxName: '',
-    boxWeightExpr: '',
-    boxWeightExprJson: '',
-    boxWeightExprMsg: '',
+    boxName: "",
+    boxWeightExpr: "",
+    boxWeightExprJson: "",
+    boxWeightExprMsg: "",
 
-    remark: '',
+    remark: "",
 
-    // hasDelete: true,
-    remark: ''
+    //hasDelete: true,
+    remark: ""
 
     // boxCutMode: "0",
   },
-  // 子表 box 根据实际接口更改，其他不变
+  //子表 box 根据实际接口更改，其他不变
   boxItemSlaves: {
     addList: [], // 添加列
     defaultList: [], // 默认列
     deleteList: [], // 删除列
     updateList: [] // 更新列
   }
-}
+};
 export default {
-  name: 'edit-box',
+  name: "edit-box",
   mixins: [editBaseMixins],
   components: {
     boxExpression,
@@ -509,41 +511,41 @@ export default {
     eTable
   },
 
-  data () {
+  data() {
     return {
-      formName: 'boxFm',
-      currentExpressType: '', // 当前打开的盒式公式类型
+      formName:"boxFm",
+      currentExpressType: "", // 当前打开的盒式公式类型
       showBoxExpression: false, // show express  or not...
-      requestBaseUrl: '/bas/box', // 请求 查询 操作的基础路径
+      requestBaseUrl: "/bas/box", // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
         boxCode: [
-          { required: true, message: '盒式编号不能为空', trigger: 'blur' },
-          { validator: customValidator,
-            trigger: 'blur',
-            customRule: ['toCDB', 'identifier', 'spaceStr'],
-            fieldDesc: '盒式编号' },
-          {
-            validator: uniqueValidator,
-            trigger: 'blur',
-            fieldDesc: '盒式编号',
-            params: {
-              fieldName: 'boxCode',
-              formName: 'boxFm',
-              id: () => {
-                return this.formDataInfo.master.id
-              }
-            }
-          }
+          { required: true, message: "盒式编号不能为空", trigger: "blur" },
+                     {validator:customValidator,
+                            trigger:"blur",
+                            customRule:["toCDB","identifier","spaceStr"],
+                            fieldDesc:"盒式编号"},
+                            {
+                              validator:uniqueValidator,
+                              trigger: "blur",
+                              fieldDesc: "盒式编号",
+                              params:{
+                                fieldName:'boxCode',
+                                formName:'boxFm',
+                                id:()=>{
+                                  return this.formDataInfo.master.id;
+                                }
+                              }
+                            }
         ],
         boxName: [
-          { required: true, message: '盒式名称不能为空', trigger: 'blur' },
-          { validator: customValidator,
-            trigger: 'blur',
-            customRule: ['toCDB', 'spaceStr'],
-            fieldDesc: '盒式名称' }
-        ]
+          { required: true, message: "盒式名称不能为空", trigger: "blur" },
+                       {validator:customValidator,
+                            trigger:"blur",
+                            customRule:["toCDB","spaceStr"],
+                            fieldDesc:"盒式名称"}
+        ],
         // boxIsBorder: [
         //   { required: true, message: "纸宽废边不能为空", trigger: "blur" }
         // ],
@@ -552,72 +554,75 @@ export default {
         // ]
       },
       tableFieldsValidator: {},
-      subBoxClickIndex: -1
-    }
+      subBoxClickIndex:-1
+    };
   },
 
   methods: {
     // 打开盒式计算公式，参数：当前类型：
-    showExpression (type, subBoxClickIndex) {
-      this.showBoxExpression = true
-      this.currentExpressType = type
-      this.subBoxClickIndex = -1
-      if (subBoxClickIndex >= 0) {
-        this.subBoxClickIndex = subBoxClickIndex
+    showExpression(type,subBoxClickIndex) {
+      this.showBoxExpression = true;
+      this.currentExpressType = type;
+      this.subBoxClickIndex = -1;
+      if(subBoxClickIndex >= 0){
+        this.subBoxClickIndex = subBoxClickIndex;
       }
+    
     },
     // 盒式公式的回调方式，返回参数
-    expressionOk (text, value, json) {
-      debugger
+    expressionOk(text, value, json) {
+      debugger;
       //  this.formDataInfo.master.currentExpressType = this.formDataInfo.master['currentExpressType']
-
-      if (this.subBoxClickIndex == -1) {
-        this.formDataInfo.master[this.currentExpressType + 'Msg'] = text
-        this.formDataInfo.master[this.currentExpressType + 'JSON'] = json
-        this.formDataInfo.master[this.currentExpressType] = value
-      } else {
-        let data = {}
-        data[this.currentExpressType + 'Msg'] = text
-        data[this.currentExpressType] = value
-        this.$refs.tableFields.set(data, this.subBoxClickIndex)
+      
+      if(this.subBoxClickIndex == -1){
+        this.formDataInfo.master[this.currentExpressType + "Msg"] = text;
+        this.formDataInfo.master[this.currentExpressType + "JSON"] = json;
+        this.formDataInfo.master[this.currentExpressType] = value;
+      }else{
+        let data = {};
+        data[this.currentExpressType + "Msg"] = text;
+        data[this.currentExpressType] = value;
+        this.$refs.tableFields.set(data,this.subBoxClickIndex);
+        
       }
+      
     },
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo () {
-      this.formDataInfo = Object.assign({}, default_formDataInfo)
+    HandleFormDataInfo() {
+      this.formDataInfo = Object.assign({}, default_formDataInfo);
     },
     // 盒式图片一路径上传成功后 回调事件 返回图片地址
-    uploadSuccessHeads (res) {
+    uploadSuccessHeads(res) {
       if (!res.success) {
-        this.$Message.error(res.message)
-        return
+        this.$Message.error(res.message);
+        return;
       }
-      let picUrl = res.result
-      if (picUrl) {
-        this.formDataInfo.boxImage = picUrl
+      let picUrl = res.result;
+      if (!!picUrl) {
+        this.formDataInfo.boxImage = picUrl;
       }
     },
-    // 盒式图片二路径上传成功后 回调事件 返回图片地址
-    uploadSuccessTails (res) {
+    //盒式图片二路径上传成功后 回调事件 返回图片地址
+    uploadSuccessTails(res) {
       if (!res.success) {
-        this.$Message.error(res.message)
-        return
+        this.$Message.error(res.message);
+        return;
       }
-      let picUrl = res.result
-      if (picUrl) {
-        this.formDataInfo.boxImage2 = picUrl
+      let picUrl = res.result;
+      if (!!picUrl) {
+        this.formDataInfo.boxImage2 = picUrl;
       }
     },
 
     // 重写父类,修改提交数据
-    resetformDataInfo (_data) {
-      let tableData = this.$refs['tableFields'].getCategorizeData()
+    resetformDataInfo(_data) {
+      let tableData = this.$refs["tableFields"].getCategorizeData();
       // debugger
-      this.formDataInfo.boxItemSlaves = tableData
-      return this.formDataInfo
+      this.formDataInfo.boxItemSlaves = tableData;
+      return this.formDataInfo;
     }
   }
-}
+};
 </script>
 
 <style>

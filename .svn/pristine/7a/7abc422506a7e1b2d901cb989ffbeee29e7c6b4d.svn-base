@@ -4,7 +4,7 @@
       class="cl-edit-art"
       :title="actionLableName"
       v-model="showWindow"
-      :fullscreen="false"
+      :fullscreen="true"
       width="66%"
       :loading="!isLoaddingDone"
       :spinLoaddingText="spinLoaddingText"
@@ -18,47 +18,46 @@
         :label-width="100"
       >
         <Row>
-          <Col span="24">
-            <Row>
-                 <Col span="8">
-            <FormItem label="纸质代号" prop="artCode">
-              <Input v-model="formDataInfo.master.artCode" maxlength="20" placeholder="纸质代号"></Input>
-            </FormItem>
+          <Col span="18">
+              <Row>
+                  <Col span="12">
+                      <FormItem label="报价单编号">
+                        <Input disabled v-model="formDataInfo.master.artCode" maxlength="20" placeholder="报价单编号(自动生产)"></Input>
+                      </FormItem>
+                </Col>
+                  <Col span="12">
+                      <FormItem label="客户编号">
+                        <Input
+                          v-model="formDataInfo.master.artCS"
+                          type="number"
+                          maxlength="20"
+                          placeholder="客户编号"
+                        ></Input>
+                      </FormItem>
+                  </Col>
+              </Row>
           </Col>
-          <Col span="8">
-            <FormItem label="层数" prop="artCS">
-              <Input
 
-                v-model="formDataInfo.master.artCS"
-                type="number"
-                maxlength="20"
-                placeholder="层数"
-              ></Input>
-            </FormItem>
+          <Col span="18">
+                    <Row>
+                        <Col span="12">
+                            <FormItem label="生效日期" >
+                              <Input v-model="formDataInfo.master.artCode" maxlength="20" placeholder="生效日期"></Input>
+                            </FormItem>
+                      </Col>
+                        <Col span="12">
+                            <FormItem label="结算货币" >
+                              <Input
+                                v-model="formDataInfo.master.artCS"
+                                type="number"
+                                maxlength="20"
+                                placeholder="结算货币"
+                              ></Input>
+                            </FormItem>
+                        </Col>
+                    </Row>
           </Col>
-          <!-- <Col span="8">
-                      <FormItem label="停用" prop="artStop">
-                            
-                                  
-                                    <i-switch size="default"  v-model="formDataInfo.master.artStop">
-                                      <span slot="open">是</span>
-                                      <span slot="close">否</span>
-                                  </i-switch>
-                        </FormItem>
-          </Col>-->
-          <Col span="8">
-            <FormItem label="按重量销售" prop="saleByWt">
-              <i-switch size="default" v-model="formDataInfo.master.saleByWt">
-                <span slot="open">是</span>
-                <span slot="close">否</span>
-              </i-switch>
-            </FormItem>
-          </Col>
-            </Row>
-          </Col>
-         
-
-          <Col span="16">
+          <Col span="18">
             <FormItem label="备注" prop="remark">
               <Input
                 v-model="formDataInfo.master.remark"
@@ -70,7 +69,6 @@
             </FormItem>
           </Col>
 
-          
         </Row>
       </Form>
 
@@ -89,17 +87,6 @@
           >
             <template slot="head">
               <tr>
-                <!-- <th class="ivu-table-column-left" width="100">
-                  <div class="ivu-table-cell">
-                    <span class="">数据是否删除</span>
-                  </div>
-                </th>-->
-
-                <!-- <th class="ivu-table-column-left" width="100">
-                  <div class="ivu-table-cell">
-                    <span class="">楞别</span>
-                  </div>
-                </th>-->
                 <th class="ivu-table-column-center" width="100">
                   <div class="ivu-table-cell">
                     <span class>楞别</span>
@@ -148,7 +135,6 @@
             </template>
 
             <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
-            
                  <td class="ivu-table-column-left" width="100">
                    <popup
                    :popupClickValidator="clickValuedate"
@@ -168,9 +154,8 @@
                       }
                     "
                   />
-                  
-                </td>
 
+                </td>
 
               <td class="ivu-table-column-center" width="100">
                 <Input
@@ -281,35 +266,34 @@
  *
  * @created 2019/11/20 17:07:54
  */
-import editWindow from "@/components/edit-window/edit-window";
-import popup from "@/components/popup/popup";
-import eTable from "@/components/e-table/e-table";
-import request from "@/libs/request";
-import editBaseMixins from "../../mixins/edit";
-import { customValidator ,uniqueValidator} from "@/libs/validator";
-import optionSearch from "../../components/optionSearch";
+import editWindow from '@/components/edit-window/edit-window'
+import popup from '@/components/popup/popup'
+import eTable from '@/components/e-table/e-table'
+import request from '@/libs/request'
+import editBaseMixins from '../../mixins/edit'
+import { customValidator, uniqueValidator } from '@/libs/validator'
+import optionSearch from '../../components/optionSearch'
 const default_formDataInfo = {
   // 主表 更改字段
   master: {
-    artCode: "",
-    artCS: 0,
-   
-    saleByWt: "false",
-    remark: ""
+    bpNo:"",
+		coinName:"",
+		custCode:"",
+		custId:0,
+		custName:"",
+		effectDate:"",
+		remark:"",
   },
-  // artLengs:{
-      
-  // },
-  // 子表 artLengs 根据实际接口更改,其它不变
-  artLengs: {
-    defaultList:[],//默认列
-    addList: [], // 添加列
-    deleteList: [], // 删除列
-    updateList: [] // 更新列
-  }
-};
+  saleBoxProductPriceItems: [
+    {
+        master:{},
+        saleBoxProductPriceSubs:[]
+    }
+  ]
+  
+}
 export default {
-  name: "edit-art",
+  name: 'edit-boxProductPrice',//销售==> 纸箱产品报价
   mixins: [editBaseMixins],
   components: {
     editWindow,
@@ -318,88 +302,87 @@ export default {
     // Form,
     eTable
   },
-  data() {
+  data () {
     return {
-      requestBaseUrl: "/bas/art", // 请求 查询 操作的基础路径
+      actionSubtitle: '纸箱产品报价',
+      requestBaseUrl: '/bas/art', // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
-      subTableFieldInitData:{
-          itemInitData:{
-            baseWt: 0,
-            byLimit: 0,
-            crlimit: 0,
-            hpress: 0,
-            lbCode: "",
-            lengId: 0,
-            press: 0,
-            remark: "",
-            vpress: 0
+      subTableFieldInitData: {
+        itemInitData: {
+          baseWt: 0,
+          byLimit: 0,
+          crlimit: 0,
+          hpress: 0,
+          lbCode: '',
+          lengId: 0,
+          press: 0,
+          remark: '',
+          vpress: 0
         }
       },
-         
-  
+
       // 需要验证的数据
       ruleValidate: {
         artCode: [
-          { required: true, message: "纸质代号不能为空", trigger: "blur" },
-            {validator:customValidator,
-                    trigger:"blur",
-                    customRule:["toCDB","identifier","spaceStr"],
-                    fieldDesc:"纸质代号"},
+          { required: true, message: '纸质代号不能为空', trigger: 'blur' },
+          { validator: customValidator,
+            trigger: 'blur',
+            customRule: ['toCDB', 'identifier', 'spaceStr'],
+            fieldDesc: '纸质代号' },
           {
-            validator:uniqueValidator,
-             trigger: "blur",
-             fieldDesc: "纸质代号",
-             params:{
-               fieldName:'artCode',
-               formName:'basartFm',
-               id:()=>{
-                 return this.formDataInfo.master.id;
-               }
-             }
+            validator: uniqueValidator,
+            trigger: 'blur',
+            fieldDesc: '纸质代号',
+            params: {
+              fieldName: 'artCode',
+              formName: 'basartFm',
+              id: () => {
+                return this.formDataInfo.master.id
+              }
+            }
           }
         ],
-         artCS: [
-          { required: true, message: "层数不能为空", trigger: "blur" },
-           {validator:customValidator,
-              trigger: "blur",
-              customRule:["toCDB","spaceStr","number","maxnumber"],
-              fieldDesc:"层数"}
-        ],
+        artCS: [
+          { required: true, message: '层数不能为空', trigger: 'blur' },
+          { validator: customValidator,
+            trigger: 'blur',
+            customRule: ['toCDB', 'spaceStr', 'number', 'maxnumber'],
+            fieldDesc: '层数' }
+        ]
         // artCS: [{ required: true,  message: "层数不能为空", trigger: "blur" }]
       },
       tableFieldsValidator: {
-            lbCode: [{ required: true, message: "楞别不能为空", trigger: "blur" },
-               
-                    
-            ],
-            // lengId: [{ required: true, message: "", trigger: "blur" }]
-       }
-    };
+        lbCode: [{ required: true, message: '楞别不能为空', trigger: 'blur' }
+
+        ]
+        // lengId: [{ required: true, message: "", trigger: "blur" }]
+      }
+    }
   },
 
   methods: {
-    clickValuedate() {
-        debugger
-        if(!this.formDataInfo.master.artCS || this.formDataInfo.master.artCS==""){
-              this.$Message.error("层数不能为空");
-              return false;
-        }
-          return true;
-      },
+    clickValuedate () {
+      debugger
+      if (!this.formDataInfo.master.artCS || this.formDataInfo.master.artCS == '') {
+        this.$Message.error('层数不能为空')
+        return false
+      }
+      return true
+    },
 
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo() {
-      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    HandleFormDataInfo () {
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
     },
     // 重写父类,修改提交数据
-    resetformDataInfo(_data) {
-      let tableData = this.$refs["tableFields"].getCategorizeData();
+    resetformDataInfo (_data) {
+      let tableData = this.$refs['tableFields'].getCategorizeData()
       // debugger
-      this.formDataInfo.artLengs = tableData;
-      return this.formDataInfo;
+      this.formDataInfo.artLengs = tableData
+      return this.formDataInfo
     }
   }
-};
+}
 </script>
 
 <style>

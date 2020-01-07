@@ -18,7 +18,8 @@
         :label-width="100"
       >
 
-      <Row>
+
+      <Row> 
         <Col span="8">
               <FormItem label="报价单号" prop="bpNo">
                               <Input
@@ -28,7 +29,7 @@
                                 placeholder=""
                               ></Input>
               </FormItem>
-        </Col>
+        </Col>      
         <Col span="16">
               <FormItem label="客户" prop="cusName">
                       <div>
@@ -46,9 +47,9 @@
                       />
                   </div>
               </FormItem>
-        </Col>
-        <Col span="12">
-
+        </Col>      
+        <Col span="12">      
+             
               <FormItem label="生效日期">
                     <DatePicker
                       type="date"
@@ -60,19 +61,20 @@
         <Col span="12">
                <FormItem label="计价单位" prop="priceUnit">
                         <optionSearch
-
+                          
                           @onChange="optionOnChange"
                           :defaultItem="formDataInfo.master.priceUnit"
                           :loaddingDataWhen="showWindow"
                           formKey="priceUnit"
                           query="priceUnit"
                         />
-            </FormItem>
+            </FormItem>        
               </FormItem>
         </Col>
-
-        <Col span="24">
-
+        
+        
+        <Col span="24">      
+             
               <FormItem label="备注">
                        <Input
                         v-model="formDataInfo.master.remark"
@@ -81,11 +83,14 @@
                         :autosize="{ minRows: 2, maxRows: 5 }"
                         placeholder="请输入备注..."
                       ></Input>
-
+                   
                 </FormItem>
         </Col>
       </Row>
-
+              
+              
+              
+             
       </Form>
 
       <Tabs>
@@ -102,39 +107,39 @@
             :rules="tableFieldsValidator"
             @on-row-change="calincreaseRate"
           >
-             <template slot="head">
+             <template slot="head"> 
               <tr>
                 <!-- <th class="ivu-table-column-left" width="100">
                   <div class="ivu-table-cell">
                     <span class="">数据是否删除</span>
                   </div>
                 </th> -->
-
+                
                 <th class="ivu-table-column-left" width="80">
                   <div class="ivu-table-cell">
                     <span class="">报价纸质</span>
                   </div>
-                </th>
+                </th>  
                 <th class="ivu-table-column-left" width="80">
                   <div class="ivu-table-cell">
                     <span class="">生产纸质</span>
                   </div>
-                </th>
+                </th>  
                 <th class="ivu-table-column-left" width="100">
                   <div class="ivu-table-cell">
                     <span class="">报价</span>
                   </div>
-                </th>
+                </th>  
                 <th class="ivu-table-column-left" width="190">
                   <div class="ivu-table-cell">
                     <span class="">单价数量优惠</span>
                   </div>
-                </th>
+                </th>  
                 <th class="ivu-table-column-left" width="80">
                   <div class="ivu-table-cell">
                     <span class="">上次报价	</span>
                   </div>
-                </th>
+                </th>  
                 <th class="ivu-table-column-left" width="80">
                   <div class="ivu-table-cell">
                     <span class="">	涨幅(%)</span>
@@ -145,15 +150,16 @@
                     <span class="">	备注</span>
                   </div>
                 </th>
-
-              </tr>
-          </template>
-
+                  
+              </tr>  
+          </template> 
+           
             <template
               slot="body"
               slot-scope="{ row, index, valueChangeAssign }"
             >
-
+              
+             
               <td class="ivu-table-column-left" width="100">
                   <popup
                     :popupClickValidator="clickValuedate"
@@ -193,7 +199,7 @@
                       }
                     "
                   />
-
+                  
                 </td>
               <td class="ivu-table-column-left" width="100">
                   <Input
@@ -224,7 +230,7 @@
               <td class="ivu-table-column-left" width="100">
                   <Input
                     v-model="row.lastPrice"
-                    disabled
+                    disabled 
                     @input="
                       value => {
                         valueChangeAssign(value, index, row, 'lastPrice');
@@ -237,7 +243,7 @@
               <td class="ivu-table-column-left" width="100">
                   <Input
                     v-model="row.increaseRate"
-                    disabled
+                    disabled 
                     @input="
                       value => {
                         valueChangeAssign(value, index, row, 'increaseRate');
@@ -247,7 +253,8 @@
                     :maxlength="20"
                   ></Input>
                 </td>
-
+             
+                  
               <td class="ivu-table-column-left" width="100">
                   <Input
                     v-model="row.remark"
@@ -284,48 +291,48 @@
  *
  * @created 2019/11/20 17:07:54
  */
-import preferential from '@/components/preferential/preferential'
-import popup from '@/components/popup/popup'
-import editWindow from '@/components/edit-window/edit-window'
+import preferential from "@/components/preferential/preferential";
+import popup from "@/components/popup/popup";
+import editWindow from "@/components/edit-window/edit-window";
 // import Form from '@/components/form/form'
-import eTable from '@/components/e-table/e-table'
-import request from '@/libs/request'
-import editBaseMixins from '../../mixins/edit'
-import optionSearch from '../../components/optionSearch'
-import dayjs from 'dayjs'
-import Sys from '@/api/sys'
+import eTable from "@/components/e-table/e-table";
+import request from "@/libs/request";
+import editBaseMixins from "../../mixins/edit";
+import optionSearch from "../../components/optionSearch";
+import dayjs from "dayjs";
+import Sys from "@/api/sys"
 const default_formDataInfo = {
-  // 主表 更改字段
-  master: {
-    bpNo: '',
-    custId: '',
-    custCode: '',
-    custName: '',
-    effectDate: dayjs().format('YYYY-MM-DD HH:mm:ss'),
-    priceUnit: '1',
-    remark: ''
-  },
-  // 子表 artLengs 根据实际接口更改,其它不变
-  boxArePriceItems: {
-    addList: [], // 添加列
-    defaultList: [{
-      'priceLess': '',
-      'mrpArtCode': '',
-      'increaseRate': 0,
-      'remark': '',
-      'quotePrice': 0,
-      'bpArtCode': '',
-      'priceLessStr': '',
-      'bpArtId': '',
-      'mrpArtId': '',
-      'lastPrice': 0
-    }], // 默认列
-    deleteList: [], // 删除列
-    updateList: [] // 更新列
-  }
-}
+        // 主表 更改字段
+        master: {
+          bpNo:"",
+          custId:"",
+          custCode:"",
+          custName:"",
+          effectDate: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+          priceUnit: "1",
+          remark: ""
+        },
+        // 子表 artLengs 根据实际接口更改,其它不变
+        boxArePriceItems: {
+          addList: [], // 添加列
+          defaultList: [{
+             "priceLess": "",
+            "mrpArtCode": "",
+            "increaseRate": 0,
+            "remark": "",
+            "quotePrice": 0,
+            "bpArtCode": "",
+            "priceLessStr": "",
+            "bpArtId": "",
+            "mrpArtId": "",
+            "lastPrice": 0
+          }], // 默认列
+          deleteList: [], // 删除列
+          updateList: [] // 更新列
+        }
+      }
 export default {
-  name: 'edit-boxAreaPrice',
+  name: "edit-boxAreaPrice",
   mixins: [editBaseMixins],
   components: {
     editWindow,
@@ -335,85 +342,88 @@ export default {
     // Form,
     eTable
   },
-  data () {
+  data() {
     return {
-      formName: 'saleboxproductpriceFm',
-      currentExpressType: '', // 当前打开的优惠方式类型
-      showpreferential: false,
-      requestBaseUrl: '/sale/boxAreaPrice', // 请求 查询 操作的基础路径
-      formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
-      itemInitData: {
-        'priceLess': '',
-        'mrpArtCode': '',
-        'increaseRate': 0,
-        'remark': '',
-        'quotePrice': 0,
-        'bpArtCode': '',
-        'priceLessStr': '',
-        'bpArtId': '',
-        'mrpArtId': '',
-        'lastPrice': 0
-      },
+      formName:'saleboxproductpriceFm',
+      currentExpressType:"", //当前打开的优惠方式类型
+      showpreferential:false,
+      requestBaseUrl: "/sale/boxAreaPrice", // 请求 查询 操作的基础路径
+      formDataInfo:Object.assign({},default_formDataInfo),// 防止添加和更新数据提交发生冲突
+          itemInitData:{
+            "priceLess": "",
+            "mrpArtCode": "",
+            "increaseRate": 0,
+            "remark": "",
+            "quotePrice": 0,
+            "bpArtCode": "",
+            "priceLessStr": "",
+            "bpArtId": "",
+            "mrpArtId": "",
+            "lastPrice": 0
+          },
       // 需要验证的数据
       ruleValidate: {
-        artCode: [
-          { required: true, message: '纸质代号不能为空', trigger: 'blur' }
-        ],
-        artCS: [{ required: true, message: '层数不能为空', trigger: 'blur' }]
-      },
+         artCode: [
+          { required: true, message: "纸质代号不能为空", trigger: "blur" }
+          ],
+          artCS: [{ required: true, message: "层数不能为空", trigger: "blur" }]
+          },
 
-      boxArePriceItems: {
+       boxArePriceItems: {
         lastPrice: [
-          { required: false, message: '', trigger: 'blur' }
-
+          { required: false, message: "", trigger: "blur" },
+          
         ]
-
+      
       },
-      subBoxClickIndex: -1
-
-    }
+      subBoxClickIndex:-1
+    
+    };
   },
   // mounted(){
   //   this.init()
   // },
   methods: {
     // (本次报价-上次报价)*100/上次报价,保留两位小数
-    // lastPrice 上次报价 quotePrice 本次报价
-    // increaseRate 涨幅
-    calincreaseRate (data) {
-      debugger
-      let increaseRate = 0
-      let lastPrice = data.row.lastPrice
-      if (lastPrice == null || lastPrice == '' || lastPrice == 0) {
-        data.row.increaseRate = 0
-        return
-      }
-      let quotePrice = data.row.quotePrice
-      if (quotePrice == null || quotePrice == '') {
-        quotePrice = 0
-      }
-      lastPrice = parseFloat(lastPrice)
-      quotePrice = parseFloat(quotePrice)
-      // data.row.increaseRate = (data.row.lastPrice-data.row.quotePrice)*100/data.row.quotePrice
-      // (本次报价-上次报价)*100/上次报价,保留两位小数
-      increaseRate = (quotePrice - lastPrice) * 100 / lastPrice
-      data.row.increaseRate = increaseRate.toFixed(2)
+    //lastPrice 上次报价 quotePrice 本次报价
+    //increaseRate 涨幅
+    calincreaseRate(data){
+      debugger;
+          let increaseRate = 0;
+           let lastPrice=data.row.lastPrice;
+          if (lastPrice == null || lastPrice == '' || lastPrice == 0) {
+            data.row.increaseRate = 0;
+            return;
+          } 
+          let quotePrice=data.row.quotePrice;
+          if(quotePrice==null || quotePrice==''){
+            quotePrice=0;
+          }
+          lastPrice=parseFloat(lastPrice);
+          quotePrice=parseFloat(quotePrice);
+         // data.row.increaseRate = (data.row.lastPrice-data.row.quotePrice)*100/data.row.quotePrice
+           // (本次报价-上次报价)*100/上次报价,保留两位小数
+           increaseRate=(quotePrice-lastPrice)*100/lastPrice;
+           data.row.increaseRate=increaseRate.toFixed(2);
 
-      // this.$Message.error(row.lastPrice)
-      // let increaseRate=0;
-      // if(row.lastPrice==0){
-      //    this.$Message.error("上次报价不能为空")
-      // }else if (!row.quotePrice || row.quotePrice =="") {
-      //    row.increaseRate="";
-      // }else{
-      //   increaseRate = (row.lastPrice-row.quotePrice)*100/row.quotePrice
-      //   increaseRate = row.increaseRate
-      // }
-      // return increaseRate
-      // this.$Message.error("get unicode err");
+
+          //this.$Message.error(row.lastPrice)
+          // let increaseRate=0;
+          // if(row.lastPrice==0){
+          //    this.$Message.error("上次报价不能为空")
+          // }else if (!row.quotePrice || row.quotePrice =="") {
+          //    row.increaseRate="";
+          // }else{
+          //   increaseRate = (row.lastPrice-row.quotePrice)*100/row.quotePrice
+          //   increaseRate = row.increaseRate
+          // }
+          // return increaseRate
+            // this.$Message.error("get unicode err");
+          
     },
 
-    // 数据初始化
+
+    //数据初始化
     //  init(){
     //     debugger
     //      if(this.action ==='add'){
@@ -421,7 +431,7 @@ export default {
     //     }
     //  },
     // //  getUniCodeLogic(){
-
+      
     // //     let flag=false
     // //     if(true){
     // //       flag= true;
@@ -431,7 +441,7 @@ export default {
     // // get unicode aciton
     //   getUniCode(){
     //       debugger
-
+          
     //     // if(!this.getUniCodeLogic())
     //     // {
     //     //   return
@@ -450,64 +460,68 @@ export default {
     //         this.$Message.error("get unicode err"+err);
     //     })
     //   },
-    clickValuedate () {
-      debugger
-      if (!this.formDataInfo.master.custCode || this.formDataInfo.master.custCode == '') {
-        this.$Message.error('客户不能为空')
-        return false
-      }
-      return true
-    },
-    dataFill (fillDatas) {
-      if (fillDatas && fillDatas.length == 0) {
-        return
-      }
-      let params = { artId: '', custId: this.formDataInfo.master.custId }
-      let _self = this
-      for (let i = 0; i < fillDatas.length; i++) {
+      clickValuedate() {
         debugger
-        if (fillDatas[i].data.bpArtId != null && fillDatas[i].data.bpArtId != '') {
-          params.artId = fillDatas[i].data.bpArtId
-          request.post('/sale/boxAreaPrice/item/getLastPrice', {}, params).then(res => {
-            debugger
-            _self.$refs.tableFields.set({ lastPrice: res == null ? 0 : res.quotePrice }, fillDatas[i].index)
-          })
+        if(!this.formDataInfo.master.custCode || this.formDataInfo.master.custCode==""){
+              this.$Message.error("客户不能为空");
+              return false;
         }
+          return true;
+      },
+      dataFill(fillDatas){
+        if(fillDatas && fillDatas.length == 0){
+          return;
+        }
+        let params = {artId:'',custId:this.formDataInfo.master.custId};
+        let _self = this;
+        for(let i = 0;i < fillDatas.length;i++){
+          debugger;
+          if(fillDatas[i].data.bpArtId != null && fillDatas[i].data.bpArtId != ''){
+            params.artId = fillDatas[i].data.bpArtId;
+            request.post('/sale/boxAreaPrice/item/getLastPrice',{},params).then(res=>{
+              debugger;
+                  _self.$refs.tableFields.set({lastPrice:res == null ? 0 : res.quotePrice},fillDatas[i].index);
+                  
+            });
+          }
+        }
+        
+      },
+    //打开优惠方式，参数，当前类型：
+      showExpression(type,subBoxClickIndex){
+        this.showpreferential = true;
+        this.currentExpressType = type;
+        this.subBoxClickIndex=-1;
+        if(subBoxClickIndex >=0){
+          this.subBoxClickIndex = subBoxClickIndex;
+        }
+      },
+      //优惠方式的回调方式，返回参数
+      preferentialOk(text,value){
+        debugger;
+      if(this.subBoxClickIndex == -1){
+      
+      }else{
+        this.$refs.tableFields.set({priceLess:text,priceLessStr:value},this.subBoxClickIndex);
       }
+       
     },
-    // 打开优惠方式，参数，当前类型：
-    showExpression (type, subBoxClickIndex) {
-      this.showpreferential = true
-      this.currentExpressType = type
-      this.subBoxClickIndex = -1
-      if (subBoxClickIndex >= 0) {
-        this.subBoxClickIndex = subBoxClickIndex
-      }
-    },
-    // 优惠方式的回调方式，返回参数
-    preferentialOk (text, value) {
-      debugger
-      if (this.subBoxClickIndex == -1) {
+      
 
-      } else {
-        this.$refs.tableFields.set({ priceLess: text, priceLessStr: value }, this.subBoxClickIndex)
-      }
-    },
-
-    // 重写父类,添加时候,清空数据
-    HandleFormDataInfo () {
-      this.formDataInfo = Object.assign({}, default_formDataInfo)
+     // 重写父类,添加时候,清空数据
+    HandleFormDataInfo(){
+     this.formDataInfo=Object.assign({},default_formDataInfo)
     },
     // 重写父类,修改提交数据
-    resetformDataInfo (_data) {
-      let tableData = this.$refs['tableFields'].getCategorizeData()
-      // debugger
-      this.formDataInfo.boxArePriceItems = tableData
-      if (_data.master.effectDate) {
+    resetformDataInfo(_data) {
+      let tableData = this.$refs["tableFields"].getCategorizeData();
+      //debugger
+      this.formDataInfo.boxArePriceItems = tableData;
+      if (!!_data.master.effectDate) {
         _data.master.effectDate = dayjs(_data.master.effectDate).format(
-          'YYYY-MM-DD HH:mm:ss'
-        )
-        return this.formDataInfo
+          "YYYY-MM-DD HH:mm:ss"
+        );
+      return this.formDataInfo;
 
       // if (!!_data.borthDay) {
       //   _data.borthDay = dayjs(_data.borthDay).format("YYYY-MM-DD");
@@ -522,10 +536,12 @@ export default {
       //     "YYYY-MM-DD"
       //   );
       // }
+      
       }
+
     }
   }
-}
+};
 </script>
 
 <style>

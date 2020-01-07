@@ -12,7 +12,7 @@
       <vTable
         :height="tableHeight"
         ref="master_list_table"
-        :columns-url="functionParams.requestColBaseUrl + '/resumeFm'"
+        :columns-url="functionParams.requestColBaseUrl + '/resumeFm'"   
         url="/bas/resume/page"
         :pagination="true"
         @row-click="tableRowClick"
@@ -28,10 +28,10 @@
   </div>
 </template>
 <script>
-import vTable from '@/components/tables/vTable'
-import htmlTemplate from '../components/htmlTemplate'
-import editForm from './edit/edit-resume'
-import listBaseMixins from '../mixins/list'
+import vTable from "@/components/tables/vTable";
+import htmlTemplate from "../components/htmlTemplate";
+import editForm from "./edit/edit-resume";
+import listBaseMixins from "../mixins/list";
 export default {
   mixins: [listBaseMixins],
   components: {
@@ -39,23 +39,23 @@ export default {
     htmlTemplate,
     vTable
   },
-  data () {
+  data() {
     return {
       functionParams: {
-        requestBaseUrl: '/bas/resume',
-        uniqueId: 'resumeId'
+        requestBaseUrl: "/bas/resume",
+        uniqueId: "resumeId"
       },
       // 查询参数 ,注意格式
       queryParamsDefault: [
         {
-          title: '摘要编号',
-          code: 'resumeCode',
-          bankCode: ''
+          title: "摘要编号",
+          code: "resumeCode",
+          bankCode: ""
         },
         {
-          title: '摘要说明',
-          name: 'resumeName',
-          bankName: ''
+          title: "摘要说明",
+          name: "resumeName",
+          bankName: ""
         }
       ]
       // columns: [
@@ -128,20 +128,20 @@ export default {
       //       align:'center'
       //   },
       // ],
-    }
+    };
   },
   methods: {
-    tableRowClick (rowData, rowIndex) {
-      this.formDetailData = {} // 清除上次缓存数据 增加体验良好
-      this.masterRowSelection = rowData
+    tableRowClick(rowData, rowIndex) {
+      this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData;
       if (rowData != null) {
         // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
         this.currrentRowItem.rowName =
-          rowData.resumeCode + ' ' + rowData.resumeName
+          rowData.resumeCode + " " + rowData.resumeName;
       }
     }
   }
-}
+};
 </script>
 
 <style></style>

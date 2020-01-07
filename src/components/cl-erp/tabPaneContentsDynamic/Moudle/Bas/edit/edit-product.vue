@@ -60,6 +60,8 @@
               </FormItem>
               </Col>
 
+
+
             </Row>
           </div>
 
@@ -588,7 +590,7 @@
 </template>
 
 <script>
-/**
+  /**
    * @desc edit-dept 描述
    * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
    * 可以根据需求重写所需的方法:
@@ -601,347 +603,341 @@
    *
    * @created 2019/11/20 17:07:54
    */
-import tableSelect from '@/components/table-select/table-select'
-import editWindow from '@/components/edit-window/edit-window'
-// import Form from '@/components/form/form'
-import eTable from '@/components/e-table/e-table'
-import request from '@/libs/request'
-import popup from '@/components/popup/popup'
-import editBaseMixins from '../../mixins/edit'
-import {
-  customValidator
-} from '@/libs/validator'
+  import tableSelect from "@/components/table-select/table-select";
+  import editWindow from "@/components/edit-window/edit-window";
+  // import Form from '@/components/form/form'
+  import eTable from "@/components/e-table/e-table";
+  import request from "@/libs/request";
+  import popup from "@/components/popup/popup";
+  import editBaseMixins from "../../mixins/edit";
+  import {
+    customValidator
+  } from "@/libs/validator";
 
-export default {
-  name: 'edit-product',
-  mixins: [editBaseMixins],
-  components: {
-    editWindow,
-    popup,
-    tableSelect,
-    // Form,
-    eTable
-  },
-  data () {
-    return {
-      unitItems: ['英寸', '厘米', '毫米'],
-      currentSubItemlength_productMData: 0, // 当前子表数据个数
-      currentSubItemlength_productWorkProc: 0, // 当前子表数据个数
-      requestBaseUrl: '/bas/product', // 请求 查询 操作的基础路径
-      formDataInfo: {
-        // 主表 更改字段
-        master: {
-          'bpSArea': null,
-          'bpCBoxName': '',
-          'bpNo': null,
-          'colorName': '',
-          'bpPArtId': null,
-          'bpCArtCode': null,
-          'bpCBoxId': null,
-          'bpSWeight': null,
-          'bpUnitId': null,
-          'bpIsFullPrint': false,
-          'iisAudit': false,
-          'id': null,
-          'bpCustProdNo': null,
-          'bpCBoxCode': '',
-          'bpMoCut': 1,
-          'bpCArtId': null,
-          'bpPArtCode': null,
-          'lengId': null,
-          'bpPPNo': null,
-          'bpPBoxName': '',
-          'bpCustSWeight': 0,
-          'bpColorQty': 0,
-          'bpCSizeL': null,
-          'bpWF': false,
-          'auditTime': null,
-          'bpCSizeH': null,
-          'bpColorId': null,
-          'bpShopNo': null,
-          'auditUser': null,
-          'bpPRemark': null,
-          'bpDPNo': null,
-          'status': true,
-          'bpBatchNo': null,
-          'bpCSizeW': null,
-          'cusName': '',
-          'remark': null,
-          'bpCustSArea': 0,
-          'bpCustProdName': null,
-          'lbCode': null,
-          'attachment': null,
-          'custId': null,
-          'bpPBoxCode': '',
-          'bpDRemark': null,
-          'product': '',
-          'bpPBoxId': null,
-          'bpPMNo': null,
-          'bpPSizeW': null,
-          'bpSCube': null,
-          'updateUser': null,
-          'updateTime': null,
-          'cusCode': '',
-          'bpName': null,
-          'bpIsPublic': false,
-          'createTime': null,
-          'bpPSizeH': null,
-          'bpHatch': null,
-          'bpIsDiameter': false,
-          'bpPSizeL': null,
-          'createUser': null,
-          'custAbout': '',
-          'customer': '',
-          dpLengthmm: null,
-          dpWidthmm: null
+  export default {
+    name: "edit-product",
+    mixins: [editBaseMixins],
+    components: {
+      editWindow,
+      popup,
+      tableSelect,
+      // Form,
+      eTable
+    },
+    data() {
+      return {
+        unitItems: ['英寸', '厘米', '毫米'],
+        currentSubItemlength_productMData: 0, // 当前子表数据个数
+        currentSubItemlength_productWorkProc: 0, // 当前子表数据个数
+        requestBaseUrl: "/bas/product", // 请求 查询 操作的基础路径
+        formDataInfo: {
+          // 主表 更改字段
+          master: {
+            "bpSArea": null,
+            "bpCBoxName": "",
+            "bpNo": null,
+            "colorName": "",
+            "bpPArtId": null,
+            "bpCArtCode": null,
+            "bpCBoxId": null,
+            "bpSWeight": null,
+            "bpUnitId": null,
+            "bpIsFullPrint": false,
+            "iisAudit": false,
+            "id": null,
+            "bpCustProdNo": null,
+            "bpCBoxCode": "",
+            "bpMoCut": 1,
+            "bpCArtId": null,
+            "bpPArtCode": null,
+            "lengId": null,
+            "bpPPNo": null,
+            "bpPBoxName": "",
+            "bpCustSWeight": 0,
+            "bpColorQty": 0,
+            "bpCSizeL": null,
+            "bpWF": false,
+            "auditTime": null,
+            "bpCSizeH": null,
+            "bpColorId": null,
+            "bpShopNo": null,
+            "auditUser": null,
+            "bpPRemark": null,
+            "bpDPNo": null,
+            "status": true,
+            "bpBatchNo": null,
+            "bpCSizeW": null,
+            "cusName": "",
+            "remark": null,
+            "bpCustSArea": 0,
+            "bpCustProdName": null,
+            "lbCode": null,
+            "attachment": null,
+            "custId": null,
+            "bpPBoxCode": "",
+            "bpDRemark": null,
+            "product": "",
+            "bpPBoxId": null,
+            "bpPMNo": null,
+            "bpPSizeW": null,
+            "bpSCube": null,
+            "updateUser": null,
+            "updateTime": null,
+            "cusCode": "",
+            "bpName": null,
+            "bpIsPublic": false,
+            "createTime": null,
+            "bpPSizeH": null,
+            "bpHatch": null,
+            "bpIsDiameter": false,
+            "bpPSizeL": null,
+            "createUser": null,
+            "custAbout": "",
+            "customer": "",
+            dpLengthmm: null,
+            dpWidthmm: null
+          },
+          // 子表 wareHouseItems 根据实际接口更改,其它不变
+          //子表 纸度规格
+          productMDatas: {
+            addList: [], // 添加列
+            defaultList: [], // 默认列
+            deleteList: [], // 删除列
+            updateList: [] // 更新列
+          },
+          //子表 生产工序
+          productworkProcs: {
+            addList: [], // 添加列
+            defaultList: [], // 默认列
+            deleteList: [], // 删除列
+            updateList: [] // 更新列
+          }
+        }, // 防止添加和更新数据提交发生冲突
+        // 需要验证的数据
+        ruleValidate: {
+          bpName: [{
+              required: true,
+              message: "产品名称不能为空",
+              trigger: "blur"
+            },
+            {
+              validator: customValidator,
+              trigger: "blur",
+              customRule: ["toCDB", "spaceStr"],
+              fieldDesc: "产品名称"
+            }
+          ],cusCode:[{
+            required: true,
+            message: "客户不能为空",
+            trigger: "blur"
+          }],
+          bpCBoxCode:[{
+            required: true,
+            message: "客方盒式不能为空",
+            trigger: "blur"
+          }],
+          bpCArtCode:[{
+            required: true,
+            message: "客方纸质不能为空",
+            trigger: "blur"
+          }],bpPBoxCode:[{
+            required: true,
+            message: "生产盒式不能为空",
+            trigger: "blur"
+          }],bpPArtCode:[{
+            required: true,
+            message: "生产纸质不能为空",
+            trigger: "blur"
+          }]
         },
-        // 子表 wareHouseItems 根据实际接口更改,其它不变
-        // 子表 纸度规格
-        productMDatas: {
-          addList: [], // 添加列
-          defaultList: [], // 默认列
-          deleteList: [], // 删除列
-          updateList: [] // 更新列
+        tableFieldsValidator: {
+          // productId: [
+          //   { required: true, message: "", trigger: "blur" }
+          // ],
         },
-        // 子表 生产工序
-        productworkProcs: {
-          addList: [], // 添加列
-          defaultList: [], // 默认列
-          deleteList: [], // 删除列
-          updateList: [] // 更新列
-        }
-      }, // 防止添加和更新数据提交发生冲突
-      // 需要验证的数据
-      ruleValidate: {
-        bpName: [{
-          required: true,
-          message: '产品名称不能为空',
-          trigger: 'blur'
+        tableFieldsValidator1: {
+          // machId: [
+          //   { required: true, message: "", trigger: "blur" }
+          // ],
+          //  productId: [
+          //   { required: true, message: "", trigger: "blur" }
+          // ],
+          //  workProcItemId: [
+          //   { required: true, message: "", trigger: "blur" }
+          // ],
         },
-        {
-          validator: customValidator,
-          trigger: 'blur',
-          customRule: ['toCDB', 'spaceStr'],
-          fieldDesc: '产品名称'
-        }
-        ],
-        cusCode: [{
-          required: true,
-          message: '客户不能为空',
-          trigger: 'blur'
-        }],
-        bpCBoxCode: [{
-          required: true,
-          message: '客方盒式不能为空',
-          trigger: 'blur'
-        }],
-        bpCArtCode: [{
-          required: true,
-          message: '客方纸质不能为空',
-          trigger: 'blur'
-        }],
-        bpPBoxCode: [{
-          required: true,
-          message: '生产盒式不能为空',
-          trigger: 'blur'
-        }],
-        bpPArtCode: [{
-          required: true,
-          message: '生产纸质不能为空',
-          trigger: 'blur'
-        }]
-      },
-      tableFieldsValidator: {
-        // productId: [
-        //   { required: true, message: "", trigger: "blur" }
-        // ],
-      },
-      tableFieldsValidator1: {
-        // machId: [
-        //   { required: true, message: "", trigger: "blur" }
-        // ],
-        //  productId: [
-        //   { required: true, message: "", trigger: "blur" }
-        // ],
-        //  workProcItemId: [
-        //   { required: true, message: "", trigger: "blur" }
-        // ],
-      },
-      tableDefaultHeight: 200,
-      lbCodeList: [],
-      initData: {
+        tableDefaultHeight: 200,
+        lbCodeList: [],
         initData: {
-          productMDataFm: {}
-        }
-      }
-    }
-  },
-  computed: {
-    bpCBoxCode () {
-      return this.formDataInfo.master.bpCBoxCode
-    },
-    bpCSizeL () {
-      return this.formDataInfo.master.bpCSizeL
-    }
-  },
-  watch: {
-    bpCBoxCode: function (n, o) {
-      this.formDataInfo.master.bpPBoxCode = n
-    },
-    bpCSizeL: function (n, o) {
-      this.formDataInfo.master.bpPSizeL = n
-    },
-    'formDataInfo.master.bpCSizeW': function (n, o) {
-      this.formDataInfo.master.bpPSizeW = n
-    },
-    'formDataInfo.master.bpCSizeH': function (n, o) {
-      this.formDataInfo.master.bpPSizeH = n
-    },
-    formDetailData: {
-      handler (n, o) {
-        console.log(n)
-      },
-      deep: true
-    }
-  },
-  methods: {
-    // 重写父类,添加时候,清空数据
-    HandleFormDataInfo () {
-      this.formDataInfo = Object.assign({}, this.formDataInfo)
-    },
-    // 判断 纸板规格列表 是否添加了字段
-    getCurrentSubItemlength_productMData () {
-      debugger
-      let tableData = this.$refs['tableFields'].getCategorizeData()
-      this.currentSubItemlength_productMData = 0
-      // 判断当前子表 添加/更新的 数据个数
-      if (this.action === 'add') {
-        if (tableData.addList.length > 0) {
-          this.currentSubItemlength_productMData = Object.keys(
-            tableData.addList[0]
-          ).length
-        }
-      } else {
-        if (tableData.deleteList.length > 0) {
-          this.currentSubItemlength_productMData = Object.keys(
-            tableData.deleteList[0]
-          ).length
-        }
-        if (tableData.updateList.length > 0) {
-          this.currentSubItemlength_productMData =
-              Object.keys(tableData.updateList[0]).length +
-              this.currentSubItemlength_productMData
-        }
-        if (tableData.addList.length > 0) {
-          this.currentSubItemlength_productMData =
-              Object.keys(tableData.addList[0]).length +
-              this.currentSubItemlength_productMData
-        }
-      }
-      return this.currentSubItemlength_productMData
-    },
-
-    // 判断 生产工序 是否添加了数据
-    getCurrentSubItemlength_productWorkProc () {
-      // debugger
-      let tableData2 = this.$refs['tableFields2'].getCategorizeData()
-      this.currentSubItemlength_productWorkProc = 0
-      // 判断当前生产工序 添加/更新的数据个数
-      if (this.action === 'add') {
-        if (tableData2.addList.length > 0) {
-          this.currentSubItemlength_productWorkProc = Object.keys(
-            tableData2.addList[0]
-          ).length
-        }
-      } else {
-        if (tableData2.deleteList.length > 0) {
-          this.currentSubItemlength_productMData = Object.keys(
-            tableData2.deleteList[0]
-          ).length
-        }
-        if (tableData2.updateList.length > 0) {
-          this.currentSubItemlength_productWorkProc =
-              Object.keys(tableData2.updateList[0]).length +
-              this.currentSubItemlength_productMData
-        }
-        if (tableData2.addList.length > 0) {
-          if (tableData2.addList[0].id != '') {
-            // 特殊处理
-            this.currentSubItemlength_productWorkProc =
-                Object.keys(tableData2.addList[0]).length +
-                this.currentSubItemlength_productMData
+          initData:{
+            productMDataFm:{}
           }
         }
-      }
-      return this.currentSubItemlength_productWorkProc
+      };
     },
-
-    // 重写父类，提交数据 验证数据，默认TRUE
-    validateBeforePost () {
-      // debugger
-      this.getCurrentSubItemlength_productMData()
-      this.getCurrentSubItemlength_productWorkProc()
-      return false
-      // if (this.currentSubItemlength_productMData>0) {
-      //   //子表有数据才验证是否必填数据
-      //   let subValidate = this.$['tableFields'].validate();
-      //   if (subValidate===true) {
-      //     flag=true;
-      //   }
-      // }
-      // return flag
-    },
-
-    // 重写父类,修改提交数据
-    resetformDataInfo (_data) {
-      // debugger
-      if (this.currentSubItemlength_productMData > 0) {
-        let tableData = this.$refs['tableFields'].getCategorizeData()
-        this.formDataInfo.productMDatas = tableData
+    computed: {
+      bpCBoxCode() {
+        return this.formDataInfo.master.bpCBoxCode;
+      },
+      bpCSizeL() {
+        return this.formDataInfo.master.bpCSizeL;
       }
-      if (this.currentSubItemlength_productWorkProc > 0) {
-        let tableData2 = this.$refs['tableFields2'].getCategorizeData()
-        this.formDataInfo.productworkProcs = tableData2
-      }
-      return this.formDataInfo
     },
-    artPopupFill (data) {
-      // 纸质被填充后的事件
-      let artId = data[0].data.bpCArtId
-      request.post('/bas/art/item/list', {
-        artId: artId
-      }).then(res => {
-        if (res.length > 0) {
-          this.formDataInfo.master.lbCode = res[0].lbCode
-          this.lbCodeList = res
+    watch: {
+      bpCBoxCode: function(n, o) {
+        this.formDataInfo.master.bpPBoxCode = n;
+      },
+      bpCSizeL: function(n, o) {
+        this.formDataInfo.master.bpPSizeL = n;
+      },
+      'formDataInfo.master.bpCSizeW': function(n, o) {
+        this.formDataInfo.master.bpPSizeW = n;
+      },
+      'formDataInfo.master.bpCSizeH': function(n, o) {
+        this.formDataInfo.master.bpPSizeH = n;
+      },formDetailData:{
+        handler(n,o){
+          console.log(n);
+        },deep:true
+      }
+    },
+    methods: {
+      // 重写父类,添加时候,清空数据
+      HandleFormDataInfo() {
+        this.formDataInfo = Object.assign({}, this.formDataInfo);
+      },
+      //判断 纸板规格列表 是否添加了字段
+      getCurrentSubItemlength_productMData() {
+        debugger;
+        let tableData = this.$refs["tableFields"].getCategorizeData();
+        this.currentSubItemlength_productMData = 0;
+        //判断当前子表 添加/更新的 数据个数
+        if (this.action === "add") {
+          if (tableData.addList.length > 0) {
+            this.currentSubItemlength_productMData = Object.keys(
+              tableData.addList[0]
+            ).length;
+          }
         } else {
-          this.$Message.error('当前纸质无愣别信息')
+          if (tableData.deleteList.length > 0) {
+            this.currentSubItemlength_productMData = Object.keys(
+              tableData.deleteList[0]
+            ).length;
+          }
+          if (tableData.updateList.length > 0) {
+            this.currentSubItemlength_productMData =
+              Object.keys(tableData.updateList[0]).length +
+              this.currentSubItemlength_productMData;
+          }
+          if (tableData.addList.length > 0) {
+            this.currentSubItemlength_productMData =
+              Object.keys(tableData.addList[0]).length +
+              this.currentSubItemlength_productMData;
+          }
         }
-      }).catch(() => {
-        this.$Message.error('愣别数据加载失败')
-      })
-    },
-    getInitData () {
-      // 加载初始化数据
-      request.get('/sys/form/init/productFm').then(res => {
-        this.initData = res
-      })
-    },
-    formSubmit () {
-      this.$refs.masterForm.validate((valid) => {
-        if (!valid) {
-          return
+        return this.currentSubItemlength_productMData;
+      },
+
+      //判断 生产工序 是否添加了数据
+      getCurrentSubItemlength_productWorkProc() {
+        // debugger
+        let tableData2 = this.$refs["tableFields2"].getCategorizeData();
+        this.currentSubItemlength_productWorkProc = 0;
+        //判断当前生产工序 添加/更新的数据个数
+        if (this.action === "add") {
+          if (tableData2.addList.length > 0) {
+            this.currentSubItemlength_productWorkProc = Object.keys(
+              tableData2.addList[0]
+            ).length;
+          }
+        } else {
+          if (tableData2.deleteList.length > 0) {
+            this.currentSubItemlength_productMData = Object.keys(
+              tableData2.deleteList[0]
+            ).length;
+          }
+          if (tableData2.updateList.length > 0) {
+            this.currentSubItemlength_productWorkProc =
+              Object.keys(tableData2.updateList[0]).length +
+              this.currentSubItemlength_productMData;
+          }
+          if (tableData2.addList.length > 0) {
+            if (tableData2.addList[0].id != "") {
+              // 特殊处理
+              this.currentSubItemlength_productWorkProc =
+                Object.keys(tableData2.addList[0]).length +
+                this.currentSubItemlength_productMData;
+            }
+          }
         }
-        // 子表校验 true就是有问题
-        let result = this.$refs.ProductMData.validate()
-        if (result) {
-          return
+        return this.currentSubItemlength_productWorkProc;
+      },
+
+      //重写父类，提交数据 验证数据，默认TRUE
+      validateBeforePost() {
+        //debugger
+        this.getCurrentSubItemlength_productMData();
+        this.getCurrentSubItemlength_productWorkProc();
+        return false;
+        // if (this.currentSubItemlength_productMData>0) {
+        //   //子表有数据才验证是否必填数据
+        //   let subValidate = this.$['tableFields'].validate();
+        //   if (subValidate===true) {
+        //     flag=true;
+        //   }
+        // }
+        // return flag
+      },
+
+      // 重写父类,修改提交数据
+      resetformDataInfo(_data) {
+        //debugger
+        if (this.currentSubItemlength_productMData > 0) {
+          let tableData = this.$refs["tableFields"].getCategorizeData();
+          this.formDataInfo.productMDatas = tableData;
         }
-        result = this.$refs.ProductWorkProc.validate()
-        if (result) {
-          return
+        if (this.currentSubItemlength_productWorkProc > 0) {
+          let tableData2 = this.$refs["tableFields2"].getCategorizeData();
+          this.formDataInfo.productworkProcs = tableData2;
         }
-        /**
+        return this.formDataInfo;
+      },
+      artPopupFill(data) {
+        //纸质被填充后的事件
+        let artId = data[0].data.bpCArtId;
+        request.post('/bas/art/item/list', {
+          artId: artId
+        }).then(res => {
+          if (res.length > 0) {
+            this.formDataInfo.master.lbCode = res[0].lbCode;
+            this.lbCodeList = res;
+          } else {
+            this.$Message.error('当前纸质无愣别信息');
+          }
+        }).catch(() => {
+          this.$Message.error('愣别数据加载失败');
+        });
+      },
+      getInitData() {
+        //加载初始化数据
+        request.get('/sys/form/init/productFm').then(res => {
+          this.initData = res;
+        });
+      },formSubmit(){
+        this.$refs.masterForm.validate((valid) => {
+            if (!valid) {
+               return;
+            }
+            //子表校验 true就是有问题
+            let result = this.$refs.ProductMData.validate();
+            if(result){
+              return;
+            }
+            result = this.$refs.ProductWorkProc.validate();
+            if(result){
+              return;
+            }
+            /**
              * 成功后数据结构:
              * {
                  master:{},
@@ -949,40 +945,39 @@ export default {
                  productworkProcs:{}
                }
              */
-        let data = {}
-        delete this.formDataInfo.master.iisAudit
-        delete this.formDataInfo.master.status
-        data['master'] = this.formDataInfo.master
-        data['productMDatas'] = this.$refs.ProductMData.getCategorizeData()
-        data['productworkProcs'] = this.$refs.ProductWorkProc.getCategorizeData()
-        request.post('/bas/product/saveOrUpdate', data).then(res => {
-          this.$Message.success('操作成功')
-          this.resetForm()
-        }).catch(() => {
+            let data = {};
+            delete this.formDataInfo.master.iisAudit;
+            delete this.formDataInfo.master.status;
+            data['master'] = this.formDataInfo.master;
+            data['productMDatas'] = this.$refs.ProductMData.getCategorizeData();
+            data['productworkProcs'] = this.$refs.ProductWorkProc.getCategorizeData();
+            request.post('/bas/product/saveOrUpdate',data).then(res=>{
+             this.$Message.success('操作成功');
+             this.resetForm();
+            }).catch(()=>{
 
+            });
         })
-      })
+      },resetForm(){
+        debugger;
+        if(!this.formDataInfo.master.id || this.formDataInfo.master.id ==''){//add
+          //主表清空
+          this.formDataInfo.master = JSON.parse(JSON.stringify(this.initData.initData.master));
+          this.$refs.ProductMData.reset();
+          this.$refs.ProductWorkProc.reset();
+        }
+      }
     },
-    resetForm () {
-      debugger
-      if (!this.formDataInfo.master.id || this.formDataInfo.master.id == '') { // add
-        // 主表清空
-        this.formDataInfo.master = JSON.parse(JSON.stringify(this.initData.initData.master))
-        this.$refs.ProductMData.reset()
-        this.$refs.ProductWorkProc.reset()
+    created() {
+      this.getInitData();
+    },
+    updated() {
+      if (this.$refs.formDataInfo) {
+        let height = document.body.offsetHeight;
+        this.tableDefaultHeight = height - (this.$refs.formDataInfo.$el.offsetHeight + 60 + 50 + 40);
       }
     }
-  },
-  created () {
-    this.getInitData()
-  },
-  updated () {
-    if (this.$refs.formDataInfo) {
-      let height = document.body.offsetHeight
-      this.tableDefaultHeight = height - (this.$refs.formDataInfo.$el.offsetHeight + 60 + 50 + 40)
-    }
-  }
-}
+  };
 </script>
 
 <style>

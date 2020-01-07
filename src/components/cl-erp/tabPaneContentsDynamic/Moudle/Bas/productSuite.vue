@@ -61,75 +61,74 @@
   </div>
 </template>
 <script>
-import vTable from '@/components/tables/vTable'
-import htmlTemplate from '../components/htmlTemplate'
-// import editForm from "./edit/edit-warehouse";
-import listBaseMixins from '../mixins/list'
-import request from '@/libs/request'
+import vTable from "@/components/tables/vTable";
+import htmlTemplate from "../components/htmlTemplate";
+//import editForm from "./edit/edit-warehouse";
+import listBaseMixins from "../mixins/list";
+import request from "@/libs/request";
 export default {
   mixins: [listBaseMixins],
   components: {
-    editForm: function (resolve) {
-      // 组件的异步加载
-      require(['./edit/edit-productSuite'], resolve)
+    editForm: function(resolve) {
+      //组件的异步加载
+      require(["./edit/edit-productSuite"], resolve);
     },
     htmlTemplate,
     vTable
   },
-  data () {
+  data() {
     return {
       functionParams: {
-        requestBaseUrl: '/bas/productUnion',
-        uniqueId: 'productId'
+        requestBaseUrl: "/bas/productUnion",
+        uniqueId: "productId"
       },
       // 查询参数 ,注意格式
       queryParamsDefault: [
         {
-          title: '仓库编号',
-          code: 'whCode',
-          whCode: ''
+          title: "仓库编号",
+          code: "whCode",
+          whCode: ""
         },
         {
-          title: '仓库名称',
-          name: 'whName',
-          whName: ''
+          title: "仓库名称",
+          name: "whName",
+          whName: ""
         }
       ]
-    }
+    };
   },
   methods: {
-    masterTableRowClick (rowData, rowIndex) {
-      this.masterRowSelection = rowData
-      this.currrentRowItem.rowName = rowData.whCode + ' ' + rowData.whName
-      this.$refs.slave_list_productUnionItemFm.search({ productId: rowData.id })
+    masterTableRowClick(rowData, rowIndex){
+      this.masterRowSelection = rowData;
+      this.currrentRowItem.rowName = rowData.whCode + " " + rowData.whName;
+      this.$refs.slave_list_productUnionItemFm.search({productId:rowData.id});
     },
-    slaveProductUnionItemFmTableRowClick (rowData, rowIndex) {
-      this.slaveRowselection = rowData
-      this.$refs.sub_list_productUnionSubFm.search({ productId: rowData.id })
+    slaveProductUnionItemFmTableRowClick(rowData,rowIndex){
+      this.slaveRowselection = rowData;
+      this.$refs.sub_list_productUnionSubFm.search({productId:rowData.id});
     },
-    tableRowClick (rowData, rowIndex) {
-      this.formDetailData = {} // 清除上次缓存数据 增加体验良好
-      this.masterRowSelection = rowData
+    tableRowClick(rowData, rowIndex) {
+      this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData;
       if (rowData != null) {
-        // debugger
+        //debugger
         // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
 
       }
       if (this.masterRowSelection) {
-        this.getItemDataById()
+        this.getItemDataById();
       }
     },
-    // 重写父类方法, 更新操作
-    handleUpdateEvent () {
-      debugger
-      this.getItemDataById()
+    //重写父类方法, 更新操作
+    handleUpdateEvent() {
+      debugger;
+      this.getItemDataById();
     }
-  },
-  created () {
-    // 加载页面初始数据
-    this.getFormInitData('productUnionFm')
+  },created() {
+    //加载页面初始数据
+    this.getFormInitData('productUnionFm');
   }
-}
+};
 </script>
 
 <style></style>

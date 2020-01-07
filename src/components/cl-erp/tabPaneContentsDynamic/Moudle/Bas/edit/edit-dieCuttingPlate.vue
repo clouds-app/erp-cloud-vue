@@ -78,7 +78,7 @@
                     :suffix-model="formDataInfo.boxName"
                     :query-params="{}"
                   />
-
+               
                 </FormItem>
           </Col>
           <Col span="8">
@@ -132,7 +132,9 @@
               ></Input>
             </FormItem>
           </Col>
+          
 
+                
                 <Col span="8">
                         <FormItem label="模数" prop="dpDieCuttingQty">
                           <Input
@@ -143,7 +145,10 @@
                           ></Input>
                         </FormItem>
                     </Col>
-
+                
+            
+          
+               
           <Col span="8">
             <FormItem label="刀模规格长" prop="dpModelSizeL">
               <Input
@@ -172,7 +177,7 @@
                           </i-switch>
                         </FormItem>
                 </Col>
-
+          
           <Col span="16">
             <FormItem label="备注" prop="remark">
               <Input
@@ -204,73 +209,73 @@
  *
  * @created 2019/11/20 17:07:54
  */
-import popup from '@/components/popup/popup'
-import optionSearch from '../../components/optionSearch'
-import editBaseMixins from '../../mixins/edit'
-import { customValidator, uniqueValidator } from '@/libs/validator'
+import popup from "@/components/popup/popup";
+import optionSearch from "../../components/optionSearch";
+import editBaseMixins from "../../mixins/edit";
+import { customValidator ,uniqueValidator} from "@/libs/validator";
 const default_formDataInfo = {
-  boxId: ' 0',
-  boxName: '',
-  cusName: '',
-  cusCode: '', // 详细缺少字段
-  custId: ' 0',
-  dpDieCuttingQty: ' 0',
-  dpImg: '',
-  dpLengthInch: ' 0',
-  dpLengthmm: ' 0',
-  dpModelSizeL: ' 0',
-  dpModelSizeW: ' 0',
-  dpNo: '',
-  dpVerType: ' 0',
-  dpVerTypeText: '',
-  dpWidthInch: ' 0',
-  dpWidthmm: ' 0',
-  productId: ' 0',
-  productCode: ' 0', // 详细缺少字段
-  productName: '',
-  remark: ''
-}
+  boxId: " 0",
+  boxName: "",
+  cusName: "",
+  cusCode: "", // 详细缺少字段
+  custId: " 0",
+  dpDieCuttingQty: " 0",
+  dpImg: "",
+  dpLengthInch: " 0",
+  dpLengthmm: " 0",
+  dpModelSizeL: " 0",
+  dpModelSizeW: " 0",
+  dpNo: "",
+  dpVerType: " 0",
+  dpVerTypeText: "",
+  dpWidthInch: " 0",
+  dpWidthmm: " 0",
+  productId: " 0",
+  productCode: " 0", // 详细缺少字段
+  productName: "",
+  remark: ""
+};
 export default {
-  name: 'edit-dieCuttingPlate',
+  name: "edit-dieCuttingPlate",
   mixins: [editBaseMixins],
   components: { optionSearch, popup },
-  data () {
+  data() {
     return {
-      requestBaseUrl: '/bas/dieCuttingPlate', // 请求 查询 操作的基础路径
+      requestBaseUrl: "/bas/dieCuttingPlate", // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
-        dpNo: [{ required: true, message: '模切板编码不能为空', trigger: 'blur' },
-          { validator: customValidator,
-            trigger: 'blur',
-            customRule: ['toCDB', 'identifier', 'spaceStr'],
-            fieldDesc: '模切板编码'
-          },
-          {
-            validator: uniqueValidator,
-            trigger: 'blur',
-            fieldDesc: '模切板编码',
-            params: {
-              fieldName: 'dpNo',
-              formName: 'dieCuttingPlateFm',
-              id: () => {
-                return this.formDataInfo.id
-              }
-            }
-          }
-        ]
+        dpNo: [{ required: true, message: "模切板编码不能为空", trigger: "blur" },
+              {validator:customValidator,
+              trigger:"blur",
+              customRule:["toCDB","identifier","spaceStr"],
+              fieldDesc:"模切板编码"
+              },
+              {
+                  validator:uniqueValidator,
+                  trigger: "blur",
+                  fieldDesc: "模切板编码",
+                  params:{
+                    fieldName:'dpNo',
+                    formName:'dieCuttingPlateFm',
+                    id:()=>{
+                      return this.formDataInfo.id;
+                    }
+                  }
+                }
+        ],
         // dpDieCuttingQty: [{ required: true, message: "", trigger: "blur" }]
       }
-    }
+    };
   },
 
   methods: {
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo () {
-      this.formDataInfo = Object.assign({}, default_formDataInfo)
+    HandleFormDataInfo() {
+      this.formDataInfo = Object.assign({}, default_formDataInfo);
     }
   }
-}
+};
 </script>
 
 <style>

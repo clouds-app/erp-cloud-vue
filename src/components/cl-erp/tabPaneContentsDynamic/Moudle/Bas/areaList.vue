@@ -9,6 +9,8 @@
     >
     </htmlTemplate>
 
+    
+
     <div class="content-container" :style="{ height: tableHeight + 'px' }">
       <vTable
         :height="tableHeight"
@@ -30,10 +32,10 @@
   </div>
 </template>
 <script>
-import vTable from '@/components/tables/vTable'
-import htmlTemplate from '../components/htmlTemplate'
-import editForm from './edit/edit-worker'
-import listBaseMixins from '../mixins/list'
+import vTable from "@/components/tables/vTable";
+import htmlTemplate from "../components/htmlTemplate";
+import editForm from "./edit/edit-worker";
+import listBaseMixins from "../mixins/list";
 export default {
   mixins: [listBaseMixins],
   components: {
@@ -41,40 +43,40 @@ export default {
     htmlTemplate,
     vTable
   },
-  data () {
+  data() {
     return {
       functionParams: {
-        requestBaseUrl: '/bas/worker',
-        uniqueId: 'workerId'
+        requestBaseUrl: "/bas/worker",
+        uniqueId: "workerId"
       },
       // 查询参数 ,注意格式
       queryParamsDefault: [
         {
-          title: '地区编码',
-          code: 'areaCode',
-          poCode: ''
+          title: "地区编码",
+          code: "areaCode",
+          poCode: ""
         },
         {
-          title: '地区名称',
-          name: 'areaName',
-          poName: ''
+          title: "地区名称",
+          name: "areaName",
+          poName: ""
         }
       ]
-
-    }
+     
+    };
   },
   methods: {
-    tableRowClick (rowData, rowIndex) {
+    tableRowClick(rowData, rowIndex) {
       //  debugger
-      this.formDetailData = {} // 清除上次缓存数据 增加体验良好
-      this.masterRowSelection = rowData
+      this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData;
       if (rowData != null) {
         // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
-        this.currrentRowItem.rowName = rowData.poCode + ' ' + rowData.poName // 要修改成对应的 列
+        this.currrentRowItem.rowName = rowData.poCode + " " + rowData.poName; // 要修改成对应的 列
       }
     }
   }
-}
+};
 </script>
 
 <style></style>

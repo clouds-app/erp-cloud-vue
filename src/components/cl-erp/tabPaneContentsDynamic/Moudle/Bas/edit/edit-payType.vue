@@ -10,7 +10,7 @@
     >
       <Form
         ref="formDataInfo"
-        :show-message="true"
+        :show-message="true"   
         :model="formDataInfo"
         :rules="ruleValidate"
         :label-width="80"
@@ -38,6 +38,7 @@
             placeholder="请输入天数"
           ></Input>
         </FormItem>
+
 
         <FormItem label="备注" prop="remark">
           <Input
@@ -67,54 +68,54 @@
  *
  * @created 2019/11/20 17:07:54
  */
-import editBaseMixins from '../../mixins/edit'
-import { customValidator, uniqueValidator } from '@/libs/validator'
+import editBaseMixins from "../../mixins/edit";
+import { customValidator,uniqueValidator} from "@/libs/validator";
 const default_formDataInfo = {
-  payCode: '',
-  payDays: '',
-  payName: '',
-  remark: ''
-}
+  payCode: "",
+  payDays: "",
+  payName: "",
+  remark: ""
+};
 export default {
-  name: 'edit-payType',
+  name: "edit-payType",
   mixins: [editBaseMixins],
 
-  data () {
+  data() {
     return {
-      requestBaseUrl: '/bas/payType', // 请求 查询 操作的基础路径
+      requestBaseUrl: "/bas/payType", // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
-        payCode: [{ required: true, message: '编号不能为空', trigger: 'blur' },
-          { validator: customValidator,
-            trigger: 'blur',
-            customRule: ['toCDB', 'identifier', 'spaceStr'],
-            fieldDesc: '编号' },
-          {
-            validator: uniqueValidator,
-            trigger: 'blur',
-            fieldDesc: '编号',
-            params: {
-              fieldName: 'payCode',
-              formName: 'paytypeFm',
-              id: () => {
-                return this.formDataInfo.id
-              }
-            }
-          }
-        ]
+        payCode: [{ required: true, message: "编号不能为空", trigger: "blur" },
+                  {validator:customValidator,
+                    trigger:"blur",
+                    customRule:["toCDB","identifier","spaceStr"],
+                        fieldDesc:"编号"},
+                        {
+                          validator:uniqueValidator,
+                          trigger: "blur",
+                          fieldDesc: "编号",
+                          params:{
+                            fieldName:'payCode',
+                            formName:'paytypeFm',
+                            id:()=>{
+                              return this.formDataInfo.id;
+                            }
+                          }
+                        }
+        ],
         // payDays: [{ required: true, message: "", trigger: "blur" }]
       }
-    }
+    };
   },
 
   methods: {
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo () {
-      this.formDataInfo = Object.assign({}, default_formDataInfo)
+    HandleFormDataInfo() {
+      this.formDataInfo = Object.assign({}, default_formDataInfo);
     }
   }
-}
+};
 </script>
 
 <style></style>

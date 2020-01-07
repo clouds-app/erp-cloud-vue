@@ -28,10 +28,10 @@
   </div>
 </template>
 <script>
-import vTable from '@/components/tables/vTable'
-import htmlTemplate from '../components/htmlTemplate'
-import editForm from './edit/edit-coin'
-import listBaseMixins from '../mixins/list'
+import vTable from "@/components/tables/vTable";
+import htmlTemplate from "../components/htmlTemplate";
+import editForm from "./edit/edit-coin";
+import listBaseMixins from "../mixins/list";
 export default {
   mixins: [listBaseMixins],
   components: {
@@ -39,23 +39,23 @@ export default {
     htmlTemplate,
     vTable
   },
-  data () {
+  data() {
     return {
       functionParams: {
-        requestBaseUrl: '/bas/coin',
-        uniqueId: 'coinId'
+        requestBaseUrl: "/bas/coin",
+        uniqueId: "coinId"
       },
       // 查询参数 ,注意格式
       queryParamsDefault: [
         {
-          title: '货币名称',
-          code: 'coinName',
-          companyId: ''
+          title: "货币名称",
+          code: "coinName",
+          companyId: ""
         },
         {
-          title: '货币编号',
-          name: 'coinCode',
-          lbCode: ''
+          title: "货币编号",
+          name: "coinCode",
+          lbCode: ""
         }
       ]
       // columns: [
@@ -128,20 +128,20 @@ export default {
       //   },
 
       // ],
-    }
+    };
   },
   methods: {
-    tableRowClick (rowData, rowIndex) {
-      this.formDetailData = {} // 清除上次缓存数据 增加体验良好
-      this.masterRowSelection = rowData
+    tableRowClick(rowData, rowIndex) {
+      this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData;
       if (rowData != null) {
         // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
         this.currrentRowItem.rowName =
-          rowData.coinCode + ' ' + rowData.coinName
+          rowData.coinCode + " " + rowData.coinName;
       }
     }
   }
-}
+};
 </script>
 
 <style></style>

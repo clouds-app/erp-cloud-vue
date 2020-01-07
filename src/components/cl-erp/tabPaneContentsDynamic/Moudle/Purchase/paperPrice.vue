@@ -35,7 +35,7 @@
         </div>
       </Split>
     </div>
-
+    
     <editForm
       :isLoaddingDone="isLoaddingDone"
       :form-detail-data="formDetailData"
@@ -47,84 +47,84 @@
   </div>
 </template>
 <script>
-import vTable from '@/components/tables/vTable'
-import htmlTemplate from '../components/htmlTemplate'
-// import editForm from "./edit/edit-warehouse";
-import listBaseMixins from '../mixins/list'
+import vTable from "@/components/tables/vTable";
+import htmlTemplate from "../components/htmlTemplate";
+//import editForm from "./edit/edit-warehouse";
+import listBaseMixins from "../mixins/list";
 import request from '@/libs/request'
 export default {
   mixins: [listBaseMixins],
   components: {
-    'editForm': function (resolve) { // 组件的异步加载
-      require(['./edit/edit-paperPrice'], resolve)
-    },
-
+    'editForm':function(resolve) { //组件的异步加载
+                require(["./edit/edit-paperPrice"], resolve);
+            },
+        
     htmlTemplate,
     vTable
   },
-  data () {
+  data() {
     return {
-      // who:'editForm', // 动态指定编辑控件
+     // who:'editForm', // 动态指定编辑控件
       functionParams: {
-        requestBaseUrl: '/purchase/paperPrice',
-        uniqueId: 'paperPriceId'
+        requestBaseUrl: "/purchase/paperPrice",
+        uniqueId: "paperPriceId"
       },
       // 查询参数 ,注意格式
       queryParamsDefault: [
         {
-          title: '请输入供应商编号',
-          code: 'purCode',
-          cusCode: ''
+          title: "请输入供应商编号",
+          code: "purCode",
+          cusCode: ""
         },
         {
-          title: '请输入供应商名称',
-          name: 'purName',
-          cusName: ''
+          title: "请输入供应商名称",
+          name: "purName",
+          cusName: ""
         }
       ],
       columns: [
-
+         
       ],
-      // 纸箱面积报价明细
+      // 纸箱面积报价明细	
       tableFieldColuns: [
-
-      ]
-
-    }
+      
+      ],
+     
+    };
   },
   methods: {
-    tableRowClick (rowData, rowIndex) {
-      this.formDetailData = {} // 清除上次缓存数据 增加体验良好
-      this.masterRowSelection = rowData
+    tableRowClick(rowData, rowIndex) {
+      this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData;
       if (rowData != null) {
-        // debugger
+        //debugger
         // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
-        this.currrentRowItem.rowName = rowData.purCode + ' ' + rowData.purName
+        this.currrentRowItem.rowName = rowData.purCode + " " + rowData.purName;
       }
       if (this.masterRowSelection) {
-        this.getItemDataById()
+        this.getItemDataById();
       }
     },
     // 获取纸板采购报价明细
-    getItemDataById () {
-      // debugger
-      let url = `/purchase/paperPrice/item/list`
+    getItemDataById() {
+      //debugger
+      let url = `/purchase/paperPrice/item/list`;
       let data = {
         purPaperPriceId: this.masterRowSelection.id
-      }
-      let _self = this
+      };
+      let _self = this;
       request.post(url, data).then(res => {
-        // debugger
-        _self.tableFieldData = res
-      })
+        //debugger
+        _self.tableFieldData = res;
+      });
     },
-    // 重写父类方法, 更新操作
-    handleUpdateEvent () {
-      debugger
-      this.getItemDataById()
+    //重写父类方法, 更新操作
+    handleUpdateEvent() {
+      debugger;
+      this.getItemDataById();
     }
   }
-}
+};
 </script>
 
 <style></style>
