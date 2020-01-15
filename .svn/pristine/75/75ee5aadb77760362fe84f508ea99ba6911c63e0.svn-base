@@ -1,0 +1,55 @@
+<style lang="less">
+  @import './login.less';
+</style>
+
+<template>
+  <div class="login">
+    <div class="login-con">
+      <Card icon="log-in" title="欢迎登录" :bordered="false">
+        <div class="form-con">
+          <login-form @on-success-valid="handleSubmit"></login-form>
+          <p class="login-tip">输入任意用户名和密码即可</p>
+        </div>
+        <Spin size="large" fix v-if="loadding"></Spin>
+      </Card>
+    </div>
+    
+  </div>
+</template>
+
+<script>
+import LoginForm from '_c/login-form'
+import { mapActions } from 'vuex'
+export default {
+  data(){
+    return{
+      loadding:false
+    }
+  },
+  components: {
+    LoginForm
+  },
+  methods: {
+    ...mapActions([
+      'loginAction'
+    ]),
+    handleSubmit ({ companyId, password,userCode}) {
+        let _self = this;
+        this.loadding = true;
+        this.loginAction({companyId,password,userCode}).then(res=>{
+           this.loadding = false;
+          _self.$router.push({path:'/'});
+        }).catch(err =>{
+          this.loadding = false;
+          this.$Message.error(err.message);
+        });
+    }
+  }
+}
+</script>
+
+<style>
+.ivu-card-body{
+  padding: 1rem !important;
+}
+</style>
