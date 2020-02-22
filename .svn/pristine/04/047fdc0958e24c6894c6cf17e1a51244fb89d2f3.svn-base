@@ -1,0 +1,86 @@
+// 全局变量（Variables）  已经再main.js 导入 注意名称的名称 不可以相同 使用前缀
+@cl-topMenu-height: 46px;
+
+ .edit-table .ivu-table-small td {
+      height: 23px;
+  }
+
+  .edit-table .ivu-table-cell {
+  	padding-left: 0;
+  	padding-right: 0;
+  }
+
+  .edit-table .ivu-input{
+  	border:1px solid #fff;
+  	border-radius: 0;
+  	background-color: rgba(255, 255, 255, 0);
+  }
+
+  .edit-table .ivu-input-number-small{
+  	border-radius: 0;
+  	width:100%;
+  	border:1px solid #fff;
+  	background-color: rgba(255, 255, 255, 0);
+
+  }
+  .edit-table .ivu-input-number-small input{
+  	background-color: rgba(255, 255, 255, 0);
+  }
+
+  .edit-table  .ivu-select-selection{
+  	background-color: rgba(255, 255, 255, 0);
+  	border:1px solid #fff;
+  }
+
+  .edit-table .ivu-input:focus,.ivu-select-selection-focused{
+      border-color: #57a3f3;
+      outline: 0;
+      -webkit-box-shadow: 0 0 0 2px rgba(45,140,240,.2);
+      box-shadow: 0 0 0 2px rgba(45,140,240,.2);
+  }
+
+  .edit-table .ivu-input:hover,.ivu-input-number:hover,.ivu-select-selection:hover {
+      border-color: #57a3f3;
+  }
+
+   .edit-table .ivu-table tr:nth-child(2n) td{
+     background-color: #f8f8f9;
+   }
+   .edit-table tr{
+     outline: none;
+   }
+   /**错误样式**/
+   .ivu-form-item-error-tip{
+     position: absolute;
+     top: 100%;
+     left: 0;
+     line-height: 1;
+     padding-top: 6px;
+     color: #ed4014;
+     background-color: #fff;
+     padding: 10px;
+     z-index: 999;
+     border: 1px solid #efefef;
+     border-radius: 4px;
+     box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
+     width: 100%;
+     margin-top: 5px;
+   }
+   
+   .ivu-form-item-error-tip:before {
+   	content: "";
+   	width: 0;
+   	height: 0;
+   	top: 1px;
+   	border-width: 0 7px 7px 7px;
+   	border-style: solid;
+   	border-color: transparent;
+   	border-bottom-color: #ffffff;
+   	position: absolute;
+   	top: -7px;
+   	left: calc(50% - 7px);
+   }
+
+.ivu-input-number-input[disabled],.ivu-input[disabled], fieldset[disabled] .ivu-input{
+  color: #515a6e !important;
+}

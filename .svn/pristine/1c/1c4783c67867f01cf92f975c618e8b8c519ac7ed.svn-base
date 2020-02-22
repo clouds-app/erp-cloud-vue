@@ -1,0 +1,83 @@
+<template>
+  <Modal v-model="modalShow"  title="纸板规格" :width="700">
+    <vTable :columns="columns"
+    :showIndex="false"
+    :tableData="tableSelectedDataComptued"
+    @row-click="rowClick"></vTable>
+    <div slot="footer">
+      <Button @click="modalShow = false">取消</Button>
+      <Button type="primary" @click="onOK">确定</Button>
+    </div>
+    </Modal>
+</template>
+
+<script>
+//纸板规格组件
+import Table from '@/components/table/table';
+import vTable from '@/components/tables/vTable';
+ import request from "@/libs/request";
+export default {
+  name: 'productSpec',
+  components: { Table,vTable },
+  data() {
+    return {
+      modalShow: false,
+      data:[],
+      bmIndex:0,
+      selectedData:{}
+    };
+  },
+  computed:{
+    tableSelectedDataComptued(){
+      return this.data.filter((item)=>{
+        return item.bmIndex == this.bmIndex;
+      });
+    }
+  },
+  watch: {
+    value(n, o) {
+      this.modalShow = n;
+    },
+    modalShow(n, o) {
+      this.$emit('input', n);
+    }
+  },
+  props: {
+    value: {
+      type: Boolean,
+      default: false
+    },
+    columns: {
+      type: Array,
+      default: () => {
+        return [];
+      }
+    }
+  },
+  methods: {
+    loadData(materialData,bmIndex){
+      this.bmIndex = bmIndex;
+      //查询出规格
+      request.fsLoading = true;
+      request.post('/bas/product/calMaterialData',materialData).then(res=>{
+        this.data = res;
+      }).catch(err=>{
+
+      })
+    },
+    rowClick(rowData,rowIndex) {
+      this.selectedData = rowData;
+    },
+    onOK(){
+      if(Object.keys(this.selectedData).length == 0){
+        this.$Message.info('请选择数据');
+        return;
+      }
+      this.$emit('on-ok',this.selectedData);
+      this.modalShow = false;
+    }
+  }
+};
+</script>
+
+<style></style>
