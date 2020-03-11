@@ -1,0 +1,1273 @@
+<template>
+  <div>
+    <editWindow class="cl-edit-product" :title="actionLableName" v-model="showWindow"
+    :fullscreen="true" :loading="!isLoaddingDone"
+      :spinLoaddingText="spinLoaddingText" @on-ok="formSubmit()" @on-cancel="closeActionTigger">
+      <div  v-if="initData.columns && showWindow">
+        <Form ref="masterForm" :show-message="true" :model="formDataInfo.master" :rules="ruleValidate" :label-width="100"
+            label-colon>
+            <!-- update -->
+            <div class="edit-product">
+              <div style="width: 33.33%;padding:0 2rem;">
+                <Divider style="margin: 0;">基础信息</Divider>
+                <Row>
+                  <Col span="24">
+                  <FormItem label="产品编号" prop="bpNo">
+                    <Input v-model="formDataInfo.master.bpNo" :disabled="true" placeholder="产品编号"></Input>
+                  </FormItem>
+                  </Col>
+                  <Col span="24">
+                  <FormItem label="产品名称" prop="bpName">
+                    <Input v-model="formDataInfo.master.bpName" maxlength="20" placeholder="请输入产品名称"></Input>
+                  </FormItem>
+                  </Col>
+                  <Col span="24">
+                  <FormItem label="料号" prop="bpBatchNo">
+                    <Input v-model="formDataInfo.master.bpBatchNo" maxlength="20" placeholder="请输入料号"></Input>
+                  </FormItem>
+                  </Col>
+                  <Col span="24">
+                  <FormItem label="客户" prop="cusCode">
+                    <popup v-model="formDataInfo.master.cusCode"
+                    field-name="cusCode" :disabled="false" popup-name="CustomerSingleBox"
+                      :fill-model.sync="formDataInfo.master"
+                      render-fields="custId,cusCode,cusName,bpIsDiameter,bpUnit"
+                      from-fields="id,cusCode,cusName,bpIsDiameter,bpUnit"
+                      :suffix="true"
+                       :suffix-model="formDataInfo.master.cusName"
+                      :query-params="{}" />
+                  </FormItem>
+
+                  </Col>
+                  <Col span="24">
+                  <FormItem label="">
+                    <Checkbox v-model="formDataInfo.master.bpIsDiameter">内径</Checkbox>
+                    <Checkbox v-model="formDataInfo.master.iisPublic">公用</Checkbox>
+                    <Checkbox v-model="formDataInfo.master.bpIsFullPrint">满版印刷</Checkbox>
+                    <Checkbox v-model="formDataInfo.master.bpWF">外发</Checkbox>
+                  </FormItem>
+
+                  </Col>
+
+                  <Col span="24">
+                  <FormItem label="客户产品编号" prop="bpCustProdNo">
+                    <Input v-model="formDataInfo.master.bpCustProdNo" maxlength="80" placeholder="请输入客户产品编号"></Input>
+                  </FormItem>
+                  </Col>
+                  <Col span="24">
+                  <FormItem label="客户产品名称" prop="bpCustProdName">
+                    <Input v-model="formDataInfo.master.bpCustProdName" maxlength="80" placeholder="请输入客户产品名称"></Input>
+                  </FormItem>
+                  </Col>
+                  <Col span="24">
+                  <FormItem label="商检号" prop="bpShopNo">
+                    <Input v-model="formDataInfo.master.bpShopNo" maxlength="80" placeholder="请输入商检号"></Input>
+                  </FormItem>
+                  </Col>
+
+
+
+                </Row>
+              </div>
+
+              <div style="width: 33.33%;padding-right:1rem;">
+                <Divider style="margin: 0;">客方信息</Divider>
+                <Row>
+                  <Col span="24">
+                  <FormItem label="客方盒式" prop="bpCBoxCode">
+                    <popup v-model="formDataInfo.master.bpCBoxCode" field-name="bpCBoxCode" :disabled="false" popup-name="BoxSingleBox"
+                      :fill-model.sync="formDataInfo.master" render-fields="bpCBoxId,bpCBoxCode,bpCBoxName,bpPBoxId,bpPBoxCode,bpPBoxName"
+                      from-fields="id,boxCode,boxName,id,boxCode,boxName" :suffix="true" :suffix-model="formDataInfo.master.bpCBoxName"
+                      :query-params="{}" />
+                  </FormItem>
+                  </Col>
+                  <Col span="12">
+                  <FormItem label="客方纸质" prop="bpCArtCode">
+                    <popup v-model="formDataInfo.master.bpCArtCode" field-name="bpCArtCode" :disabled="false" popup-name="ArtSingleBox"
+                      :fill-model.sync="formDataInfo.master" render-fields="bpCArtId,bpCArtCode,bpPArtId,bpPArtCode"
+                      from-fields="id,artCode,id,artCode" @on-fill="artPopupFill" :suffix="false" />
+                  </FormItem>
+                  </Col>
+                  <Col span="12">
+                  <FormItem label="楞别" prop="lengId">
+                    <Select v-model="formDataInfo.master.lengId" :label-in-value="true" @on-change="lCodeSelectChanged">
+                      <Option v-for="(item,index) in lbCodeList" :key="index" :value="item.lengId">{{item.lbCode}}</Option>
+                    </Select>
+                  </FormItem>
+                  </Col>
+                  <Col span="24">
+                  <FormItem label="规格" required>
+                    <div class="number-box">
+                      <Input type="number"  @mousewheel.native.prevent number min="0" v-model="formDataInfo.master.bpCSizeL"
+                       maxlength="11"
+                       placeholder="长"
+                       @on-blur="calProductSize('bpCSizeL','L','bpPSizeL')"
+                       ></Input>
+                      <span>X</span>
+                      <Input type="number"  @mousewheel.native.prevent number v-model="formDataInfo.master.bpCSizeW"
+                      maxlength="11" placeholder="宽"
+                      @on-blur="calProductSize('bpCSizeW','W','bpPSizeW')"
+                      ></Input>
+                      <span>X</span>
+                      <Input type="number"  @mousewheel.native.prevent number v-model="formDataInfo.master.bpCSizeH"
+                      maxlength="11" placeholder="高"
+                      @on-blur="calProductSize('bpCSizeH','H','bpPSizeH')"
+                      ></Input>
+
+                      <Select v-model="formDataInfo.master.bpUnit" placeholder="单位">
+                        <Option v-for="(item,index) in unitItems" :key="index" :value="item.value">{{item.value+':'+item.text}}</Option>
+                      </Select>
+                    </div>
+
+                  </FormItem>
+                  </Col>
+                  <Col span="24">
+                  <FormItem label="生产备注" prop="bpPRemark">
+                    <popup v-model="formDataInfo.master.bpPRemark" field-name="bpPRemark" :disabled="false" popup-name="ResumeSingleBox"
+                      :fill-model.sync="formDataInfo.master" render-fields="bpPRemark" from-fields="resumeName"
+                      :query-params="{resumeType:'C'}"
+                      :blur-focus-load-data="false"
+                      />
+                  </FormItem>
+                  </Col>
+                  <Col span="24">
+                  <FormItem label="送货备注" prop="bpDRemark">
+                    <popup v-model="formDataInfo.master.bpDRemark" field-name="bpDRemark" :disabled="false" popup-name="ResumeSingleBox"
+                      :fill-model.sync="formDataInfo.master" render-fields="bpDRemark" from-fields="resumeName"
+                      :query-params="{resumeType:'H'}"
+                      :blur-focus-load-data="false"
+                      />
+                  </FormItem>
+                  </Col>
+                  <Col span="18">
+                  <FormItem label="颜色" prop="colorName">
+                    <popup v-model="formDataInfo.master.colorName" field-name="colorName" :disabled="false" popup-name="ColorMultiBox"
+                      :fill-model.sync="formDataInfo.master" render-fields="bpColorId,colorName" from-fields="id,colorName"
+                      @on-fill="(a,length)=>{this.formDataInfo.master.bpColorQty = length}" :suffix="false" :query-params="{}" />
+                  </FormItem>
+                  </Col>
+                  <Col span="6">
+                  <FormItem label="色数" prop="bpColorQty" class="ivu-form-item-text2">
+                    <Input type="number"  @mousewheel.native.prevent number v-model="formDataInfo.master.bpColorQty" placeholder="请输入色数"></Input>
+                  </FormItem>
+                  </Col>
+                  <Col span="18">
+                  <FormItem label="模板" prop="bpDPNo">
+                    <popup v-model="formDataInfo.master.bpDPNo" field-name="bpDPNo" :disabled="false" popup-name="DieCuttingPlateSingleBox"
+                      :fill-model.sync="formDataInfo.master" render-fields="bpDPNo,bpDPName,dpLengthmm,dpWidthmm"
+                      from-fields="dpNo,bpName,dpLengthmm,dpWidthmm" :suffix="true" :suffix-model="formDataInfo.master.bpDPName"
+                      :query-params="{custId:formDataInfo.master.custId,boxId:formDataInfo.master.bpCBoxId}" />
+                  </FormItem>
+                  </Col>
+                  <Col span="6">
+                  <FormItem label="模数" prop="bpMoCut" class="ivu-form-item-text2">
+                    <Input type="number"  @mousewheel.native.prevent number v-model="formDataInfo.master.bpMoCut" placeholder="请输入模数"></Input>
+                  </FormItem>
+                  </Col>
+
+                  <Col span="15">
+                  <FormItem label="印唛" prop="bpPMNo">
+                    <popup v-model="formDataInfo.master.bpPMNo" field-name="bpPMNo" :disabled="false" popup-name="PrintMarksSingleBox"
+                      :fill-model.sync="formDataInfo.master" render-fields="bpPMNo,bpPMName" from-fields="pmNo,bpName"
+                      :suffix="true" :suffix-model="formDataInfo.master.bpPMName" :query-params="{custId:formDataInfo.master.custId}" />
+                  </FormItem>
+                  </Col>
+                  <Col span="9">
+                  <FormItem label="印版" prop="bpPPNo" class="ivu-form-item-text2">
+                    <popup v-model="formDataInfo.master.bpPPNo" field-name="bpPPNo" :disabled="false" popup-name="PrintSingleBox"
+                      :fill-model.sync="formDataInfo.master" render-fields="bpPPNo" from-fields="tpNo"
+                      :suffix="false":query-params="{custId:formDataInfo.master.custId}" />
+                  </FormItem>
+                  </Col>
+
+                </Row>
+              </div>
+
+              <div style="width: 33.33%;padding:0 2rem;">
+                <Divider style="margin: 0;">生产信息</Divider>
+                <Row>
+                  <Col span="24">
+                  <FormItem label="生产盒式" prop="bpPBoxCode">
+                    <popup v-model="formDataInfo.master.bpPBoxCode" field-name="bpPBoxCode" :disabled="false" popup-name="BoxSingleBox"
+                      :fill-model.sync="formDataInfo.master" render-fields="bpPBoxId,bpPBoxCode,bpPBoxName" from-fields="id,boxCode,boxName"
+                      :suffix="true" :suffix-model="formDataInfo.master.bpPBoxName" :query-params="{}" />
+                  </FormItem>
+                  </Col>
+                  <Col span="24">
+                  <FormItem label="生产纸质" prop="bpPArtCode">
+                    <popup v-model="formDataInfo.master.bpPArtCode" field-name="bpPArtCode" :disabled="false" popup-name="ArtSingleBox"
+                      :fill-model.sync="formDataInfo.master" render-fields="bpPArtId,bpPArtCode" from-fields="id,artCode"
+                      :suffix="false" />
+                  </FormItem>
+                  </Col>
+                  <Col span="18">
+                  <FormItem label="规格" required>
+                    <div class="number-box">
+                      <Input type="number"  @mousewheel.native.prevent number v-model="formDataInfo.master.bpPSizeL" placeholder="长"></Input>
+                      <span>X</span>
+                      <Input type="number"  @mousewheel.native.prevent number v-model="formDataInfo.master.bpPSizeW" placeholder="宽"></Input>
+                      <span>X</span>
+                      <Input type="number"  @mousewheel.native.prevent number v-model="formDataInfo.master.bpPSizeH" placeholder="高"></Input>
+                    </div>
+                  </FormItem>
+                  </Col>
+                  <Col span="6">
+                  <FormItem label="开口" prop="bpHatch" class="ivu-form-item-text2">
+                    <Input type="number"  @mousewheel.native.prevent number v-model="formDataInfo.master.bpHatch" placeholder="开口"></Input>
+                  </FormItem>
+                  </Col>
+                  <Col span="12">
+                  <FormItem label="单面积" prop="bpSArea">
+                    <Input type="number"  @mousewheel.native.prevent number :disabled="true" v-model="formDataInfo.master.bpSArea" placeholder="请输入单面积"></Input>
+                  </FormItem>
+                  </Col>
+                  <Col span="12">
+                  <FormItem label="客户单面积" prop="bpCustSArea">
+                    <Input type="number"  @mousewheel.native.prevent number :disabled="true" v-model="formDataInfo.master.bpCustSArea" placeholder="请输入客户单面积">
+                    </Input>
+                  </FormItem>
+                  </Col>
+                  <Col span="12">
+                  <FormItem label="单重" prop="bpSWeight">
+                    <Input type="number"  @mousewheel.native.prevent number :disabled="true" v-model="formDataInfo.master.bpSWeight" placeholder="请输入单重"></Input>
+                  </FormItem>
+                  </Col>
+                  <Col span="12">
+                  <FormItem label="客方单重" prop="bpCustSWeight">
+                    <Input type="number"  @mousewheel.native.prevent number :disabled="true" v-model="formDataInfo.master.bpCustSWeight" placeholder="请输入客方单重"></Input>
+                  </FormItem>
+                  </Col>
+                  <Col span="12">
+                  <FormItem label="单体积" prop="bpSCube">
+                    <Input type="number"  @mousewheel.native.prevent number :disabled="true" v-model="formDataInfo.master.bpSCube" placeholder="请输入单体积"></Input>
+                  </FormItem>
+                  </Col>
+                  <Col span="18">
+                  <FormItem label="模板规格">
+                    <div class="number-box">
+                      <Input type="number"  @mousewheel.native.prevent number v-model="formDataInfo.master.dpLengthmm" placeholder="长" :disabled="true"></Input>
+                      <span>X</span>
+                      <Input type="number"  @mousewheel.native.prevent number v-model="formDataInfo.master.dpWidthmm" placeholder="宽" :disabled="true"></Input>
+                    </div>
+                  </FormItem>
+                  </Col>
+
+                  <Col span="12">
+                  <FormItem label="修边" prop="bpAdjBorder">
+                    <Input type="number"  @mousewheel.native.prevent number v-model="formDataInfo.master.bpAdjBorder" placeholder="请输入修边"></Input>
+                  </FormItem>
+                  </Col>
+
+                </Row>
+              </div>
+
+            </div>
+          </Form>
+
+          <Tabs>
+            <!--  注意:eTable formDataInfo.wareHouseItems.defaultList  ===wareHouseItems=== 需要根据实际接口修改,其它不变-->
+            <TabPane label="纸板规格" name="ProductMData">
+              <!-- 选择规格 -->
+              <eTable ref="slave_edit_productMDataFm"
+              unqiue-mark="id"
+              :height="tableDefaultHeight"
+              :index-menu="true" :col-start="0"
+              :width="200"
+              :row-init-data="initData.initData.productMDataFm"
+              :data.sync="productMDatasTableData"
+              :rules="tableFieldsValidator"
+              @on-table-change="calcUseMaterialNum"
+              @row-dbClick="productSpecRowClick"
+                >
+                <template slot="head">
+                  <tr v-for="(columnGroup,index) in initData.columns.productMDataFm.editGroups" :key="index">
+                    <th class="ivu-table-column-left"
+                    v-for="(column,index2) in columnGroup" :key="index2"
+                    :width="column.width"
+                    :colspan="column.colSpan"
+                    :rowspan="column.rowSpan"
+                    style="text-align:center;"
+                    >
+                      <div class="ivu-table-cell">
+                        <span class="">{{column.title}}</span>
+                      </div>
+                    </th>
+
+                  </tr>
+                </template>
+
+                <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
+                  <td class="ivu-table-column-left"
+                   v-for="(column,columnIndex) in initData.columns.productMDataFm.editColumns"
+                   :key="columnIndex"
+                   :width="column.width"
+                   style="text-align:center;"
+                   >
+                   <popup v-model="row.artCode"
+                   v-if="column.key == 'artCode'"
+                   field-name="artCode"
+                   :disabled="false"
+                   popup-name="ArtSingleBox"
+                   :fill-model.sync="productMDatasTableData"
+                   render-fields="artCode"
+                   from-fields="artCode"
+                   :index="index"
+                   :suffix="false" />
+
+                   <Select v-model="row[column.key]" v-else-if="column.key == 'bmScoreType'" transfer>
+                     <Option v-for="(item,index) in pressingLineTypeList" :key="index" :value="item.dicValue">{{item.dicLabel}}</Option>
+                   </Select>
+
+                   <Select v-else-if="column.key == 'bmScoreDepth'" v-model="row[column.key]" transfer>
+                     <Option v-for="(item,index) in pressingLineDeepList" :key="index" :value="item.dicValue">{{item.dicLabel}}</Option>
+                   </Select>
+                    <formControl v-else-if="column.key == 'bmIndex'" :control-type="column.controlType" v-model="row[column.key]=row[column.key] == 0 ? index+1 : row[column.key]"></formControl>
+                   <formControl v-else :control-type="column.controlType" v-model="row[column.key]"></formControl>
+                  </td>
+
+                </template>
+              </eTable>
+            </TabPane>
+
+            <TabPane label="生产工序" name="ProductWorkProc">
+              <eTable
+                ref="ProductWorkProc"
+                unqiue-mark="id"
+                :height="tableDefaultHeight"
+                :index-menu="true"
+                :col-start="0"
+                :width="200"
+                :row-init-data="initData.initData.productWorkProcFm"
+                :data.sync="formDataInfo.productworkProcs.defaultList"
+                :rules="tableFieldsValidator1"
+              >
+              <template slot="head">
+                <tr v-for="(columnGroup,index) in initData.columns.productWorkProcFm.editGroups" :key="index">
+                  <th class="ivu-table-column-left"
+                  v-for="(column,index2) in columnGroup" :key="index2"
+                  :width="column.width"
+                  :colspan="column.colSpan"
+                  :rowspan="column.rowSpan"
+                  style="text-align:center;"
+                  >
+                    <div class="ivu-table-cell">
+                      <span class="">{{column.title}}</span>
+                    </div>
+                  </th>
+                </tr>
+               </template>
+
+               <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
+
+                 <td class="ivu-table-column-left"
+                  v-for="(column,index2) in initData.columns.productWorkProcFm.editColumns"
+                  :key="index2"
+                  :width="column.width">
+                   <popup
+                     v-if="column.key == 'wpiNo'"
+                    v-model="row.wpiNo" field-name="wpiNo"
+                   :disabled="false"
+                   popup-name="WorkProcItemMultiBox"
+                   :fill-model.sync="formDataInfo.productworkProcs.defaultList"
+                   render-fields="workProcItemId,wpiName,wpiNo"
+                   from-fields="id,wpiName,wpiNo"
+                   :index="index"
+                   :init-data="initData.initData.productWorkProcFm"
+                   />
+
+                   <popup
+                   v-else-if="column.key == 'moCode'"
+                   v-model="row.moCode" field-name="moCode"
+                   :disabled="false"
+                   popup-name="MachineSingleBox"
+                   :fill-model.sync="formDataInfo.productworkProcs.defaultList"
+                   render-fields="machId,moName,moCode"
+                   from-fields="id,moName,moCode"
+                   :index="index"
+                   :init-data="initData.initData.productWorkProcFm"
+                   >
+                   </popup>
+
+                   <popup v-model="row.bwAskNote"
+                   v-else-if="column.key == 'bwAskNote'"
+                   field-name="bwAskNote" :disabled="false"
+                   popup-name="ResumeSingleBox"
+                   :fill-model.sync="formDataInfo.productworkProcs.defaultList"
+                   render-fields="bwAskNote"
+                   from-fields="resumeName"
+                   :query-params="{resumeType:'K'}"
+                   :blur-focus-load-data="false"
+                   :index="index"
+                   :init-data="initData.initData.productWorkProcFm"
+                   />
+                   <formControl v-else-if="column.key == 'bwIndex'" :control-type="column.controlType" v-model="row[column.key]=row[column.key] == 0 ? index+1 : row[column.key]"></formControl>
+                   <formControl v-else :control-type="column.controlType" v-model="row[column.key]"></formControl>
+                 </td>
+
+               </template>
+              </eTable>
+             </TabPane>
+          </Tabs>
+      </div>
+      <productSpec
+      v-model="productSpecShow"
+      ref="productSpec"
+      :columns="initData.columns.productMDataFm.listColumns"
+      @on-ok="productSpecDataReplace"
+      ></productSpec>
+      </editWindow>
+
+
+  </div>
+</template>
+
+<script>
+  /**
+   * @desc edit-dept 描述
+   * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+   * 可以根据需求重写所需的方法:
+   *
+   * @params 参数
+   *
+   * @return 返回
+   *
+   * @author Andy Huang
+   *
+   * @created 2019/11/20 17:07:54
+   */
+  import tableSelect from "@/components/table-select/table-select";
+  import editWindow from "@/components/edit-window/edit-window";
+  // import Form from '@/components/form/form'
+  import eTable from "@/components/e-table/e-table";
+  import request from "@/libs/request";
+  import popup from "@/components/popup/popup";
+  import editBaseMixins from "../../mixins/edit";
+  import InputNumber from '@/components/input-number'
+  import formControl from '@/components/form-control/form-control'
+  import {
+    customValidator
+  } from "@/libs/validator";
+  import calc from "@/libs/calc";
+  import productSpec from "../components/productSpec"
+  export default {
+    name: "edit-product",
+    mixins: [editBaseMixins],
+    components: {
+      editWindow,
+      popup,
+      tableSelect,
+      // Form,
+      eTable,
+      InputNumber,
+      formControl,
+      productSpec
+    },
+    data() {
+      return {
+        productSpecShow:false,
+        unitItems: [{text:'英寸',value:'0'},{text:'厘米',value:'1'},{text:'毫米',value:'2'}],
+        currentSubItemlength_productMData: 0, // 当前子表数据个数
+        currentSubItemlength_productWorkProc: 0, // 当前子表数据个数
+        requestBaseUrl: "/bas/product", // 请求 查询 操作的基础路径
+        formDataInfo: {
+          // 主表 更改字段
+          master: {
+            "bpSArea": null,
+            "bpCBoxName": "",
+            "bpNo": null,
+            "colorName": "",
+            "bpPArtId": null,
+            "bpCArtCode": null,
+            "bpCBoxId": null,
+            "bpSWeight": null,
+            "bpUnit": null,
+            "bpIsFullPrint": false,
+            "iisAudit": false,
+            "id": null,
+            "bpCustProdNo": null,
+            "bpCBoxCode": "",
+            "bpMoCut": 1,
+            "bpCArtId": null,
+            "bpPArtCode": null,
+            "lengId": null,
+            "bpPPNo": null,
+            "bpPBoxName": "",
+            "bpCustSWeight": 0,
+            "bpColorQty": 0,
+            "bpCSizeL": null,
+            "bpWF": false,
+            "auditTime": null,
+            "bpCSizeH": null,
+            "bpColorId": null,
+            "bpShopNo": null,
+            "auditUser": null,
+            "bpPRemark": null,
+            "bpDPNo": null,
+            "status": true,
+            "bpBatchNo": null,
+            "bpCSizeW": null,
+            "cusName": "",
+            "remark": null,
+            "bpCustSArea": 0,
+            "bpCustProdName": null,
+            "lbCode": null,
+            "attachment": null,
+            "custId": null,
+            "bpPBoxCode": "",
+            "bpDRemark": null,
+            "product": "",
+            "bpPBoxId": null,
+            "bpPMNo": null,
+            "bpPSizeW": null,
+            "bpSCube": null,
+            "updateUser": null,
+            "updateTime": null,
+            "cusCode": "",
+            "bpName": null,
+            "bpIsPublic": false,
+            "createTime": null,
+            "bpPSizeH": null,
+            "bpHatch": 0,
+            "bpIsDiameter": false,
+            "bpPSizeL": null,
+            "createUser": null,
+            "custAbout": "",
+            "customer": "",
+            dpLengthmm: null,
+            dpWidthmm: null,
+            bpAdjBorder:0
+          },
+          // 子表 wareHouseItems 根据实际接口更改,其它不变
+          //子表 纸度规格
+          productMDatas: {
+            addList: [], // 添加列
+            defaultList: [], // 默认列
+            deleteList: [], // 删除列
+            updateList: [] // 更新列
+          },
+          //子表 生产工序
+          productworkProcs: {
+            addList: [], // 添加列
+            defaultList: [], // 默认列
+            deleteList: [], // 删除列
+            updateList: [] // 更新列
+          }
+        }, // 防止添加和更新数据提交发生冲突
+        // 需要验证的数据
+        ruleValidate: {
+          bpName: [{
+              required: true,
+              message: "产品名称不能为空",
+              trigger: "blur"
+            },
+            {
+              validator: customValidator,
+              trigger: "blur",
+              customRule: ["toCDB", "spaceStr"],
+              fieldDesc: "产品名称"
+            }
+          ],cusCode:[{
+            required: true,
+            message: "客户不能为空",
+            trigger: "blur,change"
+          }],
+          bpCBoxCode:[{
+            required: true,
+            message: "客方盒式不能为空",
+            trigger: "blur,change"
+          }],
+          bpCArtCode:[{
+            required: true,
+            message: "客方纸质不能为空",
+            trigger: "blur,change"
+          }],bpPBoxCode:[{
+            required: true,
+            message: "生产盒式不能为空",
+            trigger: "blur,change"
+          }],bpPArtCode:[{
+            required: true,
+            message: "生产纸质不能为空",
+            trigger: "blur,change"
+          }]
+        },
+        tableFieldsValidator: {
+          // productId: [
+          //   { required: true, message: "", trigger: "blur" }
+          // ],
+        },
+        tableFieldsValidator1: {
+          // machId: [
+          //   { required: true, message: "", trigger: "blur" }
+          // ],
+          //  productId: [
+          //   { required: true, message: "", trigger: "blur" }
+          // ],
+          //  workProcItemId: [
+          //   { required: true, message: "", trigger: "blur" }
+          // ],
+        },
+        tableDefaultHeight: 200,
+        lbCodeList: [],
+        initData: {
+          initData:{
+            productMDataFm:{}
+          }
+        },
+        pressingLineTypeList:[],//压线类型
+        pressingLineDeepList:[],
+        productSpecRowClickIndex:0,
+        calMaterialDataLoadSuccess:false,
+        productMDatasTableData:[],
+        updateFirstIsNotLoadDataFlag:1
+      };
+    },
+    computed: {
+      bpCBoxCode() {
+        return this.formDataInfo.master.bpCBoxCode;
+      },
+      bpCSizeL() {
+        return this.formDataInfo.master.bpCSizeL;
+      },bpPSizeComputed(){
+        return this.formDataInfo.master.bpPSizeL + this.formDataInfo.master.bpPSizeW + this.formDataInfo.master.bpPSizeH;
+      }
+    },
+    watch: {
+      showWindow:function(n,o){
+        if(!n){
+          //this.resetForm();
+        }
+      },
+      bpCBoxCode: function(n, o) {
+          this.formDataInfo.master.bpPBoxCode = n;
+      },
+      'formDataInfo.master.bpIsDiameter':function(n,o){
+        //内径改变，需要改变生产规格,然后生产规格改变加载数据
+        this.calProductSizeByDiameter();
+      },
+      'formDataInfo.master.custId':function(n,o){
+        this.calProductLWHSize();
+        this.calMaterialData();
+        //客户ID
+        this.calcBoxExpressions();
+      },'formDataInfo.master.bpPBoxId':function(n,o){
+        this.calProductLWHSize();
+        //盒式ID
+      },'formDataInfo.master.lengId':function(n,o){
+        this.calProductLWHSize();
+        //楞别
+        //this.calcBoxExpressions();
+      },
+      'formDataInfo.master.bpCArtCode':function(n,o){
+        this.calMaterialData();
+        //console.log(n);
+      },
+      'formDataInfo.master.bpPBoxCode':function(n,o){
+        this.calMaterialData();
+        //生产盒式
+        //this.calcBoxExpressions();
+      },'formDataInfo.master.bpHatch':function(n,o){
+        this.calMaterialData();
+        //开口
+        //this.calcBoxExpressions();
+      },'formDataInfo.master.bpIsFullPrint':function(n,o){
+        this.calMaterialData();
+      }, 'formDataInfo.master.bpMoCut':function(n,o){
+        //this.calMaterialData();
+        this.calcUseMaterialNum();
+        //模数
+        //this.calcBoxExpressions();
+      }, 'formDataInfo.master.bpDPNo':function(n,o){
+        this.calMaterialData();
+      },'formDataInfo.master.lbCode':function(n,o){
+        this.calMaterialData();
+        //this.calcBoxExpressions();
+      },/* 'formDataInfo.master.bpPSizeL':function(n,o){
+        //this.calMaterialData();
+        this.calcBoxExpressions();
+      },'formDataInfo.master.bpPSizeW':function(n,o){
+        //this.calMaterialData();
+        this.calcBoxExpressions();
+      },'formDataInfo.master.bpPSizeH':function(n,o){
+        //this.calMaterialData();
+        this.calcBoxExpressions();
+      }, */ 'formDataInfo.master.bpUnit':function(n,o){
+        this.calMaterialData();
+        //单位
+        this.calProductLWHSize();
+       // this.calcBoxExpressions();
+      },
+      bpPSizeComputed:function(n,o){
+        this.calMaterialData();
+        //this.calcBoxExpressions();
+      },
+      'formDataInfo.master.bpAdjBorder':function(n,o){
+        this.calcBoxExpressions();
+      },
+      'formDataInfo.master.bpCArtId':function(n,o){
+        if(n && n != ''){//加载楞别
+        let data = [{data:{bpCArtId:n}}]
+          this.artPopupFill(data);
+        }
+      },
+      'formDataInfo.master.bpPArtId':function(n,o){
+        if(n && n != ''){//加载楞别
+        let data = [{data:{bpCArtId:n}}]
+          this.artPopupFill(data);
+        }
+      },
+      formDetailData:{
+        handler(n,o){
+        },deep:true
+      },
+      'formDataInfo.productMDatas.defaultList':{
+       handler(n,o){
+         //什么时候会出现数据，编辑的时候，会有，直接赋值就好
+         if(n && n.length > 0){
+           this.productMDatasTableData = n;
+         }
+       } ,deep:true
+      }
+    },
+    methods: {
+
+      // 重写父类,添加时候,清空数据
+      HandleFormDataInfo() {
+        this.formDataInfo = Object.assign({}, this.formDataInfo);
+      },
+      //判断 纸板规格列表 是否添加了字段
+      getCurrentSubItemlength_productMData() {
+
+        let tableData = this.$refs["tableFields"].getCategorizeData();
+        this.currentSubItemlength_productMData = 0;
+        //判断当前子表 添加/更新的 数据个数
+        if (this.action === "add") {
+          if (tableData.addList.length > 0) {
+            this.currentSubItemlength_productMData = Object.keys(
+              tableData.addList[0]
+            ).length;
+          }
+        } else {
+          if (tableData.deleteList.length > 0) {
+            this.currentSubItemlength_productMData = Object.keys(
+              tableData.deleteList[0]
+            ).length;
+          }
+          if (tableData.updateList.length > 0) {
+            this.currentSubItemlength_productMData =
+              Object.keys(tableData.updateList[0]).length +
+              this.currentSubItemlength_productMData;
+          }
+          if (tableData.addList.length > 0) {
+            this.currentSubItemlength_productMData =
+              Object.keys(tableData.addList[0]).length +
+              this.currentSubItemlength_productMData;
+          }
+        }
+        return this.currentSubItemlength_productMData;
+      },
+
+      //判断 生产工序 是否添加了数据
+      getCurrentSubItemlength_productWorkProc() {
+        // debugger
+        let tableData2 = this.$refs["tableFields2"].getCategorizeData();
+        this.currentSubItemlength_productWorkProc = 0;
+        //判断当前生产工序 添加/更新的数据个数
+        if (this.action === "add") {
+          if (tableData2.addList.length > 0) {
+            this.currentSubItemlength_productWorkProc = Object.keys(
+              tableData2.addList[0]
+            ).length;
+          }
+        } else {
+          if (tableData2.deleteList.length > 0) {
+            this.currentSubItemlength_productMData = Object.keys(
+              tableData2.deleteList[0]
+            ).length;
+          }
+          if (tableData2.updateList.length > 0) {
+            this.currentSubItemlength_productWorkProc =
+              Object.keys(tableData2.updateList[0]).length +
+              this.currentSubItemlength_productMData;
+          }
+          if (tableData2.addList.length > 0) {
+            if (tableData2.addList[0].id != "") {
+              // 特殊处理
+              this.currentSubItemlength_productWorkProc =
+                Object.keys(tableData2.addList[0]).length +
+                this.currentSubItemlength_productMData;
+            }
+          }
+        }
+        return this.currentSubItemlength_productWorkProc;
+      },
+
+      //重写父类，提交数据 验证数据，默认TRUE
+      validateBeforePost() {
+        //debugger
+        this.getCurrentSubItemlength_productMData();
+        this.getCurrentSubItemlength_productWorkProc();
+        return false;
+        // if (this.currentSubItemlength_productMData>0) {
+        //   //子表有数据才验证是否必填数据
+        //   let subValidate = this.$['tableFields'].validate();
+        //   if (subValidate===true) {
+        //     flag=true;
+        //   }
+        // }
+        // return flag
+      },
+
+      // 重写父类,修改提交数据
+      resetformDataInfo(_data) {
+        //debugger
+        if (this.currentSubItemlength_productMData > 0) {
+          let tableData = this.$refs["tableFields"].getCategorizeData();
+          this.formDataInfo.productMDatas = tableData;
+        }
+        if (this.currentSubItemlength_productWorkProc > 0) {
+          let tableData2 = this.$refs["tableFields2"].getCategorizeData();
+          this.formDataInfo.productworkProcs = tableData2;
+        }
+        return this.formDataInfo;
+      },
+      artPopupFill(data) {
+        //纸质被填充后的事件
+        let artId = data[0].data.bpCArtId;
+        if(artId && artId !=''){
+          request.post('/bas/art/item/list', {
+            artId: artId
+          }).then(res => {
+            if (res.length > 0) {
+              this.lbCodeList = res;
+              this.formDataInfo.master.lengId = res[0].lengId;
+              this.formDataInfo.master.lbCode = res[0].lbCode;
+            } else {
+              this.$Message.error('当前纸质无愣别信息');
+            }
+          }).catch(() => {
+            this.$Message.error('愣别数据加载失败');
+          });
+        }
+      },
+      getInitData() {
+        //加载初始化数据
+        request.get('/sys/form/init/productFm').then(res => {
+          this.initData = res;
+        });
+      },formSubmit(){
+        this.$refs.masterForm.validate((valid) => {
+            if (!valid) {
+               return;
+            }
+            //子表校验 true就是有问题
+            let result = this.$refs.slave_edit_productMDataFm.validate();
+            if(result){
+              return;
+            }
+            result = this.$refs.ProductWorkProc.validate();
+            if(result){
+              return;
+            }
+            /**
+             * 成功后数据结构:
+             * {
+                 master:{},
+                 productMDatas:{},
+                 productworkProcs:{}
+               }
+             */
+            let data = {};
+            delete this.formDataInfo.master.iisAudit;
+            delete this.formDataInfo.master.status;
+            data['master'] = this.formDataInfo.master;
+            data['productMDatas'] = this.$refs.slave_edit_productMDataFm.getCategorizeData();
+            data['productworkProcs'] = this.$refs.ProductWorkProc.getCategorizeData();
+            request.post('/bas/product/saveOrUpdate',data).then(res=>{
+             this.$Message.success('操作成功');
+             this.resetForm();
+            }).catch(()=>{
+
+            });
+        })
+      },resetForm(){
+        //主表清空
+        debugger;
+        this.formDataInfo.master = JSON.parse(JSON.stringify(this.initData.initData.master));
+        this.$refs.masterForm.resetFields();
+        this.$refs.slave_edit_productMDataFm.reset();
+        this.$refs.ProductWorkProc.reset();
+
+      },lCodeSelectChanged(item){
+        this.formDataInfo.master.lbCode = item.label;
+      },
+      calProductLWHSize(){
+        this.calProductSize('bpCSizeL','L','bpPSizeL');
+        this.calProductSize('bpCSizeW','W','bpPSizeW');
+        this.calProductSize('bpCSizeH','H','bpPSizeH');
+      },
+      calProductSize(fieleName,type,renderFieldName){
+        //内径才计算，否则不计算
+        let value = this.formDataInfo.master[fieleName];
+        if(!this.formDataInfo.master.bpIsDiameter){
+          this.formDataInfo.master[renderFieldName] = value;
+          return;
+        }
+        //计算生产规格
+        /**
+         * 参数：客户id(custId),生产盒式id(bpPBoxId),楞别id（lengId),
+         * 生产规格长宽高(bpPSizeL,bpPSizeW,bpPSizeH),单位(bpUnit)
+         */
+
+        if(!value || value == ''){
+          return;
+        }
+        let requestData = {
+          custId:this.formDataInfo.master.custId,
+          bpPBoxId:this.formDataInfo.master.bpPBoxId,
+          lengId:this.formDataInfo.master.lengId,
+          pSize:value,
+          type:type
+        }
+        request.fsLoading = true;
+        request.post('/bas/product/calProductSize',requestData).then(res=>{
+          if(res != null){
+           value = res;
+          }
+          this.formDataInfo.master[renderFieldName] = value;
+        }).catch(err=>{
+          this.formDataInfo.master[renderFieldName] = value;
+        })
+
+      },calMaterialData(){
+        //计算用料
+        let master = this.formDataInfo.master;
+        /**
+         * 客戶號不能為空或客戶號不存在
+            紙度單位沒設置
+            开单單位不能為空
+            生產紙質不能為空或不存在
+            生產盒式不能為空或不存在
+            規格之長與寬不能為零
+            數量不能為零
+            紙度表沒設置, 不能進行計算!
+            最小紙長大于最大紙長
+            ,'bpPSizeH'
+         */
+        let validatorFields = ['custId','bpUnit','bpCArtCode','bpPBoxCode',
+        'bpPSizeL','bpPSizeW','lbCode'];
+        //校验，每个参数都必须有值，否则请求后台会返回多个参数错误的异常提示
+         for(let i = 0;i<validatorFields.length;i++){
+          let value = master[validatorFields[i]];
+          if(value == undefined || value == null || value === '' ){
+            return;
+          }
+        }
+
+        //更新操作，更新的时候，第一次不能去加载数据
+        if(master.id && master.id != '' && this.updateFirstIsNotLoadDataFlag > 0){
+            //等于0 就去加载数据
+            if(this.updateFirstIsNotLoadDataFlag == 1){
+              setTimeout(2000,()=>{
+                this.updateFirstIsNotLoadDataFlag = 0;
+              })
+            }
+            this.updateFirstIsNotLoadDataFlag++;
+            return;
+        }
+
+        let requestData = {
+          artCode:master.bpCArtCode,
+          biPrepQty:0,
+          boxCode:master.bpPBoxCode,
+          bpHatch:master.bpHatch,
+          bpIsFullPrint:master.bpIsFullPrint,
+          bpMoCut:master.bpMoCut,
+          bpPlateNo:master.bpDPNo,
+          custId:master.custId,
+           lbCode:master.lbCode,
+          orderQty:1,
+          sizeLength:master.bpPSizeL,
+          sizeWidth:master.bpPSizeW,
+          sizeHeight:master.bpPSizeH,
+           unit:master.bpUnit,
+           waste:0
+        }
+        //同时只发一个请求
+        if(this.calMaterialDataLoadSuccess){
+          return;
+        }
+        this.calMaterialDataLoadSuccess = true;
+        request.fsLoading = true;
+        let _self = this;
+        request.post('/bas/product/calMaterialData',requestData).then(res=>{
+          debugger;
+          //console.log(res);
+         //在重新加载后，如果之前存在的数据有ID,那么这个带ID的数据，应该被删除掉
+         //然后当前的这个数据是属于新增的数据
+          _self.formDataInfo.productMDatas.defaultList.forEach((item,index)=>{
+            _self.$refs.slave_edit_productMDataFm.delete(index);
+          });
+          //提取每个相同bmIndex的第一条数据
+          let flag = 0;
+          //_self.productMDatasTableData = [];
+          res.forEach((item,index)=>{
+            if(flag != item.bmIndex){
+              //_self.productMDatasTableData.push(item);
+              flag = item.bmIndex;
+              item.bmScoreType = 0;
+              item.bmScoreDepth = 0;
+              if(item.bmIndex && item.bmIndex == 0){
+                item.bmIndex = (index+1);
+              }
+              _self.$refs.slave_edit_productMDataFm.set(item,index);
+            }
+          });
+          _self.formDataInfo.productMDatas.defaultList = res;
+          _self.calMaterialDataLoadSuccess = false;
+          //计算完用料之后，加载体积等。。。
+          _self.calcBoxExpressions();
+        }).catch(err=>{
+            _self.calMaterialDataLoadSuccess = false;
+        })
+      },calcUseMaterialNum(){
+        //计算用料系数
+        /**
+         * 双片：2*1/总开数/模数
+         * 单片：1*1/总开数/模数
+         * 修边=用料宽-净料宽*纸度开
+         * 纸度开=用料规格宽/净料规格宽
+          纸长开=用料规格长/净料规格长
+          总开数=纸度开*纸长开
+
+         */
+        if(!this.formDataInfo.productMDatas){
+          return;
+        }
+        let _self = this;
+        this.formDataInfo.productMDatas.defaultList.forEach((item,index)=>{
+          //计算纸度开 纸度开=用料规格宽/净料规格宽
+          let bmKsW = calc.div(item.bmSizeW,item.bmSSizeW);
+          item.bmKsW = isNaN(bmKsW)?item.bmKsW:Math.floor(bmKsW);
+          //计算纸长开 纸长开=用料规格长/净料规格长
+          let bmKsL = calc.div(item.bmSizeL,item.bmSSizeL);
+          item.bmKsL = isNaN(bmKsL)?item.bmKsL:bmKsL;
+          //总开数=纸度开*纸长开
+          let bmKsTotal = calc.mul(item.bmKsW,item.bmKsL);
+          item.bmKsTotal = isNaN(bmKsTotal)?item.bmKsTotal:bmKsTotal;
+          //计算修边
+          let bmAdjBorder = calc.sub(item.bmSizeW,calc.mul(item.bmSSizeW,item.bmKsW));
+          item.bmAdjBorder = isNaN(bmAdjBorder)?item.bmAdjBorder:bmAdjBorder;
+          //计算用料系数
+          let modulus = 1;
+          if(item.bmDoubleCut){//双片
+            modulus = 2;
+          }
+          let qty = calc.div(modulus,calc.div(item.bmKsTotal,_self.formDataInfo.master.bpMoCut));
+          item.bmQty = qty;
+        })
+      },calProductSizeByDiameter(){
+        //内径改变计算生产规格
+        let master = this.formDataInfo.master;
+        if(master.bpPSizeL == '' && master.bpPSizeW == '' && master.bpPSizeH == ''){
+          return;
+        }
+        let requestData = {
+          custId:master.custId,
+          bpPBoxId:master.bpPBoxId,
+          lengId:master.lengId,
+          bpPSizeL:master.bpPSizeL,
+          bpPSizeW:master.bpPSizeW,
+          bpPSizeH:master.bpPSizeH
+        }
+        request.fsLoading = true;
+        request.post('/bas/product/calProductSizeByDiameter',requestData).then(res=>{
+          let tempCount = 0;
+          if(res.bpPSizeL != null){
+            this.formDataInfo.master.bpPSizeL = res.bpPSizeL;
+            tempCount++;
+          }
+          if(res.bpPSizeW != null){
+            this.formDataInfo.master.bpPSizeW = res.bpPSizeW;
+            tempCount++;
+          }
+          if(res.bpPSizeH != null){
+            this.formDataInfo.master.bpPSizeH = res.bpPSizeH;
+            tempCount++;
+          }
+          if(tempCount > 0){
+            this.calMaterialData();
+          }
+        }).catch(err=>{
+          //this.formDataInfo.master[renderFieldName] = value;
+        })
+
+      },getPressingLineTypeList(){
+        //获取压线类型
+        request.get('/common/sys/dic/childList/bmScoreType',{},{qt:'pValue'}).then(res=>{
+          res.forEach(item=>{
+            item.dicValue = parseInt(item.dicValue);
+          })
+          this.pressingLineTypeList = res;
+        })
+      },getPressingLineDeepList(){
+        //压线深度
+        request.get('/common/sys/dic/childList/bmScoreDepth',{},{qt:'pValue'}).then(res=>{
+          res.forEach(item=>{
+            item.dicValue = parseInt(item.dicValue);
+          })
+          this.pressingLineDeepList = res;
+        })
+      },productSpecRowClick(index,data){
+        //纸板规格，行点击，选择其它规格
+        this.productSpecRowClickIndex = index;
+        let master = this.formDataInfo.master;
+        let validatorFields = ['custId','bpUnit','bpCArtCode','bpPBoxCode',
+        'bpPSizeL','bpPSizeW','bpPSizeH','lbCode'];
+        //校验，每个参数都必须有值，否则请求后台会返回多个参数错误的异常提示
+         for(let i = 0;i<validatorFields.length;i++){
+          let value = master[validatorFields[i]];
+          if(value == undefined || value == null || value === '' ){
+            return;
+          }
+        }
+
+        let requestData = {
+          artCode:master.bpCArtCode,
+          biPrepQty:0,
+          boxCode:master.bpPBoxCode,
+          bpHatch:master.bpHatch,
+          bpIsFullPrint:master.bpIsFullPrint,
+          bpMoCut:master.bpMoCut,
+          bpPlateNo:master.bpDPNo,
+          custId:master.custId,
+           lbCode:master.lbCode,
+          orderQty:1,
+          sizeLength:master.bpPSizeL,
+          sizeWidth:master.bpPSizeW,
+          sizeHeight:master.bpPSizeH,
+           unit:master.bpUnit,
+           waste:master.bpAdjBorder
+        }
+        //
+        this.$refs.productSpec.loadData(requestData,data.bmIndex);
+
+        this.productSpecShow = true;
+
+      },
+      productSpecDataReplace(selectedData){
+        this.$refs.slave_edit_productMDataFm.set(selectedData,this.productSpecRowClickIndex);
+      },
+      calcBoxExpressions(){
+        //计算面积，体积，单重等
+        let master = this.formDataInfo.master;
+        if(this.productMDatasTableData.length == 0){
+          return;
+        }
+        let validatorFields = ['artCode','bmSSizeW','bmSizeL',
+        'bmSizeW','bpPBoxCode','custId'];
+
+        //校验，每个参数都必须有值，否则请求后台会返回多个参数错误的异常提示
+         /* for(let i = 0;i<validatorFields.length;i++){
+          let value = master[validatorFields[i]];
+          if(value == undefined || value == null || value === '' ){
+            return;
+          }
+        } */
+
+        let subData = this.productMDatasTableData[0];
+        let requestData =  {
+            "artCode": master.bpPArtCode,
+            "bmDoubleCut": true,
+            "bmSSizeL": subData.bmSSizeL,
+            "bmSSizeW": subData.bmSSizeW,
+            "bmSizeL": subData.bmSizeL,
+            "bmSizeW": subData.bmSizeW,
+            "boxCode": master.bpPBoxCode,
+            "bpHatch": master.bpHatch,
+            "coDate": '2020-02-01 09:59:49',
+            "custId": master.custId,
+            "kQty": 0,
+            "lbCode": master.lbCode,
+            "moCut": master.bpMoCut,
+            "orderQty": 0,
+            "sizeHeight":master.bpCSizeH,
+            "sizeLength":master.bpCSizeL,
+            "sizeProHeight": master.bpPSizeH,
+            "sizeProLength": master.bpPSizeL,
+            "sizeProWidth": master.bpPSizeW,
+            "sizeWidth": master.bpCSizeW,
+            "specPrice": 0,
+            "unit":master.bpUnit,
+            "waste": master.bpAdjBorder
+          };
+
+          request.post('/bas/product/calcBoxExpressions',requestData).then(res=>{
+            //单面积
+            this.formDataInfo.master.bpSArea  = res.bp_SArea;
+            //客户单面积
+            this.formDataInfo.master.bpCustSArea = res.bp_CustSArea;
+            //单重
+            this.formDataInfo.master.bpSWeight = res.bp_SWeight;
+            //客方单重
+            this.formDataInfo.master.bpCustSWeight = res.bp_CustSWeight;
+            //单体积
+            this.formDataInfo.master.bpSCube = res.bp_SCube;
+          });
+      },
+      closeActionTigger(){
+        //窗口关闭处理
+        this.resetForm();
+        this.formDataInfo.productMDatas.defaultList = [];
+        this.formDataInfo.productworkProcs.defaultList = [];
+      }
+    },
+    created() {
+      this.getInitData();
+      this.getPressingLineTypeList();
+      this.getPressingLineDeepList();
+    },
+    updated() {
+      if (this.$refs.masterForm) {
+        let height = document.body.offsetHeight;
+        this.tableDefaultHeight = height - (this.$refs.masterForm.$el.offsetHeight + 60 + 50 + 40);
+      }
+    }
+  };
+</script>
+
+<style>
+  .cl-edit-product .ivu-form-item {
+    margin-bottom: 5px !important;
+  }
+
+  .cl-edit-product .ivu-select-item {
+    display: block;
+  }
+
+  .number-box {
+    display: flex;
+    line-height: 24px;
+    align-items: center;
+    padding: 5px 12px 5px 0;
+  }
+
+  .number-box span {
+    padding: 0 0.3125rem;
+  }
+
+  .ivu-input-number-small {
+    width: 100% !important;
+  }
+
+  .ivu-form-item-text2 .ivu-form-item-label {
+    width: 2.8125rem !important;
+  }
+
+  .ivu-form-item-text2 .ivu-form-item-content {
+    margin-left: 2.8125rem !important;
+  }
+
+  .edit-product {
+    display: flex;
+  }
+</style>

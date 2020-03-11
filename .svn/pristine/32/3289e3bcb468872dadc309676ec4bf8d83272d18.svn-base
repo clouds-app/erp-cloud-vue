@@ -1,0 +1,74 @@
+<template>
+    <div>
+       <editWindow class="cl-edit-salesOrderProduct" :title="actionLableName" v-model="showWindow"
+    :fullscreen="true" :loading="false"
+      :spinLoaddingText="spinLoaddingText" @on-ok="submitFormDataEvent" @on-cancel="closeActionTigger">
+    
+        <vxe-table
+          border
+          resizable
+          show-overflow
+          :data="tableData"
+          :edit-config="{trigger: 'click', mode: 'row'}">
+          <vxe-table-column type="index" title="序号" width="80"></vxe-table-column>
+          <vxe-table-column field="name" title="名字" width="180" :edit-render="{name: 'input', autoselect: true}"></vxe-table-column>
+          <vxe-table-column field="sex" title="性别" width="180"></vxe-table-column>
+          <vxe-table-column field="date13" title="Date" width="180" :edit-render="{name: '$input', props: {type: 'date'}, autoselect: true}"></vxe-table-column>
+        </vxe-table>
+      </editWindow>
+      
+    </div>
+</template>
+
+<script>
+  import editWindow from "@/components/edit-window/edit-window"
+  import editBaseMixins from "../../mixins/edit";
+export default {
+    name:'edit-boxSalesProductsList',
+    components:{
+        editWindow,
+    },
+    mixins:[editBaseMixins],
+    data() {
+        return {
+            tableData: [
+              {
+                id: 10001,
+                name: '名字1',
+                date13: null,
+                sex: '男',
+                address: '深圳市 圳市 市 xxx'
+              }
+            ],
+             tableColumn: [
+                { type: 'seq', width: 50 },
+                {
+                  title: '基本信息',
+                  children: [
+                    { field: 'name', title: 'Name' },
+                    {
+                      title: '其他信息',
+                      children: [
+                        { field: 'rate', title: 'Rate' },
+                        { field: 'age', title: 'Age' }
+                      ]
+                    },
+                    { field: 'sex', title: 'Sex' }
+                  ]
+                },
+                { field: 'address', title: 'Address', showOverflow: true }
+              ],
+        }
+    },
+    watch:{
+     showWindow:function(n,o){
+        // this.isLoaddingDone
+      },
+    },
+    methods:{
+        submitFormDataEvent(){
+
+        }
+    }
+}
+</script>

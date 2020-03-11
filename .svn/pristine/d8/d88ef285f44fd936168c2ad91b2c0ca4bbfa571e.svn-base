@@ -1,0 +1,108 @@
+<template>
+    <div>
+       <editWindow class="cl-edit-salesOrderProduct" title="固定报价下单" v-model="showWindow"
+    :fullscreen="true" :loading="false"
+      :spinLoaddingText="spinLoaddingText" @on-ok="submitFormDataEvent" @on-cancel="closeActionTigger">
+      
+         <Split v-model="splitProduct" mode="vertical">
+            <div slot="top" class="product-split-pane">
+                 <clTabs :animated="false" type="card">
+                    <clTabPane uniqueKey='tab1' label="按产品报价下单">
+                        <vxe-grid
+                          size="mini"
+                          highlight-hover-row
+                          border
+                          resizable
+                          show-overflow
+                          :data="tableData"
+                          :edit-config="{trigger: 'click', mode: 'row'}">
+                          <vxe-table-column type="index" title="序号" width="80"></vxe-table-column>
+                          <vxe-table-column field="name" title="名字" width="180" :edit-render="{name: 'input', autoselect: true}"></vxe-table-column>
+                          <vxe-table-column field="sex" title="性别" width="180"></vxe-table-column>
+                          <vxe-table-column field="date13" title="Date" width="180" :edit-render="{name: '$input', props: {type: 'date'}, autoselect: true}"></vxe-table-column>
+                        </vxe-grid>
+                    </clTabPane>
+                    <clTabPane uniqueKey='tab2' label="按面积报价下单">按面积报价下单</clTabPane>
+                  </clTabs>
+            </div>
+            <div slot="bottom" class="product-split-pane">
+                  <Tabs :animated="false">
+                    <TabPane label="套件明细">
+                        套件明细
+                    </TabPane>
+                    <TabPane label="同产品同PO多料号下单">同产品同PO多料号下单</TabPane>
+                  </Tabs>
+            </div>
+        </Split>
+      </editWindow>
+      
+    </div>
+</template>
+
+<script>
+  import clTabs from "@/components/cl-erp/tabs";
+  import clTabPane from "@/components/cl-erp/tabs/pane";
+  import editWindow from "@/components/edit-window/edit-window"
+  import editBaseMixins from "../../mixins/edit";
+export default {
+    name:'edit-boxSalesProductsList',
+    components:{
+        editWindow,
+        clTabs,
+        clTabPane
+    },
+    mixins:[editBaseMixins],
+    data() {
+        return {
+           splitProduct:0.75,
+            tableData: [
+              {
+                id: 10001,
+                name: '名字1',
+                date13: null,
+                sex: '男',
+                address: '深圳市 圳市 市 xxx'
+              }
+            ],
+             tableColumn: [
+                { type: 'seq', width: 50 },
+                {
+                  title: '基本信息',
+                  children: [
+                    { field: 'name', title: 'Name' },
+                    {
+                      title: '其他信息',
+                      children: [
+                        { field: 'rate', title: 'Rate' },
+                        { field: 'age', title: 'Age' }
+                      ]
+                    },
+                    { field: 'sex', title: 'Sex' }
+                  ]
+                },
+                { field: 'address', title: 'Address', showOverflow: true }
+              ],
+        }
+    },
+    watch:{
+     showWindow:function(n,o){
+        // this.isLoaddingDone
+      },
+    },
+    methods:{
+        submitFormDataEvent(){
+
+        }
+    }
+}
+</script>
+
+<style>
+    .product-split{
+        height: 200px;
+        border: 1px solid #dcdee2;
+    }
+    .product-split-pane{
+        padding: 10px;
+    }
+</style>

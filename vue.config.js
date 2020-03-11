@@ -52,7 +52,7 @@ module.exports = {
     },
     proxy: {
       '/purchase': {
-        target: 'http://134.175.53.247/erp/', // 对应自己的接口
+        target: 'http://192.168.0.5:9999/', // 对应自己的接口
         changeOrigin: true, // 是否跨域
         ws: true,
         pathRewrite: {
@@ -60,7 +60,7 @@ module.exports = {
         }
       },
       '/sale': {
-        target: 'http://192.168.0.5:9999/erp/', // 对应自己的接口
+        target: 'http://192.168.0.5:9999/', // 对应自己的接口
         changeOrigin: true, // 是否跨域
         ws: true,
         pathRewrite: {
@@ -68,7 +68,7 @@ module.exports = {
         }
       },
       '/sys': {
-        target: 'http://134.175.53.247/erp/', // 对应自己的接口
+        target: 'http://192.168.0.5:9999/', // 对应自己的接口
         changeOrigin: true, // 是否跨域
         ws: true,
         pathRewrite: {
@@ -76,7 +76,7 @@ module.exports = {
         }
       },
       '/bas': {
-        target: 'http://134.175.53.247/erp/', // 对应自己的接口 http://192.168.168.224:8081/
+        target: 'http://192.168.0.5:9999/', // 对应自己的接口 http://192.168.168.224:8081/
         changeOrigin: true, // 是否跨域
         ws: true,
         pathRewrite: {
@@ -84,7 +84,7 @@ module.exports = {
         }
       },
       '/common': {
-        target: 'http://134.175.53.247/erp/', // 对应自己的接口
+        target: 'http://192.168.0.5:9999/', // 对应自己的接口
         changeOrigin: true, // 是否跨域
         ws: true,
         pathRewrite: {
@@ -92,7 +92,7 @@ module.exports = {
         }
       },
       '/file': {
-        target: 'http://134.175.53.247/erp/', // 对应自己的接口
+        target: 'http://192.168.0.5:9999/', // 对应自己的接口
         changeOrigin: true, // 是否跨域
         ws: true,
         pathRewrite: {

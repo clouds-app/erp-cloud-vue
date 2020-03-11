@@ -1,0 +1,353 @@
+<template>
+    <div>
+       
+                  
+       <editWindow class="cl-edit-salesOrderProduct" title="固定报价下单" v-model="showWindow"
+    :fullscreen="true" :loading="false"
+      :spinLoaddingText="spinLoaddingText" @on-ok="submitFormDataEvent" @on-cancel="closeActionTigger">
+      
+        <split-pane v-on:resize="resizeChange()" :min-percent='20' :default-percent='58' split="horizontal">
+          <template slot="paneL">
+            <Tabs :animated="false" type="card" @on-click="tabClickChange()">
+                    <TabPane label="按产品报价下单">
+                        <vxe-grid
+                          :height="TabsHeight"
+                          header-align="center"
+                          size="mini"
+                          highlight-hover-row
+                          border
+                          resizable
+                          show-overflow
+                          :data="tableData"
+                          :columns="tableColumn"
+                          :edit-config="{trigger: 'click', mode: 'row'}">
+                        </vxe-grid>
+                    </TabPane>
+                    <TabPane label="按面积报价下单">
+                       <vxe-grid
+                          :height="TabsHeight"
+                          header-align="center"
+                          size="mini"
+                          highlight-hover-row
+                          border
+                          resizable
+                          show-overflow
+                          :data="tableData"
+                          :columns="tableColumnArea"
+                          :edit-config="{trigger: 'click', mode: 'row'}">
+                        </vxe-grid>
+                    </TabPane>
+                  </Tabs>
+          </template>
+          <template slot="paneR">
+             <Tabs :animated="false">
+                    <TabPane label="套件明细">
+                        <vxe-grid
+                          header-align="center"
+                          :height="otherTabsHeight"
+                          highlight-hover-row
+                          border
+                          resizable
+                          show-overflow
+                          :data="tableData"
+                          :columns="tableColumnSuite"
+                          :edit-config="{trigger: 'click', mode: 'row'}">
+                        </vxe-grid>
+                    </TabPane>
+                    <TabPane label="同产品同PO多料号下单">
+                       <vxe-grid
+                          :height="otherTabsHeight"
+                          header-align="center"
+                          size="mini"
+                          highlight-hover-row
+                          border
+                          resizable
+                          show-overflow
+                          :data="tableData"
+                          :columns="tableColumnPO"
+                          :edit-config="{trigger: 'click', mode: 'row'}">
+                        </vxe-grid>
+                    </TabPane>
+                  </Tabs>
+          </template>
+        </split-pane>
+      </editWindow>
+       
+    </div>
+</template>
+
+<script>
+import splitPane from 'vue-splitpane'
+//Vue.component('split-pane', splitPane)
+  import editWindow from "@/components/edit-window/edit-window"
+  import editBaseMixins from "../../mixins/edit";
+export default {
+    name:'edit-boxSalesProductsList',
+    components:{
+        editWindow,
+        splitPane
+    },
+    mixins:[editBaseMixins],
+    data() {
+        return {
+            otherTabsHeight:100,
+            TabsHeight:100,
+            windowHeight:100,//窗体默认高度
+            tableData: [
+              {
+                id: 10001,
+                name: '名字1',
+                date13: null,
+                sex: '男',
+                address: '深圳市 圳市 市 xxx'
+              },
+              {
+                id: 10002,
+                name: '名字2',
+                date13: null,
+                sex: '男',
+                address: '深圳市 圳市 市 xx2x'
+              },
+               {
+                id: 10001,
+                name: '名字1',
+                date13: null,
+                sex: '男',
+                address: '深圳市 圳市 市 xxx'
+              },
+              {
+                id: 10002,
+                name: '名字2',
+                date13: null,
+                sex: '男',
+                address: '深圳市 圳市 市 xx2x'
+              },
+               {
+                id: 10001,
+                name: '名字1',
+                date13: null,
+                sex: '男',
+                address: '深圳市 圳市 市 xxx'
+              },
+              {
+                id: 10002,
+                name: '名字2',
+                date13: null,
+                sex: '男',
+                address: '深圳市 圳市 市 xx2x'
+              },
+               {
+                id: 10001,
+                name: '名字1',
+                date13: null,
+                sex: '男',
+                address: '深圳市 圳市 市 xxx'
+              },
+              {
+                id: 10002,
+                name: '名字2',
+                date13: null,
+                sex: '男',
+                address: '深圳市 圳市 市 xx2x'
+              },
+               {
+                id: 10001,
+                name: '名字1',
+                date13: null,
+                sex: '男',
+                address: '深圳市 圳市 市 xxx'
+              },
+              {
+                id: 10002,
+                name: '名字2',
+                date13: null,
+                sex: '男',
+                address: '深圳市 圳市 市 xx2x'
+              },
+               {
+                id: 10001,
+                name: '名字1',
+                date13: null,
+                sex: '男',
+                address: '深圳市 圳市 市 xxx'
+              },
+              {
+                id: 10002,
+                name: '名字2',
+                date13: null,
+                sex: '男',
+                address: '深圳市 圳市 市 xx2x'
+              }
+              
+            ],
+             tableColumn: [
+                { type: 'seq', width: 50 },
+                //{ field: 'bpCArtId', title: '客方纸质id' },
+                // { field: 'bpCBoxId', title: '客方盒式id' },
+                //{ field: 'companyId', title: '单位id' },
+                // { field: 'productId', title: '产品id' },
+                //{ field: 'custId', title: '客户id' },
+                 // { field: 'bpColorId', title: '颜色id' },
+                { field: 'bpIsUrgent', title: '急单', width: 45 }, // (输入)
+                { field: 'bpName', title: '产品名称', width: 70 },
+                { field: 'bpNo', title: '产品编号', width: 70 },
+                { field: 'bpCBoxName', title: '盒式', width: 45 }, // 客方盒式名称
+                { field: 'bpCArtCode', title: '纸质', width: 45 }, // 客方纸质
+                {
+                  title: '客方',
+                  children: [
+                      { field: 'bpCSizeL', title: '长' },
+                      { field: 'bpCSizeW', title: '宽' },
+                      { field: 'bpCSizeH', title: '高' },
+                  ]
+                },
+                { field: 'upiPrice', title: '报价', width: 45 },
+                { field: 'coQty', title: '订单数量', width: 70 },// (输入)
+                { field: 'coPrepQty', title: '备品数量', width: 70 },// (输入)
+                { field: 'coWasteQty', title: '损耗数量' , width: 70},// (输入)
+                { field: 'deliRemark', title: '送货备注', width: 70 },// (输入)
+                { field: 'proRemark', title: '生产备注', width: 70 },// (输入)
+                { field: 'coDueDate', title: '交货日期', width: 70 },// (输入)
+                { field: 'biBatchNo', title: '客户PO号', width: 80 },// (输入)
+                { field: 'coType', title: '订单类型', width: 70 },// (输入)
+                { field: 'biCOWF', title: '外发', width: 45 },// (输入)
+                { field: 'biTaoCO', title: '套件' , width: 45},// （0产品，1套件）
+                { field: 'biChopNo', title: '商检号', width: 60 },// (输入)
+                { field: 'contractNo', title: '合同号', width: 60  },
+                 {
+                  title: '客户',
+                  children: [
+                       { field: 'bpCustProdName', title: '产品名称', width: 70  },
+                       { field: 'bpCustProdNo', title: '产品编号', width: 70  },
+                  ]
+                },
+                 { field: 'bpIsPublic', title: '公用', width: 45 },
+                { field: 'bpLH', title: '料号', width: 45 },// (输入)
+                { field: 'bpPaperUserStore', title: '用纸存', width: 60  },// (输入)
+                { field: 'bpIsFullPrint', title: '满版印刷', width: 70  },
+                 { field: 'bpPPNo', title: '印版编号', width: 70  },
+                { field: 'bpColorName', title: '颜色名称', width: 70  },
+                { field: 'orderIndexNo', title: '序号', width: 45 },// (输入)
+                { field: 'useStoreNum', title: '扣成品存料数', width: 130  },// (输入)
+                { field: 'purchase', title: '外购', width: 45 },// (输入)
+                 //{ field: 'waitDeli', title: 'waitDeli' },
+              ],
+               tableColumnArea: [
+                { type: 'seq', width: 50 },
+                { field: 'bpIsUrgent', title: '急单', width: 45 }, // (输入)
+                { field: 'bpName', title: '产品名称', width: 70 },
+                { field: 'bpNo', title: '产品编号', width: 70 },
+                { field: 'bpCBoxName', title: '盒式', width: 45 }, // 客方盒式名称
+                { field: 'bpCArtCode', title: '纸质', width: 45 }, // 客方纸质
+                {
+                  title: '客方',
+                  children: [
+                      { field: 'bpCSizeL', title: '长' },
+                      { field: 'bpCSizeW', title: '宽' },
+                      { field: 'bpCSizeH', title: '高' },
+                  ]
+                },
+                { field: 'upiPrice', title: '报价', width: 45 },
+                { field: 'coQty', title: '订单数量', width: 70 },// (输入)
+                { field: 'coPrepQty', title: '备品数量', width: 70 },// (输入)
+                { field: 'coWasteQty', title: '损耗数量' , width: 70},// (输入)
+                { field: 'deliRemark', title: '送货备注', width: 70 },// (输入)
+                { field: 'proRemark', title: '生产备注', width: 70 },// (输入)
+                { field: 'coDueDate', title: '交货日期', width: 70 },// (输入)
+                { field: 'biBatchNo', title: '客户PO号', width: 80 },// (输入)
+                { field: 'coType', title: '订单类型', width: 70 },// (输入)
+                { field: 'biCOWF', title: '外发', width: 45 },// (输入)
+                { field: 'biTaoCO', title: '套件' , width: 45},// （0产品，1套件）
+                { field: 'biChopNo', title: '商检号', width: 60 },// (输入)
+                { field: 'contractNo', title: '合同号', width: 60  },
+                 {
+                  title: '客户',
+                  children: [
+                       { field: 'bpCustProdName', title: '产品名称', width: 70  },
+                       { field: 'bpCustProdNo', title: '产品编号', width: 70  },
+                  ]
+                },
+                 { field: 'bpIsPublic', title: '公用', width: 45 },
+                { field: 'bpLH', title: '料号', width: 45 },// (输入)
+                { field: 'bpPaperUserStore', title: '用纸存', width: 60  },// (输入)
+                { field: 'bpIsFullPrint', title: '满版印刷', width: 70  },
+                 { field: 'bpPPNo', title: '印版编号', width: 70  },
+                { field: 'bpColorName', title: '颜色名称', width: 70  },
+                { field: 'orderIndexNo', title: '序号', width: 45 },// (输入)
+                { field: 'useStoreNum', title: '扣成品存料数', width: 130  },// (输入)
+                { field: 'purchase', title: '外购', width: 45 },// (输入)
+                 //{ field: 'waitDeli', title: 'waitDeli' },
+              ],
+              tableColumnSuite:[
+                 { field: 'bpNo', title: '产品编号', width: 70 },
+                 { field: 'bpName', title: '产品名称', width: 70 },
+                 { field: 'waitDeli', title: '配套系数', width: 70 }, // 客方纸质
+                 { field: 'bpCArtCode', title: '纸质', width: 45 }, // 客方纸质
+                  { field: 'bpCBoxName', title: '盒式', width: 45 }, // 客方盒式名称
+                  {
+                  title: '客方',
+                  children: [
+                      { field: 'bpCSizeL', title: '长' },
+                      { field: 'bpCSizeW', title: '宽' },
+                      { field: 'bpCSizeH', title: '高' },
+                  ]
+                },
+                { field: 'orderIndexNo', title: '库存数', width: 60 },// (输入)
+                { field: 'biCOWF', title: '外发', width: 45 },// (输入)
+              ],
+              tableColumnPO:[
+                  { field: 'coQty', title: '订单数量', width: 70 },// (输入)
+                  { field: 'coPrepQty', title: '备品数量', width: 70 },// (输入)
+                  { field: 'coWasteQty', title: '损耗数量' , width: 70},// (输入)
+                  { field: 'deliRemark', title: '送货备注', width: 70 },// (输入)
+                  { field: 'proRemark', title: '生产备注', width: 70 },// (输入)
+              ]
+        }
+    },
+    watch:{
+     showWindow:function(n,o){
+        if(n){
+          
+        }
+      },
+    },
+    created(){
+      this.initDataWhenWindowOpen()
+    },
+    methods:{
+       tabClickChange(){
+          //this.initDataWhenWindowOpen()
+       },
+        resizeChange(){
+           // console.log(1)
+        },
+        // 初始化窗体参数数据
+        initDataWhenWindowOpen(){
+            // 计算window高度
+          let height = document.body.offsetHeight
+          this.windowHeight = height
+          this.TabsHeight = height * 0.35
+          this.otherTabsHeight = height * 0.21
+          console.log('height:'+this.TabsHeight,this.otherTabsHeight)
+        },
+        submitFormDataEvent(){
+
+        }
+    }
+}
+</script>
+
+<style>
+  .splitpanes__pane {
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
+
+.splitpanes__pane span {
+  font-family: Helvetica, Arial, sans-serif;
+  color: #fff;
+  font-size: 5em;
+  opacity: 0.6;
+}
+</style>

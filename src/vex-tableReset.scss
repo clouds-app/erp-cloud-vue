@@ -1,0 +1,13 @@
+@import 'vxe-table/styles/variable.scss';
+/*table color*/
+$vxe-font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "\5FAE\8F6F\96C5\9ED1", Arial, sans-serif;
+$vxe-table-header-background-color:#f9f9f9;
+$vxe-table-row-height-mini: 24px;
+$vxe-font-size-mini: 14px;
+//$vxe-table-row-line-height: 22px;
+//$vxe-button-height-mini: 28px;
+$vxe-input-height-mini: 34px; // default:28px
+$vxe-font-color: #000;
+@import 'vxe-table/styles/default.scss';
+
+//background: -webkit-gradient(linear, left top, left bottom, color-stop(3%, #f8f8f9), color-stop(4%, #ffffff), color-stop(100%, #f2f2f2));

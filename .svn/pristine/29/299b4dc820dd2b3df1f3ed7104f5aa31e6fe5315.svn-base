@@ -1,0 +1,464 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-productSuite"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="true"
+      width="66%"
+      :loading="!isLoaddingDone"
+      :spinLoaddingText="spinLoaddingText"
+      @on-ok="formTableDataSubmit()"
+       v-if="initData.columns"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-message="false"
+        :model="formDataInfo.master"
+        :rules="ruleValidate"
+        :label-width="100"
+        label-colon
+      >
+
+      <Row>
+        <Col span="6">
+          <Row>
+            <Col span="15">
+              <FormItem label="套件编号" prop="master.puNo">
+                <Input v-model="formDataInfo.master.puNo" :disabled="true"/>
+              </FormItem>
+            </Col>
+            <Col span="9">
+              <FormItem label="新产品" prop="master.puIsNewProd">
+                <Checkbox v-model="formDataInfo.master.puIsNewProd"></Checkbox>
+              </FormItem>
+            </Col>
+          </Row>
+        </Col>
+        <Col span="6">
+          <FormItem label="料号" prop="master.puBatchNo">
+            <Input v-model="formDataInfo.master.puBatchNo"></Input>
+          </FormItem>
+        </Col>
+      </Row>
+
+       <Row>
+      <Col span="6">
+            <FormItem label="套件名称" prop="master.puName">
+              <Input v-model="formDataInfo.master.puName"></Input>
+            </FormItem>
+          </Col>
+
+        <Col span="6">
+          <FormItem label="客户" prop="master.cusCode">
+            <popup
+             v-model="formDataInfo.master.cusCode"
+             field-name="cusCode"
+             :disabled="false"
+             popup-name="CustomerSingleBox"
+             :fill-model.sync="formDataInfo.master"
+             render-fields="custId,cusCode,cusName"
+             from-fields="id,cusCode,cusName"
+             :suffix="true"
+             :suffix-model="formDataInfo.master.cusName"
+             :query-params="{}"
+             >
+             </popup>
+          </FormItem>
+        </Col>
+      </Row>
+      
+      <Row>
+        <Col span="6">
+          <FormItem label="客户产品编号" prop="master.puCustProdNo">
+            <Input v-model="formDataInfo.master.puCustProdNo"></Input>
+          </FormItem>
+        </Col>
+
+        <Col span="6">
+          <FormItem label="客户产品名称" prop="master.puCustProdName">
+            <Input v-model="formDataInfo.master.puCustProdName"></Input>
+          </FormItem>
+        </Col>
+
+        <Col span="6">
+          <FormItem label="客户单套面积" prop="master.puCustSArea">
+            <Input v-model="formDataInfo.master.puCustSArea"></Input>
+          </FormItem>
+        </Col>
+
+        <Col span="6">
+          <FormItem label="客户单套重量" prop="master.puCustSWeight">
+            <Input v-model="formDataInfo.master.puCustSWeight"></Input>
+          </FormItem>
+        </Col>
+
+      </Row>
+
+      <Row>
+        <Col span="6">
+          <FormItem label="单套面积" prop="master.puSArea">
+            <Input v-model="formDataInfo.master.puSArea"></Input>
+          </FormItem>
+        </Col>
+        <Col span="6">
+          <FormItem label="单套体积" prop="master.puSCube">
+            <Input v-model="formDataInfo.master.puSCube"></Input>
+          </FormItem>
+        </Col>
+        <Col span="6">
+          <FormItem label="单套重量" prop="master.puSWeight">
+            <Input v-model="formDataInfo.master.puSWeight"></Input>
+          </FormItem>
+        </Col>
+      </Row>
+
+      <Row>
+        <Col span="6">
+          <FormItem label="生产备注" prop="master.puPRemark">
+            <!--生产备注-->
+            <popup v-model="formDataInfo.master.puPRemark"
+             field-name="puPRemark" :disabled="false" popup-name="ResumeSingleBox"
+              :fill-model.sync="formDataInfo.master" render-fields="puPRemark" from-fields="resumeName"
+              :query-params="{resumeType:'C'}"
+              :blurFocusLoadData="false"
+              />
+          </FormItem>
+        </Col>
+
+        <Col span="6">
+          <FormItem label="送货备注" prop="master.puDRemark">
+           <!--送货备注-->
+           <popup v-model="formDataInfo.master.puDRemark" field-name="puDRemark" :disabled="false" popup-name="ResumeSingleBox"
+             :fill-model.sync="formDataInfo.master" render-fields="puDRemark" from-fields="resumeName"
+             :query-params="{resumeType:'H'}"
+             :blurFocusLoadData="false"
+             />
+          </FormItem>
+        </Col>
+        <Col span="6">
+          <FormItem label="备注" prop="master.remark">
+            <Input v-model="formDataInfo.master.remark"></Input>
+          </FormItem>
+        </Col>
+      </Row>
+
+      </Form>
+         <!--  注意:eTable formDataInfo.wareHouseItems.defaultList  ===wareHouseItems=== 需要根据实际接口修改,其它不变-->
+
+     <Tabs>
+        <TabPane :label="initData.listView.productUnionItemFm.tableDesc" name="name1">
+          <eTable
+            ref="productUnionItemFm_edit"
+            unqiue-mark="id"
+            :height="260"
+            :index-menu="true"
+            :col-start="0"
+            :width="200"
+            :row-init-data="initData.initData.productUnionItemFm"
+            :data.sync="productUnionList"
+            :rules="tableFieldsValidator"
+            @row-click="productUnionItemFmRowClick"
+          >
+            <template slot="head">
+              <tr v-for="(columnGroup,index) in initData.columns.productUnionItemFm.editGroups" :key="index">
+                <th class="ivu-table-column-left"
+                v-for="(column,index2) in columnGroup" :key="index2"
+                :width="column.width"
+                :colspan="column.colSpan"
+                :rowspan="column.rowSpan"
+                style="text-align:center;"
+                >
+                  <div class="ivu-table-cell">
+                    <span class="">{{column.title}}</span>
+                  </div>
+                </th>
+
+              </tr>
+            </template>
+            <template
+              slot="body"
+              slot-scope="{ row, index, valueChangeAssign }"
+            >
+              <td class="ivu-table-column-left"
+               v-for="(column,columnIndex) in initData.columns.productUnionItemFm.editColumns"
+               :key="columnIndex"
+               :width="column.width">
+                <popup v-if="column.key == 'prodNo'"
+                v-model="row[column.key]"
+                field-name="prodNo"
+                :disabled="false"
+                popup-name="ProductMultiBox"
+                :fill-model.sync="productUnionList"
+                render-fields="productId,prodNo,bpName"
+                from-fields="productId,bpNo,bpName"
+                :init-data="initData.initData.productUnionItemFm"
+                :suffix="false"
+                :index="index"
+                :query-params="{'bpNo$notIn':productUnionItemFmProdNoList,custId:formDataInfo.master.custId}"
+                @input="value => {
+                               valueChangeAssign(value, index, row, 'prodNo');
+                             }
+                       "
+                 @on-fill="fillProductUnionSubFm"
+                ></popup>
+                <formControl v-else :control-type="column.controlType"
+                v-model="row[column.key]" :disabled="column.readOnly"
+                @input="value => {
+                               valueChangeAssign(value, index, row,column.key);
+                             }
+                       "
+                ></formControl>
+              </td>
+            </template>
+          </eTable>
+        </TabPane>
+      </Tabs>
+
+      <Tabs>
+        <TabPane :label="initData.listView.productUnionSubFm.tableDesc" name="name1">
+          <eTable
+            ref="productUnionSubFm_edit"
+            unqiue-mark="id"
+            :height="260"
+            :index-menu="true"
+            :col-start="0"
+            :width="200"
+            :row-init-data="initData.initData.productUnionSubFm"
+            :data="productUnionSubList"
+            :rules="tableFieldsValidator"
+          >
+            <template slot="head">
+              <tr v-for="(columnGroup,index) in initData.columns.productUnionSubFm.editGroups" :key="index">
+                <th class="ivu-table-column-left"
+                v-for="(column,index2) in columnGroup" :key="index2"
+                :width="column.width"
+                :colspan="column.colSpan"
+                :rowspan="column.rowSpan"
+                style="text-align:center;"
+                >
+                  <div class="ivu-table-cell">
+                    <span class="">{{column.title}}</span>
+                  </div>
+                </th>
+
+              </tr>
+            </template>
+            <template
+              slot="body"
+              slot-scope="{ row, index, valueChangeAssign }"
+            >
+              <td class="ivu-table-column-left"
+               v-for="(column,index) in initData.columns.productUnionSubFm.editColumns"
+               :key="index"
+               :width="column.width">
+                <formControl :disabled="true" :control-type="column.controlType" v-model="row[column.key]"></formControl>
+              </td>
+            </template>
+          </eTable>
+        </TabPane>
+      </Tabs>
+
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:07:54
+ */
+import editWindow from "@/components/edit-window/edit-window";
+// import Form from '@/components/form/form'
+import eTable from "@/components/e-table/e-table";
+import request from "@/libs/request";
+import editBaseMixins from "../../mixins/edit";
+ import formControl from '@/components/form-control/form-control'
+  import popup from "@/components/popup/popup";
+const default_formDataInfo = {
+        // 主表 更改字段
+        master: {
+          whCode: "",
+          whName: "",
+          whType: "",
+          remark: ""
+        },
+        // 子表 wareHouseItems 根据实际接口更改,其它不变
+        wareHouseItems: {
+          addList: [], // 添加列
+          defaultList: [], // 默认列
+          deleteList: [], // 删除列
+          updateList: [] // 更新列
+        }
+      }
+export default {
+  name: "edit-warehouse",
+  mixins: [editBaseMixins],
+  components: {
+    editWindow,
+    // Form,
+    eTable,
+    formControl,
+    popup
+  },
+  data() {
+    return {
+      formName:'productUnionFm',
+      requestBaseUrl: "/bas/productUnion", // 请求 查询 操作的基础路径
+      formDataInfo:{
+        master:{},
+        productUnionSlaves:[]
+      },// 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {
+      },
+      tableFieldsValidator: {
+      },
+      productUnionItemFmRowIndex:0,
+      productUnionList:[],
+      productUnionSubList:[],
+      productUnionSubItems:{
+
+      }
+    };
+  },
+watch:{
+  initData:{
+    handler(n,o){
+      if(n.initData){
+        this.formDataInfo.master = n.initData.master;
+      }
+    },
+    deep:true
+  }
+},
+computed:{
+  productUnionItemFmProdNoList(){
+    //获取产品编号	列表，转换为 "",""格式，用于弹出框排除数据
+    let temp = [];
+    this.productUnionList.forEach((item,index)=>{
+      if(item.master && item.master.prodNo !=''){
+        temp.push(item.master.prodNo);
+      }
+     });
+     return temp.toString();
+  }
+},
+  methods: {
+     // 重写父类,添加时候,清空数据
+    HandleFormDataInfo(){
+     this.formDataInfo=Object.assign({},default_formDataInfo)
+    },
+    // 重写父类,修改提交数据
+    resetformDataInfo() {
+      //组装数据
+      /**
+       * {
+          master:{},
+          productUnionSlaves:[
+            {master:{},productUnionSubList:[]}
+          ]
+       }
+       productUnionItemFm_edit
+       productUnionSubFm_edit
+       */
+      //debugger;
+      let data = {
+        master:this.formDataInfo.master
+      }
+      let productUnionSlaves = [];
+      let unionItemList = this.$refs.productUnionItemFm_edit.getTableEditData();
+      unionItemList.forEach((item,index) => {
+        let sub = [];
+        if(!item.hasDelete){
+          sub = this.productUnionSubItems[item.prodNo];
+        }
+        productUnionSlaves.push({
+          master:item,
+          productUnionSubList: sub
+        })
+      })
+
+      data['productUnionSlaves'] = productUnionSlaves;
+      //console.log(data);
+      return data;
+    },
+    fillProductUnionSubFm(data){
+      //填充第三层表的数据，根据第二层表中的产品编号（productId）和产品类型
+      //去查询第三层的数据
+      console.log(data);
+      debugger;
+      data.forEach((item)=>{
+        let _self = this;
+        request.get('bas/productUnion/sub/getProductInfo',{
+        },{
+            productNo:item.data.prodNo,
+            type:item.orignData.type
+          }).then(res=>{
+          if(_self.productUnionItemFmRowIndex == item.index){
+            _self.productUnionSubList = res;
+          }
+          //产品编号：
+          _self.productUnionSubItems[item.data.prodNo] = res;
+        }).catch(err=>{
+          //console.log(err);
+          _self.$Message.error(`产品编号${item.data.prodNo}获取套件失败`);
+        })
+      })
+    },productUnionItemFmRowClick(index){
+      //第二层表被点击，显示第三层表的数据
+      this.productUnionItemFmRowIndex = index;
+      this.productUnionSubList = [];
+      this.productUnionSubList = this.productUnionSubItems[this.productUnionList[index].prodNo];
+    },formDetailDataCall(){
+      //数据初始化，把第二层表的master组装成一个List结构
+       this.productUnionList = [];
+        this.formDataInfo.productUnionSlaves.forEach((item,index)=>{
+          this.productUnionList.push(item.master);
+          this.productUnionSubItems[item.master.prodNo] = item.productUnionSubList;
+        });
+    },formTableDataSubmit(){
+      //提交数据
+      let data = this.resetformDataInfo();
+
+      this.$refs['formDataInfo'].validate(valid => {
+        if (!valid) {
+          return
+        }
+        let result = this.$refs['productUnionItemFm_edit'].validate()
+        if (result) {
+          return
+        }
+        request.post('bas/productUnion/saveOrUpdate',data).then(res=>{
+          //console.log(res);
+          this.$Message.success('执行成功');
+        }).catch(err=>{
+          //console.log(err);
+          this.$Message.error('执行失败');
+        })
+      })
+
+
+    }
+  }
+};
+</script>
+
+<style>
+.cl-edit-productSuite .ivu-form-item {
+  margin-bottom: 5px !important;
+}
+
+.cl-edit-productSuite .ivu-select-item {
+  display: block;
+}
+</style>

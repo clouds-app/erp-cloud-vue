@@ -10,7 +10,7 @@
                   <tr>
                     <th class="ivu-table-column-center" :style="{height:headRowCount*25+'px !important'}">
                       <div class="ivu-table-cell">
-                        <span class="">序号</span>
+                        <span class="">行号</span>
                       </div>
                     </th>
                   </tr>
@@ -19,7 +19,7 @@
               <table ref="tableIndex" cellspacing="0" cellpadding="0" border="0" :style="{'padding-top':headRowCount*25+'px',width:'50px','z-index':6,position:'absolute'}">
                 <tbody>
                   <tr v-for="(item,index) in cloneData" :tabindex="index"  @click="rowClick(index,'row-click')" @dblclick="rowClick(index,'row-dbClick')" :class="{'edit-row-bg':editIndex == index}" :key="index" style="line-height: 10px;                                        ">
-                    <rightMenu :style="{height:'24px'}" :row_index="index" @menu-delete="menuDelete" @menu-insert="menuInsert">
+                    <rightMenu :showEdit="showEditMenu" :style="{height:'24px'}" :row_index="index" @menu-edit="menuEdit" @menu-delete="menuDelete" @menu-insert="menuInsert">
                       <td width="50" style="height:25px;text-align:center;width:50px;">{{index+1}}</td>
                     </rightMenu>
                   </tr>
@@ -109,6 +109,11 @@ export default {
     }
   },
   props: {
+    	// 是否显示编辑项 add by andy 2020-02-27
+		showEditMenu:{
+				type:Boolean,
+				default:false
+		},
     data: Array,
     height: {
       type: Number,
@@ -308,6 +313,7 @@ export default {
         }
       })
     },
+    
     deleteEvent () {
       // 快捷键删除行
       if (this.editIndex >= 0) {
@@ -544,6 +550,7 @@ export default {
     valueChangeAssign (value, index, row, key) {
       // debugger
       if (value ===''){
+        this.valueChangeValidator(key, value, index);
         return
       }
       this.modifyKey = key
@@ -584,32 +591,38 @@ export default {
       }
     },
     validate () {
-      if (Object.keys(this.rules).length > 0) {
-        let validator = new AsyncValidator(this.rules)
-        for (let i = 0; i < this.cloneData.length; i++) {
-          validator.validate(this.cloneData[i], (errors, fields) => {
+      let _self = this
+      if (Object.keys(_self.rules).length > 0) {
+        let validator = new AsyncValidator(_self.rules)
+        for (let i = 0; i < _self.cloneData.length; i++) {
+          validator.validate(_self.cloneData[i], (errors, fields) => {
             let errorsItem = {}
-            this.errorInfo = []
-            this.errorMark = errors && errors.length > 0
-            if (this.errorMark) {
+            _self.errorInfo = []
+            _self.errorMark = errors && errors.length > 0
+            if (_self.errorMark) {
               errors.forEach(({
                 message,
                 field
               }) => {
                 errorsItem[field] = message
-                this.errorInfo.push(message)
+                _self.errorInfo.push(message)
               })
             }
             if (Object.keys(errorsItem).length > 0) {
 
             }
           })
-          if (this.errorMark) {
+          if (_self.errorMark) {
             break
           }
         }
       }
-      return this.errorMark
+      return _self.errorMark
+    },
+    // 编辑功能,返回当前下表和当前选择行的ITEM数据
+    menuEdit (index) {
+      let rowData = JSON.parse(JSON.stringify(this.cloneData[index]))
+      this.$emit('row-edit', index, rowData)
     },
     menuDelete (index) {
       let bakDeleteData = JSON.parse(JSON.stringify(this.cloneData[index]))

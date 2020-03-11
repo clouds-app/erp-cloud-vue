@@ -1,0 +1,93 @@
+<template>
+  <Modal :styles="{top: fullscreen?'0':'45px'}" v-model="show" :mask-closable="maskClosable"  class="edit-window"
+  :scrollable="scrollable" :fullscreen="fullscreen"  :title="title"
+    @on-ok="onOk" @on-cancel="onCancel" :width="width">
+     <div>
+       <Spin size="large" fix v-if="loading"></Spin>
+    </div>
+    <slot></slot>
+    <div slot="footer">
+      <Button @click="onCancel">取消</Button>
+      <Button :loading="loading" type="primary" @click="onOk">确定</Button>
+    </div>
+  </Modal>
+</template>
+
+<script>
+  export default {
+    data() {
+      return {
+        show: false,
+        html: ''
+      }
+    },
+    props: {
+      spinLoaddingText:{
+          type: String,
+          default: ''
+      },
+      loading:{
+        type: Boolean,
+        default: false
+      },
+      maskClosable: {
+        type: Boolean,
+        default: false
+      },
+      scrollable: {
+        type: Boolean,
+        default: true
+      },
+      fullscreen: {
+        type: Boolean,
+        default: true
+      },
+      title: {
+        type: String,
+        default: '窗口'
+      },
+      value: {
+        type: Boolean,
+        default: false
+      },
+      width: {
+        type: String | Number,
+        default: 'auto'
+      },
+      lazyTime: {
+        required: false,
+        default: 0
+      }
+    },
+    watch: {
+      show(n, o) {
+        this.$emit('input', n);
+      },
+      value(n, o) {
+       // debugger
+        this.show = n;
+      }
+    },
+    methods: {
+      onOk() {
+        this.$emit('on-ok');
+      },
+      onCancel() {
+        this.show = false;
+        this.$emit('on-cancel');
+      }
+    },
+    created() {}
+  }
+</script>
+
+<style>
+
+.edit-window .ivu-modal-body{
+  padding: 10px 20px 0 10px !important;
+}
+.edit-window .ivu-modal-header{
+  background-color: #fcfcfc;
+}
+
+</style>

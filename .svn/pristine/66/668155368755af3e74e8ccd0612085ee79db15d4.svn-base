@@ -1,0 +1,4 @@
+@import 'vxe-table/styles/variable.scss';
+/*table color*/
+$vxe-table-header-background-color: #f9f9f9;
+@import 'vxe-table/styles/default.scss';

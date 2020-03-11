@@ -1,0 +1,123 @@
+<template>
+  <Modal v-model="modalShow"  title="纸板规格" :width="900">
+    <vTable :columns="columns"
+    :showIndex="false"
+    :tableData="tableSelectedDataComptued"
+    @row-click="rowClick"></vTable>
+    <div slot="footer">
+      <Button @click="modalShow = false">取消</Button>
+      <Button type="primary" @click="onOK">确定</Button>
+    </div>
+    </Modal>
+</template>
+
+<script>
+//纸板规格组件
+ import vTable from '@/components/tables/vTable';
+ import request from "@/libs/request";
+ import calc from "@/libs/calc";
+export default {
+  name: 'productSpec',
+  components: {vTable },
+  data() {
+    return {
+      modalShow: false,
+      data:[],
+      bmIndex:0,
+      selectedData:{}
+    };
+  },
+  computed:{
+    tableSelectedDataComptued(){
+      let filterData = this.data.filter((item)=>{
+        return item.bmIndex == this.bmIndex;
+      });
+      this.calcUseMaterialNum(filterData);
+      return filterData;
+    }
+  },
+  watch: {
+    value(n, o) {
+      this.modalShow = n;
+    },
+    modalShow(n, o) {
+      this.$emit('input', n);
+    }
+  },
+  props: {
+    value: {
+      type: Boolean,
+      default: false
+    },
+    columns: {
+      type: Array,
+      default: () => {
+        return [];
+      }
+    },
+    bpMoCut:{//模数
+      type:Number,
+      default:1
+    }
+  },
+  methods: {
+    loadData(materialData,bmIndex){
+      this.bmIndex = bmIndex;
+      //查询出规格
+      request.fsLoading = true;
+      request.post('/bas/product/calMaterialData',materialData).then(res=>{
+        this.data = res;
+      }).catch(err=>{
+
+      })
+    },
+    rowClick(rowData,rowIndex) {
+      this.selectedData = rowData;
+    },
+    onOK(){
+      if(Object.keys(this.selectedData).length == 0){
+        this.$Message.info('请选择数据');
+        return;
+      }
+      this.selectedData['bmScoreType'] = 0;
+      this.selectedData['bmScoreDepth'] = 0;
+      this.$emit('on-ok',this.selectedData);
+      this.modalShow = false;
+    },calcUseMaterialNum(data){
+        //计算用料系数
+        /**
+         * 双片：2*1/总开数/模数
+         * 单片：1*1/总开数/模数
+         * 修边=用料宽-净料宽*纸度开
+         * 纸度开=用料规格宽/净料规格宽
+          纸长开=用料规格长/净料规格长
+          总开数=纸度开*纸长开
+         */
+        let _self = this;
+        data.forEach((item,index)=>{
+          //计算纸度开 纸度开=用料规格宽/净料规格宽
+          let bmKsW = calc.div(item.bmSizeW,item.bmSSizeW);
+          item.bmKsW = isNaN(bmKsW)?item.bmKsW:Math.floor(bmKsW);
+          //计算纸长开 纸长开=用料规格长/净料规格长
+          let bmKsL = calc.div(item.bmSizeL,item.bmSSizeL);
+          item.bmKsL = isNaN(bmKsL)?item.bmKsL:bmKsL;
+          //总开数=纸度开*纸长开
+          let bmKsTotal = calc.mul(item.bmKsW,item.bmKsL);
+          item.bmKsTotal = isNaN(bmKsTotal)?item.bmKsTotal:bmKsTotal;
+          //计算修边
+          let bmAdjBorder = calc.sub(item.bmSizeW,calc.mul(item.bmSSizeW,item.bmKsW));
+          item.bmAdjBorder = isNaN(bmAdjBorder)?item.bmAdjBorder:bmAdjBorder;
+          //计算用料系数
+          let modulus = 1;
+          if(item.bmDoubleCut){//双片
+            modulus = 2;
+          }
+          let qty = calc.div(modulus,calc.div(item.bmKsTotal,_self.bpMoCut));
+          item.bmQty = qty;
+        })
+      }
+  }
+};
+</script>
+
+<style></style>

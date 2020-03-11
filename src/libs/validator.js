@@ -4,11 +4,12 @@ let rules = {
     return {success:true};
   },fail(msg){
     return {success:false,message:msg?msg:''};
-  },required(value){
+  },required(value,fieldDesc){
 			if(value && value != null && value.trim() != ''){
 				return this.success();
 			}
-			return this.fail('不能为空');
+			//return this.fail('不能为空');
+			return this.fail(`${fieldDesc}不能为空`);
 		},number(value,fieldDesc){
 			if(isNaN(Number(value))){
         return this.fail(`${fieldDesc}必须是数字`);
@@ -99,6 +100,12 @@ let rules = {
 				return true
 			}else{
 				return this.fail(`${fieldDesc}只能大于零`)
+			}
+		},piGramnumber(value,fieldDesc){
+			if(/^\d{1,3}(?:\.\d{1,3})?$/.test(value)){
+				return true
+			}else{
+				return this.fail(`${fieldDesc}不能大于三位数`)
 			}
 		}
 
