@@ -3,13 +3,23 @@
     <editWindow class="cl-edit-salesOrder" :title="actionLableName" v-model="showWindow"
     :fullscreen="true" :loading="!isLoaddingDone"
       :spinLoaddingText="spinLoaddingText" @on-ok="submitFormDataEvent" @on-cancel="closeActionTigger">
-      <div  v-if="initData.columns && showWindow">
+      <div  v-if="formDataInfo.initData && formDataInfo.initData.columns && showWindow">
         <Form ref="masterForm" :show-message="true" :model="formDataInfo.master" :rules="ruleValidate" :label-width="90"
             >
 
               <div>
                 <Row>
                    <!-- row-1 -->
+                    <Col span="5">
+                  <FormItem label="交货日期" prop="biDeDate">
+                   <DatePicker
+                    type="datetime"
+                    format="yyyy-MM-dd HH:mm:ss"
+                    placeholder="交货日期"
+                    v-model="formDataInfo.master.biDeDate"
+                  ></DatePicker>
+                  </FormItem>
+                  </Col>
                   <Col span="4">
                   <FormItem label="工单号" prop="biWorkNo">
                     <Input v-model="formDataInfo.master.biWorkNo" maxlength="80" :disabled="true" placeholder="工单号"></Input>
@@ -20,35 +30,28 @@
                      <optionSearch
                           @onChange="optionOnChangeBy"
                           :defaultItem="formDataInfo.master.biCoType"
-                          :loaddingDataWhen="showWindow"
+                          :loadDataImmediately="true"
+                          formKey="biCoType"
                           query="biCoType"
                         />
                   </FormItem>
                   </Col>
-                  <Col span="5">
-                  <FormItem label="交货日期" prop="biDeDate">
-                   <DatePicker
-                    type="datetime"
-                    format="yyyy-MM-dd HH:mm:ss"
-                    placeholder="交货日期"
-                    v-model="formDataInfo.master.biDeDate"
-                  ></DatePicker>
+                 <Col span="4">
+                  <FormItem label="计价方式" prop="biPriceType">
+                      <optionSearch
+                          :disabled="false"
+                          @onChange="optionOnChangeBy"
+                          :defaultItem="formDataInfo.master.biPriceType"
+                          :loadDataImmediately="true"
+                          formKey="biPriceType"
+                          query="biPriceType"
+                        />
                   </FormItem>
                   </Col>
                    <Col span="5">
-                  <FormItem label="订单日期" prop="biDeDate">
-                   <DatePicker
-                    type="datetime"
-                    format="yyyy-MM-dd HH:mm:ss"
-                    placeholder="订单日期"
-                    v-model="formDataInfo.master.biDeDate"
-                  ></DatePicker>
-                  </FormItem>
-                  </Col>
-                 <Col span="4">
-                  <FormItem label="计价方式" prop="biPriceType">
-                    <Input v-model="formDataInfo.master.biPriceType" :disabled="true" maxlength="80" placeholder="计价方式"></Input>
-                  </FormItem>
+                      <FormItem label="货号" prop="biGoodsNo">
+                        <Input v-model="formDataInfo.master.biGoodsNo" maxlength="80" placeholder="货号"></Input>
+                      </FormItem>
                   </Col>
                   <!-- row-2 -->
                    <Col span="4">
@@ -64,34 +67,29 @@
                     <Input v-model="formDataInfo.master.biProdName" maxlength="20" placeholder="产品名称"></Input>
                   </FormItem>
                   </Col>
-                  <Col span="5">
+                  <Col span="9">
                   <FormItem  label="料号" prop="biBatchNo">
                     <Input v-model="formDataInfo.master.biBatchNo" maxlength="20" placeholder="料号"></Input>
                   </FormItem>
                   </Col>
                   <Col span="5">
-                  <FormItem label="货号" prop="biGoodsNo">
-                    <Input v-model="formDataInfo.master.biGoodsNo" maxlength="80" placeholder="货号"></Input>
-                  </FormItem>
-                  </Col>
-                  <Col span="4">
                   <FormItem label="商检号" prop="biChopNo">
                     <Input v-model="formDataInfo.master.biChopNo" maxlength="80" placeholder="商检号"></Input>
                   </FormItem>
                   </Col>
                   <!-- row-3 -->
                  <Col span="5">
-                  <FormItem label="盒式" prop="cusBoxCode">
-                    <popup v-model="formDataInfo.master.cusBoxCode" field-name="cusBoxCode" :disabled="false" popup-name="BoxSingleBox"
-                      :fill-model.sync="formDataInfo.master" render-fields="cusBoxId,cusBoxCode,cusBoxName,proBoxId,proBoxCode,proBoxName"
-                      from-fields="id,boxCode,boxName,id,boxCode,boxName" :suffix="true" :suffix-model="formDataInfo.master.cusBoxName"
+                  <FormItem label="盒式" prop="bpCBoxCode">
+                    <popup v-model="formDataInfo.master.bpCBoxCode" field-name="bpCBoxCode" :disabled="false" popup-name="BoxSingleBox"
+                      :fill-model.sync="formDataInfo.master" render-fields="bpCBoxId,bpCBoxCode,bpCBoxName,bpPBoxId,bpPBoxCode,bpPBoxName"
+                      from-fields="id,boxCode,boxName,id,boxCode,boxName" :suffix="true" :suffix-model="formDataInfo.master.bpCBoxName"
                       :query-params="{}" />
                   </FormItem>
                   </Col>
                   <Col span="4">
-                  <FormItem :label-width="60"  label="纸质" prop="cusArtCode">
-                    <popup v-model="formDataInfo.master.cusArtCode" field-name="cusArtCode" :disabled="false" popup-name="ArtSingleBox"
-                      :fill-model.sync="formDataInfo.master" render-fields="cusArtId,cusArtCode,proArtId,proArtCode"
+                  <FormItem :label-width="60"  label="纸质" prop="bpCArtCode">
+                    <popup v-model="formDataInfo.master.bpCArtCode" field-name="bpCArtCode" :disabled="false" popup-name="ArtSingleBox"
+                      :fill-model.sync="formDataInfo.master" render-fields="bpCArtId,bpCArtCode,bpPArtId,bpPArtCode"
                       from-fields="id,artCode,id,artCode" @on-fill="artPopupFillEvent" :suffix="false" />
                   </FormItem>
                   </Col>
@@ -103,16 +101,16 @@
                   </FormItem>
                   </Col>
                 <Col span="5"> 
-                  <FormItem  label="生产盒式" prop="proBoxCode">
-                    <popup v-model="formDataInfo.master.proBoxCode" field-name="proBoxCode" :disabled="false" popup-name="BoxSingleBox"
-                      :fill-model.sync="formDataInfo.master" render-fields="proBoxId,proBoxCode,proBoxName" from-fields="id,boxCode,boxName"
-                      :suffix="true" :suffix-model="formDataInfo.master.proBoxName" :query-params="{}" />
+                  <FormItem  label="生产盒式" prop="bpPBoxCode">
+                    <popup v-model="formDataInfo.master.bpPBoxCode" field-name="bpPBoxCode" :disabled="false" popup-name="BoxSingleBox"
+                      :fill-model.sync="formDataInfo.master" render-fields="bpPBoxId,bpPBoxCode,bpPBoxName" from-fields="id,boxCode,boxName"
+                      :suffix="true" :suffix-model="formDataInfo.master.bpPBoxName" :query-params="{}" />
                   </FormItem>
                   </Col>
                   <Col span="4">
-                  <FormItem label="生产纸质" prop="proArtCode">
-                    <popup v-model="formDataInfo.master.proArtCode" field-name="proArtCode" :disabled="false" popup-name="ArtSingleBox"
-                      :fill-model.sync="formDataInfo.master" render-fields="proArtId,proArtCode" from-fields="id,artCode"
+                  <FormItem label="生产纸质" prop="bpPArtCode">
+                    <popup v-model="formDataInfo.master.bpPArtCode" field-name="bpPArtCode" :disabled="false" popup-name="ArtSingleBox"
+                      :fill-model.sync="formDataInfo.master" render-fields="bpPArtId,bpPArtCode" from-fields="id,artCode"
                       :suffix="false" />
                   </FormItem>
                   </Col>
@@ -121,28 +119,28 @@
                      <FormItem label="规格" required>
                         <Row>
                           <Col span="5">
-                            <Input  type="number"  @mousewheel.native.prevent number  v-model="formDataInfo.master.cusSizeLength"
+                            <Input  type="number"  @mousewheel.native.prevent number  v-model="formDataInfo.master.bpCSizeL"
                               maxlength="11"
                               placeholder="长"
-                              @on-blur="cusSizeLengthBlurEvent"
+                              @on-blur="bpCSizeLBlurEvent"
                               ></Input >
                           </Col>
                           <Col span="1">
                            <span>X</span>
                           </Col>
                           <Col span="5">
-                            <Input type="number"  @mousewheel.native.prevent number v-model="formDataInfo.master.cusSizeWidth"
+                            <Input type="number"  @mousewheel.native.prevent number v-model="formDataInfo.master.bpCSizeW"
                             maxlength="11" placeholder="宽"
-                            @on-blur="cusSizeWidthBlurEvent"
+                            @on-blur="bpCSizeWBlurEvent"
                             ></Input>
                           </Col>
                           <Col span="1">
                             <span>X</span>
                           </Col>
                           <Col span="5">
-                            <Input type="number"  @mousewheel.native.prevent number v-model="formDataInfo.master.cusSizeHeight"
+                            <Input type="number"  @mousewheel.native.prevent number v-model="formDataInfo.master.bpCSizeH"
                             maxlength="11" placeholder="高"
-                            @on-blur="cusSizeHeightBlurEvent"
+                            @on-blur="bpCSizeHBlurEvent"
                             ></Input>
                           </Col>
                           <Col span="7">
@@ -162,19 +160,19 @@
                    <FormItem  label="生产规格" required>
                       <Row>
                         <Col span="7">
-                          <Input  type="number"  @mousewheel.native.prevent number v-model="formDataInfo.master.proSizeLength" placeholder="长"></Input >
+                          <Input  type="number"  @mousewheel.native.prevent number v-model="formDataInfo.master.bpPSizeL" placeholder="长"></Input >
                         </Col>
                           <Col span="1">
                             <span>X</span>
                         </Col>
                           <Col span="6">
-                            <Input  type="number"  @mousewheel.native.prevent number v-model="formDataInfo.master.proSizeWidth" placeholder="宽"></Input >
+                            <Input  type="number"  @mousewheel.native.prevent number v-model="formDataInfo.master.bpPSizeW" placeholder="宽"></Input >
                         </Col>
                           <Col span="1">
                           <span>X</span>
                         </Col>
                           <Col span="6">
-                          <Input  type="number"  @mousewheel.native.prevent number v-model="formDataInfo.master.proSizeHeight" placeholder="高"></Input >
+                          <Input  type="number"  @mousewheel.native.prevent number v-model="formDataInfo.master.bpPSizeH" placeholder="高"></Input >
                         </Col>
                       </Row>
                     </FormItem>
@@ -203,8 +201,8 @@
                   </FormItem>
                   </Col>
                  <Col span="3">
-                  <FormItem label="配套系数" prop="boxCoefficient">
-                      <Input type="number"  @mousewheel.native.prevent number v-model="formDataInfo.master.boxCoefficient" placeholder="配套系数"></Input>
+                  <FormItem label="配套系数" prop="bpBoxPS">
+                      <Input type="number"  @mousewheel.native.prevent number v-model="formDataInfo.master.bpBoxPS" placeholder="配套系数"></Input>
                   </FormItem>
                   </Col>
                    <Col span="9">
@@ -214,34 +212,44 @@
                       <Checkbox class="CheckboxItem" v-model="formDataInfo.master.iisOutSideSend">外发</Checkbox>
                       <Checkbox class="CheckboxItem" v-model="formDataInfo.master.bpIsFullPrint">满版印刷</Checkbox>
                       <Checkbox class="CheckboxItem" v-model="formDataInfo.master.biIsWaitDeli">待通知</Checkbox>
-                      <Checkbox class="CheckboxItem" v-model="formDataInfo.master.iisClose">完结</Checkbox> 
+                      <Checkbox :disabled="false" class="CheckboxItem" v-model="formDataInfo.master.iisClose">完结</Checkbox> 
                    </FormItem>
                   </Col>
                   <!-- row-6 -->
                    <Col span="9">
-                  <FormItem label="生产备注" prop="proRemark">
-                    <popup v-model="formDataInfo.master.proRemark" field-name="proRemark" :disabled="false" popup-name="ResumeSingleBox"
-                      :fill-model.sync="formDataInfo.master" render-fields="proRemark" from-fields="resumeName"
+                  <FormItem label="生产备注" prop="biPRemark">
+                    <popup v-model="formDataInfo.master.biPRemark" field-name="biPRemark" :disabled="false" popup-name="ResumeSingleBox"
+                      :fill-model.sync="formDataInfo.master" render-fields="biPRemark" from-fields="resumeName"
                       :query-params="{resumeType:'C'}"
                       :blur-focus-load-data="false"
                       />
                   </FormItem>
                   </Col>
-                 <Col span="7">
-                  <FormItem :label-width="130" label="客户产品编号" prop="bpCustProdNo">
-                    <Input v-model="formDataInfo.master.bpCustProdNo" maxlength="80" placeholder="客户产品编号"></Input>
-                  </FormItem>
+                    <Col span="6">
+                    <FormItem :label-width="50" label="地区" prop="areaNames">
+                       <!--v-if 默认屏蔽,否则报错 -->
+                       <Cascader v-if="formDataInfo.master && formDataInfo.master.areaNames"
+                          style="padding-top: 5px;"
+                          :data="cityCascader"
+                          :load-data="getCityCascader"
+                           v-model="formDataInfo.master.areaNames"
+                           maxlength="20"
+                          placeholder="请输入所属地区"
+                        ></Cascader>
+                    </FormItem>
                   </Col>
-                  <Col span="7">
-                  <FormItem :label-width="130" label="客户产品名称" prop="bpCustProdName">
-                    <Input v-model="formDataInfo.master.bpCustProdName" maxlength="80" placeholder="客户产品名称"></Input>
-                  </FormItem>
+                  <Col span="8">
+                    <FormItem label="交货地址" prop="addrDetail">
+                      <Input v-model="formDataInfo.master.addrDetail" maxlength="80" placeholder="交货地址"></Input>
+                    </FormItem>
+                  </Col>
+
                   </Col>
                   <!-- row-7 -->
                     <Col span="9">
-                  <FormItem label="送货备注" prop="delRemark">
-                    <popup v-model="formDataInfo.master.delRemark" field-name="delRemark" :disabled="false" popup-name="ResumeSingleBox"
-                      :fill-model.sync="formDataInfo.master" render-fields="delRemark" from-fields="resumeName"
+                  <FormItem label="送货备注" prop="biDRemark">
+                    <popup v-model="formDataInfo.master.biDRemark" field-name="biDRemark" :disabled="false" popup-name="ResumeSingleBox"
+                      :fill-model.sync="formDataInfo.master" render-fields="biDRemark" from-fields="resumeName"
                       :query-params="{resumeType:'H'}"
                       :blur-focus-load-data="false"
                       />
@@ -268,24 +276,24 @@
                   </FormItem>
                   </Col>
                 <Col span="3">
-                  <FormItem :label-width="60"  label="批准人" prop="spePriceAuditor">
-                    <Input v-model="formDataInfo.master.spePriceAuditor" maxlength="80" placeholder="批准人"></Input>
+                  <FormItem :label-width="60"  label="批准人" prop="biSPriceAuditor">
+                    <Input v-model="formDataInfo.master.biSPriceAuditor" maxlength="80" placeholder="批准人"></Input>
                   </FormItem>
                   </Col>
                  <!-- row-8 -->
-                  <Col span="6">
-                    <FormItem label="交货地址" prop="addrDetail">
-                      <Input v-model="formDataInfo.master.addrDetail" maxlength="80" placeholder="交货地址"></Input>
-                    </FormItem>
+                    <Col span="4">
+                  <FormItem  label="客户产品" prop="bpCustProdNo">
+                    <Input v-model="formDataInfo.master.bpCustProdNo" maxlength="80" placeholder="客户产品编号"></Input>
+                  </FormItem>
                   </Col>
-                   <Col span="2">
-                    <FormItem :label-width="50" label="地区" prop="addrDetail">
-                      <Input v-model="formDataInfo.master.addrDetail" maxlength="80" placeholder="地区"></Input>
-                    </FormItem>
+                  <Col span="5">
+                  <FormItem :label-width="0">
+                    <Input v-model="formDataInfo.master.bpCustProdName" maxlength="80" placeholder="客户产品名称"></Input>
+                  </FormItem>
                   </Col>
                    <Col span="3">
-                  <FormItem :label-width="65" label="单面积" prop="singleArea">
-                    <Input  type="number"  @mousewheel.native.prevent number :disabled="true" v-model="formDataInfo.master.singleArea" placeholder="单面积"></Input >
+                  <FormItem :label-width="65" label="单面积" prop="bpSArea">
+                    <Input  type="number"  @mousewheel.native.prevent number :disabled="true" v-model="formDataInfo.master.bpSArea" placeholder="单面积"></Input >
                   </FormItem>
                   </Col>
                     <Col span="3">
@@ -294,8 +302,8 @@
                   </FormItem>
                   </Col>
                     <Col span="3">
-                  <FormItem :label-width="65" label="单体积" prop="singleCube">
-                    <Input  type="number"  @mousewheel.native.prevent number :disabled="true" v-model="formDataInfo.master.singleCube" placeholder="单体积"></Input >
+                  <FormItem :label-width="65" label="单体积" prop="bpSCube">
+                    <Input  type="number"  @mousewheel.native.prevent number :disabled="true" v-model="formDataInfo.master.bpSCube" placeholder="单体积"></Input >
                   </FormItem>
                   </Col>
                   <Col span="3">
@@ -303,28 +311,28 @@
                     <Input  type="number"  @mousewheel.native.prevent number :disabled="true"  v-model="formDataInfo.master.biCube" placeholder="体积"></Input >
                   </FormItem>
                   </Col>
-                   <Col span="3">
-                  <FormItem :label-width="50" label="单重" prop="singleWeight">
-                    <Input  type="number"  @mousewheel.native.prevent number :disabled="true" v-model="formDataInfo.master.singleWeight" placeholder="单重"></Input >
+                   <Col span="2">
+                  <FormItem :label-width="50" label="单重" prop="bpSWeight">
+                    <Input  type="number"  @mousewheel.native.prevent number :disabled="true" v-model="formDataInfo.master.bpSWeight" placeholder="单重"></Input >
                   </FormItem>
                   </Col>
                   <!-- row-9 -->
                     <Col span="4">
-                  <FormItem label="模板" prop="plateNo">
-                    <popup v-model="formDataInfo.master.plateNo" field-name="plateNo" :disabled="false" popup-name="DieCuttingPlateSingleBox"
-                      :fill-model.sync="formDataInfo.master" render-fields="plateNo,plateName,dpLength,dpWidth"
+                  <FormItem label="模板编号" prop="bpDPNo">
+                    <popup v-model="formDataInfo.master.bpDPNo" field-name="bpDPNo" :disabled="false" popup-name="DieCuttingPlateSingleBox"
+                      :fill-model.sync="formDataInfo.master" render-fields="bpDPNo,plateName,dpLength,dpWidth"
                       from-fields="dpNo,bpName,dpLength,dpWidth" :suffix="true" :suffix-model="formDataInfo.master.plateName"
                        />
                   </FormItem>
                   </Col>
                  
-                    <Col span="6">
+                    <Col span="5">
                      <FormItem label="模板规格">
                     <Row>
                       <Col span="11">
                         <Input  type="number"  @mousewheel.native.prevent number v-model="formDataInfo.master.dpLength" placeholder="长" :disabled="true"></Input >
                       </Col>
-                        <Col span="1">
+                        <Col span="2">
                          <span>X</span>
                       </Col>
                         <Col span="11">
@@ -334,25 +342,25 @@
                   </FormItem>
                   </Col>
                   <Col span="5">
-                  <FormItem :label-width="55" label="印唛" prop="printMarksNo">
-                    <popup v-model="formDataInfo.master.printMarksNo" field-name="printMarksNo" :disabled="false" popup-name="PrintMarksSingleBox"
-                      :fill-model.sync="formDataInfo.master" render-fields="printMarksNo,printMarksName" from-fields="pmNo,bpName"
+                  <FormItem  label="印唛编号" prop="bpPMNo">
+                    <popup v-model="formDataInfo.master.bpPMNo" field-name="bpPMNo" :disabled="false" popup-name="PrintMarksSingleBox"
+                      :fill-model.sync="formDataInfo.master" render-fields="bpPMNo,printMarksName" from-fields="pmNo,bpName"
                       :suffix="true" :suffix-model="formDataInfo.master.printMarksName"  />
                   </FormItem>
                   </Col>
-                  <Col span="5">
-                  <FormItem :label-width="130" label="唛头文件地址" prop="pdfFileName">
-                    <Input v-model="formDataInfo.master.pdfFileName" maxlength="80" placeholder="唛头文件地址"></Input>
+                  <Col span="7">
+                  <FormItem  label="唛头文件" prop="bpPDFFileName">
+                    <Input v-model="formDataInfo.master.bpPDFFileName" maxlength="80" placeholder="唛头文件地址"></Input>
                   </FormItem>
                   </Col>
-                     <Col span="3">
+                     <Col span="2">
                   <FormItem :label-width="55" label="重量" prop="biWeight">
                     <Input  type="number"  @mousewheel.native.prevent number :disabled="true"  v-model="formDataInfo.master.biWeight" placeholder="重量"></Input >
                   </FormItem>
                   </Col>
 
                    <Col span="3">
-                  <FormItem :label-width="55" label="颜色" prop="bpColorNames">
+                  <FormItem label="印刷颜色" prop="bpColorNames">
                     <popup v-model="formDataInfo.master.bpColorNames" field-name="bpColorNames" :disabled="false" popup-name="ColorMultiBox"
                       :fill-model.sync="formDataInfo.master" render-fields="bpColorIds,bpColorNames" from-fields="id,colorName"
                       @on-fill="(a,length)=>{this.formDataInfo.master.biColorQty = length}" :suffix="false" :query-params="{}" />
@@ -368,10 +376,10 @@
                     <Input type="number"  @mousewheel.native.prevent number v-model="formDataInfo.master.bpMoCut" placeholder="模数"></Input>
                   </FormItem>
                   </Col>
-                 <Col span="3">
-                  <FormItem :label-width="55" label="印版" prop="printNo" class="ivu-form-item-text2">
-                    <popup v-model="formDataInfo.master.printNo" field-name="printNo" :disabled="false" popup-name="PrintSingleBox"
-                      :fill-model.sync="formDataInfo.master" render-fields="printNo,printName" from-fields="tpNo,bpName"
+                 <Col span="4">
+                  <FormItem  label="印版编号" prop="bpPPNo" class="ivu-form-item-text2">
+                    <popup v-model="formDataInfo.master.bpPPNo" field-name="bpPPNo" :disabled="false" popup-name="PrintSingleBox"
+                      :fill-model.sync="formDataInfo.master" render-fields="bpPPNo,printName" from-fields="tpNo,bpName"
                       :suffix="false" />
                   </FormItem>
                   </Col>
@@ -380,250 +388,168 @@
                       <Input v-model="formDataInfo.master.bcRepNo" maxlength="80" placeholder="补货单号"></Input>
                     </FormItem>
                   </Col>
-                    <Col span="9">
+                    <Col span="8">
                     <FormItem label="补货原因" prop="bcRepRemark">
                       <Input v-model="formDataInfo.master.bcRepRemark" maxlength="80" placeholder="补货原因"></Input>
                     </FormItem>
                   </Col>
-                   <!-- <Col span="3">
-                  <FormItem label="客户单面积" prop="cusSingleArea">
-                    <Input  type="number"  @mousewheel.native.prevent number :disabled="true" v-model="formDataInfo.master.cusSingleArea" placeholder="客户单面积">
-                    </Input >
-                  </FormItem>
-                  </Col> -->
-                    <!-- <Col span="3">
-                  <FormItem label="未交数" prop="biNoDelQty">
-                    <Input type="number"  @mousewheel.native.prevent number  v-model="formDataInfo.master.biNoDelQty" placeholder="未交数"></Input>
-                  </FormItem>
-                  </Col> -->
-                  
-                <!-- <Col span="3">
-                  <FormItem label="客方单重" prop="cusSingleWeight">
-                    <Input  type="number"  @mousewheel.native.prevent number :disabled="true" v-model="formDataInfo.master.cusSingleWeight" placeholder="客方单重"></Input >
-                  </FormItem>
-                  </Col> -->
-                  
-                  <!-- 
-                  <Col span="4">
-                  <FormItem label="完结人" prop="breakUpMan">
-                    <Input v-model="formDataInfo.master.breakUpMan" maxlength="80" placeholder="完结人"></Input>
-                  </FormItem>
-                  </Col>
-
-                 <Col span="3">
-                  <FormItem label="工单数" prop="bpProQty">
-                      <Input type="number"  @mousewheel.native.prevent number v-model="formDataInfo.master.bpProQty" placeholder="工单数"></Input>
-                  </FormItem>
-                  </Col>
-                 
-                    <Col span="4" >
-                  <FormItem  label="备注" prop="remark">
-                          <popup v-model="formDataInfo.master.remark" field-name="remark" :disabled="false" popup-name="ResumeSingleBox"
-                            :fill-model.sync="formDataInfo.master" render-fields="remark" from-fields="resumeName"
-                            :query-params="{resumeType:'H'}"
-                            :blur-focus-load-data="false"
-                            />
-                  </FormItem>
-                  </Col>
-                   <Col span="3">
-                  <FormItem label="标签数" prop="bpLableQty">
-                    <Input type="number"  @mousewheel.native.prevent number  v-model="formDataInfo.master.bpLableQty" placeholder="标签数"></Input>
-                  </FormItem>
-                  </Col>
-                  <Col span="3">
-                  <FormItem label="版费" prop="editAmount">
-                    <Input type="number"  @mousewheel.native.prevent number  v-model="formDataInfo.master.editAmount" placeholder="版费"></Input>
-                  </FormItem>
-                  </Col> -->
-                  
-                  <!-- <Col span="3">
-                  <FormItem label="修边" prop="bpAdjBorder">
-                    <Input  type="number" @on-blur="calcBoxExpressions"  @mousewheel.native.prevent number v-model="formDataInfo.master.bpAdjBorder" placeholder="修边"></Input >
-                  </FormItem>
-                  </Col> -->
-
-                  <!--          
-                  <Col span="3">
-                  <FormItem label="排程数" prop="bpProPlanQty">
-                    <Input  type="number"  @mousewheel.native.prevent number  v-model="formDataInfo.master.bpProPlanQty" placeholder="排程数"></Input >
-                  </FormItem>
-                  </Col>
-                 <Col span="3">
-                  <FormItem label="入库数" prop="biInStoreQty">
-                    <Input  type="number"  @mousewheel.native.prevent number  v-model="formDataInfo.master.biInStoreQty" placeholder="入库数"></Input >
-                  </FormItem>
-                  </Col>
-                 <Col span="3">
-                  <FormItem label="库存数" prop="bpStoreQty">
-                    <Input  type="number"  @mousewheel.native.prevent number  v-model="formDataInfo.master.bpStoreQty" placeholder="库存数"></Input >
-                  </FormItem>
-                  </Col>
-                 <Col span="3">
-                  <FormItem label="送货数" prop="bpDelQty">
-                    <Input  type="number"  @mousewheel.native.prevent number  v-model="formDataInfo.master.bpDelQty" placeholder="送货数"></Input >
-                  </FormItem>
-                  </Col>
-                 <Col span="3">
-                  <FormItem label="退货数" prop="biBackQty">
-                    <Input  type="number"  @mousewheel.native.prevent number  v-model="formDataInfo.master.biBackQty" placeholder="退货数"></Input >
-                  </FormItem>
-                  </Col> -->
-                
               
                 </Row>
               </div>
           </Form>
-
-          <Tabs>
-            <!--  注意:eTable formDataInfo.wareHouseItems.defaultList  ===wareHouseItems=== 需要根据实际接口修改,其它不变-->
-            <TabPane label="纸板规格" name="ProductMData">
-              <!-- 选择规格 -->
-              <eTable ref="slave_edit_productMDataFm"
-              unqiue-mark="id"
-              :height="tableDefaultHeight"
-              :index-menu="true" :col-start="0"
-              :width="200"
-              :row-init-data="initData.initData.productMDataFm"
-              :data.sync="productMDatasTableDataList"
-              :rules="tableFieldsValidator"
-              @on-table-change="calcUseMaterialNum"
-              @row-dbClick="paperSpecRowDBClickEvent"
+            <!-- tab标签列表 -->
+            <Tabs>
+       <!--注意: 初始化表头数据从父级传递过来 formDataInfo -->
+        <TabPane label="纸板规格">
+          <eTable
+            ref="sub_list_table_edit"
+            unqiue-mark="id"
+            :height="260"
+            :index-menu="true"
+            :col-start="0"
+            :width="200"
+            :row-init-data="formDataInfo.initData.initData[`${formInitPreName}mdataFm`]"
+            :data="formDataInfo.productMDatas.defaultList"
+            :rules="subTableFieldsValidator"
+          >
+            <template slot="head">
+              <tr v-for="(columnGroup,index) in formDataInfo.initData.columns[`${formInitPreName}mdataFm`].editGroups" :key="index">
+                <th class="ivu-table-column-left"
+                v-for="(column,index2) in columnGroup" :key="index2"
+                :width="column.width"
+                :colspan="column.colSpan"
+                :rowspan="column.rowSpan"
+                :columnKey="column.key"
+                style="text-align:center;"
                 >
-                <template slot="head">
-                  <tr v-for="(columnGroup,index) in initData.columns.productMDataFm.editGroups" :key="index">
-                    <th class="ivu-table-column-left"
-                    v-for="(column,index2) in columnGroup" :key="index2"
-                    :width="column.width"
-                    :colspan="column.colSpan"
-                    :rowspan="column.rowSpan"
-                    style="text-align:center;"
-                    >
-                      <div class="ivu-table-cell">
-                        <span class="">{{column.title}}</span>
-                      </div>
-                    </th>
+                  <div class="ivu-table-cell">
+                    <span class="">{{column.title}}</span>
+                  </div>
+                </th>
 
-                  </tr>
-                </template>
-
-                <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
-                  <td class="ivu-table-column-left"
-                   v-for="(column,columnIndex) in initData.columns.productMDataFm.editColumns"
-                   :key="columnIndex"
-                   :width="column.width"
-                   style="text-align:center;"
-                   >
-                   <popup v-model="row.artCode"
-                   v-if="column.key == 'artCode'"
-                   field-name="artCode"
-                   :disabled="false"
-                   popup-name="ArtSingleBox"
-                   :fill-model.sync="productMDatasTableDataList"
-                   render-fields="artCode"
-                   from-fields="artCode"
-                   :index="index"
-                   :suffix="false" />
-
+              </tr>
+            </template>
+            <template
+              slot="body"
+              slot-scope="{ row, index, tableColTiggerEvent }"
+            >
+              <td class="ivu-table-column-left"
+               v-for="(column,subIndex) in formDataInfo.initData.columns[`${formInitPreName}mdataFm`].editColumns"
+               :key="subIndex"
+               :width="column.width">
+                 <!-- 纸质编号-->
+                    <popup v-model="row.bpPArtCode"
+                      v-if="column.key == 'bpPArtCode'"
+                      field-name="bpPArtCode"
+                      :disabled="false"
+                      popup-name="ArtSingleBox"
+                      :fill-model.sync="formDataInfo.productMDatas.defaultList"
+                      render-fields="bpPArtCode"
+                      from-fields="artCode"
+                      :index="index"
+                      :suffix="false" />
+                    <!-- 压线类型-->
                    <Select v-model="row[column.key]" v-else-if="column.key == 'bmScoreType'" transfer>
                      <Option v-for="(item,index) in pressingLineTypeList" :key="index" :value="item.dicValue">{{item.dicLabel}}</Option>
                    </Select>
-
+                    <!-- 压线深度-->
                    <Select v-else-if="column.key == 'bmScoreDepth'" v-model="row[column.key]" transfer>
                      <Option v-for="(item,index) in pressingLineDeepList" :key="index" :value="item.dicValue">{{item.dicLabel}}</Option>
                    </Select>
-                    <formControl v-else-if="column.key == 'bmIndex'" :control-type="column.controlType" v-model="row[column.key]=row[column.key] == 0 ? index+1 : row[column.key]"></formControl>
-                   <formControl v-else :control-type="column.controlType" v-model="row[column.key]"></formControl>
-                  </td>
+            
+                <!-- 其它 不可以编辑-->
+                <template v-else>
+                      <formControl :disabled="column.readOnly" :control-type="column.controlType" v-model="row[column.key]"></formControl>
                 </template>
-              </eTable>
-            </TabPane>
 
-            <TabPane label="生产工序" name="ProductWorkProc">
-              <eTable
-                ref="ProductWorkProc"
-                unqiue-mark="id"
-                :height="tableDefaultHeight"
-                :index-menu="true"
-                :col-start="0"
-                :width="200"
-                :row-init-data="initData.initData.productWorkProcFm"
-                :data.sync="formDataInfo.productworkProcs.defaultList"
-                :rules="tableFieldsValidator1"
-              >
-              <template slot="head">
-                <tr v-for="(columnGroup,index) in initData.columns.productWorkProcFm.editGroups" :key="index">
-                  <th class="ivu-table-column-left"
-                  v-for="(column,index2) in columnGroup" :key="index2"
-                  :width="column.width"
-                  :colspan="column.colSpan"
-                  :rowspan="column.rowSpan"
-                  style="text-align:center;"
-                  >
-                    <div class="ivu-table-cell">
-                      <span class="">{{column.title}}</span>
-                    </div>
-                  </th>
-                </tr>
-               </template>
+              </td>
+            </template>
+          </eTable>
+        </TabPane>
 
-               <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
+      <!--注意: 初始化表头数据从父级传递过来 formDataInfo -->
+       <TabPane label="生产工序">
+          <eTable
+            ref="sub_list_table_edit_workproc"
+            unqiue-mark="id"
+            :height="260"
+            :index-menu="true"
+            :col-start="0"
+            :width="200"
+            :row-init-data="formDataInfo.initData.initData[`${formInitPreName}workprocFm`]"
+            :data="formDataInfo.productworkProcs.defaultList"
+            :rules="subTable2FieldsValidator"
+          >
+            <template slot="head">
+              <tr v-for="(columnGroup,index) in formDataInfo.initData.columns[`${formInitPreName}workprocFm`].editGroups" :key="index">
+                <th class="ivu-table-column-left"
+                v-for="(column,index2) in columnGroup" :key="index2"
+                :width="column.width"
+                :colspan="column.colSpan"
+                :rowspan="column.rowSpan"
+                :columnKey="column.key"
+                style="text-align:center;"
+                >
+                  <div class="ivu-table-cell">
+                    <span class="">{{column.title}}</span>
+                  </div>
+                </th>
 
-                 <td class="ivu-table-column-left"
-                  v-for="(column,index2) in initData.columns.productWorkProcFm.editColumns"
-                  :key="index2"
-                  :width="column.width">
-                   <popup
-                     v-if="column.key == 'wpiNo'"
-                    v-model="row.wpiNo" field-name="wpiNo"
-                   :disabled="false"
-                   popup-name="WorkProcItemMultiBox"
-                   :fill-model.sync="formDataInfo.productworkProcs.defaultList"
-                   render-fields="workProcItemId,wpiName,wpiNo"
-                   from-fields="id,wpiName,wpiNo"
-                   :index="index"
-                   :init-data="initData.initData.productWorkProcFm"
+              </tr>
+            </template>
+            <template
+              slot="body"
+              slot-scope="{ row, index, tableColTiggerEvent }"
+            >
+              <td class="ivu-table-column-left"
+               v-for="(column,subIndex) in formDataInfo.initData.columns[`${formInitPreName}workprocFm`].editColumns"
+               :key="subIndex"
+               :width="column.width">
+               <!-- 控件特殊处理 工序编号 -->
+                 <popup
+                    v-if="column.key == 'bwWPNumber'"
+                    v-model="row.bwpNumber" 
+                    field-name="bwWPNumber"
+                    :disabled="false"
+                    popup-name="WorkProcItemMultiBox"
+                    :fill-model.sync="formDataInfo.productworkProcs.defaultList"
+                    render-fields="workProcItemId,bwWPName,bwWPNumber"
+                    from-fields="id,wpiName,wpiNo"
+                    :index="index"
+                   :init-data="formDataInfo.initData.initData[`${formInitPreName}workprocFm`]"
                    />
-
+               <!-- 控件特殊处理 机台编号 -->
                    <popup
-                   v-else-if="column.key == 'moCode'"
-                   v-model="row.moCode" field-name="moCode"
+                   v-else-if="column.key == 'machNo'"
+                   v-model="row.machNo" 
+                   field-name="machNo"
                    :disabled="false"
                    popup-name="MachineSingleBox"
                    :fill-model.sync="formDataInfo.productworkProcs.defaultList"
-                   render-fields="machId,moName,moCode"
-                   from-fields="id,moName,moCode"
+                   render-fields="machId,machName,machNo,bwUnitText,bwUnit"
+                   from-fields="id,moName,moCode,bwpiUnitText,bwpiUnit"
                    :index="index"
-                   :init-data="initData.initData.productWorkProcFm"
+                   :init-data="formDataInfo.initData.initData[`${formInitPreName}workprocFm`]"
                    >
                    </popup>
+            
+                <!-- 其它 不可以编辑-->
+                <template v-else>
+                      <formControl :disabled="column.readOnly" :control-type="column.controlType" v-model="row[column.key]"></formControl>
+                </template>
 
-                   <popup v-model="row.bwAskNote"
-                   v-else-if="column.key == 'bwAskNote'"
-                   field-name="bwAskNote" :disabled="false"
-                   popup-name="ResumeSingleBox"
-                   :fill-model.sync="formDataInfo.productworkProcs.defaultList"
-                   render-fields="bwAskNote"
-                   from-fields="resumeName"
-                   :query-params="{resumeType:'K'}"
-                   :blur-focus-load-data="false"
-                   :index="index"
-                   :init-data="initData.initData.productWorkProcFm"
-                   />
-                   <formControl v-else-if="column.key == 'bwIndex'" :control-type="column.controlType" v-model="row[column.key]=row[column.key] == 0 ? index+1 : row[column.key]"></formControl>
-                   <formControl v-else :control-type="column.controlType" v-model="row[column.key]"></formControl>
-                 </td>
-
-               </template>
-              </eTable>
-             </TabPane>
-          </Tabs>
-          <productSpec
+              </td>
+            </template>
+          </eTable>
+        </TabPane>
+      </Tabs>
+          <!-- <productSpec
           v-model="productSpecShow"
           ref="productSpec"
-          :columns="initData.columns.productMDataFm.listColumns"
+          :columns="formDataInfo.initData.columns.productMDataFm.listColumns"
           @on-ok="paperSpecSelectRenderEvent"
           :bpMoCut="formDataInfo.master.bpMoCut"
-          ></productSpec>
+          ></productSpec> -->
       </div>
       </editWindow>
     <editForm
@@ -650,6 +576,7 @@
    *
    * @created 2019/11/20 17:07:54
    */
+  import dayjs from 'dayjs'
   import optionSearch from "../../components/optionSearch";
   import tableSelect from "@/components/table-select/table-select";
   import editWindow from "@/components/edit-window/edit-window";
@@ -657,7 +584,7 @@
   import request from "@/libs/request";
   import popup from "@/components/popup/popup";
   import editBaseMixins from "../../mixins/edit";
-  // import Input from '@/components/input-number'
+  //import Input from '@/components/input-number'
   import formControl from '@/components/form-control/form-control'
   import {
     customValidator
@@ -673,7 +600,7 @@
       tableSelect,
       optionSearch,
       eTable,
-     // Input,
+      //Input,
       formControl,
       productSpec,
       editForm: function (resolve) {
@@ -683,28 +610,20 @@
     },
     data() {
       return {
+         cityCascader:[], // 所属地址列表
          productWindow:{
-         isLoaddingDone:false, // 窗口是否加载完成
-         showEditWindow:false,// 是否显示edit-boxSalesProductsList 编辑窗口
-         action:'add',// 当前操作功能 添加/编辑
-         formDetailData:{} // 当前表单的详细信息
-       },
-        tableData: [
-              {
-                id: 10001,
-                name: '名字1',
-                role: 'developer',
-                date: null,
-                sex: '男',
-                address: '深圳市 圳市 市 xxx'
-              }
-            ],
+            isLoaddingDone:false, // 窗口是否加载完成
+            showEditWindow:false,// 是否显示edit-boxSalesProductsList 编辑窗口
+            action:'add',// 当前操作功能 添加/编辑
+            formDetailData:{} // 当前表单的详细信息
+        },
         actionSubtitle: '纸箱销售订单明细', // 当前操作副标
         productSpecShow:false,
         unitItems: [{text:'英寸',value:'0'},{text:'厘米',value:'1'},{text:'毫米',value:'2'}],
         currentSubItemlength_productMData: 0, // 当前子表数据个数
         currentSubItemlength_productWorkProc: 0, // 当前子表数据个数
-        requestBaseUrl: "/bas/product", // 请求 查询 操作的基础路径
+        requestBaseUrl: "/sale/boxCo", // 请求 查询 操作的基础路径
+        formInitPreName: 'boxco', // 初始化表格/表单信息 查询 前缀 字段
         formDataInfo: {
           // 主表 更改字段
           master: {},
@@ -722,9 +641,51 @@
             updateList: [] // 更新列
           }
         }, // 防止添加和更新数据提交发生冲突
-        // 需要验证的数据
+        // 需要验证的数据 
         ruleValidate: {
-          biProdName: [{
+          // type 类型包括: 'integer','float','array','regexp','object','method','email','number','date','url','hex',
+          biBatchNo:[
+             {
+            required: true,
+            message: "料号不能为空",
+            trigger: "blur,change"
+           }
+          ],
+           lengId:[
+            {
+            required: true,
+            message: "楞别不能为空",
+            trigger: "blur,change"
+           }
+          ],
+          biDRemark:[
+            {
+            required: true,
+            message: "送货备注不能为空",
+            trigger: "blur,change"
+           }
+          ],
+            biPRemark:[{
+            required: true,
+            message: "生产备注不能为空",
+            trigger: "blur,change"
+          }],
+           bpQty:[{
+            type: "number", // 注意类型,不然无法验证
+            required: true,
+            message: "订单数不能为空",
+            trigger: "blur,change"
+          }],
+          biDeDate:[
+             {
+              type: "date", // 注意类型,不然无法验证
+              required: true,
+              message: "交货日期不能为空",
+              trigger: "blur,change"
+            }
+          ],
+          biProdName: [
+            {
               required: true,
               message: "产品名称不能为空",
               trigger: "blur"
@@ -735,46 +696,54 @@
               customRule: ["toCDB", "spaceStr"],
               fieldDesc: "产品名称"
             }
-          ],cusCode:[{
+          ],
+          cusCode:[{
             required: true,
             message: "客户不能为空",
             trigger: "blur,change"
           }],
-          cusBoxCode:[{
+          bpCBoxCode:[{
             required: true,
             message: "客方盒式不能为空",
             trigger: "blur,change"
           }],
-          cusArtCode:[{
+          bpCArtCode:[{
             required: true,
             message: "客方纸质不能为空",
             trigger: "blur,change"
-          }],proBoxCode:[{
+          }],
+          bpPBoxCode:[{
             required: true,
             message: "生产盒式不能为空",
             trigger: "blur,change"
-          }],proArtCode:[{
+          }],
+          bpPArtCode:[{
             required: true,
             message: "生产纸质不能为空",
             trigger: "blur,change"
           }]
         },
-        tableFieldsValidator: {
-          // productId: [
-          //   { required: true, message: "", trigger: "blur" }
-          // ],
-        },
-        tableFieldsValidator1: {
-          // machId: [
-          //   { required: true, message: "", trigger: "blur" }
-          // ],
-          //  productId: [
-          //   { required: true, message: "", trigger: "blur" }
-          // ],
-          //  workProcItemId: [
-          //   { required: true, message: "", trigger: "blur" }
-          // ],
-        },
+        subTableFieldsValidator:{ 
+         bmIndex: [
+            {
+              validator: customValidator,
+              trigger: "blur",
+              customRule: ["required"],//不能为空,默认自带的判断不正确,所以使用自定义验证规则
+              fieldDesc: "纸板规格序号"
+            },
+          ],
+      },
+      // 生产工序 验证规则
+      subTable2FieldsValidator:{
+         bwIndex: [
+          {
+            validator: customValidator,
+            trigger: "blur",
+            customRule: ["required"], //不能为空,默认自带的判断不正确,所以使用自定义验证规则
+            fieldDesc: "生产工序序号"
+          },
+          ],
+      },
         tableDefaultHeight: 200,
         lbCodeList: [],
         initData: {
@@ -794,21 +763,21 @@
       };
     },
     computed: {
-      cusBoxCode() {
-        return this.formDataInfo.master.cusBoxCode;
+      bpCBoxCode() {
+        return this.formDataInfo.master.bpCBoxCode;
       },
-      cusSizeLength() {
-        return this.formDataInfo.master.cusSizeLength;
+      bpCSizeL() {
+        return this.formDataInfo.master.bpCSizeL;
       },bpPSizeComputed(){
-        return this.formDataInfo.master.proSizeLength + this.formDataInfo.master.proSizeWidth + this.formDataInfo.master.proSizeHeight;
+        return this.formDataInfo.master.bpPSizeL + this.formDataInfo.master.bpPSizeW + this.formDataInfo.master.bpPSizeH;
       },bpCSizeComptued(){
-        //return this.formDataInfo.master.cusSizeLength + this.formDataInfo.master.cusSizeWidth + this.formDataInfo.master.cusSizeHeight;
+        //return this.formDataInfo.master.bpCSizeL + this.formDataInfo.master.bpCSizeW + this.formDataInfo.master.bpCSizeH;
       return 0;
       },
       lbComputed(){
-        return this.formDataInfo.master.cusArtId + this.formDataInfo.master.lengId + this.formDataInfo.master.proArtId;
+        return this.formDataInfo.master.bpCArtId + this.formDataInfo.master.lengId + this.formDataInfo.master.bpPArtId;
       },productMDatasTableDataComputed(){
-        if(this.productMDatasTableDataList.length > 0){
+        if(this.productMDatasTableDataList && this.productMDatasTableDataList.length > 0){
           let tempData = this.productMDatasTableDataList[0];
           return tempData.bmSSizeL + tempData.bmSSizeW + tempData.bmSizeL + tempData.bmSizeW;
         }else{
@@ -818,15 +787,17 @@
     },
     watch: {
       showWindow:function(n,o){
-        if(!n){
-          //this.resetForm();
+        if(n){
+          this.$nextTick(()=>{
+             this.setDefaultValue(); //获取初始化数据
+          })
+          
         }
       },
       lbCodeList:{
         handler(newData,oldData){
           //愣别列表被加载后，默认选中第一条数据
-          if(newData != undefined && newData.length > 0){
-            //this.$set(this.formDataInfo.master,'lengId',newData[0].lengId);
+          if(newData && newData != undefined && newData.length > 0){
             this.formDataInfo.master.lengId = newData[0].lengId;
             this.formDataInfo.master.lbCode = newData[0].lbCode;
           }
@@ -855,7 +826,7 @@
            //2.计算面积，体积，单重
            //this.calcBoxExpressions();
          },1000);
-       },'formDataInfo.master.proBoxCode':function(n,o){
+       },'formDataInfo.master.bpPBoxCode':function(n,o){
          /**
           * 生产盒式改变 --> 生产规格 ->纸板规格用料--> 计算面积等
           */
@@ -864,7 +835,7 @@
          //客方规格改变 --> 生产规格 --> 纸板规格用料 --> 计算面积等
          //this.calcProductSizeByDiameter();
        },
-       'formDataInfo.master.proArtCode':function(n,o){
+       'formDataInfo.master.bpPArtCode':function(n,o){
          //生产纸质改变 --> 纸板规格用料 --> 计算面积等
          //this.calcMaterialData();
        },
@@ -876,7 +847,7 @@
          //模数改变 --> 纸板规格用料 --> 计算面积等
           this.calcMaterialData();
        },
-       'formDataInfo.master.plateNo':function(n,o){
+       'formDataInfo.master.bpDPNo':function(n,o){
          //模板改变 --> 纸板规格用料 --> 计算面积等
          this.calcMaterialData();
        },
@@ -912,58 +883,88 @@
           },
           deep:true
        },
-       'formDataInfo.master.cusArtId':function(n,o){
+       'formDataInfo.master.bpCArtId':function(n,o){
          if(n && n!= null && n != ''){
            let data = [];
-           data.push({data:{cusArtId:n}})
+           data.push({data:{bpCArtId:n}})
            this.artPopupFillEvent(data);
          }
        }
     },
     methods: {
+        // 加载地区数据
+        getCityCascader(item,callback){
+        item.loading = true;
+        request.post('/bas/area/list',{pid:item.value,name:item.label},{pid:item.value,name:item.label}).then(res=>{
+          if(res != null){
+                res.forEach(item=>{
+                      item['children'] = [];
+                })
+              delete item.loading;
+            item.children = res;
+          }
+          item.loading = false;
+          callback();
+        })
+      },
+      // 默认地区
+      loadDefaultCityData(){
+         request.post('/bas/area/list',{pid:0},{pid:0}).then(res=>{
+          res.forEach(item=>{
+                item['children'] = [];
+          })
+        this.cityCascader = res;
+      })
+      },
+      // 设置默认值
+      setDefaultValue(){
+        this.formDataInfo.master.areaNames =[]
+        this.formDataInfo.productMDatas.defaultList.map((item,index,arr)=>{
+                if(item.bmScoreType==null ){
+                   item.bmScoreType = 0 //压线类型 默认值:无
+                }
+                if(item.bmScoreDepth==null){
+                  item.bmScoreDepth = 0 //压线深度 默认值:无
+                }
+                return item
+        })
+
+        // 默认计价方式:0-按面积, 1-按个(套) 
+        if(!isNaN(this.formDataInfo.master.biPriceType)){
+          this.formDataInfo.master.biPriceType =this.formDataInfo.master.biPriceType+''
+        }else{
+          this.formDataInfo.master.biPriceType ="0"
+        }
+        // 默认订单类型:1-订单 ,2- 补货 ,3- 打样 
+        if(!isNaN(this.formDataInfo.master.biCoType)){
+          this.formDataInfo.master.biCoType =this.formDataInfo.master.biCoType+''
+        }else{
+          this.formDataInfo.master.biCoType ="1"
+        }
+      },
+      // 打开固定报价窗体
        openProductsList(){
-         debugger
           this.productWindow.showEditWindow = true
           this.productWindow.isLoaddingDone =false
        },
-        //controller start
-        getPressingLineTypeList() {
+       getPressingLineTypeList() {
           //获取压线类型
-          request.get('/common/sys/dic/childList/bmScoreType', {}, {
-            qt: 'pValue'
-          }).then(res => {
-            res.forEach(item => {
-              item.dicValue = parseInt(item.dicValue);
-            })
-            this.pressingLineTypeList = res;
-          });
+          this.getDataFromDictionaryBy('bmScoreType').then(res=>{
+            this.pressingLineTypeList = res
+          })
         },
         getPressingLineDeepList() {
           //压线深度
-          request.get('/common/sys/dic/childList/bmScoreDepth', {}, {
-            qt: 'pValue'
-          }).then(res => {
-            res.forEach(item => {
-              item.dicValue = parseInt(item.dicValue);
-            })
-            this.pressingLineDeepList = res;
+           this.getDataFromDictionaryBy('bmScoreDepth').then(res=>{
+           this.pressingLineDeepList = res
           })
-        },
-        getFormInitDataObj() {
-          //加载表单初始化数据
-          request.get('/sys/form/init/productFm').then(res => {
-            res.initData.master.bpHatch = 0;//开口赋默认值
-            res.initData.master.bpAdjBorder = 0;//修边赋默认值
-            this.initData = res;
-            this.formDataInfo['master'] = JSON.parse(JSON.stringify(res.initData.master));
-          });
         },
         getLbList(artId) {
           //根据纸质ID,查询纸质对应的愣别列表
           request.post('/bas/art/item/list', {
             artId: artId
           }).then(res => {
-            if (res.length > 0) {
+            if (res && res.length > 0) {
               this.lbCodeList = res;
             } else {
               this.$Message.error(this.$t('product.edit.artLbNotFound'));
@@ -982,17 +983,17 @@
             });
           })
         },
-        getCalProductSizeValue(custId, proBoxId, lengId, pSize, type) {
+        getCalProductSizeValue(custId, bpPBoxId, lengId, pSize, type) {
           /**
            * 获取计算的生产规格
-           * 参数：客户id(custId),生产盒式id(proBoxId),楞别id（lengId),
+           * 参数：客户id(custId),生产盒式id(bpPBoxId),楞别id（lengId),
            * 客方规格(pSize),type:类型（L,W,H）
            */
           request.fsLoading = true;
           return new Promise((resolve, reject) => {
             let requestDataObj = {
               custId: custId,
-              proBoxId: proBoxId,
+              bpPBoxId: bpPBoxId,
               lengId: lengId,
               pSize: pSize,
               type: type
@@ -1041,8 +1042,6 @@
             })
           })
         },
-        //controller end
-        //handler start
         calcProductSize(custSpecValue, type) {
           /**custSpecValue:客方规格，长|宽|高 的值
            *type：类型  L|W|H
@@ -1055,25 +1054,25 @@
           }
           if (!this.formDataInfo.master.bpIsDiameter) {
             if (type == 'L') {
-              this.formDataInfo.master.proSizeLength = custSpecValue;
+              this.formDataInfo.master.bpPSizeL = custSpecValue;
             } else if (type == 'W') {
-              this.formDataInfo.master.proSizeWidth = custSpecValue;
+              this.formDataInfo.master.bpPSizeW = custSpecValue;
             } else if (type == 'H') {
-              this.formDataInfo.master.proSizeHeight = custSpecValue;
+              this.formDataInfo.master.bpPSizeH = custSpecValue;
             }
             return;
           }
           //请求服务器
           let custId = this.formDataInfo.master.custId;
-          let proBoxId = this.formDataInfo.master.proBoxId;
+          let bpPBoxId = this.formDataInfo.master.bpPBoxId;
           let lengId = this.formDataInfo.master.lengId;
-          this.getCalProductSizeValue(custId, proBoxId, lengId, custSpecValue, type).then(res => {
+          this.getCalProductSizeValue(custId, bpPBoxId, lengId, custSpecValue, type).then(res => {
             if (type == 'L') {
-              this.formDataInfo.master.proSizeLength = res;
+              this.formDataInfo.master.bpPSizeL = res;
             } else if (type == 'W') {
-              this.formDataInfo.master.proSizeWidth = res;
+              this.formDataInfo.master.bpPSizeW = res;
             } else if (type == 'H') {
-              this.formDataInfo.master.proSizeHeight = res;
+              this.formDataInfo.master.bpPSizeH = res;
             }
           }).catch(err => {
 
@@ -1124,33 +1123,33 @@
            * 内径发生改变，需要计算生产规格
            */
           let master = this.formDataInfo.master;
-          if (master.proSizeLength == '' && master.proSizeWidth == '' && master.proSizeHeight == '') {
+          if (master.bpPSizeL == '' && master.bpPSizeW == '' && master.bpPSizeH == '') {
             return;
           }
           if (!this.formDataInfo.master.bpIsDiameter) {
-            this.formDataInfo.master.proSizeLength = this.formDataInfo.master.cusSizeLength;
-            this.formDataInfo.master.proSizeWidth = this.formDataInfo.master.cusSizeWidth;
-            this.formDataInfo.master.proSizeHeight = this.formDataInfo.master.cusSizeHeight;
+            this.formDataInfo.master.bpPSizeL = this.formDataInfo.master.bpCSizeL;
+            this.formDataInfo.master.bpPSizeW = this.formDataInfo.master.bpCSizeW;
+            this.formDataInfo.master.bpPSizeH = this.formDataInfo.master.bpCSizeH;
             return;
           }
 
           let requestDataObj = {
             custId: master.custId,
-            proBoxId: master.proBoxId,
+            bpPBoxId: master.bpPBoxId,
             lengId: master.lengId,
-            cusSizeLength: master.cusSizeLength,
-            cusSizeWidth: master.cusSizeWidth,
-            cusSizeHeight: master.cusSizeHeight
+            bpCSizeL: master.bpCSizeL,
+            bpCSizeW: master.bpCSizeW,
+            bpCSizeH: master.bpCSizeH
           }
           this.getCalProductSizeByDiameterObj(requestDataObj).then(res => {
-            if (res.proSizeLength != null) {
-              this.formDataInfo.master.proSizeLength = res.proSizeLength;
+            if (res.bpPSizeL != null) {
+              this.formDataInfo.master.bpPSizeL = res.bpPSizeL;
             }
-            if (res.proSizeWidth != null) {
-              this.formDataInfo.master.proSizeWidth = res.proSizeWidth;
+            if (res.bpPSizeW != null) {
+              this.formDataInfo.master.bpPSizeW = res.bpPSizeW;
             }
-            if (res.proSizeHeight != null) {
-              this.formDataInfo.master.proSizeHeight = res.proSizeHeight;
+            if (res.bpPSizeH != null) {
+              this.formDataInfo.master.bpPSizeH = res.bpPSizeH;
             }
             //需要获取纸质规格
             //this.calMaterialData();
@@ -1165,19 +1164,19 @@
            * 用料规格，净料规格，双片，修边都取纸板规格第一条数据
            */
           let master = this.formDataInfo.master;
-          if (this.productMDatasTableDataList.length == 0) {
+          if (this.productMDatasTableDataList && this.productMDatasTableDataList.length == 0) {
             return;
           }
           //需要对关键字段进行校验，如果为空，就不能去请求
           let subData = this.productMDatasTableDataList[0];
           let requestDataObj = {
-            "artCode": master.proArtCode,
+            "artCode": master.bpPArtCode,
             "bmDoubleCut": true,
             "bmSSizeL": subData.bmSSizeL,
             "bmSSizeW": subData.bmSSizeW,
             "bmSizeL": subData.bmSizeL,
             "bmSizeW": subData.bmSizeW,
-            "boxCode": master.proBoxCode,
+            "boxCode": master.bpPBoxCode,
             "bpHatch": master.bpHatch,
             "coDate": '2020-02-01 09:59:49', //有点问题，但是不这么写后台会报错，先暂时这么处理.@白羊 2020.02.24
             "custId": master.custId,
@@ -1185,33 +1184,33 @@
             "lbCode": master.lbCode,
             "moCut": master.bpMoCut,
             "orderQty": 0,
-            "sizeHeight": master.cusSizeHeight,
-            "sizeLength": master.cusSizeLength,
-            "sizeProHeight": master.proSizeHeight,
-            "sizeProLength": master.proSizeLength,
-            "sizeProWidth": master.proSizeWidth,
-            "sizeWidth": master.cusSizeWidth,
+            "sizeHeight": master.bpCSizeH,
+            "sizeLength": master.bpCSizeL,
+            "sizeProHeight": master.bpPSizeH,
+            "sizeProLength": master.bpPSizeL,
+            "sizeProWidth": master.bpPSizeW,
+            "sizeWidth": master.bpCSizeW,
             "specPrice": 0,
             "unit": master.bpUnit,
             "waste": master.bpAdjBorder
           };
           this.getCalcBoxExpressionsObj(requestDataObj).then(res => {
             //单面积
-            this.formDataInfo.master.singleArea = res.bp_SArea;
+            this.formDataInfo.master.bpSArea = res.bp_SArea;
             //客户单面积
-            this.formDataInfo.master.cusSingleArea = res.bp_CustSArea;
+            this.formDataInfo.master.bpCustSArea = res.bp_CustSArea;
             //单重
-            this.formDataInfo.master.singleWeight = res.bp_SWeight;
+            this.formDataInfo.master.bpSWeight = res.bp_SWeight;
             //客方单重
-            this.formDataInfo.master.cusSingleWeight = res.bp_CustSWeight;
+            this.formDataInfo.master.bpCustSWeight = res.bp_CustSWeight;
             //单体积
-            this.formDataInfo.master.singleCube = res.bp_SCube;
+            this.formDataInfo.master.bpSCube = res.bp_SCube;
           });
         },
         buildMaterialRequestData(){
           //构建用料参数组装
           let master = this.formDataInfo.master;
-          let validatorFields = ['custId', 'bpUnit', 'cusArtCode', 'proBoxCode', 'proSizeLength', 'proSizeWidth', 'lbCode'];
+          let validatorFields = ['custId', 'bpUnit', 'bpCArtCode', 'bpPBoxCode', 'bpPSizeL', 'bpPSizeW', 'lbCode'];
           //校验，每个参数都必须有值，否则请求后台会返回多个参数错误的异常提示
           for (let i = 0; i < validatorFields.length; i++) {
             let value = master[validatorFields[i]];
@@ -1221,19 +1220,19 @@
           }
 
           let requestDataObj = {
-            artCode: master.cusArtCode,
+            artCode: master.bpCArtCode,
             biPrepQty: 0,
-            boxCode: master.proBoxCode,
+            boxCode: master.bpPBoxCode,
             bpHatch: master.bpHatch,
             bpIsFullPrint: master.bpIsFullPrint,
             bpMoCut: master.bpMoCut,
-            bpPlateNo: master.plateNo,
+            bpBpDPNo: master.bpDPNo,
             custId: master.custId,
             lbCode: master.lbCode,
             orderQty: 1,
-            sizeLength: master.proSizeLength,
-            sizeWidth: master.proSizeWidth,
-            sizeHeight: master.proSizeHeight,
+            sizeLength: master.bpPSizeL,
+            sizeWidth: master.bpPSizeW,
+            sizeHeight: master.bpPSizeH,
             unit: master.bpUnit,
             waste: 0
           }
@@ -1288,7 +1287,7 @@
            * 所以，在最后构建数据的时候和defaultList里面的数据比较，ID相同的就是修改，没有ID的就是添加，ID已经不存在的就是删除
            */
           //如果list中没有数据，那么直接调用eTable中的方法获取
-          if(this.formDataInfo.productMDatas.defaultList.length == 0){
+          if(this.formDataInfo.productMDatas && this.formDataInfo.productMDatas.defaultList.length == 0){
             return this.$refs.slave_edit_productMDataFm.getCategorizeData();
           }
           /**
@@ -1327,17 +1326,15 @@
         },
         closeActionTigger(){
           //清空表单数据
-          this.formDataInfo.master = JSON.parse(JSON.stringify(this.initData.initData.master));
-          this.$refs.masterForm.resetFields();
-          this.$refs.slave_edit_productMDataFm.reset();
-          this.$refs.ProductWorkProc.reset();
+          //this.formDataInfo.master = JSON.parse(JSON.stringify(this.initData.initData.master));
+          this.$refs['masterForm'].resetFields();
+          this.$refs['sub_list_table_edit'].reset();
+          this.$refs['sub_list_table_edit_workproc'].reset();
           this.productMDatasTableDataList = [];
           this.formDataInfo.productworkProcs.defaultList = [];
           this.updateFirstRequstIntercept = true;
           clearTimeout(this.updateFirstRequstTimeoutId);
         },
-        //handler end
-        //event start
         lbCodeChangedEvent(selectItem){
           //愣别发生改变
           if(selectItem.label){
@@ -1346,30 +1343,30 @@
         },artPopupFillEvent(data){
           //选择纸质后的填充事件
           //加载愣别数据，已经默认选中第一条数据
-          let artId = data[0].data.cusArtId;
+          let artId = data[0].data.bpCArtId;
           if (artId != undefined && artId !='') {
             this.getLbList(artId);
           }
         },
-        cusSizeLengthBlurEvent(){
+        bpCSizeLBlurEvent(){
           //客方长失去焦点事件
           //更新生产规格长数据
-          //this.formDataInfo.master.proSizeLength = this.formDataInfo.master.cusSizeLength;
+          //this.formDataInfo.master.bpPSizeL = this.formDataInfo.master.bpCSizeL;
           //计算生产规格长
-          this.calcProductSize(this.formDataInfo.master.cusSizeLength,'L');
+          this.calcProductSize(this.formDataInfo.master.bpCSizeL,'L');
           //计算用料
           //this.calcMaterialData();
         },
-        cusSizeWidthBlurEvent(){
+        bpCSizeWBlurEvent(){
           //客方宽失去焦点事件
-          //this.formDataInfo.master.proSizeWidth = this.formDataInfo.master.cusSizeWidth;
-          this.calcProductSize(this.formDataInfo.master.cusSizeWidth,'W');
+          //this.formDataInfo.master.bpPSizeW = this.formDataInfo.master.bpCSizeW;
+          this.calcProductSize(this.formDataInfo.master.bpCSizeW,'W');
           //this.calcMaterialData();
         },
-        cusSizeHeightBlurEvent(){
+        bpCSizeHBlurEvent(){
           //客方高失去焦点事件
-          //this.formDataInfo.master.proSizeHeight = this.formDataInfo.master.cusSizeHeight;
-          this.calcProductSize(this.formDataInfo.master.cusSizeHeight,'H');
+          //this.formDataInfo.master.bpPSizeH = this.formDataInfo.master.bpCSizeH;
+          this.calcProductSize(this.formDataInfo.master.bpCSizeH,'H');
           //this.calcMaterialData();
         },
         paperSpecSelectRenderEvent(selectData){
@@ -1379,7 +1376,6 @@
         },
         paperSpecRowDBClickEvent(rowIndex,rowData){
           //纸板规格行被双击事件
-          debugger;
           let requestDataObj = this.buildMaterialRequestData();
           if(!requestDataObj){
             return;
@@ -1390,11 +1386,16 @@
           this.$refs.productSpec.loadData(requestDataObj,rowData.bmIndex);
         },
         submitFormDataEvent(){
-          // 向外暴露的方法:
+          debugger
+          let formatData = this.formDataInfo.master
+            formatData.biCoType = Number(formatData.biCoType) // 字符串转数字
+            formatData.biPriceType = Number(formatData.biPriceType) // 字符串转数字
+           formatData.biDeDate = dayjs(formatData.biDeDate).format('YYYY-MM-DD HH:mm:ss') // 时间格式化
+
           let params = {
-            masterList:this.formDataInfo.master,
-            productMDatas:this.$refs['slave_edit_productMDataFm'].get(),  // 纸板规格
-            productworkProcs:this.$refs['ProductWorkProc'].get() // 生产工序
+            masterList:formatData,
+            productMDatas:this.$refs['sub_list_table_edit'].get(),  // 纸板规格
+            productworkProcs:this.$refs['sub_list_table_edit_workproc'].get() // 生产工序
           }
            this.$emit('submit-success',params)
             this.showWindow = false // 关闭当前窗口
@@ -1436,7 +1437,7 @@
         }
     },
     created() {
-      this.getFormInitDataObj(); //获取初始化数据
+      this.loadDefaultCityData()
       this.getPressingLineTypeList(); //获取压线类型列表
       this.getPressingLineDeepList(); //获取压线深度列表
     },
@@ -1449,12 +1450,5 @@
   };
 </script>
 <style >
-/* .cl-edit-salesOrder .CheckboxItem {
-  margin-left: 15px;
-} */
- /* .cl-edit-salesOrder .ivu-checkbox-wrapper {
-   font-size: 12px !important;
-   overflow: hidden;
-   height: 14px;
- } */
+
 </style>

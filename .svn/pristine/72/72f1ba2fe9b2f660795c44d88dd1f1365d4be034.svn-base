@@ -1,0 +1,498 @@
+<template>
+    <div>
+       <editWindow class="cl-edit-salesOrderProductList" title="固定报价下单" v-model="showWindow"
+    :fullscreen="true" :loading="false"
+      :spinLoaddingText="spinLoaddingText" @on-ok="submitFormDataEvent" @on-cancel="closeActionTigger">
+       <!-- <vxe-modal v-model="showWindow" title="固定报价下单" width="800" resize destroy-on-close>
+        
+         -->
+    
+       <div ref="masterHeight" style="height: 70%;overflow:hidden">  
+                <div ref="TabslistHeight">
+                    <Tabs :animated="false"  type="card" @on-click="tabClickChange">
+                    <TabPane name="Prize" label="按产品报价下单">
+                    </TabPane>
+                    <TabPane name="Area" label="按面积报价下单">
+                    </TabPane>
+                  </Tabs>    
+                </div>
+              
+               <vxe-table 
+                          highlight-cell
+                          keep-source
+                          :mouse-config="{selected: true}"
+                          :keyboard-config="{isArrow: true, isDel: true, isEnter: true, isTab: true, isEdit: true}"
+                            stripe
+                            v-show="tabShow=='Prize'"
+                            :height="TabsHeightPrize-40"
+                            header-align="center"
+                            size="mini"
+                           
+                            border
+                            resizable
+                            show-overflow
+                            :data="tableData"
+                            :edit-config="{trigger: 'click', mode: 'cell'}">
+                            
+                            <vxe-table-column type="seq"  title="" width="60" header-align="center" align="center"></vxe-table-column>
+                            <vxe-table-column field="bpIsUrgent" title="急单" width="60" header-align="center" align="center">
+                               <template v-slot:default="{ row }">
+                                <vxe-checkbox v-model="row.bpIsUrgent"></vxe-checkbox>
+                              </template>
+                              <template v-slot:edit="{ row }">
+                                <vxe-checkbox v-model="row.bpIsUrgent"></vxe-checkbox>
+                              </template>
+                               <template v-slot:header="{ row }">
+                               <span>急单</span>  
+                              </template>
+                            </vxe-table-column>
+                            
+                          <vxe-table-column field="bpName" title="产品名称" width="100" header-align="center" align="center"></vxe-table-column>
+                          <vxe-table-column field="bpNo" title="产品编号" width="100" header-align="center" align="center"></vxe-table-column>
+                          <vxe-table-column field="bpCBoxName" title="盒式" width="100" header-align="center" align="center"></vxe-table-column>
+                          <vxe-table-column field="bpCBoxName" title="纸质" width="100" header-align="center" align="center"></vxe-table-column>
+                             <vxe-table-column  title="客方" width="300" header-align="center" align="center">
+                                    <vxe-table-column field="bpCSizeL" title="长" width="100" header-align="center" align="center" :edit-render="{name: '$input',props: { type:'number'}}">
+                                      <template v-slot:edit="{ row }">
+                                       <vxe-input v-model="row.bpCSizeL" type="number" placeholder="长" clearable></vxe-input>
+                                      </template>
+                                 </vxe-table-column>
+                                  <vxe-table-column field="bpCSizeW" title="宽" width="100" header-align="center" align="center" :edit-render="{name: '$input',props: { type:'number'}}">
+                                       <template v-slot:edit="{ row }">
+                                       <vxe-input v-model="row.bpCSizeW" type="number" placeholder="宽" clearable></vxe-input>
+                                      </template>
+                                    </vxe-table-column>
+                                     <vxe-table-column field="bpCSizeH" title="高" width="100" header-align="center" align="center" :edit-render="{name: '$input',props: { type:'number'}}">
+                                      <template v-slot:edit="{ row }">
+                                       <vxe-input v-model="row.bpCSizeH" type="number" placeholder="高" clearable></vxe-input>
+                                      </template>
+                                     </vxe-table-column>
+                                  </vxe-table-column>
+                                  <vxe-table-column field="upiPrice" title="报价" width="100" header-align="center" align="center"></vxe-table-column>
+                                   <vxe-table-column field="coQty" title="订单数量" width="100" header-align="center" align="center" :edit-render="{name: '$input',props: { type:'number'}}">
+                                        <template v-slot:edit="{ row }">
+                                        <vxe-input v-model="row.coQty" type="number" placeholder="订单数量" clearable></vxe-input>
+                                        </template>
+                                   </vxe-table-column>
+                                    <vxe-table-column field="coPrepQty" title="备品数量" width="100" header-align="center" align="center" :edit-render="{name: '$input',props: { type:'number'}}">
+                                        <template v-slot:edit="{ row }">
+                                         <vxe-input v-model="row.coPrepQty" type="number" min="0" placeholder="备品数量" clearable></vxe-input>
+                                        </template>
+                                   </vxe-table-column>
+                                    <vxe-table-column field="coWasteQty" title="损耗数量" width="100" header-align="center" align="center" :edit-render="{name: '$input',props: { type:'number'}}">
+                                        <template v-slot:edit="{ row }">
+                                         <vxe-input v-model="row.coWasteQty" type="number" placeholder="损耗数量" clearable></vxe-input>
+                                        </template>
+                                   </vxe-table-column>
+                                   <vxe-table-column field="deliRemark" title="送货备注" width="100" header-align="center" align="center" :edit-render="{name: 'input', attrs: {type: 'text'}}"></vxe-table-column>
+                                   <vxe-table-column field="proRemark" title="生产备注" width="100" header-align="center" align="center" :edit-render="{name: 'input', attrs: {type: 'text'}}"></vxe-table-column>
+                               <vxe-table-column field="coDueDate" width="100" title="交货日期" :edit-render="{name: '$input', props: {type: 'date'}}">
+                                      <template v-slot:edit="{ row }">
+                                        <vxe-input  prefix-icon="" suffix-icon=""  v-model="row.coDueDate" type="date" placeholder="" clearable></vxe-input>
+                                      </template>
+                              </vxe-table-column>
+                              <vxe-table-column field="biBatchNo" title="客户PO号" width="100" header-align="center" align="center" :edit-render="{name: 'input',attrs: { type:'text'}}"></vxe-table-column>
+                              <vxe-table-column field="coType" title="订单类型" width="100" header-align="center" align="center"  :edit-render="{name: 'input', attrs: {type: 'text'}}"></vxe-table-column>
+                              <vxe-table-column field="biCOWF" title="外发" width="100" header-align="center" align="center"  :edit-render="{name: 'input', attrs: {type: 'text'}}"></vxe-table-column>
+                              <!-- <vxe-table-column field="biTaoCO" title="套件" width="100" header-align="center" align="center"  :edit-render="{name: 'input', attrs: {type: 'text'}}"></vxe-table-column> -->
+                                <vxe-table-column field="biTaoCO" title="套件" width="100" header-align="center" align="center" :edit-render="{name: '$select', options: suiteList}">
+                                  <template v-slot:edit="{ row }">
+                                       <vxe-select v-model="row.biTaoCO" placeholder="套件">
+                                          <vxe-option value="0" label="产品"></vxe-option>
+                                          <vxe-option value="1" label="套件"></vxe-option>
+                                        </vxe-select>
+                                      </template>
+                                </vxe-table-column>
+                              <vxe-table-column field="biChopNo" title="商检号" width="100" header-align="center" align="center"  :edit-render="{name: 'input', attrs: {type: 'text'}}"></vxe-table-column>
+                              <vxe-table-column field="contractNo" title="合同号" width="100" header-align="center" align="center"></vxe-table-column>
+                                <vxe-table-column  title="客户" width="200" header-align="center" align="center">
+                                    <vxe-table-column field="bpCustProdName" title="产品名称" width="100" header-align="center" align="center"></vxe-table-column>
+                                      <vxe-table-column field="bpCustProdNo" title="产品编号" width="100" header-align="center" align="center"></vxe-table-column>
+                                </vxe-table-column>
+                             <vxe-table-column field="bpLH" title="料号" width="100" header-align="center" align="center" :edit-render="{name: 'input',attrs: { type:'text'}}"></vxe-table-column>
+                               <vxe-table-column field="bpPaperUserStore" title="用纸存" width="100" header-align="center" align="center" :edit-render="{name: 'input',attrs: { type:'text'}}"></vxe-table-column>
+                                 <vxe-table-column field="bpIsFullPrint" title="满版印刷" width="100" header-align="center" align="center"></vxe-table-column>
+                                 <vxe-table-column field="bpPPNo" title="印版编号" width="100" header-align="center" align="center"></vxe-table-column>
+                                 <vxe-table-column field="bpColorName" title="颜色名称" width="100" header-align="center" align="center"></vxe-table-column>
+                                    <vxe-table-column field="orderIndexNo" title="序号" width="100" header-align="center" align="center" :edit-render="{name: '$input',props: { type:'number'}}">
+                                        <template v-slot:edit="{ row }">
+                                         <vxe-input v-model="row.orderIndexNo" type="number" placeholder="序号" clearable></vxe-input>
+                                        </template>
+                                   </vxe-table-column>
+                                     <vxe-table-column field="useStoreNum" title="扣成品存料数" width="130" header-align="center" align="center" :edit-render="{name: '$input',props: { type:'number'}}">
+                                        <template v-slot:edit="{ row }">
+                                         <vxe-input v-model="row.useStoreNum" type="number" placeholder="扣成品存料数" clearable></vxe-input>
+                                        </template>
+                                   </vxe-table-column>
+                                  <vxe-table-column field="purchase" title="外购" width="60" header-align="center" align="center">
+                                      <template v-slot:default="{ row }">
+                                        <vxe-checkbox v-model="row.purchase"></vxe-checkbox>
+                                      </template>
+                                      <template v-slot:edit="{ row }">
+                                        <vxe-checkbox v-model="row.purchase"></vxe-checkbox>
+                                      </template>
+                                      <template v-slot:header="{ row }">
+                                      <span>外购</span>  
+                                      </template>
+                                </vxe-table-column>
+             
+              </vxe-table> 
+              						<vxe-table 
+                          highlight-cell
+                          keep-source
+                          :mouse-config="{selected: true}"
+                          :keyboard-config="{isArrow: true, isDel: true, isEnter: true, isTab: true, isEdit: true}"
+                            stripe
+                            v-show="tabShow=='Area'"
+                            :height="TabsHeightArea-40"
+                            header-align="center"
+                            size="mini"
+                            border
+                            resizable
+                            show-overflow
+                            :data="tableData"
+                            :edit-config="{trigger: 'click', mode: 'cell'}">
+                            
+                          <vxe-table-column type="seq"  title="" width="60" header-align="center" align="center"></vxe-table-column>
+                            <vxe-table-column field="bpIsUrgent" title="急单" width="60" header-align="center" align="center">
+                               <template v-slot:default="{ row }">
+                                <vxe-checkbox v-model="row.bpIsUrgent"></vxe-checkbox>
+                              </template>
+                              <template v-slot:edit="{ row }">
+                                <vxe-checkbox v-model="row.bpIsUrgent"></vxe-checkbox>
+                              </template>
+                               <template v-slot:header="{ row }">
+                               <span>急单</span>  
+                              </template>
+                            </vxe-table-column>
+                            
+                          <vxe-table-column field="bpName" title="产品名称" width="100" header-align="center" align="center"></vxe-table-column>
+                          <vxe-table-column field="bpNo" title="产品编号" width="100" header-align="center" align="center"></vxe-table-column>
+                          <vxe-table-column field="bpCBoxName" title="盒式" width="100" header-align="center" align="center"></vxe-table-column>
+                          <vxe-table-column field="bpCBoxName" title="纸质" width="100" header-align="center" align="center"></vxe-table-column>
+                             <vxe-table-column  title="客方" width="300" header-align="center" align="center">
+                                    <vxe-table-column field="bpCSizeL" title="长" width="100" header-align="center" align="center" :edit-render="{name: '$input',props: { type:'number'}}">
+                                      <template v-slot:edit="{ row }">
+                                       <vxe-input v-model="row.bpCSizeL" type="number" placeholder="长" clearable></vxe-input>
+                                      </template>
+                                 </vxe-table-column>
+                                  <vxe-table-column field="bpCSizeW" title="宽" width="100" header-align="center" align="center" :edit-render="{name: '$input',props: { type:'number'}}">
+                                       <template v-slot:edit="{ row }">
+                                       <vxe-input v-model="row.bpCSizeW" type="number" placeholder="宽" clearable></vxe-input>
+                                      </template>
+                                    </vxe-table-column>
+                                     <vxe-table-column field="bpCSizeH" title="高" width="100" header-align="center" align="center" :edit-render="{name: '$input',props: { type:'number'}}">
+                                      <template v-slot:edit="{ row }">
+                                       <vxe-input v-model="row.bpCSizeH" type="number" placeholder="高" clearable></vxe-input>
+                                      </template>
+                                     </vxe-table-column>
+                                  </vxe-table-column>
+                                 
+                                   <vxe-table-column field="coQty" title="订单数量" width="100" header-align="center" align="center" :edit-render="{name: '$input',props: { type:'number'}}">
+                                        <template v-slot:edit="{ row }">
+                                        <vxe-input v-model="row.coQty" type="number" placeholder="订单数量" clearable></vxe-input>
+                                        </template>
+                                   </vxe-table-column>
+                                    <vxe-table-column field="coPrepQty" title="备品数量" width="100" header-align="center" align="center" :edit-render="{name: '$input',props: { type:'number'}}">
+                                        <template v-slot:edit="{ row }">
+                                        <vxe-input v-model="row.coPrepQty" type="number" placeholder="备品数量" clearable></vxe-input>
+                                        </template>
+                                   </vxe-table-column>
+                                    <vxe-table-column field="coWasteQty" title="损耗数量" width="100" header-align="center" align="center" :edit-render="{name: '$input',props: { type:'number'}}">
+                                        <template v-slot:edit="{ row }">
+                                         <vxe-input v-model="row.coWasteQty" type="number" placeholder="损耗数量" clearable></vxe-input>
+                                        </template>
+                                   </vxe-table-column>
+                                   <vxe-table-column field="deliRemark" title="送货备注" width="100" header-align="center" align="center" :edit-render="{name: 'input', attrs: {type: 'text'}}"></vxe-table-column>
+                                   <vxe-table-column field="proRemark" title="生产备注" width="100" header-align="center" align="center" :edit-render="{name: 'input', attrs: {type: 'text'}}"></vxe-table-column>
+                               <vxe-table-column field="coDueDate" width="100" title="交货日期" :edit-render="{name: '$input', props: {type: 'date'}}">
+                                      <template v-slot:edit="{ row }">
+                                        <vxe-input size="mini" :prefix-icon="null" v-model="row.coDueDate" type="date" placeholder="" clearable></vxe-input>
+                                      </template>
+                              </vxe-table-column>
+                              <vxe-table-column field="biBatchNo" title="客户PO号" width="100" header-align="center" align="center" :edit-render="{name: 'input',attrs: { type:'text'}}"></vxe-table-column>
+                              <vxe-table-column field="coType" title="订单类型" width="100" header-align="center" align="center"  :edit-render="{name: 'input', attrs: {type: 'text'}}"></vxe-table-column>
+                              <vxe-table-column field="biCOWF" title="外发" width="100" header-align="center" align="center"  :edit-render="{name: 'input', attrs: {type: 'text'}}"></vxe-table-column>
+                              <vxe-table-column field="biTaoCO" title="套件" width="100" header-align="center" align="center"  :edit-render="{name: 'input', attrs: {type: 'text'}}"></vxe-table-column>
+                              <vxe-table-column field="biChopNo" title="商检号" width="100" header-align="center" align="center"  :edit-render="{name: 'input', attrs: {type: 'text'}}"></vxe-table-column>
+                            
+                                <vxe-table-column  title="客户" width="200" header-align="center" align="center">
+                                    <vxe-table-column field="bpCustProdName" title="产品名称" width="100" header-align="center" align="center"></vxe-table-column>
+                                      <vxe-table-column field="bpCustProdNo" title="产品编号" width="100" header-align="center" align="center"></vxe-table-column>
+                                </vxe-table-column>
+								  <vxe-table-column field="bpIsPublic" title="公用" width="100" header-align="center" align="center"></vxe-table-column>
+                             <vxe-table-column field="bpLH" title="料号" width="100" header-align="center" align="center" :edit-render="{name: 'input',attrs: { type:'text'}}"></vxe-table-column>
+                               <vxe-table-column field="bpPaperUserStore" title="用纸存" width="100" header-align="center" align="center" :edit-render="{name: 'input',attrs: { type:'text'}}"></vxe-table-column>
+                               
+                                 <vxe-table-column field="bpPPNo" title="印版编号" width="100" header-align="center" align="center"></vxe-table-column>
+                                 <vxe-table-column field="bpColorName" title="颜色名称" width="100" header-align="center" align="center"></vxe-table-column>
+                                    <vxe-table-column field="orderIndexNo" title="序号" width="100" header-align="center" align="center" :edit-render="{name: '$input',props: { type:'number'}}">
+                                        <template v-slot:edit="{ row }">
+                                         <vxe-input v-model="row.orderIndexNo" type="number" placeholder="序号" clearable></vxe-input>
+                                        </template>
+                                   </vxe-table-column>
+                                     <vxe-table-column field="useStoreNum" title="扣成品存料数" width="130" header-align="center" align="center" :edit-render="{name: '$input',props: { type:'number'}}">
+                                        <template v-slot:edit="{ row }">
+                                         <vxe-input v-model="row.useStoreNum" type="number" placeholder="扣成品存料数" clearable></vxe-input>
+                                        </template>
+                                   </vxe-table-column>
+                                  <vxe-table-column field="purchase" title="外购" width="60" header-align="center" align="center">
+                                      <template v-slot:default="{ row }">
+                                        <vxe-checkbox v-model="row.purchase"></vxe-checkbox>
+                                      </template>
+                                      <template v-slot:edit="{ row }">
+                                        <vxe-checkbox v-model="row.purchase"></vxe-checkbox>
+                                      </template>
+                                      <template v-slot:header="{ row }">
+                                      <span>外购</span>  
+                                      </template>
+                                </vxe-table-column>
+             
+              </vxe-table>    
+        </div>
+
+         <div ref="otherHeight" style="height: 30%;overflow:hidden">  
+              <div>
+                    <Tabs :animated="false" @on-click="otherTabClickChange">
+                    <TabPane name="Suite" label="套件明细">
+                    </TabPane>
+                    <TabPane name="PO" label="同产品同PO多料号下单">
+                    </TabPane>
+                  </Tabs>
+              </div>
+                         <vxe-table 
+                          highlight-cell
+                          keep-source
+                          :mouse-config="{selected: true}"
+                          :keyboard-config="{isArrow: true, isDel: true, isEnter: true, isTab: true, isEdit: true}"
+                            stripe
+                          v-show="otherTabShow=='Suite'"
+                          :height="otherTabsHeightSuite-50" 
+                          header-align="center"
+                          size="mini"
+                            border
+                            resizable
+                            show-overflow
+                            :data="tableData"
+                            :edit-config="{trigger: 'click', mode: 'cell'}">
+                          <vxe-table-column type="seq"  title="" width="60" header-align="center" align="center"></vxe-table-column>
+                           <vxe-table-column field="bpNo" title="产品编号" width="100" header-align="center" align="center"></vxe-table-column>
+                          <vxe-table-column field="bpName" title="产品名称" width="100" header-align="center" align="center"></vxe-table-column>
+                          <vxe-table-column field="bpCSizeL" title="配套系数" width="100" header-align="center" align="center" :edit-render="{name: '$input',props: { type:'number'}}">
+                                      <template v-slot:edit="{ row }">
+                                       <vxe-input v-model="row.bpCSizeL" type="number" placeholder="配套系数" clearable></vxe-input>
+                                      </template>
+                                 </vxe-table-column>
+                          <vxe-table-column field="bpCBoxName" title="纸质" width="100" header-align="center" align="center"></vxe-table-column>
+                          <vxe-table-column field="bpCBoxName" title="盒式" width="100" header-align="center" align="center"></vxe-table-column>
+                         
+                             <vxe-table-column  title="客方" width="300" header-align="center" align="center">
+                                    <vxe-table-column field="bpCSizeL" title="长" width="100" header-align="center" align="center" :edit-render="{name: '$input',props: { type:'number'}}">
+                                      <template v-slot:edit="{ row }">
+                                       <vxe-input v-model="row.bpCSizeL" type="number" placeholder="长" clearable></vxe-input>
+                                      </template>
+                                 </vxe-table-column>
+                                  <vxe-table-column field="bpCSizeW" title="宽" width="100" header-align="center" align="center" :edit-render="{name: '$input',props: { type:'number'}}">
+                                       <template v-slot:edit="{ row }">
+                                       <vxe-input v-model="row.bpCSizeW" type="number" placeholder="宽" clearable></vxe-input>
+                                      </template>
+                                    </vxe-table-column>
+                                     <vxe-table-column field="bpCSizeH" title="高" width="100" header-align="center" align="center" :edit-render="{name: '$input',props: { type:'number'}}">
+                                      <template v-slot:edit="{ row }">
+                                       <vxe-input v-model="row.bpCSizeH" type="number" placeholder="高" clearable></vxe-input>
+                                      </template>
+                                     </vxe-table-column>
+                                  </vxe-table-column>
+                                   <vxe-table-column field="orderIndexNo" title="库存数" width="100" header-align="center" align="center" :edit-render="{name: '$input',props: { type:'number'}}">
+                                        <template v-slot:edit="{ row }">
+                                        <vxe-input v-model="row.orderIndexNo" type="number" placeholder="库存数" clearable></vxe-input>
+                                        </template>
+                                   </vxe-table-column>
+                                    <vxe-table-column field="biCOWF" title="外发" width="60" header-align="center" align="center">
+                                      <template v-slot:default="{ row }">
+                                        <vxe-checkbox v-model="row.biCOWF"></vxe-checkbox>
+                                      </template>
+                                      <template v-slot:edit="{ row }">
+                                        <vxe-checkbox v-model="row.biCOWF"></vxe-checkbox>
+                                      </template>
+                                      <template v-slot:header="{ row }">
+                                      <span>外发</span>  
+                                      </template>
+                                </vxe-table-column>
+                                 
+              </vxe-table> 
+               <vxe-table 
+                          highlight-cell
+                          keep-source
+                          :mouse-config="{selected: true}"
+                          :keyboard-config="{isArrow: true, isDel: true, isEnter: true, isTab: true, isEdit: true}"
+                            stripe
+                               v-show="otherTabShow=='PO'"
+                          :height="otherTabsHeightPO-50"
+                            header-align="center"
+                            size="mini"
+                            border
+                            resizable
+                            show-overflow
+                            :data="tableData"
+                            :edit-config="{trigger: 'click', mode: 'cell'}">
+                            
+                            <vxe-table-column type="seq"  title="" width="60" header-align="center" align="center"></vxe-table-column>
+                            <vxe-table-column field="coQty" title="订单数量" width="100" header-align="center" align="center" :edit-render="{name: '$input',props: { type:'number'}}">
+                                        <template v-slot:edit="{ row }">
+                                        <vxe-input v-model="row.coQty" type="number" placeholder="订单数量" clearable></vxe-input>
+                                        </template>
+                                   </vxe-table-column>
+                                    <vxe-table-column field="coPrepQty" title="备品数量" width="100" header-align="center" align="center" :edit-render="{name: '$input',props: { type:'number'}}">
+                                        <template v-slot:edit="{ row }">
+                                         <vxe-input v-model="row.coPrepQty" type="number" min="0" placeholder="备品数量" clearable></vxe-input>
+                                        </template>
+                                   </vxe-table-column>
+                                    <vxe-table-column field="coWasteQty" title="损耗数量" width="100" header-align="center" align="center" :edit-render="{name: '$input',props: { type:'number'}}">
+                                        <template v-slot:edit="{ row }">
+                                         <vxe-input v-model="row.coWasteQty" type="number" placeholder="损耗数量" clearable></vxe-input>
+                                        </template>
+                                   </vxe-table-column>
+                                   <vxe-table-column field="deliRemark" placeholder="送货备注" title="送货备注" width="300" header-align="center" align="center" :edit-render="{name: 'input', attrs: {type: 'text'}}"></vxe-table-column>
+                                   <vxe-table-column field="proRemark" placeholder="生产备注" title="生产备注" width="300" header-align="center" align="center" :edit-render="{name: 'input', attrs: {type: 'text'}}"></vxe-table-column>
+              </vxe-table> 
+
+        </div>
+    <!-- </vxe-modal> -->
+      </editWindow>
+       
+    </div>
+</template>
+
+<script>
+import splitPane from 'vue-splitpane'
+//Vue.component('split-pane', splitPane)
+  import editWindow from "@/components/edit-window/edit-window"
+  import editBaseMixins from "../../mixins/edit";
+export default {
+    name:'edit-boxSalesProductsList',
+    components:{
+        editWindow,
+        splitPane
+    },
+    mixins:[editBaseMixins],
+    data() {
+        return {
+           suiteList: [ 
+                { label: '产品', value: '0' },
+                { label: '套件', value: '1' }
+              ],
+            tabShow:'Prize',// 默认显示 按产品报价下单
+            otherTabShow:'Suite', // 默认显示 套件明细
+            TabsHeightPrize:0, // 标签高度 价格
+            TabsHeightArea:0, // 标签高度 面积
+            otherTabsHeight:0, // 标签高度 共用
+            otherTabsHeightPO:0, // 标签高度 PO
+            otherTabsHeightSuite:0, // 标签高度 套件
+            TabsHeight:0,  // 标签高度 共用
+            tableData: [
+              {
+                bpIsUrgent: null,
+                bpName: 11111,
+              },
+              {
+                 bpIsUrgent: null,
+                bpName: 222222,
+              },
+              {
+                bpIsUrgent: null,
+                bpName: 11111,
+              },
+              {
+                 bpIsUrgent: null,
+                bpName: 222222,
+              },
+
+            ],
+           
+        }
+    },
+    watch:{
+     showWindow:function(n,o){
+        if(n){
+          this.$nextTick(()=>{
+              this.getTabWindowHeight()
+          })
+        }
+      },
+    },
+    created(){
+      
+   
+    },
+    mounted(){
+       
+    },
+    methods:{
+      // 获取当前TAB标签的实际高度
+      getTabWindowHeight(){
+         // 因为使用V-SHOW 隐藏,实际还会占用高度,所以切换时,设置为0 或使用V-IF 可以不用那么麻烦,但性能较低
+          this.TabsHeight = this.$refs['masterHeight'].offsetHeight 
+          this.TabsHeightPrize =this.TabsHeight
+          this.TabsHeightArea =0
+
+          this.otherTabsHeight = this.$refs['otherHeight'].offsetHeight
+          this.otherTabsHeightSuite= this.otherTabsHeight // 标签高度 套件
+          this.otherTabsHeightPO = 0 // 标签高度 PO
+
+      },
+      // 标签切换事件回调
+       tabClickChange(val){
+          this.tabShow=val
+          this.TabsHeightPrize =this.TabsHeight
+          this.TabsHeightArea =this.TabsHeight
+          if(this.tabShow ==='Prize'){
+            this.TabsHeightArea =0
+          }else{
+            this.TabsHeightPrize =0
+          }
+       },
+       //套件 标签切换事件回调
+       otherTabClickChange(val){
+          this.otherTabShow=val
+          this.otherTabsHeightSuite = this.otherTabsHeight // 标签高度 套件
+          this.otherTabsHeightPO =this.otherTabsHeight // 标签高度 PO
+          if(this.otherTabShow ==='Suite'){
+            this.otherTabsHeightPO = 0
+          }else{
+            this.otherTabsHeightSuite = 0
+          }
+       },
+        resizeChange(){
+           // console.log(1)
+        },
+      
+        submitFormDataEvent(){
+
+        }
+    }
+}
+</script>
+
+<style>
+.vxe-cell--title{
+  font-weight: normal;
+}
+.vxe-table .vxe-cell{
+    white-space: normal;
+    word-break: break-all;
+    padding: 0 3px;
+}
+.vxe-table .vxe-header--column, .vxe-table .vxe-body--column, .vxe-table .vxe-footer--column {
+    position: relative;
+    line-height: 24px;
+    text-align: left;
+   
+}
+.vxe-table .vxe-header--column{
+ background: -webkit-gradient(linear, left top, left bottom, color-stop(3%, #f8f8f9), color-stop(4%, #ffffff), color-stop(100%, #f2f2f2)) !important;
+}
+.vxe-input .vxe-input--extra-prefix, .vxe-input .vxe-input--prefix {
+    left: 5.2em;
+}
+</style>

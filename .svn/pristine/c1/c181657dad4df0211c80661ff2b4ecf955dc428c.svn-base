@@ -1,0 +1,46 @@
+<template>
+	<Dropdown trigger="contextMenu" transfer placement="right-start" :style="{width:'100%'}" @on-click="dropdownClick">
+		<div>
+			<slot></slot>
+		</div>
+		<DropdownMenu slot="list">
+			<DropdownItem   name="menu-insert">插入</DropdownItem>
+			<DropdownItem v-if="showEdit" divided :style="{color:'#0cb05b'}" name="menu-edit">编辑</DropdownItem>
+			<DropdownItem divided :style="{color:'#ed4014'}" name="menu-delete">删除</DropdownItem>
+		</DropdownMenu>
+	</Dropdown>
+</template>
+
+<script>
+	export default {
+		name:'rightMenu',
+		props:{
+			row_index:{
+				type:Number|String
+			},
+			// 是否显示编辑项
+			showEdit:{
+				type:Boolean,
+				default:false
+			}
+		},
+		data(){
+			return{
+				index:this.row_index
+			}
+		},
+		watch:{
+			row_index(n,o){
+				this.index = n;
+			}
+		},
+		methods:{
+			dropdownClick(name){
+				this.$emit(name,this.index);
+			}
+		}
+	}
+</script>
+
+<style>
+</style>

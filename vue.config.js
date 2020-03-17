@@ -51,6 +51,22 @@ module.exports = {
       errors: true
     },
     proxy: {
+      '/mrp': {
+        target: 'http://134.175.53.247/erp/', //对应自己的接口
+        changeOrigin: true,//是否跨域
+        ws: true,
+        pathRewrite: {
+          '^/': ''
+        }
+      },
+      '/stock': {
+        target: 'http://134.175.53.247/erp/', //对应自己的接口
+        changeOrigin: true,//是否跨域
+        ws: true,
+        pathRewrite: {
+          '^/': ''
+        }
+      },
       '/purchase': {
         target: 'http://192.168.0.5:9999/', // 对应自己的接口
         changeOrigin: true, // 是否跨域
