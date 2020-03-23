@@ -1,0 +1,790 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-window"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="true"
+      width="66%"
+      :loading="!isLoaddingDone"
+      :spinLoaddingText="spinLoaddingText"
+      @on-ok="formTableDataSubmit()"
+       v-if="initData.columns"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-message="true"
+        :model="formDataInfo.master"
+        :rules="ruleValidate"
+        :label-width="100"
+      >
+      <Row>
+        <Col span="8" v-for="(columns,index) in initData.columns[`${formInitPreName}mainFm`].editColumns" :key="index">
+             <!-- 排除需要隐藏的字段 -->
+          <FormItem v-if="columns.key != 'custId' && columns.key != 'bpUnit' && columns.key != 'bpIsDiameter'" :label="columns.title" :prop="columns.key">
+             <!-- 控件特殊处理 客户 -->
+            <popup v-if="columns.key == 'custCode'"
+             v-model="formDataInfo.master.custCode"
+             field-name="custCode"
+             :disabled="disabledCustCode"
+             popup-name="CustomerSingleBox"
+             :fill-model.sync="formDataInfo.master"
+             render-fields="custId,custCode,custName,coinId,coinName,coinCode,bpUnit,bpIsDiameter"
+             from-fields="id,cusCode,cusName,coinId,coinName,coinCode,bpUnit,bpIsDiameter"
+             :suffix="false"
+             :suffix-model="formDataInfo.master.custName"
+             :query-params="{}"
+             @on-fill="custCodeOnFillEvent"
+             />
+           
+              <!-- 控件特殊处理 业务员 参数： workOptType  1---业务员    2--跟单员-->
+            <popup v-else-if="columns.key == 'bcSaler'"
+             v-model="formDataInfo.master.bcSaler"
+             field-name="bcSaler"
+             :disabled="false"
+             popup-name="WorkerSingleBox"
+             :fill-model.sync="formDataInfo.master"
+             render-fields="bcSalerId,bcSaler,bcSalerName"
+             from-fields="id,workCode,workName"
+             :suffix="false"
+             :suffix-model="formDataInfo.master.bcSalerName"
+             :query-params="{workOptType:1}"
+             />
+              <!-- 控件特殊处理 跟单员 参数： workOptType  1---业务员    2--跟单员-->
+            <popup v-else-if="columns.key == 'bcFollower'"
+             v-model="formDataInfo.master.bcFollower"
+             field-name="bcFollower"
+             :disabled="false"
+             popup-name="WorkerSingleBox"
+             :fill-model.sync="formDataInfo.master"
+             render-fields="bcFollowerId,bcFollower,bcFollowerName"
+             from-fields="id,workCode,workName"
+             :suffix="false"
+             :suffix-model="formDataInfo.master.bcFollowerName"
+             :query-params="{workOptType:2}"
+             />
+              <!-- 控件特殊处理 订单类型 -->
+            <optionSearch v-else-if="columns.key == 'biCoType'"
+                          @onChange="optionOnChangeBy"
+                          :defaultItem="formDataInfo.master.biCoType"
+                          :loaddingDataWhen="showWindow"
+                          query="biCoType"
+                        />
+            <!-- 控件特殊处理 生效日期 -->
+              <DatePicker v-else-if="columns.key == 'bcCoDate'"
+                    type="datetime"
+                    format="yyyy-MM-dd HH:mm:ss"
+                    :placeholder="columns.title"
+                    v-model="formDataInfo.master[columns.key]"
+                  ></DatePicker>
+             <!-- 控件特殊处理 报价单号 -->
+             <formControl v-else-if="columns.key == 'bpNo'" :control-type="columns.controlType" :disabled="true" :placeholder="columns.title" v-model="formDataInfo.master[columns.key]" ></formControl>
+             <!-- 其它 通用控件 -->
+             <formControl v-else :control-type="columns.controlType" :disabled="true" :placeholder="columns.title" v-model="formDataInfo.master[columns.key]" ></formControl>
+          </FormItem>
+        </Col>
+      </Row>
+
+      </Form>
+<!-- :label="initData.listView[`${formInitPreName}itemFm`].tableDesc" name="name1" -->
+     <Tabs>
+        <TabPane label="订单明细">
+          <eTable
+            ref="slave_list_table_edit"
+            unqiue-mark="id"
+            :height="260"
+            :index-menu="true"
+            :col-start="0"
+            :width="200"
+            :showEditMenu="true"
+            :row-init-data="initData.initData[`${formInitPreName}itemFm`]"
+            :data.sync="slavesForm.masterList"
+            :rules="tableFieldsValidator"
+            :deleteValidator="comfirmDelete"
+            @row-edit="slave_list_table_editRowModify"
+            @row-click="slave_list_table_editRowClick"
+            @row-insert="slave_list_table_editRowAdd"
+
+          >
+            <template slot="head">
+              <tr v-for="(columnGroup,index) in initData.columns[`${formInitPreName}itemFm`].editGroups" :key="index">
+                <th class="ivu-table-column-left"
+                v-for="(column,index2) in columnGroup" :key="index2"
+                :width="column.width"
+                :colspan="column.colSpan"
+                :rowspan="column.rowSpan"
+                :columnKey="column.key"
+                style="text-align:center;"
+                >
+                  <div class="ivu-table-cell">
+                    <span class="">{{column.title}}</span>
+                  </div>
+                </th>
+
+              </tr>
+            </template>
+            <template
+              slot="body"
+              slot-scope="{ row, index, valueChangeAssign }"
+            >
+              <td class="ivu-table-column-left"
+               v-for="(column,columnIndex) in initData.columns[`${formInitPreName}itemFm`].editColumns"
+               :key="columnIndex"
+               :width="column.width">
+                   <!-- 订单类型-->
+                   <Select :disabled="true" v-if="column.key == 'biCoType'" v-model="row[column.key]" transfer>
+                     <Option v-for="(item,index) in biCoTypeList" :key="index" :value="item.dicValue">{{item.dicLabel}}</Option>
+                   </Select>
+                    <!-- 计价方式-->
+                   <Select :disabled="true" v-else-if="column.key == 'biPriceType'" v-model="row[column.key]" transfer>
+                     <Option v-for="(item,index) in biPriceTypeList" :key="index" :value="item.dicValue">{{item.dicLabel}}</Option>
+                   </Select>
+                 <!-- 其它 :placeholder="column.key"-->
+                <formControl v-else :control-type="column.controlType"
+                v-model="row[column.key]" :disabled="true"
+                @input="value => {valueChangeAssign(value, index, row,column.key)}"
+                ></formControl>
+              </td>
+            </template>
+          </eTable>
+        </TabPane>
+      </Tabs>
+<!-- :label="initData.listView[`${formInitPreName}mdataFm`].tableDesc" name="name1" -->
+      <Tabs>
+        <TabPane label="纸板规格">
+          <eTable
+            :showContextMenu="false"
+            ref="sub_list_table_edit"
+            unqiue-mark="id"
+            :height="140"
+            :index-menu="true"
+            :col-start="0"
+            :width="200"
+            :row-init-data="initData.initData[`${formInitPreName}mdataFm`]"
+            :data="slavesForm.SubList"
+            :rules="subTableFieldsValidator"
+          >
+            <template slot="head">
+              <tr v-for="(columnGroup,index) in initData.columns[`${formInitPreName}mdataFm`].editGroups" :key="index">
+                <th class="ivu-table-column-left"
+                v-for="(column,index2) in columnGroup" :key="index2"
+                :width="column.width"
+                :colspan="column.colSpan"
+                :rowspan="column.rowSpan"
+                :columnKey="column.key"
+                style="text-align:center;"
+                >
+                  <div class="ivu-table-cell">
+                    <span class="">{{column.title}}</span>
+                  </div>
+                </th>
+
+              </tr>
+            </template>
+            <template
+              slot="body"
+              slot-scope="{ row, index,valueChangeAssign }"
+            >
+              <td class="ivu-table-column-left"
+               v-for="(column,subIndex) in initData.columns[`${formInitPreName}mdataFm`].editColumns"
+               :key="subIndex"
+               :width="column.width">
+                
+                    <!-- 压线类型-->
+                   <Select  :disabled="true" @input="value => {valueChangeAssign(value, index, row, 'bmScoreType')}" v-model="row[column.key]" v-if="column.key == 'bmScoreType'" transfer>
+                     <Option v-for="(item,index) in pressingLineTypeList" :key="index" :value="item.dicValue">{{item.dicLabel}}</Option>
+                   </Select>
+                    <!-- 压线深度-->
+                   <Select :disabled="true" @input="value => {valueChangeAssign(value, index, row, 'bmScoreDepth')}" v-else-if="column.key == 'bmScoreDepth'" v-model="row[column.key]" transfer>
+                     <Option v-for="(item,index) in pressingLineDeepList" :key="index" :value="item.dicValue">{{item.dicLabel}}</Option>
+                   </Select>
+                    <!-- 纸质编号-->
+                    <popup v-model="row.bpPArtCode"
+                      v-else-if="column.key == 'bpPArtCode'"
+                      field-name="bpPArtCode"
+                      :disabled="true"
+                      popup-name="ArtSingleBox"
+                      :fill-model.sync="slavesForm.SubList"
+                      @input="value => {valueChangeAssign(value, index, row, 'bpPArtCode')}"
+                      render-fields="bpPArtCode"
+                      from-fields="artCode"
+                      :index="index"
+                      :suffix="false" />
+            
+                <!-- 其它 不可以编辑-->
+                <!-- <template v-else>
+                  
+                      <formControl :disabled="column.readOnly" :control-type="column.controlType" v-model="row[column.key]"></formControl>
+                </template> -->
+                 <formControl v-else :control-type="column.controlType"
+                v-model="row[column.key]" :disabled="true"
+                @input="value => {valueChangeAssign(value, index, row,column.key)}"
+                ></formControl>
+              </td>
+            </template>
+          </eTable>
+        </TabPane>
+     
+       <TabPane label="生产工序">
+          <eTable
+           :showContextMenu="false"
+            ref="sub_list_table_edit_workproc"
+            unqiue-mark="id"
+            :height="140"
+            :index-menu="true"
+            :col-start="0"
+            :width="200"
+            :row-init-data="initData.initData[`${formInitPreName}workprocFm`]"
+            :data="slavesForm.SubListTwo"
+            :rules="subTable2FieldsValidator"
+          >
+            <template slot="head">
+              <tr v-for="(columnGroup,index) in initData.columns[`${formInitPreName}workprocFm`].editGroups" :key="index">
+                <th class="ivu-table-column-left"
+                v-for="(column,index2) in columnGroup" :key="index2"
+                :width="column.width"
+                :colspan="column.colSpan"
+                :rowspan="column.rowSpan"
+                :columnKey="column.key"
+                style="text-align:center;"
+                >
+                  <div class="ivu-table-cell">
+                    <span class="">{{column.title}}</span>
+                  </div>
+                </th>
+
+              </tr>
+            </template>
+            <template
+              slot="body"
+              slot-scope="{ row, index, valueChangeAssign }"
+            >
+              <td class="ivu-table-column-left"
+               v-for="(column,subIndex) in initData.columns[`${formInitPreName}workprocFm`].editColumns"
+               :key="subIndex"
+               :width="column.width">
+               <!-- 控件特殊处理 工序编号 -->
+                 <popup
+                    v-if="column.key == 'bwWPNumber'"
+                    v-model="row.bwWPNumber" 
+                    field-name="bwWPNumber"
+                    :disabled="true"
+                    popup-name="WorkProcItemMultiBox"
+                     @input="value => {valueChangeAssign(value, index, row, 'bwWPNumber')}"
+                    :fill-model.sync="slavesForm.SubListTwo"
+                    render-fields="workProcItemId,bwWPName,bwWPNumber"
+                    from-fields="id,wpiName,wpiNo"
+                    :index="index"
+                   :init-data="initData.initData[`${formInitPreName}workprocFm`]"
+                   />
+               <!-- 控件特殊处理 机台编号 -->
+                   <popup
+                   v-else-if="column.key == 'machNo'"
+                   v-model="row.machNo" 
+                   field-name="machNo"
+                  :disabled="true"
+                   popup-name="MachineSingleBox"
+                    @input="value => {valueChangeAssign(value, index, row, 'machNo')}"
+                   :fill-model.sync="slavesForm.SubListTwo"
+                   render-fields="machId,machName,machNo,bwUnitText,bwUnit"
+                   from-fields="id,moName,moCode,bwpiUnitText,bwpiUnit"
+                   :index="index"
+                   :init-data="initData.initData[`${formInitPreName}workprocFm`]"
+                   >
+                   </popup>
+                  <formControl v-else :control-type="column.controlType"
+                    v-model="row[column.key]" :disabled="true"
+                    @input="value => {valueChangeAssign(value, index, row,column.key+'')}"
+                ></formControl>
+
+              </td>
+            </template>
+          </eTable>
+        </TabPane>
+      </Tabs>
+    </editWindow>
+    <editForm
+      @submit-success="getDataFromOrderSalve"
+      :isLoaddingDone="salveWindow.isLoaddingDone"
+      :formDetailData="salveWindow.formDetailData"
+      :action="salveWindow.action"
+      v-model="salveWindow.showEditWindow"
+    />
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-boxProductPrice 销售-产品报价 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2020/02/24 
+ */
+import editWindow from '@/components/edit-window/edit-window'
+import optionSearch from "../../components/optionSearch";
+import eTable from '@/components/e-table/e-table'
+import request from '@/libs/request'
+import editBaseMixins from '../../mixins/edit'
+import dayjs from 'dayjs'
+import formControl from '@/components/form-control/form-control'
+import popup from '@/components/popup/popup'
+import { customValidator, uniqueValidator } from "@/libs/validator";
+// eslint-disable-next-line camelcase
+const slavesForm_default = { // 子表单
+  name: 'boxCoItems', // 子表单名称
+  ItemFmRowIndex: 0,
+  RowItemDataID:-1,
+  masterList: [], // 子表列表数据 :订单(线下)明细表
+  SubList: [], // 次1表列表数据
+  SubItems: {}, // 次1表ITEM项目 :纸板规格
+  SubListTwo: [], // 次2表列表数据
+  SubItemsTwo: {} // 次2表ITEM项目 :生产工序
+}
+let defaultMasterData = {}
+export default {
+  name: 'edit-boxProductPrice',
+  mixins: [editBaseMixins],
+  components: {
+     editForm: function (resolve) {
+      // 组件的异步加载
+      require(['./edit-boxSalesOrderSlave'], resolve)
+    },
+    editWindow,
+    optionSearch,
+    eTable,
+    formControl,
+    popup
+  },
+  data () {
+    return {
+      disabledCustCode:false,// 是否禁用 客户编号
+      salveWindow:{
+         isLoaddingDone:false, // 窗口是否加载完成
+         showEditWindow:false,// 是否显示edit-boxSalesOrderSlave 编辑窗口
+         action:'add',// 当前操作功能 添加/编辑
+         formDetailData:{} // 当前表单的详细信息
+      },
+      pressingLineTypeList:[],//压线类型
+      pressingLineDeepList:[],//压线深度
+      biCoTypeList:[], // 订单类型
+      biPriceTypeList:[],// 计价方式
+      getcustid:0, // 上一次修改前的客户编号
+      showpreferential: false, // 是否显示优惠方式
+      subBoxClickIndex: -1, // 优惠方式 参数
+      actionSubtitle: '纸箱销售订单', // 当前操作副标题
+      formInitPreName: 'boxco', // 初始化信息查询 前缀 字段
+      formName: 'boxcomainFm', // 初始化信息查询 表单字段
+      requestBaseUrl: '/sale/boxCo', // 请求 查询 操作的基础路径
+      formDataInfo: { // 主表单信息
+        master: {}
+      },
+      // 主表  验证规则
+      ruleValidate: { 
+        custCode: [{ required: true, message: '客户编号不能为空', trigger: 'blur,change' }]
+         },
+      // 从表 验证规则
+      tableFieldsValidator: {},
+      // 纸板规格 验证规则
+      subTableFieldsValidator:{ 
+         bmIndex: [
+            {
+              validator: customValidator,
+              trigger: "blur",
+              customRule: ["required"],//不能为空,默认自带的判断不正确,所以使用自定义验证规则
+              fieldDesc: "纸板规格序号"
+            },
+          ],
+      },
+      // 生产工序 验证规则
+      subTable2FieldsValidator:{
+         bwIndex: [
+          {
+            validator: customValidator,
+            trigger: "blur",
+            customRule: ["required"], //不能为空,默认自带的判断不正确,所以使用自定义验证规则
+            fieldDesc: "生产工序序号"
+          },
+          ],
+      },
+      slavesForm: JSON.parse(JSON.stringify(slavesForm_default))  // 深拷贝对象和数组,
+    }
+  },
+  watch: {
+  // 第一步执行 获取到 master 数据
+    initData: {
+      handler (n, o) {
+        if (n.initData) {
+          defaultMasterData = Object.assign({}, n.initData.master)
+          this.formDataInfo.master = n.initData.master
+          this.setMasterDefaultData()
+          
+        }
+      },
+      deep: true
+    },
+    // 监控订单明细变化
+    "slavesForm.masterList":{
+      handler (n, o) {
+       //console.log('=========change masterList=====')
+       this.resetDisabledCustCode(n)
+      },
+      deep: true
+    }
+  },
+  computed: {
+    popUpExcludeParamsList () {
+    // eslint-disable-next-line no-tabs
+    // 获取产品编号	列表，转换为 "",""格式，用于弹出框排除数据
+    // 事件冲突,暂时屏蔽
+      let temp = []
+      this.slavesForm.masterList.forEach((item, index) => {
+        // debugger
+        if (item && item.bpNo != null) { // 注意:
+         // temp.push(item.bpNo) // 注意:
+        }
+      })
+      //return temp.toString()
+    }
+  },
+  created() {
+      this.getPressingLineTypeList(); //获取压线类型列表
+      this.getPressingLineDeepList(); //获取压线深度列表
+      this.getBiCoTypeList() //订单类型
+      this.getBiPriceTypeList() //计价方式
+    },
+  methods: {
+        // 确认删除当前选择数据吗?
+        comfirmDelete(bakDeleteData, index, callback){
+         return new Promise((resolve,reject)=>{
+            this.$Modal.confirm({
+            title: '删除确认',
+            content: `确定要删除当前选中数据吗？`,
+            onOk: () => {
+              resolve(true)
+              this.slave_list_table_editRowDelete(index,bakDeleteData)
+            }
+          })
+         })
+        },
+        // 验证客户编号是否可用
+        resetDisabledCustCode(masterList){
+          let _self =this
+          this.disabledCustCode=false
+          if(masterList!=null && masterList.length>0){
+            masterList.map(item=>{
+              if(item.biDeDate!=""|| item.biWorkNo!=""){
+                _self.disabledCustCode=true
+                return
+              }
+            })
+          }
+        },
+        // 重写父类 打开窗口时 触发事件
+        openActionTigger () {
+           let tableObj = this.$refs['slave_list_table_edit']
+           tableObj.dataCategorize.updateList =tableObj.get()
+        },
+        getBiCoTypeList(){
+           //获取 订单类型
+          this.getDataFromDictionaryBy('biCoType').then(res=>{
+            this.biCoTypeList = res
+          })
+        },
+        getBiPriceTypeList(){
+           //获取 计价方式
+          this.getDataFromDictionaryBy('biPriceType').then(res=>{
+            this.biPriceTypeList = res
+          })
+        },
+        getPressingLineTypeList() {
+          //获取压线类型
+          this.getDataFromDictionaryBy('bmScoreType').then(res=>{
+            this.pressingLineTypeList = res
+          })
+        },
+        getPressingLineDeepList() {
+          //压线深度
+           this.getDataFromDictionaryBy('bmScoreDepth').then(res=>{
+           this.pressingLineDeepList = res
+          })
+        },
+    // 从子窗口-获取编辑后的明细数据
+    getDataFromOrderSalve (itemObj) {
+      this.disabledCustCode=true
+      this.slavesForm.masterList[this.slavesForm.ItemFmRowIndex] = Object.assign({},itemObj.masterList)
+      this.slavesForm.SubList = JSON.parse(JSON.stringify(itemObj.productMDatas)) //Object.assign({},itemObj.productMDatas)
+      this.slavesForm.SubListTwo =JSON.parse(JSON.stringify(itemObj.productworkProcs))// Object.assign({},itemObj.productworkProcs)
+      this.slavesForm.SubItems[this.slavesForm.RowItemDataID] = this.slavesForm.SubList
+      this.slavesForm.SubItemsTwo[this.slavesForm.RowItemDataID] = this.slavesForm.SubListTwo
+   },
+    // 客户编号选择后的回调事件,客户变更,清空数据列表
+    custCodeOnFillEvent (item) {
+       let slaveObj = this.$refs['slave_list_table_edit']
+       let tableData = slaveObj.getCategorizeData()
+        if (this.formDataInfo.master.custId!==0) {
+          if (this.formDataInfo.master.custId != this.getcustid) {
+             // 深拷贝对象和数组,重置对象初始值
+             this.slavesForm = JSON.parse(JSON.stringify(slavesForm_default))
+             tableData.deleteList = tableData.updateList 
+          }
+          this.getcustid = this.formDataInfo.master.custId
+        }
+     
+    },
+    // 主表字段 默认值设置
+    setMasterDefaultData () {
+      // 订单类型:默认 订单
+      this.formDataInfo.master['biCoType'] = '1' 
+      // 订货时间:默认 当前时间
+      this.formDataInfo.master['bcCoDate'] = dayjs().format('YYYY-MM-DD HH:mm:ss') 
+    },
+    // 默认选择行数据
+    setDefaultSelectedRow (index=0) {
+       //debugger
+      let slaveObj = this.$refs['slave_list_table_edit']
+      if (slaveObj) {
+        slaveObj.rowClick(index, 'row-click')
+      }
+    },
+    // 右键编辑当前行,回调事件
+    slave_list_table_editRowModify (index,rowItem) {
+     
+      this.$refs['formDataInfo'].validate(valid => {
+        if (!valid) {
+          return
+        }
+            // FIX 防止右键编辑时,点击不是选中的行的数据
+            this.setDefaultSelectedRow(index)
+            this.editDataRow(rowItem)
+            this.salveWindow.showEditWindow = true
+            this.salveWindow.isLoaddingDone =true
+            this.salveWindow.action ='update'
+
+        }
+      )
+   
+    },
+    // 当前需要编辑行的数据详细
+    editDataRow(rowItem){
+        this.salveWindow.formDetailData = {
+         master:rowItem, // 订单明细
+         productMDatas: {
+            addList: [], // 添加列
+            defaultList:  this.slavesForm.SubList, // 纸板规格, // 默认列
+            deleteList: [], // 删除列
+            updateList: [] // 更新列
+          },
+           //子表 生产工序
+        productworkProcs: {
+            addList: [], // 添加列
+            defaultList: this.slavesForm.SubListTwo, // 生产工序 // 默认列
+            deleteList: [], // 删除列
+            updateList: [] // 更新列
+          },
+        initData:this.initData,
+        params:{
+          custId:this.formDataInfo.master.custId, // 客户ID
+          bpUnit:this.formDataInfo.master.bpUnit, // 开单单位
+          bpIsDiameter:this.formDataInfo.master.bpIsDiameter // 内径
+        }
+      }
+    },
+    // 删除回调事件,选中上一行 数据
+    slave_list_table_editRowDelete (index,Item) {
+      let slaveObj = this.$refs['slave_list_table_edit']
+      if (slaveObj) {
+        if(index!==0) {
+              slaveObj.rowClick(index-1, 'row-click')
+        } else {
+           // 延迟执行 不然选不中数据
+            setTimeout(()=>{
+                slaveObj.rowClick(0, 'row-click')
+            },500)
+        }
+      
+      }
+    },
+    // 重写父类 关闭窗口时 触发事件
+    closeActionTigger () {
+       // fix 清除上次的错误提示 formDataInfo 为表单ref名称
+      this.$refs['formDataInfo'].resetFields() 
+      this.$refs['slave_list_table_edit'].reset()
+    },
+
+    // 验证产品编号选择前先选择客户
+    popupClickValidator () {
+      if (!this.formDataInfo.master.custCode || this.formDataInfo.master.custCode == '') {
+        this.$Message.error('客户编号不能为空')
+        return false
+      }
+      return true
+    },
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo () {
+      this.formDataInfo.master = Object.assign({}, defaultMasterData) // 浅拷贝对象
+      this.slavesForm = JSON.parse(JSON.stringify(slavesForm_default)) // 深拷贝对象
+    },
+    // 重写父类,修改提交数据
+    resetformDataInfo () {
+      let _self = this
+      let data = {
+        master: this.formDataInfo.master
+      }
+      // 时间格式化
+      if (data.master.bcCoDate !== '') {
+        data.master.bcCoDate = dayjs(data.master.bcCoDate).format('YYYY-MM-DD HH:mm:ss')
+      }
+      let slavesItem = []
+      let slaveTableDataList = this.$refs['slave_list_table_edit'].forceUpdateGet()
+    
+       slaveTableDataList.forEach((item, index) => {
+        let sub = _self.slavesForm.SubItems[item.id] == null ? (_self.slavesForm.SubItems[index]==null?[]:_self.slavesForm.SubItems[index]) : _self.slavesForm.SubItems[item.id] // 注意:
+        let subTwo = _self.slavesForm.SubItemsTwo[item.id] == null ? (_self.slavesForm.SubItemsTwo[index]==null?[]:_self.slavesForm.SubItemsTwo[index]) : _self.slavesForm.SubItemsTwo[item.id] // 注意:
+        slavesItem.push({
+          master: item,
+          'saleBoxCoModelDatas':sub,
+          'saleBoxCoWorkProcs':subTwo 
+        })
+      })
+      data[`${this.slavesForm.name}`] = slavesItem
+      return data
+    },
+    // 添加数据前执行动作
+    slave_list_table_editRowAdd(index){
+       this.$refs['formDataInfo'].validate(valid => {
+        if (!valid) {
+          // 默认直接添加新行的数据,因此需要删除当前数据
+          this.$refs['slave_list_table_edit'].deleteRow(index)
+          return
+        }
+            this.getNextIndexData(index)
+            // 选择当前行
+            this.setDefaultSelectedRow(index)
+              // 打开新的窗体 添加数据
+            let editData = this.slavesForm.masterList[index]
+            this.editDataRow(editData)
+            this.salveWindow.showEditWindow = true
+            this.salveWindow.isLoaddingDone =true
+            this.salveWindow.action ='add'
+
+        }
+      )
+    
+    },
+    // 获取上个下标的数据
+    getNextIndexData(index){
+      // 添加数据时,原数据移动到下一位
+        let tempData1Edit= this.slavesForm.SubItems[index] 
+        if(tempData1Edit!=null){
+          this.slavesForm.SubList = []
+          this.slavesForm.SubItems[index]=[]
+          this.slavesForm.SubItems[index+1] = tempData1Edit
+        }
+
+        let tempData2Edit= this.slavesForm.SubItemsTwo[index] 
+        if(tempData2Edit!=null){
+           this.slavesForm.SubListTwo = []
+           this.slavesForm.SubItemsTwo[index] = []
+           this.slavesForm.SubItemsTwo[index+1] = tempData2Edit
+        }
+    },
+    // 子表点击事件 显示第三层表的数据
+    slave_list_table_editRowClick (index) {
+      this.slavesForm.ItemFmRowIndex = index
+      this.slavesForm.RowItemDataID =this.slavesForm.masterList[index].id
+      this.slavesForm.SubList = []
+      this.slavesForm.SubListTwo = []
+      let tempData1= this.slavesForm.SubItems[this.slavesForm.masterList[index].id] // 需要修改的字段 boxCoMainId
+      if(tempData1!=null){
+         this.slavesForm.SubList = tempData1  
+      }else{
+        // 编辑页面添加数据时
+        let tempData1Edit= this.slavesForm.SubItems[index] 
+        if(tempData1Edit!=null){
+           this.slavesForm.SubList = tempData1Edit
+        }else{
+           this.slavesForm.SubItems[index] = this.slavesForm.SubList
+        }
+
+      }
+     let tempData2= this.slavesForm.SubItemsTwo[this.slavesForm.masterList[index].id] // 需要修改的字段 boxCoMainId
+     if(tempData2!=null){
+        this.slavesForm.SubListTwo = tempData2
+     }else{
+        // 编辑页面添加数据时
+        let tempData2Edit= this.slavesForm.SubItemsTwo[index] 
+        if(tempData2Edit!=null){
+           this.slavesForm.SubListTwo = tempData2Edit
+        }else{
+           this.slavesForm.SubItemsTwo[index] = this.slavesForm.SubListTwo
+        }
+     }
+    },
+    // 重写父类 数据初始化后 自动调用
+    formDetailDataCall () {
+       if (this.action != 'add') {
+          this.getcustid = this.formDataInfo.master.custId
+        }
+      // 数据初始化，把第二层表的master组装成一个List结构
+      this.slavesForm.masterList = []
+      this.slavesForm.SubList = []
+      this.slavesForm.SubListTwo = []
+      let _self = this
+      let temp_formDetailData = this.formDataInfo[`${this.slavesForm.name}`]
+      if(temp_formDetailData!=null){
+          temp_formDetailData.forEach((item, index) => {
+         _self.slavesForm.masterList.push(item.master)
+         _self.slavesForm.SubItems[item.master.id] = item[`saleBoxCoModelDatas`]== null ? [] : item[`saleBoxCoModelDatas`]
+         _self.slavesForm.SubItemsTwo[item.master.id] = item[`saleBoxCoWorkProcs`] == null ? [] : item[`saleBoxCoWorkProcs`]
+      })
+      }
+      this.setDefaultSelectedRow() // 默认点击选择第一行数据触发事件
+    },
+    // 重写父类 提交数据 三层表
+    formTableDataSubmit () {
+      // debugger
+      let data = this.resetformDataInfo()
+       this.$refs['formDataInfo'].validate(valid => {
+        if (!valid) {
+          return
+        }
+        let result = this.$refs['slave_list_table_edit'].validate()
+        if (result) {
+          return
+        }
+
+        let resultSub = this.$refs['sub_list_table_edit'].validate()
+        if (resultSub) {
+          return
+        }
+        let resultSubWorkproc = this.$refs['sub_list_table_edit_workproc'].validate()
+        if (resultSubWorkproc) {
+          return
+        }
+        request.post(`${this.requestBaseUrl}/saveOrUpdate`, data).then(res => {
+          this.showWindow = false // 关闭当前编辑页面
+          this.$Message.success('执行成功')
+          this.$emit('submit-success') // 刷新主页面数据
+        })
+      })
+    }
+  }
+}
+</script>
+
+<style>
+/* .cl-edit-window .ivu-form-item {
+  margin-bottom: 5px !important;
+}
+
+.cl-edit-window .ivu-select-item {
+  display: block;
+} */
+</style>

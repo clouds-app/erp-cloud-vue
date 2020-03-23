@@ -1,0 +1,170 @@
+<template>
+  <Modal v-model="modalShow"  title="纸板规格" :width="1000">
+    <vTable :columns="columns"
+    :height="200"
+    :showIndex="false"
+    :tableData="tableSelectedDataComptued"
+    :column-parse="getShowColumns"
+    @row-click="rowClick"></vTable>
+    <div slot="footer">
+      <Button @click="modalShow = false">取消</Button>
+      <Button type="primary" @click="onOK">确定</Button>
+    </div>
+    </Modal>
+</template>
+
+<script>
+//纸板规格组件
+ import vTable from '@/components/tables/vTable';
+ import request from "@/libs/request";
+ import calc from "@/libs/calc";
+export default {
+  name: 'productSpec',
+  components: {vTable },
+  data() {
+    return {
+      columns:[],
+      modalShow: false,
+      data:[],
+      bmIndex:0,
+      selectedData:{}
+    };
+  },
+  computed:{
+    tableSelectedDataComptued(){
+      debugger
+      if(this.data && this.data.length>0){
+         let filterData = this.data.filter((item)=>{
+          return item.bmIndex == this.bmIndex;
+        });
+        this.calcUseMaterialNum(filterData);
+        return filterData;
+      }
+      return []
+    }
+  },
+  watch: {
+    value(n, o) {
+      this.modalShow = n;
+    },
+    modalShow(n, o) {
+      this.$emit('input', n);
+    }
+  },
+  props: {
+    value: {
+      type: Boolean,
+      default: false
+    },
+    // columns: {
+    //   type: Array,
+    //   default: () => {
+    //     return [];
+    //   }
+    // },
+    bpMoCut:{//模数
+      type:[Number,String],
+      default:1
+    }
+  },
+  created(){
+    this.loadColumsData()
+  },
+  methods: {
+    // 加载列头数据
+    loadColumsData(){
+       //纸板规格 	productMDataFm
+        let formName="productMDataFm"
+        let url = `/sys/form/init/${formName}`
+        request.get(url).then(res => {
+          if(res!=null){
+            this.columns = res.columns.productMDataFm.listColumns
+          } 
+        })
+    },
+    loadData(materialData,bmIndex){
+      this.bmIndex = bmIndex;
+      //查询出规格
+      request.fsLoading = true;
+      this.data = [];
+      request.post('/bas/product/calMaterialData',materialData).then(res=>{
+        if(res!=null){
+            this.data = res;
+        }
+      
+      }).catch(err=>{
+
+      })
+    },
+    rowClick(rowData,rowIndex) {
+      this.selectedData = rowData;
+    },
+    onOK(){
+      if(Object.keys(this.selectedData).length == 0){
+        this.$Message.info('请选择数据');
+        return;
+      }
+      this.selectedData['bmScoreType'] = 0;
+      this.selectedData['bmScoreDepth'] = 0;
+      this.$emit('on-ok',this.selectedData);
+      this.modalShow = false;
+    },
+    calcUseMaterialNum(data){
+        //计算用料系数
+        /**
+         * 双片：2*1/总开数/模数
+         * 单片：1*1/总开数/模数
+         * 修边=用料宽-净料宽*纸度开
+         * 纸度开=用料规格宽/净料规格宽
+          纸长开=用料规格长/净料规格长
+          总开数=纸度开*纸长开
+         */
+        let _self = this;
+        data.forEach((item,index)=>{
+          //计算纸度开 纸度开 = 用料规格宽/净料规格宽
+          let bmKsW = calc.div(item.bmSizeW,item.bmSSizeW);
+          item.bmKsW = isNaN(bmKsW)?item.bmKsW:Math.ceil(bmKsW);
+          //计算纸长开 纸长开=用料规格长/净料规格长
+          let bmKsL = calc.div(item.bmSizeL,item.bmSSizeL);
+          item.bmKsL = isNaN(bmKsL)?item.bmKsL:bmKsL;
+          //总开数=纸度开*纸长开
+          let bmKsTotal = calc.mul(item.bmKsW,item.bmKsL);
+          item.bmKsTotal = isNaN(bmKsTotal)?1:bmKsTotal == 0 ? 1 : bmKsTotal;
+          //计算修边
+          let bmAdjBorder = calc.sub(item.bmSizeW,calc.mul(item.bmSSizeW,item.bmKsW));
+          item.bmAdjBorder = isNaN(bmAdjBorder)?item.bmAdjBorder:bmAdjBorder;
+          //计算用料系数
+          let modulus = 1;
+          if(item.bmDoubleCut){//双片
+            modulus = 2;
+          }
+          let qty = calc.div(modulus,calc.div(item.bmKsTotal,parseInt(_self.bpMoCut)));
+          item.bmQty = qty;
+        })
+      },
+      getShowColumns(columns){
+      if(Array.isArray(columns) && columns.length > 0){
+        let hiddenColumns = {
+          'bmSize':0,
+          'bmSizeL':0,
+          'bmSizeW':0,
+          'bmKsW':0,
+          'bmKsL':0,
+          'bmKsTotal':0,
+          'bmDoubleCut':0,
+          'bmQty':0,
+          'bmAdjBorder':0,
+          };
+        for(let i = columns.length - 1;i >= 0;i--){
+          if(hiddenColumns[columns[i].key] != undefined && this.$params.isCalPaperWidth == "0"){
+            columns.splice(i,1);
+          }
+        }
+      }
+      return columns;
+    }
+  }
+};
+</script>
+
+<style></style>

@@ -181,6 +181,7 @@
           this.fillMappingList.forEach((item, index) => {
             let orignData = replaceItem[item.fromField];
             if(Array.isArray(orignData)){
+              debugger
               orignData = orignData.toString();
             }
             data[item.renderField] = orignData;
