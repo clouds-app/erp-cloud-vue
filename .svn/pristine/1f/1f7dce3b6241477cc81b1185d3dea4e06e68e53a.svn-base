@@ -1,0 +1,651 @@
+<template>
+    <div>
+       <editWindow class="cl-edit-salesOrderProductList" title="固定报价下单" v-model="showWindow"
+    :fullscreen="true" :loaddingBtn="loadingButton"
+      :spinLoaddingText="spinLoaddingText" @on-ok="submitFormDataEvent">
+       <div ref="masterHeight" style="height: 70%;overflow:hidden">  
+                <div ref="TabslistHeight">
+                    <Tabs v-model="tabShow" :animated="false" type="card" @on-click="tabClickChange">
+                    <TabPane name="Prize" label="按产品报价下单">
+                    </TabPane>
+                    <TabPane name="Area" label="按面积报价下单">
+                    </TabPane>
+                  </Tabs>    
+                </div>
+                <div v-if="tableColTitleData.columns && showWindow">
+                       <eTable
+                            :showContextMenu="false"
+                            v-show="tabShow=='Prize'"
+                            ref="sub_list_table_edit_Prize"
+                            unqiue-mark="id"
+                            :height="TabsHeightPrize-40"
+                            :index-menu="true"
+                            :col-start="0"
+                            :width="200"
+                            :row-init-data="tableColTitleData.initData[`master`]"
+                            :data="tablePrizeObj.tableDataPrize"
+                            :rules="PrizeTableValidator"
+                             @row-click="prize_list_table_editRowClick"
+                             @tableColTiggerEventCall="tableColTiggerEventCall"
+                          >
+                          <template slot="head">
+                               <tr v-for="(columnGroup,index) in tableColTitleData.columns[`${virtualForm.productpriceinfoFm}`].editGroups" :key="index">
+                                       <template  v-for="(column,index2) in columnGroup" >
+                                         <th v-if="excludeFiled('Prize',column.key)"
+                                            :key="index2" class="ivu-table-column-left"
+                                            :width="column.editWidth"
+                                            :colspan="column.colSpan"
+                                            :rowspan="column.rowSpan"
+                                            :columnKey="column.key"
+                                            style="text-align:center;"
+                                            >
+                                          <div  class="ivu-table-cell">
+                                            <span class="">{{column.title}}</span>
+                                          </div>
+                                      </th>
+                                       </template>
+                            </tr>
+                          </template>
+                            <template
+                              slot="body"
+                              slot-scope="{ row, index, tableColTiggerEvent }"
+                            >
+                                <template v-for="(column,subIndex) in tableColTitleData.columns[`${virtualForm.productpriceinfoFm}`].editColumns">
+                                    <td :key="subIndex" class="ivu-table-column-center" v-if="excludeFiled('Prize',column.key)" :width="column.editWidth">
+                                       <template v-if="column.key ==='coQty'">
+                                          <formControl  @input="tableColTiggerEvent(row,column,index,'coQtyChangeEvent')" :disabled="detailDisabled" :control-type="column.controlType" v-model="row[column.key]"></formControl>
+                                      </template>
+                                       <!-- 订单类型-->
+                                      <Select v-model="row[column.key]" v-else-if="column.key == 'coType'" transfer>
+                                        <Option v-for="(item,index) in saleCoTypeList" :key="index" :value="item.dicValue">{{item.dicLabel}}</Option>
+                                      </Select>
+                                        <template v-else>
+                                            <formControl :disabled="column.readOnly" :control-type="column.controlType" v-model="row[column.key]"></formControl>
+                                      </template>
+                                  </td>
+                                </template>
+
+                            </template>
+                         </eTable>
+                         <eTable
+                             v-show="tabShow=='Area'"
+                            :showContextMenu="false"
+                            :height="TabsHeightArea-40"
+                            ref="sub_list_table_edit_workproc"
+                            unqiue-mark="id"
+                            :index-menu="true"
+                            :col-start="0"
+                            :width="200"
+                             :row-init-data="tableColTitleData.initData[`master`]"
+                            :data="tableDataArea"
+                            :rules="PrizeTableValidator"
+                             @row-click="area_list_table_editRowClick"
+                          >
+                          <template slot="head">
+                               <tr v-for="(columnGroup,index) in tableColTitleData.columns[`${virtualForm.productpriceinfoFm}`].editGroups" :key="index">
+                                       <template  v-for="(column,index2) in columnGroup" >
+                                         <th v-if="excludeFiled('Area',column.key)"
+                                            :key="index2" class="ivu-table-column-left"
+                                            :width="column.editWidth"
+                                            :colspan="column.colSpan"
+                                            :rowspan="column.rowSpan"
+                                            :columnKey="column.key"
+                                            style="text-align:center;"
+                                            >
+                                          <div  class="ivu-table-cell">
+                                            <span class="">{{column.title}}</span>
+                                          </div>
+                                      </th>
+                                       </template>
+                            </tr>
+                          </template>
+                            <template
+                              slot="body"
+                              slot-scope="{ row, index, tableColTiggerEvent }"
+                            >
+                                <template v-for="(column,subIndex) in tableColTitleData.columns[`${virtualForm.productpriceinfoFm}`].editColumns">
+                                    <td :key="subIndex" class="ivu-table-column-left" v-if="excludeFiled('Area',column.key)" :width="column.editWidth">
+                                     
+                                        <template>
+                                            <formControl :disabled="column.readOnly" :control-type="column.controlType" v-model="row[column.key]"></formControl>
+                                      </template>
+                                  </td>
+                                </template>
+
+                            </template>
+                         </eTable>
+                </div>
+            
+              				   
+        </div>
+ 
+         <div v-if="tableColTitleData.columns && showWindow" v-show="tabShow=='Prize'" ref="otherHeight" style="height: 30%;overflow:hidden">  
+              <div>
+                    <Tabs  v-model="otherTabShow" :animated="false" @on-click="otherTabClickChange">
+                    <TabPane name="Suite" label="套件明细">
+                    </TabPane>
+                    <TabPane name="PO" label="同产品同PO多料号下单">
+                    </TabPane>
+                  </Tabs>
+              </div>
+                     <eTable
+                            v-show="otherTabShow=='Suite'"
+                            :height="otherTabsHeightSuite-50" 
+                            ref="sub_list_table_Suite"
+                            unqiue-mark="id"
+                            :index-menu="true"
+                            :col-start="0"
+                            :width="200"
+                            :showContextMenu="false"
+                            :row-init-data="tableColTitleData.initData[`productpriceInfounionitem`]"
+                            :data="tableDataSuite"
+                            :rules="PrizeTableValidator"
+                          >
+                          <template slot="head">
+                               <tr v-for="(columnGroup,index) in tableColTitleData.columns[`${virtualForm.productpriceInfounionitem}`].editGroups" :key="index">
+                                       <template  v-for="(column,index2) in columnGroup" >
+                                         <th v-if="excludeFiled('Suite',column.key)"
+                                            :key="index2" class="ivu-table-column-left"
+                                            :width="column.editWidth"
+                                            :colspan="column.colSpan"
+                                            :rowspan="column.rowSpan"
+                                            :columnKey="column.key"
+                                            style="text-align:center;"
+                                            >
+                                          <div  class="ivu-table-cell">
+                                            <span class="">{{column.title}}</span>
+                                          </div>
+                                      </th>
+                                       </template>
+                            </tr>
+                          </template>
+                            <template
+                              slot="body"
+                              slot-scope="{ row, index, tableColTiggerEvent }"
+                            >
+                                <template v-for="(column,subIndex) in tableColTitleData.columns[`${virtualForm.productpriceInfounionitem}`].editColumns">
+                                    <td :key="subIndex" class="ivu-table-column-left" v-if="excludeFiled('Suite',column.key)" :width="column.editWidth">
+                                      <formControl :disabled="column.readOnly" :control-type="column.controlType" v-model="row[column.key]"></formControl>
+                                  </td>
+                                </template>
+
+                            </template>
+                         </eTable>
+                    <eTable
+                            v-show="otherTabShow=='PO'"
+                            :height="otherTabsHeightPO-50"
+                            ref="sub_list_table_PO"
+                            unqiue-mark="id"
+                            :index-menu="true"
+                            :col-start="0"
+                            :width="200"
+                            :row-init-data="tableColTitleData.initData[`productpriceinfoposFm`]"
+                            :data="tableDataPO"
+                            :rules="PrizeTableValidator"
+                          >
+                          <template slot="head">
+                               <tr v-for="(columnGroup,index) in tableColTitleData.columns[`${virtualForm.productpriceinfoposFm}`].editGroups" :key="index">
+                                       <template  v-for="(column,index2) in columnGroup" >
+                                         <th v-if="excludeFiled('PO',column.key)"
+                                            :key="index2" class="ivu-table-column-left"
+                                            :width="column.editWidth"
+                                            :colspan="column.colSpan"
+                                            :rowspan="column.rowSpan"
+                                            :columnKey="column.key"
+                                            style="text-align:center;"
+                                            >
+                                          <div  class="ivu-table-cell">
+                                            <span class="">{{column.title}}</span>
+                                          </div>
+                                      </th>
+                                       </template>
+                            </tr>
+                          </template>
+                            <template
+                              slot="body"
+                              slot-scope="{ row, index, tableColTiggerEvent }"
+                            >
+                                <template v-for="(column,subIndex) in tableColTitleData.columns[`${virtualForm.productpriceinfoposFm}`].editColumns">
+                                    <td :key="subIndex" class="ivu-table-column-left" v-if="excludeFiled('PO',column.key)" :width="column.editWidth">
+                                      <formControl :disabled="column.readOnly" :control-type="column.controlType" v-model="row[column.key]"></formControl>
+                                  </td>
+                                </template>
+
+                            </template>
+                         </eTable>
+        </div>
+
+      </editWindow>
+       
+    </div>
+</template>
+
+<script>
+let _ = require('lodash')
+  import request from "@/libs/request";
+  import formControl from '@/components/form-control/form-control'
+  import splitPane from 'vue-splitpane'
+  import eTable from "@/components/e-table/e-table"
+  import editWindow from "@/components/edit-window/edit-window"
+  import editBaseMixins from "../../mixins/edit"
+  const default_tableCurrentRow = { // 当前表格选择行号
+            PrizeRowIndex:-1,
+            AreaRowIndex:-1,
+            SuiteRowIndex:-1,
+            PORowIndex:-1
+          }
+ const default_tablePrizeObj = {
+                 tableDataPrize: [], //0:按产品报价下单 
+                 tableDataPrizeItem:{},//产品报价当前选择项
+                 tableDataSuiteList:[],// 项列表先存储所有编辑过的套件列表
+                 tableDataPOList:[],// 项列表先存储所有编辑过的同类产品PO列表
+            }        
+export default {
+    name:'edit-boxSalesProductsList',
+    components:{
+       formControl,
+        eTable,
+        editWindow,
+        splitPane
+    },
+    mixins:[editBaseMixins],
+    data() {
+        return {
+          saleCoTypeList:[],//订单类型
+          loadingButton:false,// 窗口加载中,
+          tableCurrentRow:Object.assign({},default_tableCurrentRow),
+          formInitPreName:'productpriceinfoFm',
+          virtualForm:{
+             productpriceinfoFm :'productpriceinfoFm', //纸箱销售订单产品弹出框数据(虚拟)
+             productpriceInfounionitem :'productpriceInfounionitem', //销售订单产品弹出框套件明细(虚拟) 
+             productpriceinfoposFm :'productpriceinfoposFm',//同产品同po多料号下单(虚拟)
+          },
+          tableColTitleData:[],//表头列表
+          disableResetFields:true,// 重写父类,屏蔽重置
+           suiteList: [ 
+                { label: '产品', value: '0' },
+                { label: '套件', value: '1' }
+              ],
+            tabShow:'Prize',// 默认显示 按产品报价下单
+            otherTabShow:'Suite', // 默认显示 套件明细
+            TabsHeightPrize:0, // 标签高度 价格
+            TabsHeightArea:0, // 标签高度 面积
+            otherTabsHeight:0, // 标签高度 共用
+            otherTabsHeightPO:0, // 标签高度 PO
+            otherTabsHeightSuite:0, // 标签高度 套件
+            TabsHeight:0,  // 标签高度 共用
+            tableDataSuite:[],// 套件
+            tablePrizeObj:JSON.parse(JSON.stringify(default_tablePrizeObj)),
+            tableDataArea: [], //1：按面积报价下单 
+            tableDataPO: [], //3:同产品同PO多料号
+            PrizeTableValidator:{} // 按产品报价 表格验证
+           
+        }
+    },
+    watch:{
+      tableDataPO:{
+        handler(newData, oldData) {
+            this.setPODataToMasterList()
+        },
+        deep: true
+     },
+     showWindow:function(n,o){
+        if(n){
+          this.registerEvent()
+          this.$nextTick(()=>{
+              this.tabShow='Prize'
+              this.otherTabShow='Suite'
+              this.debouncedGetTabWindowHeight()
+              this.debouncedGetPrize()
+              this.getCoTypeList()
+          })
+        }else{
+           window.onresize = null
+        }
+      },
+    },
+    created(){
+      //throttle(θrɒtl节流函数)会在连续事件的过程中，每隔一段时间至少触发一次，连续事件结束后触发不止一次
+      //debounce(dibaʊns防抖动函数)只有当连续事件停止后的一小段时间后再触发一次，连续事件结束后可能只触发一次
+      this.debouncedGetSuite = _.debounce(this.getSuiteData, 500)
+      this.debouncedGetPrize = _.debounce(this.GetPrizeData, 500)
+      this.debouncedGetArea = _.debounce(this.GetAreaData, 500)
+      this.debouncedGetPO = _.debounce(this.GetPOData, 500)
+      this.debouncedGetTabWindowHeight = _.throttle(this.getTabWindowHeight, 500)
+      this.debouncedCoQtyChangeEvent = _.debounce(this.coQtyChangeEvent,500)
+      this.debouncedSetDataToTable = _.debounce(this.setProdDataToMasterList,500)
+      this.getColDataList()
+    
+      
+    },
+    mounted(){
+     
+
+    },
+    methods:{
+         //获取 订单类型
+         getCoTypeList() {
+          this.getDataFromDictionaryBy('biCoType').then(res=>{
+            this.saleCoTypeList = res
+          })
+        },
+        // 关闭时,清除数据
+        closeActionTigger () {
+          this.tableDataSuite=[]
+          this.tablePrizeObj.tableDataPrize=[]
+          this.tableDataArea=[]
+          this.tableDataPO=[]
+          this.tableCurrentRow = Object.assign({},default_tableCurrentRow) // 重置默认值
+          this.tablePrizeObj=JSON.parse(JSON.stringify(default_tablePrizeObj))
+        },
+       // 表格列值改变 回调事件处理event：{row, column, index, event}
+        tableColTiggerEventCall (obj) {
+          switch (obj.event) {
+            case 'coQtyChangeEvent':
+              this.debouncedCoQtyChangeEvent()
+              break
+            default:
+              break
+          }
+        },
+      // 当前行订单数据改变触发事件
+      coQtyChangeEvent(){
+         if(this.tablePrizeObj.tableDataPrize && this.tablePrizeObj.tableDataPrize.length>0){
+             this.setProdDataToMasterList()
+         }
+      },
+      // 组装数据到主表的 productInfos
+      setProdDataToMasterList(){
+            this.tablePrizeObj.tableDataPrizeItem = this.tablePrizeObj.tableDataPrize[this.tableCurrentRow.PrizeRowIndex]
+            if (this.tablePrizeObj.tableDataPrizeItem && !!this.tablePrizeObj.tableDataPrizeItem.biTaoCO){
+                if(this.tablePrizeObj.tableDataPrizeItem.bpNo!=''){
+                    this.getSuiteData(this.tablePrizeObj.tableDataPrizeItem.bpNo)
+                }
+              }else{
+                this.tableDataSuite =[]
+              }
+      },
+      // 组装数据到主表的 poProductInfos
+      setPODataToMasterList(){
+         //this.tablePrizeObj.tableDataPrizeItem.poProductInfos = this.tableDataPO 
+      }, 
+       // 默认选择行数据
+      setDefaultSelectedRow (index=0) {
+      let slaveObj = this.$refs['sub_list_table_edit_Prize']
+      if (slaveObj) {
+        slaveObj.rowClick(index, 'row-click')
+      }
+     },
+      prize_list_table_editRowClick (index) {
+        if(this.tableCurrentRow.PrizeRowIndex!= index){
+          // 行发生变化才再次请求并延迟
+           this.tableCurrentRow.PrizeRowIndex= index
+            this.debouncedSetDataToTable()
+            this.debouncedGetPO()
+        }
+        
+      },
+      
+      area_list_table_editRowClick(index){
+        this.tableCurrentRow.AreaRowIndex= index
+      },
+      // 排除不需要显示的字段
+      excludeFiled(type,key){
+        let exListPrize = ['type', 'custId', 'productId','bpCBoxId','bpCArtId','bpColorId']
+        let exListArea = ['type', 'custId', 'productId','bpCBoxId','bpCArtId','bpColorId']
+        let exListSuite = ['id']
+        let exListPO = ['productId']
+        let exList=[]
+        switch (type) {
+            case 'Prize':
+              exList = exListPrize 
+              break;
+            case 'Area':
+                exList = exListArea 
+              break;
+            case 'Suite':
+                exList = exListSuite 
+              break;
+            case 'PO':
+                exList = exListPO 
+              break;
+            default:
+              break;
+        }
+        if(exList.includes(key)){
+          return false
+        }else{
+          return true
+        }
+      },
+      // 注册窗口事件
+      registerEvent(){
+         let _self = this;//赋值vue的this
+          window.onresize = ()=>{
+    　　　　//调用methods中的事件
+            _self.pageResize();
+        }
+      },
+      // 触发窗口大小变化事件
+      pageResize(){
+        this.$nextTick(()=>{
+           this.getTabWindowHeight()
+        })
+      },
+      // 查询表格数据列表表头 
+      getColDataList(){
+         let _self = this
+          let formName="productpriceinfoFm"
+          let url = `/sys/form/init/${formName}`
+          request.get(url).then(res => {
+            if(res!=null){
+              _self.tableColTitleData = res
+            } 
+          })
+      },
+      //mode 0：按产品报价下单 
+      GetPrizeData(){
+        this.loadDataByMode('0')
+      },
+      //mode 1：按面积报价下单 
+      GetAreaData(){
+        this.loadDataByMode('1')
+      },
+      //mode  3:同产品同PO多料号
+       GetPOData(){
+        let isExist=this.isExistPOBy()
+          if(isExist){
+             return
+          }
+        this.loadDataByMode('3')
+      },
+      // 检查当前下标的套件数据是否已存在,避免重复查询
+      isExistSuiteBy(){
+        debugger
+        let suiteData =this.tablePrizeObj.tableDataSuiteList[this.tableCurrentRow.PrizeRowIndex]
+        if(suiteData){
+          this.tableDataSuite=suiteData
+          return true
+        }else{
+          this.tableDataSuite =[]
+          return false
+        }
+      },
+      // 检查当前下标的PO数据是否已存在,避免重复查询
+      isExistPOBy(){
+        let POData = this.tablePrizeObj.tableDataPOList[this.tableCurrentRow.PrizeRowIndex]
+        if(POData){
+          this.tableDataPO = POData
+          return true
+        }else{
+          this.tableDataPO =[]
+          return false
+        }
+      },
+      // 套件数据查询
+      getSuiteData(productNo){
+        let isExist = this.isExistSuiteBy()
+        if(isExist){
+          return
+        }
+        let params = {
+          productNo, // 套件编号
+          type:'1' // 固定 1 为套件
+        }
+        let _self = this
+        let url = '/bas/productUnion/sub/getProductInfo'
+        request.get(url,params,params).then(res => {
+            if(res!=null){
+                  _self.tableDataSuite =res
+                  _self.tablePrizeObj.tableDataSuiteList[_self.tableCurrentRow.PrizeRowIndex] = res
+                  
+            }
+          })
+      },
+      //mode 0：按产品报价下单 1：按面积报价下单 3:同产品同PO多料号
+      loadDataByMode(mode){
+        let params = {
+            custId:this.formDetailData.params.custId,
+            mode,
+            itemDesc:''//this.formDetailData.params.itemDesc
+        }
+        let _self = this
+        let url = '/sale/boxCo/aspGetBoxSet'
+        this.getDataByUrl(params,url).then(res => {
+              if(res!=null){
+                  switch (mode) {
+                    case '0':
+                       res=res.map(item=>{
+                         if(item.coType=='' || item.coType==null){
+                            item.coType=1
+                         }
+                         return item
+                       })
+                      _self.tablePrizeObj.tableDataPrize =res //0:按产品报价下单 
+                      _self.setDefaultSelectedRow()
+                      break;
+                    case '1':
+                        _self.tableDataArea =res //1：按面积报价下单 
+                      break;
+                    case '3':
+                        _self.tableDataPO =res //3:同产品同PO多料号
+                        this.tablePrizeObj.tableDataPOList[this.tableCurrentRow.PrizeRowIndex] = res
+                      break;
+                    default:
+                      break;
+                  }
+              }
+            })
+      },
+      // 查询数据
+      getDataByUrl(params,url){
+           let _self = this
+           this.loadingButton =true
+          return new Promise((resolve, reject) => {
+            try {
+                request.post(url, params).then(res => {
+                resolve(res);
+                _self.loadingButton =false 
+              }).catch(err => {
+                _self.loadingButton =false 
+                reject(err);
+              })
+            } catch (error) {
+                _self.loadingButton =false 
+            }
+            
+          })
+        },
+      // 获取当前TAB标签的实际高度
+      getTabWindowHeight(){
+         // 因为使用V-SHOW 隐藏,实际还会占用高度,所以切换时,设置为0 或使用V-IF 可以不用那么麻烦,但性能较低
+          this.TabsHeight = this.$refs['masterHeight'].offsetHeight 
+          if(this.tabShow ==='Prize'){
+             this.TabsHeightPrize =this.TabsHeight
+             this.TabsHeightArea =0
+          }else{
+           
+            this.TabsHeightPrize =0
+             this.TabsHeightArea =this.TabsHeight
+          }
+       
+
+          this.otherTabsHeight = this.$refs['otherHeight'].offsetHeight
+           if(this.tabShow ==='Suite'){
+              this.otherTabsHeightSuite= this.otherTabsHeight // 标签高度 套件
+               this.otherTabsHeightPO = 0 // 标签高度 PO
+          }else{
+               this.otherTabsHeightSuite=  0 // 标签高度 PO
+               this.otherTabsHeightPO = this.otherTabsHeight // 标签高度 套件
+          }
+         
+
+      },
+      // 标签切换事件回调
+       tabClickChange(val){
+          this.tabShow=val
+          this.TabsHeightPrize =this.TabsHeight
+          this.TabsHeightArea =this.TabsHeight
+          if(this.tabShow ==='Prize'){
+            // 必须设置高度为0 ,不然依旧占用高度,导致对齐不正确
+            this.TabsHeightArea =0
+          }else{
+            this.debouncedGetArea()
+            this.TabsHeightPrize =0
+          }
+       },
+       //套件 标签切换事件回调
+       otherTabClickChange(val){
+          this.otherTabShow=val
+          this.otherTabsHeightSuite = this.otherTabsHeight // 标签高度 套件
+          this.otherTabsHeightPO =this.otherTabsHeight // 标签高度 PO
+          if(this.otherTabShow ==='Suite'){
+            this.otherTabsHeightPO = 0
+          }else{
+             this.otherTabsHeightSuite = 0
+          }
+       },
+        // 组装需要提交的数据并且格式化
+        formatSubmitData(){
+          //debugger
+          let _self = this
+          let paramsData =[]
+           if(this.tabShow ==='Prize'){
+             //注意：filter()不会对空数组进行检测、不会改变原始数组
+             if(this.tablePrizeObj.tableDataPrize && this.tablePrizeObj.tableDataPrize.length>0){
+                  paramsData = this.tablePrizeObj.tableDataPrize.filter((item,index,arr)=>{
+                 if(item.coQty>0 ){
+                   if(!!item.biTaoCO){
+                      item.productInfos = (_self.tablePrizeObj.tableDataSuiteList[index]==null?[]:_self.tablePrizeObj.tableDataSuiteList[index])
+                   }
+                      item.poProductInfos = (_self.tablePrizeObj.tableDataPOList[index]==null?[]:_self.tablePrizeObj.tableDataPOList[index])
+                  return item
+                 }
+              })
+             }
+           }
+           return paramsData
+        },
+        // 提交数据
+        submitFormDataEvent(){
+          let formatData = this.formatSubmitData()
+          let params = {
+             productPriceInfoList:formatData
+          }
+          let _self = this
+          let url = '/sale/boxCo/makeUpProductData'
+          this.getDataByUrl(params,url).then(res => {
+                if(res!=null){
+                   let submitData = res
+                    _self.$emit('submit-success',submitData)
+                    _self.showWindow = false // 关闭当前窗口
+                }
+              })
+          }
+    }
+}
+</script>
+
+<style>
+
+</style>

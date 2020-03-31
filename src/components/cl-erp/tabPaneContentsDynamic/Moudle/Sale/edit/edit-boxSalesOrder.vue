@@ -9,6 +9,7 @@
       :loading="!isLoaddingDone"
       :spinLoaddingText="spinLoaddingText"
       @on-ok="formTableDataSubmit()"
+      @on-cancel="closeActionTigger"
        v-if="initData.columns"
     >
       <Form
@@ -19,26 +20,108 @@
         :label-width="100"
       >
       <Row>
-        <Col span="6" v-for="(columns,index) in initData.columns[`${formInitPreName}mainFm`].editColumns" :key="index">
-             <!-- 排除需要隐藏的字段 -->
-          <FormItem v-if="columns.key != 'custId' && columns.key != 'bpUnit' && columns.key != 'bpIsDiameter'" :columnsKey="columns.key" :label="columns.title" :prop="columns.key">
-             <!-- 控件特殊处理 客户 -->
-            <popup v-if="columns.key == 'custCode'"
+        <Col span="6">
+          <FormItem label="订单编号" prop="bcNo">
+                <Input :disabled="true" v-model="formDataInfo.master.bcNo" maxlength="80" placeholder="订单编号"></Input>
+          </FormItem>
+        </Col>
+         <Col span="6"  v-show="showDatePicker==false">
+          <FormItem label="订货时间" prop="bcCoDate">
+                  <Input  v-show="showDatePicker==false" icon="ios-calendar-outline" @on-focus="showDatePicker=true"  v-model="formDataInfo.master.bcCoDate" maxlength="80" placeholder="订货时间"></Input>
+          </FormItem>
+        </Col>
+        <Col span="6"  v-show="showDatePicker==true">
+          <FormItem label="订货时间">
+                   <DatePicker
+                    @on-ok="showDatePicker=false"
+                    @on-change="bcCoDateChange"
+                    :open="showDatePicker"
+                    :value="formDataInfo.master.bcCoDate" 
+                    v-show="showDatePicker==true"
+                    type="datetime"
+                    format="yyyy-MM-dd HH:mm:ss"
+                  ></DatePicker>
+          </FormItem>
+          
+        </Col>
+        
+           <Col span="6">
+            <FormItem label="客户编号" prop="custCode">
+             <popup 
              v-model="formDataInfo.master.custCode"
              field-name="custCode"
              :disabled="disabledCustCode"
              popup-name="CustomerSingleBox"
              :fill-model.sync="formDataInfo.master"
-             render-fields="custId,custCode,custName,coinId,coinName,coinCode,bpUnit,bpIsDiameter"
-             from-fields="id,cusCode,cusName,coinId,coinName,coinCode,bpUnit,bpIsDiameter"
-             :suffix="false"
+             render-fields="custId,custCode,custName,coinId,coinName,coinCode,bpUnit,bpIsDiameter,coinRate,bcTaxRate"
+             from-fields="id,cusCode,cusName,coinId,coinName,coinCode,bpUnit,bpIsDiameter,coinRate,taxRate"
+             :suffix="true"
              :suffix-model="formDataInfo.master.custName"
              :query-params="{}"
              @on-fill="custCodeOnFillEvent"
              />
-           
-              <!-- 控件特殊处理 业务员 参数： workOptType  1---业务员    2--跟单员-->
-            <popup v-else-if="columns.key == 'bcSaler'"
+          </FormItem>
+           </Col>
+       
+      
+        <Col span="6">
+            <FormItem label="客户PO号" prop="bcCustPo">
+                <Input :disabled="false" v-model="formDataInfo.master.bcCustPo" maxlength="80" placeholder="客户PO号"></Input>
+          </FormItem>
+           </Col> 
+           <Col span="6">
+            <FormItem label="结算货币" prop="coinCode">
+               <popup 
+                  v-model="formDataInfo.master.coinCode"
+                  field-name="coinCode"
+                  popup-name="CoinSingleBox "
+                  :fill-model.sync="formDataInfo.master"
+                  render-fields="coinCode,coinName,coinRate"
+                  from-fields="coinCode,coinName,coinRate"
+                  :suffix="true"
+                  :suffix-model="formDataInfo.master.coinName"
+                  :query-params="{}"
+                  @on-fill="custCodeOnFillEvent"
+                  />
+          </FormItem>
+             </Col>
+          
+             <Col span="3">
+            <FormItem label="汇率" prop="coinRate">
+              <InputNumber :disabled="false"  placeholder="汇率" :min="0" v-model="formDataInfo.master.coinRate"></InputNumber>
+             
+          </FormItem>
+        </Col>
+            <Col span="3">
+            <FormItem label="税率" prop="bcTaxRate">
+               <InputNumber :disabled="false"  placeholder="税率" :min="0" v-model="formDataInfo.master.bcTaxRate"></InputNumber>
+          </FormItem>
+        </Col>
+        
+          <Col span="6">
+            <FormItem label="面积" prop="bcArea">
+                <Input :disabled="true" v-model="formDataInfo.master.bcArea" maxlength="80" placeholder="面积"></Input>
+          </FormItem>
+        </Col>
+          <Col span="6">
+            <FormItem label="体积" prop="bcCube">
+                <Input :disabled="true" v-model="formDataInfo.master.bcCube" maxlength="80" placeholder="体积"></Input>
+          </FormItem>
+        </Col>
+          <Col span="6">
+            <FormItem label="重量" prop="bcWeight">
+                <Input :disabled="true" v-model="formDataInfo.master.bcWeight" maxlength="80" placeholder="重量"></Input>
+          </FormItem>
+        </Col>
+         <Col span="6">
+            <FormItem label="金额" prop="bcMoney">
+                <Input :disabled="true" v-model="formDataInfo.master.bcMoney" maxlength="80" placeholder="金额"></Input>
+          </FormItem>
+        </Col>
+          <Col span="6">
+            <FormItem label="业务员" prop="bcSaler">
+                <!-- 控件特殊处理 业务员 参数： workOptType  1---业务员    2--跟单员-->
+            <popup 
              v-model="formDataInfo.master.bcSaler"
              field-name="bcSaler"
              :disabled="false"
@@ -46,12 +129,16 @@
              :fill-model.sync="formDataInfo.master"
              render-fields="bcSalerId,bcSaler,bcSalerName"
              from-fields="id,workCode,workName"
-             :suffix="false"
+             :suffix="true"
              :suffix-model="formDataInfo.master.bcSalerName"
              :query-params="{workOptType:1}"
              />
-              <!-- 控件特殊处理 跟单员 参数： workOptType  1---业务员    2--跟单员-->
-            <popup v-else-if="columns.key == 'bcFollower'"
+          </FormItem>
+           </Col> 
+             <Col span="6">
+            <FormItem label="跟单员" prop="bcFollower">
+                    <!-- 控件特殊处理 跟单员 参数： workOptType  1---业务员    2--跟单员-->
+            <popup 
              v-model="formDataInfo.master.bcFollower"
              field-name="bcFollower"
              :disabled="false"
@@ -59,28 +146,15 @@
              :fill-model.sync="formDataInfo.master"
              render-fields="bcFollowerId,bcFollower,bcFollowerName"
              from-fields="id,workCode,workName"
-             :suffix="false"
+             :suffix="true"
              :suffix-model="formDataInfo.master.bcFollowerName"
              :query-params="{workOptType:2}"
              />
-              <!-- 控件特殊处理 订单类型 -->
-            <optionSearch v-else-if="columns.key == 'biCoType'"
-                          @onChange="optionOnChangeBy"
-                          :defaultItem="formDataInfo.master.biCoType"
-                          :loaddingDataWhen="showWindow"
-                          query="biCoType"
-                        />
-            <!-- 控件特殊处理 生效日期 -->
-              <DatePicker v-else-if="columns.key == 'bcCoDate'"
-                    type="datetime"
-                    format="yyyy-MM-dd HH:mm:ss"
-                    :placeholder="columns.title"
-                    v-model="formDataInfo.master[columns.key]"
-                  ></DatePicker>
-             <!-- 控件特殊处理 报价单号 -->
-             <formControl v-else-if="columns.key == 'bpNo'" :control-type="columns.controlType" :disabled="true" :placeholder="columns.title" v-model="formDataInfo.master[columns.key]" ></formControl>
-             <!-- 其它 通用控件 -->
-             <formControl  v-else :control-type="columns.controlType" :disabled="true" :placeholder="columns.title" v-model="formDataInfo.master[columns.key]" ></formControl>
+          </FormItem>
+           </Col> 
+           <Col span="12">
+            <FormItem label="备注" prop="remark">
+                <Input v-model="formDataInfo.master.remark" maxlength="80" placeholder="备注"></Input>
           </FormItem>
         </Col>
       </Row>
@@ -110,7 +184,7 @@
               <tr v-for="(columnGroup,index) in initData.columns[`${formInitPreName}itemFm`].editGroups" :key="index">
                 <th class="ivu-table-column-left"
                 v-for="(column,index2) in columnGroup" :key="index2"
-                :width="column.width"
+                :width="column.editWidth"
                 :colspan="column.colSpan"
                 :rowspan="column.rowSpan"
                 :columnKey="column.key"
@@ -130,7 +204,7 @@
               <td class="ivu-table-column-left"
                v-for="(column,columnIndex) in initData.columns[`${formInitPreName}itemFm`].editColumns"
                :key="columnIndex"
-               :width="column.width">
+               :width="column.editWidth">
                    <!-- 订单类型-->
                    <Select :disabled="true" v-if="column.key == 'biCoType'" v-model="row[column.key]" transfer>
                      <Option v-for="(item,index) in biCoTypeList" :key="index" :value="item.dicValue">{{item.dicLabel}}</Option>
@@ -139,6 +213,13 @@
                    <Select :disabled="true" v-else-if="column.key == 'biPriceType'" v-model="row[column.key]" transfer>
                      <Option v-for="(item,index) in biPriceTypeList" :key="index" :value="item.dicValue">{{item.dicLabel}}</Option>
                    </Select>
+                    <DatePicker
+                    :disabled="true"
+                        transfer
+                        v-else-if="column.key == 'biDeDate'"
+                        type="datetime"
+                        format="yyyy/MM/dd HH:mm:ss"
+                        v-model="row.biDeDate" />
                  <!-- 其它 :placeholder="column.key"-->
                 <formControl v-else :control-type="column.controlType"
                 v-model="row[column.key]" :disabled="true"
@@ -156,7 +237,7 @@
             :showContextMenu="false"
             ref="sub_list_table_edit"
             unqiue-mark="id"
-            :height="140"
+             :height="200"
             :index-menu="true"
             :col-start="0"
             :width="200"
@@ -166,31 +247,29 @@
           >
             <template slot="head">
               <tr v-for="(columnGroup,index) in initData.columns[`${formInitPreName}mdataFm`].editGroups" :key="index">
-                <th class="ivu-table-column-left"
-                v-for="(column,index2) in columnGroup" :key="index2"
-                :width="column.width"
-                :colspan="column.colSpan"
-                :rowspan="column.rowSpan"
-                :columnKey="column.key"
-                style="text-align:center;"
-                >
-                  <div class="ivu-table-cell">
-                    <span class="">{{column.title}}</span>
-                  </div>
-                </th>
-
-              </tr>
+                                       <template  v-for="(column,index2) in columnGroup" >
+                                         <th v-if="excludeFiled('MdataFm',column.key)"
+                                            :key="index2" class="ivu-table-column-left"
+                                            :width="column.editWidth"
+                                            :colspan="column.colSpan"
+                                            :rowspan="column.rowSpan"
+                                            :columnKey="column.key"
+                                            style="text-align:center;"
+                                            >
+                                          <div  class="ivu-table-cell">
+                                            <span class="">{{column.title}}</span>
+                                          </div>
+                                      </th>
+                                       </template>
+                            </tr>
             </template>
             <template
               slot="body"
               slot-scope="{ row, index,valueChangeAssign }"
             >
-              <td class="ivu-table-column-left"
-               v-for="(column,subIndex) in initData.columns[`${formInitPreName}mdataFm`].editColumns"
-               :key="subIndex"
-               :width="column.width">
-                
-                    <!-- 压线类型-->
+             <template  v-for="(column,subIndex) in initData.columns[`${formInitPreName}mdataFm`].editColumns">
+                   <td :key="subIndex" class="ivu-table-column-left" v-if="excludeFiled('MdataFm',column.key)" :width="column.editWidth">
+                                         <!-- 压线类型-->
                    <Select  :disabled="true" @input="value => {valueChangeAssign(value, index, row, 'bmScoreType')}" v-model="row[column.key]" v-if="column.key == 'bmScoreType'" transfer>
                      <Option v-for="(item,index) in pressingLineTypeList" :key="index" :value="item.dicValue">{{item.dicLabel}}</Option>
                    </Select>
@@ -198,6 +277,13 @@
                    <Select :disabled="true" @input="value => {valueChangeAssign(value, index, row, 'bmScoreDepth')}" v-else-if="column.key == 'bmScoreDepth'" v-model="row[column.key]" transfer>
                      <Option v-for="(item,index) in pressingLineDeepList" :key="index" :value="item.dicValue">{{item.dicLabel}}</Option>
                    </Select>
+                   <DatePicker
+                      :disabled="true"
+                        transfer
+                        v-else-if="column.key == 'bmDeDate'"
+                        type="datetime"
+                        format="yyyy/MM/dd HH:mm:ss"
+                        v-model="row.bmDeDate" />
                     <!-- 纸质编号-->
                     <popup v-model="row.bpPArtCode"
                       v-else-if="column.key == 'bpPArtCode'"
@@ -210,17 +296,12 @@
                       from-fields="artCode"
                       :index="index"
                       :suffix="false" />
-            
-                <!-- 其它 不可以编辑-->
-                <!-- <template v-else>
-                  
-                      <formControl :disabled="column.readOnly" :control-type="column.controlType" v-model="row[column.key]"></formControl>
-                </template> -->
                  <formControl v-else :control-type="column.controlType"
                 v-model="row[column.key]" :disabled="true"
                 @input="value => {valueChangeAssign(value, index, row,column.key)}"
                 ></formControl>
-              </td>
+                                  </td>
+             </template>
             </template>
           </eTable>
         </TabPane>
@@ -242,7 +323,7 @@
               <tr v-for="(columnGroup,index) in initData.columns[`${formInitPreName}workprocFm`].editGroups" :key="index">
                 <th class="ivu-table-column-left"
                 v-for="(column,index2) in columnGroup" :key="index2"
-                :width="column.width"
+                :width="column.editWidth"
                 :colspan="column.colSpan"
                 :rowspan="column.rowSpan"
                 :columnKey="column.key"
@@ -262,7 +343,7 @@
               <td class="ivu-table-column-left"
                v-for="(column,subIndex) in initData.columns[`${formInitPreName}workprocFm`].editColumns"
                :key="subIndex"
-               :width="column.width">
+               :width="column.editWidth">
                <!-- 控件特殊处理 工序编号 -->
                  <popup
                     v-if="column.key == 'bwWPNumber'"
@@ -364,6 +445,7 @@ export default {
   },
   data () {
     return {
+      showDatePicker:false, // 手动弹出日期框
       disabledCustCode:false,// 是否禁用 客户编号
       salveWindow:{
          isLoaddingDone:false, // 窗口是否加载完成
@@ -388,7 +470,7 @@ export default {
       // 主表  验证规则
       ruleValidate: { 
         custCode: [{ required: true, message: '客户编号不能为空', trigger: 'blur,change' }],
-        //bcCoDate:[{ type: "date", required: true, message: '订货时间不能为空', trigger: 'blur,change' }],
+        bcCoDate: [{ required: true, message: '订货时间不能为空', trigger: 'blur,change' }],
          },
       // 从表 验证规则
       tableFieldsValidator: {},
@@ -461,6 +543,44 @@ export default {
       this.getBiPriceTypeList() //计价方式
     },
   methods: {
+      bcCoDateChange(itemDate){
+          if(itemDate=='' || itemDate==null){
+             this.formDataInfo.master.bcCoDate = dayjs().format('YYYY-MM-DD HH:mm')+":00"
+          }else{
+             this.formDataInfo.master.bcCoDate = dayjs(itemDate).format('YYYY-MM-DD HH:mm')+":00"
+          }
+          
+      },
+     // 继承中修改 关闭窗口时 触发事件
+      closeActionTigger () {
+        this.$refs['formDataInfo'].resetFields();
+      },
+     // 排除不需要显示的字段
+      excludeFiled(type,key){
+        let exListMaster = ['custId', 'bpUnit', 'bpIsDiameter','custName','bcSalerName','bcFollowerName']
+        //纸板规格中的用料规格宽，用料规格长，纸宽开，纸长开，总开数，双片，用料数量字段需要根据 isCalPaperWidth 参数来控制显示不显示
+        let exlistMdataFm=['iisDoubleCut','bmSizeW','bmSizeL','bmKsW','bmKsL','bmKsTotal','bmQty']
+        let isCalPaperWidth = this.$params.isCalPaperWidth
+            if(isCalPaperWidth=="1"){
+                 exlistMdataFm = [] 
+            }
+        let exList=[]
+        switch (type) {
+            case 'Master':
+              exList = exListMaster 
+              break;
+            case 'MdataFm':
+              exList = exlistMdataFm
+              break;  
+            default:
+              break;
+        }
+        if(exList.includes(key)){
+          return false
+        }else{
+          return true
+        }
+      },
         // 确认删除当前选择数据吗?
         comfirmDelete(bakDeleteData, index, callback){
          return new Promise((resolve,reject)=>{
@@ -479,12 +599,11 @@ export default {
           let _self =this
           this.disabledCustCode=false
           if(masterList!=null && masterList.length>0){
-            masterList.map(item=>{
-              if(item.biDeDate!=""|| item.biWorkNo!=""){
+               let firstItem=masterList[0]
+               if((firstItem.biDeDate!='' && firstItem.biDeDate!="Invalid Date") || firstItem.biWorkNo!=""){
                 _self.disabledCustCode=true
                 return
               }
-            })
           }
         },
         // 重写父类 打开窗口时 触发事件
@@ -516,15 +635,76 @@ export default {
            this.pressingLineDeepList = res
           })
         },
-    // 从子窗口-获取编辑后的明细数据
-    getDataFromOrderSalve (itemObj) {
-      this.disabledCustCode=true
-      this.slavesForm.masterList[itemObj.currentIndex] = Object.assign({},itemObj.masterList)
-      this.slavesForm.SubList = JSON.parse(JSON.stringify(itemObj.productMDatas)) 
-      this.slavesForm.SubListTwo =JSON.parse(JSON.stringify(itemObj.productworkProcs))
-      this.slavesForm.SubItems[this.slavesForm.RowItemDataID] = this.slavesForm.SubList
-      this.slavesForm.SubItemsTwo[this.slavesForm.RowItemDataID] = this.slavesForm.SubListTwo
-   },
+      // 从子窗口-获取编辑后的明细数据
+      getDataFromOrderSalve (itemObj) {
+        if(itemObj.isNewProduct){
+          this.getPreIndexData(itemObj.currentIndex)
+          this.$refs['slave_list_table_edit'].deleteRow(itemObj.currentIndex)
+          this.PushDataToMaster(itemObj.dataList)
+          return
+        }
+        this.disabledCustCode=true
+        this.slavesForm.masterList[itemObj.currentIndex] = Object.assign({},itemObj.masterList)
+        this.slavesForm.SubList = JSON.parse(JSON.stringify(itemObj.productMDatas)) 
+        this.slavesForm.SubListTwo =JSON.parse(JSON.stringify(itemObj.productworkProcs))
+        this.slavesForm.SubItems[this.slavesForm.RowItemDataID] = this.slavesForm.SubList
+        this.slavesForm.SubItemsTwo[this.slavesForm.RowItemDataID] = this.slavesForm.SubListTwo
+        this.sumMoneyAreaVolumeWeight()
+    },
+    sumMoneyAreaVolumeWeight(){
+      // 汇总 金额, 面积,体积,重量
+      let totalMoney=0,totalArea=0,totalVolume=0,totalWeight=0
+      this.slavesForm.masterList.map(item=>{
+             if(item.biMoney!='' && item.biMoney!=null){
+               totalMoney+=item.biMoney
+             }
+             if(item.biArea!='' && item.biArea!=null){
+               totalArea+=item.biArea
+             }
+             if(item.biCube!='' && item.biCube!=null){
+               totalVolume+=item.biCube
+             }
+            if(item.biWeight!='' && item.biWeight!=null){
+               totalWeight+=item.biWeight
+            }
+             
+      })
+      this.formDataInfo.master.bcMoney =totalMoney.toFixed(2)
+      this.formDataInfo.master.bcArea =totalArea.toFixed(2)
+      this.formDataInfo.master.bcCube =totalVolume.toFixed(2)
+      this.formDataInfo.master.bcWeight =totalWeight.toFixed(2)
+    },
+    // 把固定报价获取的数据插入到当前数据列表
+    PushDataToMaster(dataList){
+      let _self = this
+      let temp_formDetailData = dataList
+      let lastIndex = this.slavesForm.masterList.length
+      let hasData =false
+      if(temp_formDetailData!=null){
+          temp_formDetailData.forEach((item, index) => {
+           if(lastIndex==0){
+             lastIndex=1
+             hasData=true
+            _self.slavesForm.masterList[index] = item.master 
+            _self.slavesForm.SubItems[index] = item[`saleBoxCoModelDatas`]== null ? [] : item[`saleBoxCoModelDatas`]
+            _self.slavesForm.SubItemsTwo[index] = item[`saleBoxCoWorkProcs`] == null ? [] : item[`saleBoxCoWorkProcs`]
+          }
+          else{
+             if(lastIndex>1){
+               index=lastIndex+index
+             }else if(!hasData){
+               index=index+1
+             }
+            _self.slavesForm.masterList.push(item.master)
+            _self.slavesForm.SubItems[index] = item[`saleBoxCoModelDatas`]== null ? [] : item[`saleBoxCoModelDatas`]
+            _self.slavesForm.SubItemsTwo[index] = item[`saleBoxCoWorkProcs`] == null ? [] : item[`saleBoxCoWorkProcs`]
+          } 
+        
+        })
+      }
+      this.sumMoneyAreaVolumeWeight()
+      this.setDefaultSelectedRow() // 默认点击选择第一行数据触发事件
+    },
     // 客户编号选择后的回调事件,客户变更,清空数据列表
     custCodeOnFillEvent (item) {
        let slaveObj = this.$refs['slave_list_table_edit']
@@ -541,10 +721,10 @@ export default {
     },
     // 主表字段 默认值设置
     setMasterDefaultData () {
-      // 订单类型:默认 订单
-      this.formDataInfo.master['biCoType'] = '1' 
+
       // 订货时间:默认 当前时间
-      this.formDataInfo.master['bcCoDate'] = dayjs().format('YYYY-MM-DD HH:mm:ss') 
+      let currentTime = dayjs().format('YYYY-MM-DD HH:mm')+":00"
+      this.formDataInfo.master['bcCoDate'] = currentTime
     },
     // 默认选择行数据
     setDefaultSelectedRow (index=0) {
@@ -556,17 +736,21 @@ export default {
     },
     // 右键编辑当前行,回调事件
     slave_list_table_editRowModify (index,rowItem) {
-     
       this.$refs['formDataInfo'].validate(valid => {
         if (!valid) {
           return
         }
             // FIX 防止右键编辑时,点击不是选中的行的数据
             this.setDefaultSelectedRow(index)
+            this.salveWindow.action ='update'
+            if(rowItem.biWorkNo==''){
+               // 空数据,所以设置为添加,可以选择产品
+               this.salveWindow.action ='add'
+            }
             this.editDataRow(rowItem)
             this.salveWindow.showEditWindow = true
             this.salveWindow.isLoaddingDone =true
-            this.salveWindow.action ='update'
+           
 
         }
       )
@@ -599,21 +783,7 @@ export default {
         }
       }
     },
-    // 删除回调事件,选中上一行 数据
-    slave_list_table_editRowDelete (index,Item) {
-      let slaveObj = this.$refs['slave_list_table_edit']
-      if (slaveObj) {
-        if(index!==0) {
-              slaveObj.rowClick(index-1, 'row-click')
-        } else {
-           // 延迟执行 不然选不中数据
-            setTimeout(()=>{
-                slaveObj.rowClick(0, 'row-click')
-            },500)
-        }
-      
-      }
-    },
+ 
     // 重写父类 关闭窗口时 触发事件
     closeActionTigger () {
        // fix 清除上次的错误提示 formDataInfo 为表单ref名称
@@ -636,20 +806,27 @@ export default {
     },
     // 重写父类,修改提交数据
     resetformDataInfo () {
-      debugger
       let _self = this
       let data = {
         master: this.formDataInfo.master
       }
       // 时间格式化
       if (data.master.bcCoDate !== '') {
-        data.master.bcCoDate = dayjs(data.master.bcCoDate).format('YYYY-MM-DD HH:mm:ss')
+        data.master.bcCoDate = dayjs(data.master.bcCoDate).format('YYYY-MM-DD HH:mm:ss').toString()
       }
       let slavesItem = []
       let slaveTableDataList = this.$refs['slave_list_table_edit'].forceUpdateGet()
     
        slaveTableDataList.forEach((item, index) => {
+         item.biDeDate = dayjs(item.biDeDate).format('YYYY-MM-DD HH:mm:ss').toString() 
         let sub = _self.slavesForm.SubItems[item.id] == null ? (_self.slavesForm.SubItems[index]==null?[]:_self.slavesForm.SubItems[index]) : _self.slavesForm.SubItems[item.id] // 注意:
+           if(sub && sub.length>0){
+             sub.map(subItem=>{
+                subItem.bmDeDate = dayjs(subItem.bmDeDate).format('YYYY-MM-DD HH:mm:ss').toString() 
+                return subItem
+             })
+              
+            }
         let subTwo = _self.slavesForm.SubItemsTwo[item.id] == null ? (_self.slavesForm.SubItemsTwo[index]==null?[]:_self.slavesForm.SubItemsTwo[index]) : _self.slavesForm.SubItemsTwo[item.id] // 注意:
         slavesItem.push({
           master: item,
@@ -660,23 +837,63 @@ export default {
       data[`${this.slavesForm.name}`] = slavesItem
       return data
     },
+    // 删除回调事件,选中上一行 数据
+    slave_list_table_editRowDelete (index,Item) {
+      let slaveObj = this.$refs['slave_list_table_edit']
+      if (slaveObj) {
+         this.getPreIndexData(index)
+        if(index!==0) {
+              slaveObj.rowClick(index-1, 'row-click')
+        } else {
+           // 延迟执行 不然选不中数据
+            setTimeout(()=>{
+                slaveObj.rowClick(0, 'row-click')
+            },500)
+        }
+       
+      }
+    },
+    // 获取最近的一个下标的数据
+    getPreIndexData(index){
+      // 添加数据时,原数据移动到下一位
+        let tempData1Edit= this.slavesForm.SubItems[index+1] 
+        if(tempData1Edit!=null){
+          this.slavesForm.SubList = []
+          this.slavesForm.SubItems[index]=tempData1Edit
+          this.slavesForm.SubItems[index+1] = null
+        }
+
+        let tempData2Edit= this.slavesForm.SubItemsTwo[index+1] 
+        if(tempData2Edit!=null){
+           this.slavesForm.SubListTwo = []
+           this.slavesForm.SubItemsTwo[index] = tempData2Edit
+           this.slavesForm.SubItemsTwo[index+1] = null
+        }
+    },
     // 添加数据前执行动作
     slave_list_table_editRowAdd(index){
+      let _self = this
        this.$refs['formDataInfo'].validate(valid => {
         if (!valid) {
           // 默认直接添加新行的数据,因此需要删除当前数据
           this.$refs['slave_list_table_edit'].deleteRow(index)
           return
         }
-            this.getNextIndexData(index)
+            _self.getNextIndexData(index)
             // 选择当前行
-            this.setDefaultSelectedRow(index)
+            _self.setDefaultSelectedRow(index)
               // 打开新的窗体 添加数据
-            let editData = this.slavesForm.masterList[index]
-            this.editDataRow(editData)
-            this.salveWindow.showEditWindow = true
-            this.salveWindow.isLoaddingDone =true
-            this.salveWindow.action ='add'
+            let editData = _self.slavesForm.masterList[index]
+            // 添加默认值
+            let BoxCODueDate= _self.$params.BoxCODueDate
+            editData.biDeDate= dayjs().add(BoxCODueDate,'day').format('YYYY-MM-DD HH:mm:ss').toString()
+            editData.bpQty=1
+            editData.biCoType ="1"
+            editData.biCoTypeText='订单'
+            _self.editDataRow(editData)
+            _self.salveWindow.showEditWindow = true
+            _self.salveWindow.isLoaddingDone =true
+            _self.salveWindow.action ='add'
 
         }
       )
@@ -688,14 +905,14 @@ export default {
         let tempData1Edit= this.slavesForm.SubItems[index] 
         if(tempData1Edit!=null){
           this.slavesForm.SubList = []
-          this.slavesForm.SubItems[index]=[]
+          this.slavesForm.SubItems[index]=null
           this.slavesForm.SubItems[index+1] = tempData1Edit
         }
 
         let tempData2Edit= this.slavesForm.SubItemsTwo[index] 
         if(tempData2Edit!=null){
            this.slavesForm.SubListTwo = []
-           this.slavesForm.SubItemsTwo[index] = []
+           this.slavesForm.SubItemsTwo[index] =null
            this.slavesForm.SubItemsTwo[index+1] = tempData2Edit
         }
     },
@@ -740,6 +957,8 @@ export default {
       this.slavesForm.masterList = []
       this.slavesForm.SubList = []
       this.slavesForm.SubListTwo = []
+      this.slavesForm.SubItems={}
+      this.slavesForm.SubItemsTwo={}
       let _self = this
       let temp_formDetailData = this.formDataInfo[`${this.slavesForm.name}`]
       if(temp_formDetailData!=null){

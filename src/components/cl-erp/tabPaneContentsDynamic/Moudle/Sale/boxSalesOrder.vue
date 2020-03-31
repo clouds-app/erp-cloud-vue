@@ -47,7 +47,7 @@
               :height="tableHeight / 3-90"
               ref="sub_list_table"
               :table-data="tableBoxCoModelData"
-              :columns="formInitData.columns[`${functionParams.formInitPreName}mdataFm`].listColumns"
+              :columns="checkShowCol(formInitData.columns[`${functionParams.formInitPreName}mdataFm`].listColumns)"
               :pagination="false"
               :query-params="{boxCoItemId:-1}"
             ></vTable>
@@ -74,6 +74,8 @@
       :action="action"
       @submit-success="search()"
       v-model="showEditWindow"
+      :detailDisabled="detailDisabled"
+      :detailConvertUpdate="detailConvertUpdate"
     />
   </div>
 </template>
@@ -121,6 +123,21 @@ export default {
     }
   },
   methods: {
+    // 
+    checkShowCol(colList){
+      //纸板规格中的用料规格宽，用料规格长，纸宽开，纸长开，总开数，双片，用料数量字段需要根据 isCalPaperWidth 参数来控制显示不显示
+      let exlistMdataFm=['iisDoubleCut','bmSizeW','bmSizeL','bmKsW','bmKsL','bmKsTotal','bmQty']
+      let isCalPaperWidth = this.$params.isCalPaperWidth
+          if(isCalPaperWidth=="1"){
+            exlistMdataFm = [] 
+          }
+       if(colList && Array.isArray(colList) && colList.length>0){
+         colList = colList.filter(item=>{
+           return !exlistMdataFm.includes(item.key)
+         })
+       }
+      return colList
+    },
     // tab 切换事件
     TabsClickEvent(name){
       this.currentTabName = name
