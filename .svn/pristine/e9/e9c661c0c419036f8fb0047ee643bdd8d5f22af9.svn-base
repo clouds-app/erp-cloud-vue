@@ -17,6 +17,7 @@
         :model="formDataInfo.master"
         :rules="ruleValidate"
         :label-width="100"
+        label-colon
       >
         <Row>
           <Col span="24">
@@ -606,25 +607,11 @@ export default {
     },
     //计算单面积
     getppoSarea(index){
-      debugger
       let tableData = this.$refs["tableFields"].getCategorizeData();
-      if(this.$params.BoxMDataSizeLUnit=="1:厘米"){
-        //纸长
-        let ppoSizeL = Number((tableData.addList[index].ppoSizeL)/100)
-      }else if(this.$params.BoxMDataSizeLUnit=="0:英寸"){
-        let ppoSizeL = Number((tableData.addList[index].ppoSizeL)*0.0254)
-      }else{
-        let ppoSizeL = Number((tableData.addList[index].ppoSizeL)/1000)
-      }
-      if(this.$params.Unit=="1:厘米"){
-        //纸长
-        let ppoSizeW = Number((tableData.addList[index].ppoSizeW)/100)
-      }else if(this.$params.LUnit=="0:英寸"){
-        let ppoSizeW = Number((tableData.addList[index].ppoSizeW)*0.0254)
-      }else{
-        let ppoSizeW = Number((tableData.addList[index].ppoSizeW)/1000)
-      }
+      //纸长
+      let ppoSizeL = Number(tableData.addList[index].ppoSizeL)
       //纸宽
+      let ppoSizeW = Number(tableData.addList[index].ppoSizeW)
       //单面积
       tableData.addList[index].ppoSarea=ppoSizeL*ppoSizeW
       this.getbpSWeight(index)
@@ -652,8 +639,6 @@ export default {
     //数据转换
     transformation(demo, data) {
       // debugger
-      demo.biWeight = data.biWeight; //重量
-      demo.bpSWeight = data.bpSWeight; //单重
       demo.mateWorkNo = data.ppoGroupNo; //用料工单号
       demo.isClose = data.iisUrgent; //完结
       demo.ppoLb = data.artLb; //楞别

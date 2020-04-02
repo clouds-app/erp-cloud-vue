@@ -14,20 +14,20 @@
           <vTable
             :height="tableHeight / 2"
             ref="master_list_table"
-            :columns-url="functionParams.requestColBaseUrl + '/stockBoxUseOutFm'"
-            url="/stock/boxUseOut/page"
+            :columns-url="functionParams.requestColBaseUrl + '/stockboxlibinFm'"
+            url="/stock/boxLibIn/page"
             :pagination="true"
             @row-click="tableRowClick"
           ></vTable>
         </div>
         <div slot="bottom" :style="{ 'padding-top': '6px' }">
           <Tabs>
-            <TabPane label="用料出库明细：" name="name1">
+            <TabPane label="纸箱成品入库明细表" name="name1">
               <vTable
                 :height="tableHeight / 2.3"
                 ref="tableFieldRef"
                 :table-data="tableFieldData"
-                :columns-url="functionParams.requestColBaseUrl + '/stockBoxUseOutItemFm'"
+                :columns-url="functionParams.requestColBaseUrl + '/stockboxlibinitemFm'"
                 :pagination="false"
               ></vTable>
             </TabPane>
@@ -44,7 +44,7 @@
       @submit-success="search()"
       v-model="showEditWindow"
       :detailDisabled="detailDisabled"
-      :detailConvertUpdate="detailConvertUpdate" 
+      :detailConvertUpdate="detailConvertUpdate"
     />
   </div>
 </template>
@@ -58,7 +58,7 @@ export default {
   mixins: [listBaseMixins],
   components: {
     'editForm':function(resolve) { //组件的异步加载
-                require(["./edit/edit-boxUseOut"], resolve);
+                require(["./edit/edit-boxLibIn"], resolve);
             },
         
     htmlTemplate,
@@ -68,26 +68,22 @@ export default {
     return {
      // who:'editForm', // 动态指定编辑控件
       functionParams: {
-        requestBaseUrl: "/stock/boxUseOut",
-        uniqueId: "boxUseOutId"
+        requestBaseUrl: "/stock/boxLibIn",
+        uniqueId: "boxLibInId"
       },
       // 查询参数 ,注意格式
       queryParamsDefault: [
         {
-          title: "请输入领料单号",
-          code: "boNo",
-          boNo: ""
+          title: "报损人编号",
+          code: "workerCode",
+          workerCode: ""
         },
         {
-          title: "请输入领用人",
+          title: "报损人名称",
           name: "workerName$like",
           workerName$like: ""
         }
-        // {
-        //   title: "请输入供应商名称",
-        //   name: "supplierName$like",
-        //   'supplierName$like': ""
-        // }
+
       ],
       columns: [
          
@@ -101,24 +97,24 @@ export default {
   },
   methods: {
     tableRowClick(rowData, rowIndex) {
-      //debugger
+      // debugger
       this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
       this.masterRowSelection = rowData;
       if (rowData != null) {
         //debugger
         // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
-        this.currrentRowItem.rowName = rowData.boNo + " " + rowData.workerName;
+        this.currrentRowItem.rowName = rowData.workerCode + " " + rowData.workerName;
       }
       if (this.masterRowSelection) {
         this.getItemDataById();
       }
     },
-    // 查询纸箱用料出库明细信息
+    // 获取报损明细
     getItemDataById() {
       //debugger
-      let url = `/stock/boxUseOut/item/list`;
-      let data = {     
-        boId: this.masterRowSelection.id
+      let url = `/stock/boxLibIn/item/list`;
+      let data = {
+        biId: this.masterRowSelection.id
       };
       let _self = this;
       request.post(url, data).then(res => {

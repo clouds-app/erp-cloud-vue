@@ -1,7 +1,7 @@
 <template>
   <div>
     <editWindow
-      class="cl-edit-boxUseLost"
+      class="cl-edit-boxLibIn"
       :title="actionLableName"
       v-model="showWindow"
       :fullscreen="false"
@@ -19,46 +19,46 @@
         :label-width="100"
       >
         <Row>
-           <Col span="12">
+           <Col span="10">
                 <Row>
-                    <Col span="12">
-                        <FormItem label="报损单号" prop="plNo">
+                    <Col span="14">
+                        <FormItem label="纸板入库单号" prop="biNo">
                         <Input
                             disabled
-                            v-model="formDataInfo.master.plNo"
+                            v-model="formDataInfo.master.biNo"
                             maxlength="20"
                             placeholder
                         ></Input>
                         </FormItem>
                     </Col>
-                    <Col span="12">
+                    <Col span="10">
                         <FormItem label="日期">
                         <DatePicker
                             :disabled="detailDisabled"
                             type="date"
-                            format="yyyy-MM-dd HH:mm:ss "
-                            v-model="formDataInfo.master.plLostDate"
+                            format="yyyy-MM-dd"
+                            v-model="formDataInfo.master.biDate"
                         ></DatePicker>
                         </FormItem>
                     </Col>
                 </Row>
           </Col>
-           <Col span="12">
+           <Col span="14">
                 <Row>
                     <Col span="12">
-                      <FormItem label="报损人" prop="workerCode">
+                      <FormItem label="班别" prop="teamCode">
                         <div>
                             <popup
                             @on-fill="Initializationdata"
-                            v-model="formDataInfo.master.workerCode"
-                            field-name="workerCode"
+                            v-model="formDataInfo.master.teamCode"
+                            field-name="teamCode"
                             :disabled="detailDisabled"
                             popup-name="WorkerSingleBox"
                             :fill-model.sync="formDataInfo.master"
-                            render-fields="workerId,workerCode,workerName"
+                            render-fields="bppClassId,teamCode,teamName"
                             from-fields="id,workCode,workName"
                             :suffix="true"
-                            :suffix-model="formDataInfo.master.workerName"
+                            :suffix-model="formDataInfo.master.teamName"
                             :query-params="{}"
                             />
                         </div>
@@ -112,7 +112,7 @@
 
       <Tabs>
         <!--  注意:eTable formDataInfo.artLengs.defaultList  ===artLengs=== 需要根据实际接口修改,其它不变-->
-        <TabPane label="纸箱报损明细" name="name1"  >
+        <TabPane label='纸箱成品入库明细表' name="name1">
           <eTable
             ref="tableFields"
             unqiue-mark="id"
@@ -120,22 +120,23 @@
             :col-start="0"
             :width="200"
             :height="300"
-            :row-init-data="initData.initData.stockBoxUseLostItemFm"
-            :data.sync="formDataInfo.boxUseLostItemSlave.defaultList"
+            :row-init-data="initData.initData.stockboxlibinitemFm"
+            :data.sync="formDataInfo.boxLibInItems.defaultList"
             :rules="tableFieldsValidator"
             :showContextMenu='!detailDisabled'
             v-if="showWindow"
           >
             <template slot="head">
               <tr
-                v-for="(columnGroup,index) in initData.columns.stockBoxUseLostItemFm.editGroups"
+                v-for="(columnGroup,index) in initData.columns.stockboxlibinitemFm.editGroups"
                 :key="index"
               >
+              
                 <th
                   class="ivu-table-column-left"
                   v-for="(column,index2) in columnGroup"
                   :key="index2"
-                  :width="column.editWidth"
+                  :width="column.editwidth"
                   :colspan="column.colSpan"
                   :rowspan="column.rowSpan"
                   style="text-align:center;"
@@ -150,17 +151,13 @@
             <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
               <td
                 class="ivu-table-column-left"
-                v-for="(column,columnIndex) in initData.columns.stockBoxUseLostItemFm.editColumns"
+                v-for="(column,columnIndex) in initData.columns.stockboxlibinitemFm.editColumns"
                 :key="columnIndex"
                 :width="column.editWidth"
               >
-                <!-- 控件特殊处理 报损类型-->
-                <!-- <Select :disabled="detailDisabled" v-if="column.key == 'pliLostType'" v-model="row[column.key]" transfer>
-                     <Option  v-for="(item,index) in pliLostTypeList" :key="index" :value="item.dicValue">{{item.dicLabel}}</Option>
-                </Select> -->
-                <!--控件特殊处理 用料批次号  -->
+                <!--控件特殊处理 纸箱工单号  -->
                 <Input
-                  v-if="column.key == 'boxUseBatchNo'"
+                  v-if="column.key == 'workNo'"
                   v-model="row[column.key]"
                   :disabled="detailDisabled"
                   @on-blur="onFill(index)"
@@ -168,72 +165,12 @@
                   @on-click="Slave_list_table_editRowModify(index)"
                   @input="
                       value => {
-                        valueChangeAssign(value, index, row, 'boxUseBatchNo');
+                        valueChangeAssign(value, index, row, 'workNo');
                       }
                     "
                   size="small"
                   :maxlength="20"
                 ></Input>
-                <!-- 控件特殊处理 责任人    :popupClickValidator="clickValuedate"-->
-                <popup
-                  :popupClickValidator="clickValuedate"
-                  v-else-if="column.key=='workerCode'"
-                  v-model="row[column.key]"
-                  field-name="workerCode"
-                  :disabled="detailDisabled"
-                  popup-name="WorkerSingleBox"
-                  :fill-model.sync="formDataInfo.boxUseLostItemSlave.defaultList"
-                  render-fields="workerId,workerCode,workerName"
-                  from-fields="id,workCode,workName"
-                  :index="index"
-                  :init-data="initData.initData.stockBoxUseLostItemFm"
-                  :query-params="{}"
-                  @input="
-                          value => {
-                            valueChangeAssign(value, index, row, 'workerCode');
-                          }
-                        "
-                ></popup>
-                <!-- 控件特殊处理 责任部门 -->
-                <popup
-                  v-else-if="column.key=='deptCode'"
-                  :popupClickValidator="clickValuedate"
-                  v-model="row[column.key]"
-                  field-name="deptCode"
-                  :disabled="detailDisabled"
-                  popup-name="deptSingleBox"
-                  :fill-model.sync="formDataInfo.boxUseLostItemSlave.defaultList"
-                  render-fields="deptId,deptCode,deptName"
-                  from-fields="id,deptCode,deptName"
-                  :index="index"
-                  :init-data="initData.initData.stockBoxUseLostItemFm"
-                  :query-params="{}"
-                  @input="
-                          value => {
-                            valueChangeAssign(value, index, row, 'deptCode');
-                          }
-                        "
-                ></popup>
-                <!-- 控件特殊处理 产品 -->
-                <popup
-                  v-else-if="column.key=='bpNo'"
-                  :popupClickValidator="clickValuedate"
-                  v-model="row[column.key]"
-                  field-name="bpNo"
-                  :disabled="detailDisabled"
-                  popup-name="BasicProductSingleBox"
-                  :fill-model.sync="formDataInfo.boxUseLostItemSlave.defaultList"
-                  render-fields="productId,bpNo,prodName"
-                  from-fields="id,bpNo,bpName"
-                  :index="index"
-                  :init-data="initData.initData.stockBoxUseLostItemFm"
-                  :query-params="{}"
-                  @input="
-                          value => {
-                            valueChangeAssign(value, index, row, 'bpNo');
-                          }
-                        "
-                ></popup>
                 <formControl
                   v-else
                   :control-type="column.controlType"
@@ -247,7 +184,7 @@
         </TabPane>
       </Tabs>
     </editWindow>
-   <boxUseLostSlave 
+   <boxLibInSlave 
      ref="mychild"
       :isLoaddingDone="salveWindow.isLoaddingDone"
       :formDetailData="salveWindow.formDetailData"
@@ -284,7 +221,7 @@ import optionSearch from "../../components/optionSearch";
 import dayjs from "dayjs";
 import Sys from "@/api/sys";
 import formControl from "@/components/form-control/form-control";
-import boxUseLostSlave from './edit-boxUseLostSlave'
+import boxLibInSlave from './edit-boxLibInSlave'
 const default_formDataInfo = {
   // 主表 更改字段
   master: {
@@ -293,14 +230,16 @@ const default_formDataInfo = {
     stationCode: "",
     stationId: "",
     stationName: "",
-    workerCode: "",
-    workerId: "",
-    workerName: "",
-    plLostDate: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+    teamCode: "",
+    bppClassId: "",
+    teamName: "",
+    biNo: "",
+    status: "",
+    biDate:dayjs().format("YYYY-MM-DD HH:mm:ss"),
     remark: ""
   },
   // 子表 artLengs 根据实际接口更改,其它不变
-  boxUseLostItemSlave: {
+  boxLibInItems: {
     addList: [], // 添加列
     defaultList: [], // 默认列
     deleteList: [], // 删除列
@@ -313,7 +252,7 @@ export default {
   components: {
     editWindow,
     optionSearch,
-    boxUseLostSlave,
+    boxLibInSlave,
     eTable,
     popup,
     formControl,
@@ -330,13 +269,14 @@ export default {
         action: null, // 当前操作功能 添加/编辑
         formDetailData: {} // 当前表单的详细信息
       },
-      // pliLostTypeList:[],//报损类型
+      pliLostTypeList:[],//报损类型
       showContextMenu: true,
       showEditMenu: false,
-      actionSubtitle: "纸箱用料报损", // 当前操作副标题
+      actionSubtitle: "纸箱成品入库", // 当前操作副标题
       id: 0,
-      formName: "stockBoxUseLostItemFm",
-      requestBaseUrl: "/stock/boxUseLost", // 请求 查询 操作的基础路径
+      formName: "stockboxlibinitemFm",
+      formmasterName: "stockboxlibinFm",
+      requestBaseUrl: "/stock/boxLibIn", // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
@@ -365,16 +305,16 @@ export default {
         ]
       },
       subBoxClickIndex: -1,
-      getworkerId: 0,
+      getbppClassId: 0,
       List: "null",//传给用料批次号的参数
       WorkOrderNumber: "null",
       index1: 0, //工单号里面用
     };
   },
   created(){
-    // this.getpliLostTypeList()//报损类型
+    this.getpliLostTypeList()//报损类型
   },
-  methods: {
+ methods: {
     //数据传递
     transformation(demo, data){
       // debugger
@@ -412,8 +352,8 @@ export default {
      //工单号失去焦点带出参数事件
     onFill(index) {
       // debugger;
-      //获取报损人id
-      let workerId = this.formDataInfo.master.workerId;
+      //获取班别id
+      let bppClassId = this.formDataInfo.master.bppClassId;
       //获取工单号
       let boxUseBatchNo = this.formDataInfo.boxUseLostItemSlave.defaultList[index].boxUseBatchNo;
       //获取当前子表数据
@@ -421,8 +361,8 @@ export default {
       let one = this.$refs["tableFields"].cloneData[index];
       //获取子表初始化时的数据
       let defulit = this.initData.initData.stockBoxUseLostItemFm;
-      if (workerId === "") {
-        this.$Message.error("报损人不能为空");
+      if (teamCode === "") {
+        this.$Message.error("班别不能为空");
         return;
       }
       if (boxUseBatchNo) {
@@ -462,18 +402,12 @@ export default {
         });
         
      },
-    //获取 订单类型
-      // getpliLostTypeList(){
-      //   this.getDataFromDictionaryBy('pliLostType').then(res=>{
-      //     this.pliLostTypeList = res
-      //   })
-      // },
     //判断数据是新增还是修改
     formDetailDataCall() {
       // debugger;
       if (this.action != "add") {
         //debugger
-        this.getworkerId = this.formDataInfo.master.workerId;
+        this.getteamCode = this.formDataInfo.master.teamCode;
         this.id = this.formDataInfo.master.id;
       }
     },
@@ -481,12 +415,12 @@ export default {
     Initializationdata(data) {
       //debugger
       let tableData = this.$refs["tableFields"].getCategorizeData();
-      if (this.formDataInfo.master.workerId) {
-        if (this.formDataInfo.master.workerId != this.getworkerId) {
+      if (this.formDataInfo.master.bppClassId) {
+        if (this.formDataInfo.master.bppClassId != this.getbppClassId) {
           this.formDataInfo.purPaperPriceItemSlaves.defaultList = [];
           tableData.deleteList = tableData.updateList;
         }
-        this.getworkerId = this.formDataInfo.master.workerId;
+        this.getbppClassId = this.formDataInfo.master.bppClassId;
       }
     },
     // 重写父类 关闭窗口时 触发事件
@@ -500,10 +434,10 @@ export default {
     clickValuedate() {
       //debugger;
       if (
-        !this.formDataInfo.master.workerCode ||
-        this.formDataInfo.master.workerCode == ""
+        !this.formDataInfo.master.teamCode ||
+        this.formDataInfo.master.teamCode == ""
       ) {
-        this.$Message.error("报损人不能为空");
+        this.$Message.error("班别不能为空");
         return false;
       }
       return true;
@@ -518,8 +452,8 @@ export default {
       let tableData = this.$refs["tableFields"].getCategorizeData();
       //debugger
       this.formDataInfo.purPaperPriceItemSlaves = tableData;
-      if (!!_data.master.plLostDate) {
-        _data.master.plLostDate = dayjs(_data.master.plLostDate).format(
+      if (!!_data.master.biDate) {
+        _data.master.biDate = dayjs(_data.master.biDate).format(
           "YYYY-MM-DD HH:mm:ss"
         );
       }

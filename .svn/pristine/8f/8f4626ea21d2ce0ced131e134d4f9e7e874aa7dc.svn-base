@@ -27,7 +27,6 @@
                             :data="tableDataArea"
                             :rules="PrizeTableValidator"
                              @row-click="area_list_table_editRowClick"
-                             @tableColTiggerEventCall="tableColTiggerEventCall"
                           >
                           <template slot="head">
                                <tr v-for="(columnGroup,index) in tableColTitleData.columns[`${virtualForm.productpriceinfoFm}`].editGroups" :key="index">
@@ -53,15 +52,11 @@
                             >
                                 <template v-for="(column,subIndex) in tableColTitleData.columns[`${virtualForm.productpriceinfoFm}`].editColumns">
                                     <td :key="subIndex" class="ivu-table-column-left" v-if="excludeFiled('Area',column.key)" :width="column.editWidth">
-                                      <template v-if="column.key ==='coQty'">
-                                          <formControl  @input="tableColTiggerEvent(row,column,index,'coQtyChangeEvent')"  :control-type="column.controlType" v-model="row[column.key]"></formControl>
+                                       <template v-if="column.key ==='coQty'">
+                                          <formControl  @input="tableColTiggerEvent(row,column,index,'coQtyChangeEvent')" :disabled="detailDisabled" :control-type="column.controlType" v-model="row[column.key]"></formControl>
                                       </template>
-                                      <template v-else-if="column.key ==='biBatchNo'">
-                                          <formControl  @input="tableColTiggerEvent(row,column,index,'biBatchNoChangeEvent')" :control-type="column.controlType" v-model="row[column.key]"></formControl>
-                                      </template>
-                                        <!-- 交货日期-->
+                                      <!-- 交货日期-->
                                          <DatePicker
-                                          @on-ok="tableColTiggerEvent(row,column,index,'coDueDateChangeEvent')"
                                           transfer
                                           v-else-if="column.key == 'coDueDate'"
                                           type="datetime"
@@ -127,14 +122,10 @@
                                 <template v-for="(column,subIndex) in tableColTitleData.columns[`${virtualForm.productpriceinfoFm}`].editColumns">
                                     <td :key="subIndex" class="ivu-table-column-center" v-if="excludeFiled('Prize',column.key)" :width="column.editWidth">
                                        <template v-if="column.key ==='coQty'">
-                                          <formControl  @input="tableColTiggerEvent(row,column,index,'coQtyChangeEvent')"  :control-type="column.controlType" v-model="row[column.key]"></formControl>
-                                      </template>
-                                      <template v-else-if="column.key ==='biBatchNo'">
-                                          <formControl  @input="tableColTiggerEvent(row,column,index,'biBatchNoChangeEvent')" :control-type="column.controlType" v-model="row[column.key]"></formControl>
+                                          <formControl  @input="tableColTiggerEvent(row,column,index,'coQtyChangeEvent')" :disabled="detailDisabled" :control-type="column.controlType" v-model="row[column.key]"></formControl>
                                       </template>
                                         <!-- 交货日期-->
                                          <DatePicker
-                                          @on-ok="tableColTiggerEvent(row,column,index,'coDueDateChangeEvent')"
                                           transfer
                                           v-else-if="column.key == 'coDueDate'"
                                           type="datetime"
@@ -288,10 +279,8 @@ export default {
     mixins:[editBaseMixins],
     data() {
         return {
-          lastPOCode:false, // 客户PO号复制上一行 是否勾选
-          lastDeliverDate:false,// 交货日期复制上一行 是否勾选
-          lastPOCodeStr:'', // 客户PO号复制上一行 文本
-          lastDeliverDateStr:'',// 交货日期复制上一行 文本
+          lastPOCode:false, // 客户PO号复制上一行
+          lastDeliverDate:false,// 交货日期复制上一行
           saleCoTypeList:[],//订单类型
           loadingButton:false,// 窗口加载中,
           tableCurrentRow:Object.assign({},default_tableCurrentRow),
@@ -384,37 +373,8 @@ export default {
         tableColTiggerEventCall (obj) {
           switch (obj.event) {
             case 'coQtyChangeEvent':
-              if(this.lastPOCodeStr ==''){
-                  this.lastPOCodeStr = obj.row.biBatchNo 
-              }
-              if(this.lastDeliverDateStr ==''){
-                this.lastDeliverDateStr = obj.row.coDueDate//==null ?'': dayjs(obj.row.coDueDate ).format('YYYY-MM-DD HH:mm:ss')
-              }
               this.debouncedCoQtyChangeEvent()
-                if(this.tabShow=='Prize'){
-                      if(this.lastPOCode){
-                        this.tablePrizeObj.tableDataPrize[obj.index].biBatchNo = this.lastPOCodeStr
-                      }
-                      if(this.lastDeliverDate){
-                        this.tablePrizeObj.tableDataPrize[obj.index].coDueDate = this.lastDeliverDateStr
-                      }
-                }else{
-                      if(this.lastPOCode){
-                        this.tableDataArea[obj.index].biBatchNo = this.lastPOCodeStr
-                      }
-                      if(this.lastDeliverDate){
-                        this.tableDataArea[obj.index].coDueDate = this.lastDeliverDateStr
-                      }
-                 
-                }
-            
               break
-            case 'biBatchNoChangeEvent':
-              this.lastPOCodeStr = obj.row.biBatchNo 
-              break 
-            case 'coDueDateChangeEvent':
-              this.lastDeliverDateStr = obj.row.coDueDate//==null ?'': dayjs(obj.row.coDueDate ).format('YYYY-MM-DD HH:mm:ss')
-              break 
             default:
               break
           }
@@ -469,8 +429,8 @@ export default {
       },
       // 排除不需要显示的字段
       excludeFiled(type,key){
-        let exListPrize = ['type', 'custId', 'productId','bpCBoxId','bpCArtId','bpColorId','bpIsPublic','bpIsFullPrint']
-        let exListArea = ['type', 'custId', 'productId','bpCBoxId','bpCArtId','bpColorId','contractNo','bpColorName','bpPPNo']
+        let exListPrize = ['type', 'custId', 'productId','bpCBoxId','bpCArtId','bpColorId']
+        let exListArea = ['type', 'custId', 'productId','bpCBoxId','bpCArtId','bpColorId']
         let exListSuite = ['id']
         let exListPO = ['productId']
         let exList=[]

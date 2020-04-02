@@ -9,6 +9,7 @@
       :loading="!isLoaddingDone"
       :spinLoaddingText="spinLoaddingText"
       @on-ok="formTableDataSubmit()"
+      @on-cancel="closeActionTigger"
        v-if="initData.columns"
     >
       <Form
@@ -52,7 +53,7 @@
              :disabled="disabledCustCode"
              popup-name="CustomerSingleBox"
              :fill-model.sync="formDataInfo.master"
-             render-fields="custId,custCode,custName,coinId,coinName,coinCode,bpUnit,bpIsDiameter,bcHL,bcTaxRate"
+             render-fields="custId,custCode,custName,coinId,coinName,coinCode,bpUnit,bpIsDiameter,coinRate,bcTaxRate"
              from-fields="id,cusCode,cusName,coinId,coinName,coinCode,bpUnit,bpIsDiameter,coinRate,taxRate"
              :suffix="true"
              :suffix-model="formDataInfo.master.custName"
@@ -75,7 +76,7 @@
                   field-name="coinCode"
                   popup-name="CoinSingleBox "
                   :fill-model.sync="formDataInfo.master"
-                  render-fields="coinCode,coinName,bcHL"
+                  render-fields="coinCode,coinName,coinRate"
                   from-fields="coinCode,coinName,coinRate"
                   :suffix="true"
                   :suffix-model="formDataInfo.master.coinName"
@@ -86,8 +87,8 @@
              </Col>
           
              <Col span="3">
-            <FormItem label="汇率" prop="bcHL">
-              <InputNumber :disabled="false"  placeholder="汇率" :min="0" v-model="formDataInfo.master.bcHL"></InputNumber>
+            <FormItem label="汇率" prop="coinRate">
+              <InputNumber :disabled="false"  placeholder="汇率" :min="0" v-model="formDataInfo.master.coinRate"></InputNumber>
              
           </FormItem>
         </Col>
@@ -277,7 +278,7 @@
                      <Option v-for="(item,index) in pressingLineDeepList" :key="index" :value="item.dicValue">{{item.dicLabel}}</Option>
                    </Select>
                    <DatePicker
-                       :disabled="true"
+                      :disabled="true"
                         transfer
                         v-else-if="column.key == 'bmDeDate'"
                         type="datetime"
@@ -384,7 +385,6 @@
       </Tabs>
     </editWindow>
     <editForm
-      @on-cancel="onCancelSaleOrderSlave"
       @submit-success="getDataFromOrderSalve"
       :isLoaddingDone="salveWindow.isLoaddingDone"
       :formDetailData="salveWindow.formDetailData"
@@ -408,7 +408,6 @@
  *
  * @created 2020/02/24 
  */
-import InputNumber from "@/components/input-number";
 import editWindow from '@/components/edit-window/edit-window'
 import optionSearch from "../../components/optionSearch";
 import eTable from '@/components/e-table/e-table'
@@ -434,7 +433,6 @@ export default {
   name: 'edit-boxProductPrice',
   mixins: [editBaseMixins],
   components: {
-    InputNumber,
      editForm: function (resolve) {
       // 组件的异步加载
       require(['./edit-boxSalesOrderSlave'], resolve)
@@ -471,7 +469,7 @@ export default {
       },
       // 主表  验证规则
       ruleValidate: { 
-        custCode: [{ required: true, message: '客户编号不能为空', trigger: 'blur' }],
+        custCode: [{ required: true, message: '客户编号不能为空', trigger: 'blur,change' }],
         bcCoDate: [{ required: true, message: '订货时间不能为空', trigger: 'blur,change' }],
          },
       // 从表 验证规则
@@ -502,21 +500,14 @@ export default {
     }
   },
   watch: {
-     showWindow:function(n,o){
-        if(n){
-          let _self = this
-          this.$nextTick(()=>{
-             _self.setMasterDefaultData()
-          })
-        }
-      },
   // 第一步执行 获取到 master 数据
     initData: {
       handler (n, o) {
         if (n.initData) {
           defaultMasterData = Object.assign({}, n.initData.master)
           this.formDataInfo.master = n.initData.master
-         
+          this.setMasterDefaultData()
+          
         }
       },
       deep: true
@@ -552,12 +543,6 @@ export default {
       this.getBiPriceTypeList() //计价方式
     },
   methods: {
-     // 单独校验客户编号
-      checkCustCode(){
-        this.$refs['formDataInfo'].validateField('custCode', (err) => {
-          
-        })
-      },
       bcCoDateChange(itemDate){
           if(itemDate=='' || itemDate==null){
              this.formDataInfo.master.bcCoDate = dayjs().format('YYYY-MM-DD HH:mm')+":00"
@@ -569,7 +554,6 @@ export default {
      // 继承中修改 关闭窗口时 触发事件
       closeActionTigger () {
         this.$refs['formDataInfo'].resetFields();
-        this.formDataInfo.master['bcCoDate']= dayjs().format('YYYY-MM-DD HH:mm')+":00"
       },
      // 排除不需要显示的字段
       excludeFiled(type,key){
@@ -651,13 +635,6 @@ export default {
            this.pressingLineDeepList = res
           })
         },
-      onCancelSaleOrderSlave(itemObj){
-        debugger
-         if(itemObj.action=='add'){
-            this.getPreIndexData(itemObj.currentIndex)
-            this.$refs['slave_list_table_edit'].deleteRow(itemObj.currentIndex)
-         }
-      }, 
       // 从子窗口-获取编辑后的明细数据
       getDataFromOrderSalve (itemObj) {
         if(itemObj.isNewProduct){
@@ -693,10 +670,7 @@ export default {
              
       })
       this.formDataInfo.master.bcMoney =totalMoney.toFixed(2)
-      if(totalArea!=null && totalArea!=''){
-         this.formDataInfo.master.bcArea =totalArea.toFixed(2)
-      }
-     
+      this.formDataInfo.master.bcArea =totalArea.toFixed(2)
       this.formDataInfo.master.bcCube =totalVolume.toFixed(2)
       this.formDataInfo.master.bcWeight =totalWeight.toFixed(2)
     },
@@ -733,7 +707,6 @@ export default {
     },
     // 客户编号选择后的回调事件,客户变更,清空数据列表
     custCodeOnFillEvent (item) {
-      this.checkCustCode()
        let slaveObj = this.$refs['slave_list_table_edit']
        let tableData = slaveObj.getCategorizeData()
         if (this.formDataInfo.master.custId!==0) {
@@ -748,9 +721,10 @@ export default {
     },
     // 主表字段 默认值设置
     setMasterDefaultData () {
+
       // 订货时间:默认 当前时间
       let currentTime = dayjs().format('YYYY-MM-DD HH:mm')+":00"
-      this.formDataInfo.master.bcCoDate = currentTime
+      this.formDataInfo.master['bcCoDate'] = currentTime
     },
     // 默认选择行数据
     setDefaultSelectedRow (index=0) {

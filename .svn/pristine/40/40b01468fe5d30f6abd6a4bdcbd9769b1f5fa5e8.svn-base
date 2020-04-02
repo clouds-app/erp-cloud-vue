@@ -115,14 +115,9 @@ export default {
   },
   props: {
     // 编辑页面列表右键索引
-    // :{
+    // index3:{
     //   type:Number
     // },
-    // 是否屏蔽插入功能,当回车最后一个空格为空时
-    disabledAddRowWhenfocusNull:{
-      	type:Boolean,
-				default:false
-    },
     // 是否屏蔽插入功能,只显示按钮的回调功能
     rowInsertDisable:{
       	type:Boolean,
@@ -401,9 +396,6 @@ export default {
       } else if (direction == this.direction.down) {
         focusTr = parentOfTr.nextElementSibling
         if (focusTr == null) {
-          if(this.disabledAddRowWhenfocusNull){
-            return
-          }
           this.addRow()
           this.emitRowInsert(this.editIndex + 1)
         } else {

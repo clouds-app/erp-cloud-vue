@@ -2,7 +2,7 @@
   <div>
     <editWindow class="cl-edit-salesOrder" :title="actionLableName" v-model="showWindow"
     :fullscreen="true" :loading="!isLoaddingDone"
-      :spinLoaddingText="spinLoaddingText" @on-ok="preSubmitFormDataEvent" @on-cancel="onCancelWindow">
+      :spinLoaddingText="spinLoaddingText" @on-ok="preSubmitFormDataEvent">
       <div  v-if="formDataInfo.initData && formDataInfo.initData.columns && showWindow">
         <Form :disabled ="false" ref="masterForm" :show-message="true" :model="formDataInfo.master" :rules="ruleValidate" :label-width="90"
             >
@@ -280,16 +280,14 @@
                     <Input type="number"  @mousewheel.native.prevent number :disabled="true"  v-model="totalMoney" placeholder="金额"></Input>
                   </FormItem>
                   </Col>
-                  <!-- 是否启用计算面积报价  isCalAreaPriceSale (0未开通1开通)
-                  不开通：a、散件下单（按面积报价）特价：只读，批准人，只读 -->
                   <Col span="3">
                   <FormItem :label-width="50"  label="特价" prop="bisPrice">
-                    <Input type="number" :disabled="($params.isCalAreaPriceSale=='0'&& formDataInfo.master.biPriceType=='0')"  @mousewheel.native.prevent number  v-model="formDataInfo.master.bisPrice" placeholder="特价"></Input>
+                    <Input type="number" :disabled="($params.isCalAreaPriceSale=='0'&& formDataInfo.master.biPriceType=='1') || formDataInfo.master.biSPriceAuditor==''"  @mousewheel.native.prevent number  v-model="formDataInfo.master.bisPrice" placeholder="特价"></Input>
                   </FormItem>
                   </Col>
                 <Col span="3">
-                  <FormItem :label-width="70"  label="批准人" :rules="rulesBiSPriceAuditor" prop="biSPriceAuditor">
-                    <Input  :disabled="$params.isCalAreaPriceSale=='0' && formDataInfo.master.biPriceType=='0'" v-model="formDataInfo.master.biSPriceAuditor" maxlength="80" placeholder="批准人"></Input>
+                  <FormItem :label-width="60"  label="批准人" prop="biSPriceAuditor">
+                    <Input  :disabled="$params.isCalAreaPriceSale=='0' && formDataInfo.master.biPriceType=='1'" v-model="formDataInfo.master.biSPriceAuditor" maxlength="80" placeholder="批准人"></Input>
                   </FormItem>
                   </Col>
                  <!-- row-8 -->
@@ -426,7 +424,6 @@
             :data="formDataInfo.productMDatas.defaultList"
             :rules="subTableFieldsValidator"
              @row-dbClick="paperSpecRowDBClickEvent"
-             @row-insert="sub_list_table_editRowAdd"
           >
             <template slot="head">
                <tr v-for="(columnGroup,index) in formDataInfo.initData.columns[`${formInitPreName}mdataFm`].editGroups" :key="index">
@@ -463,7 +460,6 @@
                       from-fields="artCode"
                       :index="index"
                       :suffix="false" />
-                     
                     <DatePicker
                         transfer
                         v-else-if="column.key == 'bmDeDate'"
@@ -478,6 +474,14 @@
                    <Select v-else-if="column.key == 'bmScoreDepth'" v-model="row[column.key]" transfer>
                      <Option v-for="(item,index) in pressingLineDeepList" :key="index" :value="item.dicValue">{{item.dicLabel}}</Option>
                    </Select>
+                   <!-- 总开数 -->
+                   <!-- <Input  v-else-if="column.key == 'bmKsTotal'"
+                    :value="row['bmKsW']*row['bmKsL'] "
+                    size="small"/> -->
+                    <!--  用料数量=净料数/总开数 -->
+                    <!-- <Input  v-else-if="column.key == 'bmQty'"
+                    :value="row['bmSQty'] / row['bmKsTotal'] "
+                    size="small"/> -->
                 <!-- 其它 不可以编辑-->
                 <template v-else>
                       <formControl :disabled="column.readOnly" :control-type="column.controlType" v-model="row[column.key]"></formControl>
@@ -500,7 +504,6 @@
             :row-init-data="formDataInfo.initData.initData[`${formInitPreName}workprocFm`]"
             :data="formDataInfo.productworkProcs.defaultList"
             :rules="subTable2FieldsValidator"
-             @row-insert="sub_list_table_edit_workprocRowAdd"
           >
             <template slot="head">
               <tr v-for="(columnGroup,index) in formDataInfo.initData.columns[`${formInitPreName}workprocFm`].editGroups" :key="index">
@@ -554,6 +557,7 @@
                    :init-data="formDataInfo.initData.initData[`${formInitPreName}workprocFm`]"
                    >
                    </popup>
+            
                 <!-- 其它 不可以编辑-->
                 <template v-else>
                       <formControl :disabled="column.readOnly" :control-type="column.controlType" v-model="row[column.key]"></formControl>
@@ -646,7 +650,6 @@
     },
     data() {
       return {
-        rulesBiSPriceAuditor:[],//单独对批准人做校验,当特价不为空
         totalMoney:0,// 总金额
         isChangeByRes:false, // 是否返回数据导致触发
         isNewProductProperty:false, // 是否新的散件
@@ -701,6 +704,18 @@
             trigger: "blur,change"
            }
           ],
+          // biDRemark:[
+          //   {
+          //   required: true,
+          //   message: "送货备注不能为空",
+          //  trigger: "blur,change"
+          //  }
+          // ],
+          //   biPRemark:[{
+          //   required: true,
+          //   message: "生产备注不能为空",
+          //  trigger: "blur,change"
+          // }],
            bpQty:[{
             type: "number", // 注意类型,不然无法验证
             required: true,
@@ -767,21 +782,13 @@
       // 生产工序 验证规则
       subTable2FieldsValidator:{
          bwIndex: [
-            {
-              validator: customValidator,
-              trigger: "blur",
-              customRule: ["required"], //不能为空,默认自带的判断不正确,所以使用自定义验证规则 
-              fieldDesc: "生产工序序号"
-            },
+          {
+            validator: customValidator,
+            trigger: "blur",
+            customRule: ["required"], //不能为空,默认自带的判断不正确,所以使用自定义验证规则
+            fieldDesc: "生产工序序号"
+          },
           ],
-        bwWPNumber:[
-            {
-              validator: customValidator,
-              trigger: "blur",
-              customRule: ["required"], //不能为空,默认自带的判断不正确,所以使用自定义验证规则
-              fieldDesc: "工序编号"
-            },
-        ]
       },
         tableDefaultHeight: 200,
         lbCodeList: [],
@@ -846,9 +853,11 @@
       
     },
     watch: {
-      // 监控动态特价,特价不为空时,批准人不可为空
-      'formDataInfo.master.bisPrice':function(n,o){
-        this.validateBiSPrice(n)
+      // 监控批准人,实时重置特价
+      'formDataInfo.master.biSPriceAuditor':function(n,o){
+        if(n==''){
+          this.formDataInfo.master.bisPrice=null
+        }
       },
       // 监控订单数量
       'formDataInfo.master.bpQty':function(n,o){
@@ -948,33 +957,6 @@
        }
     },
     methods: {
-      //纸板规格 添加新行回调事件 cardboard
-      sub_list_table_editRowAdd(index){
-           let dataList = JSON.parse(JSON.stringify(this.formDataInfo.productMDatas.defaultList))
-           this.formDataInfo.productMDatas.defaultList[index].bmIndex= dataList.length
-         
-      },
-      //生产工序 添加新行回调事件 production
-      sub_list_table_edit_workprocRowAdd(index){
-         let dataList = JSON.parse(JSON.stringify(this.formDataInfo.productworkProcs.defaultList))
-         this.formDataInfo.productworkProcs.defaultList[index].bwIndex=dataList.length
-      },
-      // 动态监控批准人不能为空
-      validateBiSPrice(n){
-        let _self = this
-        if(n && n!='' && n!=null && n!=0){
-            let data =[]
-              let itemVal =  {
-                required: true,
-                message: "批准人不能为空",
-                trigger: "blur,change"
-              }
-              data.push(itemVal)
-            _self.rulesBiSPriceAuditor = data
-        }else{
-        _self.rulesBiSPriceAuditor ={}
-        }
-      },
         // 纸质提示无报价后，要把纸质清空
       checkArtIdExistPrice(n){
          let _self = this
@@ -1676,6 +1658,7 @@
             return item
         },
         closeActionTigger(){
+          debugger
           //清空表单数据 formDataInfo.master
           this.formDataInfo.master = {}//JSON.parse(JSON.stringify(defalut_formDetailData));
           this.$refs['masterForm'].resetFields();
@@ -1686,13 +1669,11 @@
           this.updateFirstRequstIntercept = true;
           this.hasSearchProduct =false
           clearTimeout(this.updateFirstRequstTimeoutId);
-        },
-        onCancelWindow(){
-            let params = {
-              action:this.action,
-              currentIndex:this.formDataInfo.params.currentIndex
-            }
-            this.$emit('on-cancel',params)
+          let params = {
+            action:this.action,
+            currentIndex:this.formDataInfo.params.currentIndex
+          }
+          this.$emit('on-cancel',params)
         },
         lbCodeChangedEvent(selectItem){
           if(selectItem==null || selectItem.label==null){
@@ -1788,17 +1769,13 @@
             if (!valid) {
                return;
             }
-            // _self.$refs['masterForm'].validateField('biSPriceAuditor', (err) => {
-            //   debugger
-            //     return
-            // })
              //纸板规格校验 true就是有问题
-            let result = _self.$refs.sub_list_table_edit.validate();
+            let result = this.$refs.sub_list_table_edit.validate();
             if(result){
               return;
             }
             //生产工序校验
-            result = _self.$refs.sub_list_table_edit_workproc.validate();
+            result = this.$refs.sub_list_table_edit_workproc.validate();
             if(result){
               return;
             }

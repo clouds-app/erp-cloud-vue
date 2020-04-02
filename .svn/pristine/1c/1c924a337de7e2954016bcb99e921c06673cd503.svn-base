@@ -284,12 +284,12 @@
                   不开通：a、散件下单（按面积报价）特价：只读，批准人，只读 -->
                   <Col span="3">
                   <FormItem :label-width="50"  label="特价" prop="bisPrice">
-                    <Input type="number" :disabled="($params.isCalAreaPriceSale=='0'&& formDataInfo.master.biPriceType=='0')"  @mousewheel.native.prevent number  v-model="formDataInfo.master.bisPrice" placeholder="特价"></Input>
+                    <Input type="number" :disabled="($params.isCalAreaPriceSale=='0'&& formDataInfo.master.biPriceType=='1')"  @mousewheel.native.prevent number  v-model="formDataInfo.master.bisPrice" placeholder="特价"></Input>
                   </FormItem>
                   </Col>
                 <Col span="3">
                   <FormItem :label-width="70"  label="批准人" :rules="rulesBiSPriceAuditor" prop="biSPriceAuditor">
-                    <Input  :disabled="$params.isCalAreaPriceSale=='0' && formDataInfo.master.biPriceType=='0'" v-model="formDataInfo.master.biSPriceAuditor" maxlength="80" placeholder="批准人"></Input>
+                    <Input  :disabled="$params.isCalAreaPriceSale=='0' && formDataInfo.master.biPriceType=='1'" v-model="formDataInfo.master.biSPriceAuditor" maxlength="80" placeholder="批准人"></Input>
                   </FormItem>
                   </Col>
                  <!-- row-8 -->
@@ -767,21 +767,13 @@
       // 生产工序 验证规则
       subTable2FieldsValidator:{
          bwIndex: [
-            {
-              validator: customValidator,
-              trigger: "blur",
-              customRule: ["required"], //不能为空,默认自带的判断不正确,所以使用自定义验证规则 
-              fieldDesc: "生产工序序号"
-            },
+          {
+            validator: customValidator,
+            trigger: "blur",
+            customRule: ["required"], //不能为空,默认自带的判断不正确,所以使用自定义验证规则
+            fieldDesc: "生产工序序号"
+          },
           ],
-        bwWPNumber:[
-            {
-              validator: customValidator,
-              trigger: "blur",
-              customRule: ["required"], //不能为空,默认自带的判断不正确,所以使用自定义验证规则
-              fieldDesc: "工序编号"
-            },
-        ]
       },
         tableDefaultHeight: 200,
         lbCodeList: [],
@@ -948,16 +940,13 @@
        }
     },
     methods: {
-      //纸板规格 添加新行回调事件 cardboard
+      //纸板规格 添加新行回调事件
       sub_list_table_editRowAdd(index){
-           let dataList = JSON.parse(JSON.stringify(this.formDataInfo.productMDatas.defaultList))
-           this.formDataInfo.productMDatas.defaultList[index].bmIndex= dataList.length
-         
+          this.formDataInfo.productMDatas.defaultList[index].bmIndex=index+1
       },
-      //生产工序 添加新行回调事件 production
+      //生产工序 添加新行回调事件
       sub_list_table_edit_workprocRowAdd(index){
-         let dataList = JSON.parse(JSON.stringify(this.formDataInfo.productworkProcs.defaultList))
-         this.formDataInfo.productworkProcs.defaultList[index].bwIndex=dataList.length
+         this.formDataInfo.productworkProcs.defaultList[index].bwIndex=index+1
       },
       // 动态监控批准人不能为空
       validateBiSPrice(n){

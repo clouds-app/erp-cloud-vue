@@ -52,7 +52,7 @@
              :disabled="disabledCustCode"
              popup-name="CustomerSingleBox"
              :fill-model.sync="formDataInfo.master"
-             render-fields="custId,custCode,custName,coinId,coinName,coinCode,bpUnit,bpIsDiameter,bcHL,bcTaxRate"
+             render-fields="custId,custCode,custName,coinId,coinName,coinCode,bpUnit,bpIsDiameter,coinRate,bcTaxRate"
              from-fields="id,cusCode,cusName,coinId,coinName,coinCode,bpUnit,bpIsDiameter,coinRate,taxRate"
              :suffix="true"
              :suffix-model="formDataInfo.master.custName"
@@ -531,6 +531,11 @@ export default {
     }
   },
   computed: {
+    checkCustCode(){
+      this.$refs['formDataInfo'].validateField('custCode', (err) => {
+         
+      })
+    },
     popUpExcludeParamsList () {
     // eslint-disable-next-line no-tabs
     // 获取产品编号	列表，转换为 "",""格式，用于弹出框排除数据
@@ -552,12 +557,6 @@ export default {
       this.getBiPriceTypeList() //计价方式
     },
   methods: {
-     // 单独校验客户编号
-      checkCustCode(){
-        this.$refs['formDataInfo'].validateField('custCode', (err) => {
-          
-        })
-      },
       bcCoDateChange(itemDate){
           if(itemDate=='' || itemDate==null){
              this.formDataInfo.master.bcCoDate = dayjs().format('YYYY-MM-DD HH:mm')+":00"
@@ -693,10 +692,8 @@ export default {
              
       })
       this.formDataInfo.master.bcMoney =totalMoney.toFixed(2)
-      if(totalArea!=null && totalArea!=''){
-         this.formDataInfo.master.bcArea =totalArea.toFixed(2)
-      }
-     
+      if(totalArea!=null)
+      this.formDataInfo.master.bcArea =totalArea.toFixed(2)
       this.formDataInfo.master.bcCube =totalVolume.toFixed(2)
       this.formDataInfo.master.bcWeight =totalWeight.toFixed(2)
     },
@@ -748,6 +745,7 @@ export default {
     },
     // 主表字段 默认值设置
     setMasterDefaultData () {
+      debugger
       // 订货时间:默认 当前时间
       let currentTime = dayjs().format('YYYY-MM-DD HH:mm')+":00"
       this.formDataInfo.master.bcCoDate = currentTime

@@ -17,6 +17,7 @@
         :model="formDataInfo.master"
         :rules="ruleValidate"
         :label-width="100"
+        label-colon
       >
         <Row>
           <Col

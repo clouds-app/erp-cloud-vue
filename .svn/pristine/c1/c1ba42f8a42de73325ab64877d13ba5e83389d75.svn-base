@@ -17,6 +17,7 @@
         :model="formDataInfo.master"
         :rules="ruleValidate"
         :label-width="100"
+        label-colon
       >
         <Row>
           <Col span="24">
@@ -47,7 +48,7 @@
                       <DatePicker
                         :disabled="detailDisabled"
                         type="date"
-                        format="yyyy-MM-dd HH:mm:ss"
+                        format="yyyy-MM-dd HH:mm:ss "
                         v-model="formDataInfo.master.effectDate"
                       ></DatePicker>
                     </FormItem>
@@ -311,7 +312,7 @@ export default {
       showContextMenu: true,
       showEditMenu: false,
       actionSubtitle: "纸板进价", // 当前操作副标题
-      renderJsonStr:"", // 回填优惠方式 字符串
+      renderJsonStr: "", // 回填优惠方式 字符串
       id: 0,
       formName: "purPaperPriceItemFm",
       formmasterName: "purPaperPriceFm",

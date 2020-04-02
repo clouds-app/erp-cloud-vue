@@ -4,10 +4,6 @@
     :fullscreen="true" :loaddingBtn="loadingButton"
       :spinLoaddingText="spinLoaddingText" @on-ok="submitFormDataEvent">
        <div ref="masterHeight" class="masterHeightClass" :style="{ height: getMasterheight() + '%' }" >  
-                <div class="flexBox">
-                    <Checkbox class="boxItem" v-model="lastPOCode">客户PO号复制上一行</Checkbox>
-                    <Checkbox class="boxItem" v-model="lastDeliverDate">交货日期复制上一行</Checkbox>
-                </div>
                 <div ref="TabslistHeight">
                     <Tabs v-model="tabShow" :animated="false" type="card" @on-click="tabClickChange">
                     <TabPane name="Prize" label="按产品报价下单">
@@ -15,9 +11,8 @@
                     <TabPane name="Area" label="按面积报价下单">
                        <eTable v-if="tableColTitleData.columns && showWindow"
                              v-show="tabShow=='Area'"
-                             :disabledAddRowWhenfocusNull="true"
                             :showContextMenu="false"
-                            :height="TabsHeightArea-20"
+                            :height="TabsHeightArea"
                             ref="sub_list_table_edit_workproc"
                             unqiue-mark="id"
                             :index-menu="true"
@@ -27,7 +22,6 @@
                             :data="tableDataArea"
                             :rules="PrizeTableValidator"
                              @row-click="area_list_table_editRowClick"
-                             @tableColTiggerEventCall="tableColTiggerEventCall"
                           >
                           <template slot="head">
                                <tr v-for="(columnGroup,index) in tableColTitleData.columns[`${virtualForm.productpriceinfoFm}`].editGroups" :key="index">
@@ -53,30 +47,10 @@
                             >
                                 <template v-for="(column,subIndex) in tableColTitleData.columns[`${virtualForm.productpriceinfoFm}`].editColumns">
                                     <td :key="subIndex" class="ivu-table-column-left" v-if="excludeFiled('Area',column.key)" :width="column.editWidth">
-                                      <template v-if="column.key ==='coQty'">
-                                          <formControl  @input="tableColTiggerEvent(row,column,index,'coQtyChangeEvent')"  :control-type="column.controlType" v-model="row[column.key]"></formControl>
-                                      </template>
-                                      <template v-else-if="column.key ==='biBatchNo'">
-                                          <formControl  @input="tableColTiggerEvent(row,column,index,'biBatchNoChangeEvent')" :control-type="column.controlType" v-model="row[column.key]"></formControl>
-                                      </template>
-                                        <!-- 交货日期-->
-                                         <DatePicker
-                                          @on-ok="tableColTiggerEvent(row,column,index,'coDueDateChangeEvent')"
-                                          transfer
-                                          v-else-if="column.key == 'coDueDate'"
-                                          type="datetime"
-                                          format="yyyy/MM/dd HH:mm:ss"
-                                          v-model="row.coDueDate" />
-                                       <!-- 订单类型-->
-                                      <Select v-model="row[column.key]" v-else-if="column.key == 'coType'" transfer>
-                                        <Option v-for="(item,index) in saleCoTypeList" :key="index" :value="item.dicValue">{{item.dicLabel}}</Option>
-                                      </Select>
-                                        <template v-else>
+                                     
+                                        <template>
                                             <formControl :disabled="column.readOnly" :control-type="column.controlType" v-model="row[column.key]"></formControl>
                                       </template>
-                                        <!-- <template>
-                                            <formControl :disabled="column.readOnly" :control-type="column.controlType" v-model="row[column.key]"></formControl>
-                                      </template> -->
                                   </td>
                                 </template>
 
@@ -87,12 +61,11 @@
                 </div>
                 <div v-if="tableColTitleData.columns && showWindow">
                        <eTable
-                            :disabledAddRowWhenfocusNull="true"
                             :showContextMenu="false"
                             v-show="tabShow=='Prize'"
                             ref="sub_list_table_edit_Prize"
                             unqiue-mark="id"
-                            :height="TabsHeightPrize-60"
+                            :height="TabsHeightPrize-40"
                             :index-menu="true"
                             :col-start="0"
                             :width="200"
@@ -127,19 +100,8 @@
                                 <template v-for="(column,subIndex) in tableColTitleData.columns[`${virtualForm.productpriceinfoFm}`].editColumns">
                                     <td :key="subIndex" class="ivu-table-column-center" v-if="excludeFiled('Prize',column.key)" :width="column.editWidth">
                                        <template v-if="column.key ==='coQty'">
-                                          <formControl  @input="tableColTiggerEvent(row,column,index,'coQtyChangeEvent')"  :control-type="column.controlType" v-model="row[column.key]"></formControl>
+                                          <formControl  @input="tableColTiggerEvent(row,column,index,'coQtyChangeEvent')" :disabled="detailDisabled" :control-type="column.controlType" v-model="row[column.key]"></formControl>
                                       </template>
-                                      <template v-else-if="column.key ==='biBatchNo'">
-                                          <formControl  @input="tableColTiggerEvent(row,column,index,'biBatchNoChangeEvent')" :control-type="column.controlType" v-model="row[column.key]"></formControl>
-                                      </template>
-                                        <!-- 交货日期-->
-                                         <DatePicker
-                                          @on-ok="tableColTiggerEvent(row,column,index,'coDueDateChangeEvent')"
-                                          transfer
-                                          v-else-if="column.key == 'coDueDate'"
-                                          type="datetime"
-                                          format="yyyy/MM/dd HH:mm:ss"
-                                          v-model="row.coDueDate" />
                                        <!-- 订单类型-->
                                       <Select v-model="row[column.key]" v-else-if="column.key == 'coType'" transfer>
                                         <Option v-for="(item,index) in saleCoTypeList" :key="index" :value="item.dicValue">{{item.dicLabel}}</Option>
@@ -169,7 +131,6 @@
                                 :height="otherTabsHeightSuite-50" 
                                 ref="sub_list_table_Suite"
                                 unqiue-mark="id"
-                                :disabledAddRowWhenfocusNull="true"
                                 :index-menu="true"
                                 :col-start="0"
                                 :width="200"
@@ -258,7 +219,6 @@
 
 <script>
 let _ = require('lodash')
-import dayjs from 'dayjs'
   import request from "@/libs/request";
   import formControl from '@/components/form-control/form-control'
   import splitPane from 'vue-splitpane'
@@ -288,10 +248,6 @@ export default {
     mixins:[editBaseMixins],
     data() {
         return {
-          lastPOCode:false, // 客户PO号复制上一行 是否勾选
-          lastDeliverDate:false,// 交货日期复制上一行 是否勾选
-          lastPOCodeStr:'', // 客户PO号复制上一行 文本
-          lastDeliverDateStr:'',// 交货日期复制上一行 文本
           saleCoTypeList:[],//订单类型
           loadingButton:false,// 窗口加载中,
           tableCurrentRow:Object.assign({},default_tableCurrentRow),
@@ -384,37 +340,8 @@ export default {
         tableColTiggerEventCall (obj) {
           switch (obj.event) {
             case 'coQtyChangeEvent':
-              if(this.lastPOCodeStr ==''){
-                  this.lastPOCodeStr = obj.row.biBatchNo 
-              }
-              if(this.lastDeliverDateStr ==''){
-                this.lastDeliverDateStr = obj.row.coDueDate//==null ?'': dayjs(obj.row.coDueDate ).format('YYYY-MM-DD HH:mm:ss')
-              }
               this.debouncedCoQtyChangeEvent()
-                if(this.tabShow=='Prize'){
-                      if(this.lastPOCode){
-                        this.tablePrizeObj.tableDataPrize[obj.index].biBatchNo = this.lastPOCodeStr
-                      }
-                      if(this.lastDeliverDate){
-                        this.tablePrizeObj.tableDataPrize[obj.index].coDueDate = this.lastDeliverDateStr
-                      }
-                }else{
-                      if(this.lastPOCode){
-                        this.tableDataArea[obj.index].biBatchNo = this.lastPOCodeStr
-                      }
-                      if(this.lastDeliverDate){
-                        this.tableDataArea[obj.index].coDueDate = this.lastDeliverDateStr
-                      }
-                 
-                }
-            
               break
-            case 'biBatchNoChangeEvent':
-              this.lastPOCodeStr = obj.row.biBatchNo 
-              break 
-            case 'coDueDateChangeEvent':
-              this.lastDeliverDateStr = obj.row.coDueDate//==null ?'': dayjs(obj.row.coDueDate ).format('YYYY-MM-DD HH:mm:ss')
-              break 
             default:
               break
           }
@@ -447,13 +374,6 @@ export default {
         slaveObj.rowClick(index, 'row-click')
       }
      },
-      // 默认选择行数据
-      setAreaDefaultSelectedRow (index=0) {
-      let slaveObj = this.$refs['sub_list_table_edit_workproc']
-      if (slaveObj) {
-        slaveObj.rowClick(index, 'row-click')
-      }
-     },
       prize_list_table_editRowClick (index) {
         if(this.tableCurrentRow.PrizeRowIndex!= index){
           // 行发生变化才再次请求并延迟
@@ -469,8 +389,8 @@ export default {
       },
       // 排除不需要显示的字段
       excludeFiled(type,key){
-        let exListPrize = ['type', 'custId', 'productId','bpCBoxId','bpCArtId','bpColorId','bpIsPublic','bpIsFullPrint']
-        let exListArea = ['type', 'custId', 'productId','bpCBoxId','bpCArtId','bpColorId','contractNo','bpColorName','bpPPNo']
+        let exListPrize = ['type', 'custId', 'productId','bpCBoxId','bpCArtId','bpColorId']
+        let exListArea = ['type', 'custId', 'productId','bpCBoxId','bpCArtId','bpColorId']
         let exListSuite = ['id']
         let exListPO = ['productId']
         let exList=[]
@@ -592,7 +512,6 @@ export default {
               if(res!=null){
                   switch (mode) {
                     case '0':
-                       // 订单类型 默认值 订单1
                        res=res.map(item=>{
                          if(item.coType=='' || item.coType==null){
                             item.coType=1
@@ -603,15 +522,7 @@ export default {
                       _self.setDefaultSelectedRow()
                       break;
                     case '1':
-                        // 订单类型 默认值 订单1
-                        res=res.map(item=>{
-                          if(item.coType=='' || item.coType==null){
-                              item.coType=1
-                          }
-                          return item
-                        })
                         _self.tableDataArea =res //1：按面积报价下单 
-                        _self.setAreaDefaultSelectedRow() // 设置默认选择行
                       break;
                     case '3':
                         _self.tableDataPO =res //3:同产品同PO多料号
@@ -685,9 +596,7 @@ export default {
             // 必须设置高度为0 ,不然依旧占用高度,导致对齐不正确
             this.TabsHeightArea =0
           }else{
-            if(this.tableDataArea && this.tableDataArea.length==0){
-                this.debouncedGetArea()
-            }
+            this.debouncedGetArea()
             this.TabsHeightPrize =0
           }
          this.$nextTick(()=>{
@@ -718,7 +627,6 @@ export default {
                       item.productInfos = (_self.tablePrizeObj.tableDataSuiteList[index]==null?[]:_self.tablePrizeObj.tableDataSuiteList[index])
                    }
                       item.poProductInfos = (_self.tablePrizeObj.tableDataPOList[index]==null?[]:_self.tablePrizeObj.tableDataPOList[index])
-                  item.coDueDate = dayjs(item.coDueDate).format('YYYY-MM-DD HH:mm:ss')
                   return item
                  }
               })
@@ -734,7 +642,6 @@ export default {
              if(this.tableDataArea && this.tableDataArea.length>0){
                   paramsData = this.tableDataArea.filter((item,index,arr)=>{
                  if(item.coQty>0 ){
-                    item.coDueDate = dayjs(item.coDueDate).format('YYYY-MM-DD HH:mm:ss')
                     return item
                  }
               })
@@ -775,18 +682,4 @@ export default {
 .otherHeightClass{
   height: 30%;overflow:hidden
 }
-.flexBox{
-    display: flex; 
-    justify-content: center; /* 水平居中 */
-    align-items: center;     /* 垂直居中 */
-    width: 100%;
-    height: 20px;
-   
-}
-/* .boxItem{
-            width: 300px;
-            height: 200px;
-            background-color: red;
-        } */
-
 </style>
