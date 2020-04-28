@@ -1,0 +1,641 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-boxUseOut"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="90%"
+      :loading="!isLoaddingDone"
+      :spinLoaddingText="spinLoaddingText"
+      @on-ok="formTableDataSubmit()"
+      v-if="initData.columns"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-message="true"
+        :model="formDataInfo.master"
+        :rules="ruleValidate"
+        :label-width="100"
+      >
+        <Row>
+          <Col span="12">
+            <Row>
+              <Col span="12">
+                <FormItem label="领料单号" prop="boNo">
+                  <Input v-model="formDataInfo.master.boNo" maxlength="20" placeholder disabled></Input>
+                </FormItem>
+              </Col>
+              <Col span="12">
+                <FormItem label="日期" prop="boDate">
+                  <DatePicker
+                    type="date"
+                    format="yyyy-MM-dd"
+                    :disabled="detailDisabled"
+                    v-model="formDataInfo.master.boDate"
+                  ></DatePicker>
+                </FormItem>
+              </Col>
+            </Row>
+          </Col>
+          <Col span="6">
+            <FormItem label="领料人" prop="workerCode">
+              <div>
+                <popup
+                  :disabled="detailDisabled"
+                  @on-fill="Initializationdata"
+                  v-model="formDataInfo.master.workerCode"
+                  field-name="workerCode"
+                  popup-name="WorkerSingleBox"
+                  :fill-model.sync="formDataInfo.master"
+                  render-fields="workerId,workerCode,workerName"
+                  from-fields="id,workCode,workName"
+                  :suffix="true"
+                  :suffix-model="formDataInfo.master.workerName"
+                  :query-params="{workOptType:''}"
+                />
+              </div>
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="仓位" prop="stationCode">
+              <div>
+                <popup
+                  @on-fill="Initializationdata"
+                  v-model="formDataInfo.master.stationCode"
+                  field-name="stationCode"
+                  :disabled="detailDisabled"
+                  popup-name="WareHouseSingleBox"
+                  :fill-model.sync="formDataInfo.master"
+                  render-fields="stationId,stationCode,stationName"
+                  from-fields="wareHouseItId,wsCode,wsName,coinCode"
+                  :suffix="true"
+                  :suffix-model="formDataInfo.master.stationName"
+                  :query-params="{whType:3}"
+                />
+              </div>
+            </FormItem>
+          </Col>
+
+          <Col span="6">
+            <FormItem label="数量" prop="boQty">
+              <!-- <Input v-model="formDataInfo.master.boQty" maxlength="20" placeholder disabled></Input> -->
+              <InputNumber
+                disabled
+                v-model="formDataInfo.master.boQty"
+                :formatter="value => ` ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
+                :parser="value => value.replace(/\$\s?|(,*)/g, '')"
+                style="width:100%"
+                maxlength="20"
+                placeholder
+              ></InputNumber>
+            </FormItem>
+          </Col>
+          <Col span="18">
+            <FormItem label="备注">
+              <Input
+                :disabled="detailDisabled"
+                v-model="formDataInfo.master.remark"
+                type="textarea"
+                maxlength="20"
+                placeholder="请输入备注..."
+                size="small"
+                :rows="1"
+              ></Input>
+            </FormItem>
+          </Col>
+        </Row>
+      </Form>
+
+      <Tabs>
+        <!--  注意:eTable formDataInfo.artLengs.defaultList  ===artLengs=== 需要根据实际接口修改,其它不变-->
+        <TabPane label="纸箱用料出库明细" name="name1">
+          <eTable
+            ref="tableFields"
+            unqiue-mark="id"
+            :index-menu="true"
+            :col-start="0"
+            :width="200"
+            :height="300"
+            :row-init-data="initData.initData.stockBoxUseOutItemFm"
+            :data.sync="formDataInfo.boxUseOutItemSlave.defaultList"
+            :rules="tableFieldsValidator"
+            :showContextMenu="!detailDisabled"
+            v-if="showWindow"
+          >
+            <template slot="head">
+              <tr
+                v-for="(columnGroup,index) in initData.columns.stockBoxUseOutItemFm.editGroups"
+                :key="index"
+              >
+                <th
+                  class="ivu-table-column-left"
+                  v-for="(column,index2) in columnGroup"
+                  :key="index2"
+                  :width="column.width"
+                  :colspan="column.colSpan"
+                  :rowspan="column.rowSpan"
+                  style="text-align:center;"
+                >
+                  <div class="ivu-table-cell">
+                    <span class>{{column.title}}</span>
+                  </div>
+                </th>
+              </tr>
+            </template>
+
+            <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
+              <td
+                class="ivu-table-column-left"
+                v-for="(column,columnIndex) in initData.columns.stockBoxUseOutItemFm.editColumns"
+                :key="columnIndex"
+                :width="column.width"
+              >
+                <!-- 控件特殊处理 报损类型-->
+                <!-- <Select :disabled="detailDisabled" v-if="column.key == 'pliLostType'" v-model="row[column.key]" transfer>
+                     <Option  v-for="(item,index) in pliLostTypeList" :key="index" :value="item.dicValue">{{item.dicLabel}}</Option>
+                </Select>-->
+                <!--控件特殊处理 用料单号  -->
+                <Input
+                  v-if="column.key == 'mateWorkNo'"
+                  v-model="row[column.key]"
+                  :disabled="detailDisabled"
+                  @on-blur="onFill(index)"
+                  icon="md-add"
+                  @on-click="Slave_list_table_editRowModify(index)"
+                  @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'mateWorkNo');
+                      }
+                    "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+                <!--控件特殊处理 领用数  -->
+                <Input
+                  v-else-if="column.key == 'boiQty'"
+                  v-model="row[column.key]"
+                  :disabled="detailDisabled"
+                  @input="changeBoiQty(value, index, row, 'boiQty')"
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+                <!-- 控件特殊处理 责任人    :popupClickValidator="clickValuedate"-->
+                <!-- <popup
+                  :popupClickValidator="clickValuedate"
+                  v-else-if="column.key=='workerCode'"
+                  v-model="row[column.key]"
+                  field-name="workerCode"
+                  :disabled="detailDisabled"
+                  popup-name="WorkerSingleBox"
+                  :fill-model.sync="formDataInfo.boxUseOutItemSlave.defaultList"
+                  render-fields="workerId,workerCode,workerName"
+                  from-fields="id,workCode,workName"
+                  :index="index"
+                  :init-data="initData.initData.stockBoxUseOutItemFm"
+                  :query-params="{}"
+                  @input="
+                          value => {
+                            valueChangeAssign(value, index, row, 'workerCode');
+                          }
+                        "
+                ></popup>-->
+
+                <formControl
+                  v-else
+                  :control-type="column.controlType"
+                  v-model="row[column.key]"
+                  :disabled="detailDisabled||column.readOnly"
+                  @input="value => {valueChangeAssign(value, index, row,column.key)}"
+                ></formControl>
+              </td>
+            </template>
+          </eTable>
+        </TabPane>
+      </Tabs>
+    </editWindow>
+    <boxUseOutSlave
+      ref="mychild"
+      :isLoaddingDone="salveWindow.isLoaddingDone"
+      :formDetailData="salveWindow.formDetailData"
+      :action="salveWindow.action"
+      v-model="salveWindow.showEditWindow"
+      @closeMain="closeMain"
+    />
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:07:54
+ */
+// import preferential from "@/components/preferential/preferential";
+import popup from "@/components/popup/popup";
+import editWindow from "@/components/edit-window/edit-window";
+import eTable from "@/components/e-table/e-table";
+import request from "@/libs/request";
+import editBaseMixins from "../../mixins/edit";
+import optionSearch from "../../components/optionSearch";
+import dayjs from "dayjs";
+import Sys from "@/api/sys";
+import formControl from "@/components/form-control/form-control";
+import boxUseOutSlave from "./edit-boxUseOutSlave";
+import { deepCopy } from "view-design/src/utils/assist";
+const default_formDataInfo = {
+  // 主表 更改字段
+  master: {
+    boNo: "", //领料单号
+    boQty: 0, //数量
+    boDate: dayjs().format("YYYY-MM-DD HH:mm:ss"), //领料日期
+    workerCode: "", //领用人编号
+    workerId: "", //领用人ID
+    workerName: "", //领用人名称
+    stationCode: "", //仓位Code
+    stationId: "", //仓位Id
+    stationName: "" //仓位Name
+    // remark: ""
+  },
+  // 子表 artLengs 根据实际接口更改,其它不变
+  boxUseOutItemSlave: {
+    addList: [], // 添加列
+    defaultList: [], // 默认列
+    deleteList: [], // 删除列
+    updateList: []
+  }
+};
+export default {
+  name: "edit-boxUseOut",
+  mixins: [editBaseMixins],
+  components: {
+    editWindow,
+    optionSearch,
+    eTable,
+    popup,
+    boxUseOutSlave,
+    formControl
+    // Form,
+  },
+  data() {
+    return {
+      actionSubtitle: "纸箱用料出库", // 当前操作副标题
+      salveWindow: {
+        flag: null, //隐藏完结字段
+        Tips: "提示：此窗口只显示有供应商纸质/纸板进价的工单！",
+        isLoaddingDone: false, // 窗口是否加载完成
+        showEditWindow: false, // 是否显示edit-boxSalesOrderSlave 编辑窗口
+        action: "add", // 当前操作功能 添加/编辑
+        formDetailData: {} // 当前表单的详细信息
+      },
+      showContextMenu: true,
+      showEditMenu: false,
+      id: 0,
+      formName: "stockBoxUseOutItemFm",
+      requestBaseUrl: "/stock/boxUseOut", // 请求 查询 操作的基础路径
+      formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
+
+      itemInitData: {},
+      // 需要验证的数据
+      ruleValidate: {
+        // boDate: [
+        //   {
+        //     required: true,
+        //     message: "日期不能为空",
+        //     trigger: "change",
+        //     type: 'string'
+        //   }
+        // ]
+        // boNo: [
+        //   { required: true, message: "领料单号不能为空", trigger: "blur,change" }
+        // ]
+      },
+       tableFieldsValidator: {
+        
+      },
+      getworkerId: 0,
+      cliclleng: null,
+      getsupplierCode: 0,
+      // List: "",
+      // WorkOrderNumber: null,
+      getppoNoOrder: [false],
+      index1: 0, //工单号里面用
+      disppoGroupNo: true //工单号禁用字段
+    };
+  },
+  methods: {
+    sum(arg) {
+      //debugger
+      var total = 0;
+      for (var i = 0; i < arg.length; i++) {
+        var cur = Number(arg[i].boiQty); //转化成了数类型(整数,小数,NaN)
+        isNaN(cur) ? null : (total += cur);
+      }
+      return total;
+    },
+    //计算总数量
+    getboQtySum() {
+      setTimeout(() => {
+        //debugger
+        let dataLength = this.formDataInfo.boxUseOutItemSlave.defaultList;
+        this.formDataInfo.master.boQty = this.sum(dataLength);
+      }, 300);
+    },
+    transformation(demo, data, index1 = 0) {
+      //debugger;
+      demo.artCode = data.psArt; //  纸质
+      demo.batchNo = data.biBatchNo; //料号
+      //  demo.boId          = data.                 //纸箱用料出库id
+      demo.boiAlreadyQty = data.biQty; //已领数量
+      demo.workNo = data.workNo; // 工单号
+      //  demo.workNo       = data.workNo                // 工单号
+      demo.mateWorkNo = data.bmMateWorkNo; //用料单号
+      demo.boiQty = data.bpOutStore; //领用数
+      demo.boiStoreQty = data.bpStoreQty; // 当前库存
+      demo.boxSizeL = data.psSizeL; //纸长
+      demo.boxSizeW = data.psSizeW; //纸宽
+      demo.boxUseBatchNo = data.BoxUseBatchOn; //批次号
+      demo.bpName = data.biProdName; //产品名称
+      demo.bpNo = data.biProdNo; //产品编号
+      //  demo.cust          =
+      demo.custCode = data.cusCode; //客户编号
+      demo.custId = data.custId;
+      demo.custName = data.cusName; //客户名称
+      demo.lbCode = data.lbCode; //楞别
+      demo.proBoxCode = data.bpPBoxCode; //盒式编号
+      demo.proBoxName = data.bpPBoxName; //盒式名称
+      //  demo.product       = data.
+      demo.productId = data.productId;
+      demo.remark = data.remark;
+      demo.sizeLength = data.bmSSizeL; //纸箱规格长
+      demo.sizeWidth = data.bmSSizeW; //纸箱规格宽
+      //  bpProQty                                    //工单需求数量
+      demo.useWorkNo = data.bmMateWorkNo; //领用单号
+    },
+    //工单号失去焦点带出参数事件
+    onFill(index) {
+      //debugger;
+      //获取领料人
+      let inProvider = this.formDataInfo.master.workerCode;
+      //获取领料boNo单号
+      let mateWorkNo = this.formDataInfo.boxUseOutItemSlave.defaultList[index]
+        .mateWorkNo;
+      //获仓位
+      let stationCode = this.formDataInfo.master.stationCode;
+      //获取当前子表数据
+      let two = this.formDataInfo.boxUseOutItemSlave.defaultList[index];
+      let one = this.$refs["tableFields"].cloneData[index];
+      //获取子表初始化时的数据
+      let defulit = this.initData.initData.stockBoxUseOutItemFm;
+      if (inProvider === "") {
+        this.$Message.error("领料人不能为空");
+        return;
+      }
+      if (stationCode == undefined || stationCode === "") {
+        this.$Message.error("仓位不能为空");
+        return;
+      }
+      if (mateWorkNo) {
+        request
+          .post(`/stock/boxUseOut/getBoiOutCo`, {
+            // inCoNoName: ppoboNo,
+            inBmMateWorkNo: mateWorkNo
+          })
+          .then(ref => {
+            //debugger
+            let data = ref[0];
+            if (data === [] || data === undefined || data === null) {
+              this.$Message.error("用料单号错误");
+              //$set(要修改的对象,属性,属性的值是啥)
+              this.$set(
+                this.formDataInfo.boxUseOutItemSlave.defaultList,
+                index,
+                this.initData.initData.stockBoxUseOutItemFm
+              );
+              return;
+            }
+            //给领用数复制
+            data.bpOutStore = data.bpStoreQty
+            let demo = this.$refs["tableFields"].cloneData[index];
+            this.transformation(demo, data);
+          });
+      }
+    },
+    //无单采购点击事件
+    // ppoNoOrderclick(index) {
+    //   if (this.$refs["tableFields"].cloneData[index].ppoNoOrder === true) {
+    //     (this.getppoNoOrder[index] = false), (this.disppoGroupNo = true);
+    //     // this.getppoNoOrder[index]=false,
+    //   } else
+    //     (this.getppoNoOrder[index] = true),
+    //       // this.getppoNoOrder[index]=true,
+    //       (this.disppoGroupNo = false);
+    // },
+    //打开编辑页面判断完结是否显示
+    // resetTitle() {
+    //   if (this.action === "add") {
+    //     this.flag = false;
+    //   } else {
+    //     this.flag = true;
+    //   }
+    // },
+    //接受工单号传回来的数据
+    closeMain(val) {
+      //debugger;
+      let index1 = this.index1;
+      for (let index = 0; index < val.length; index++) {
+        if (index1 === 0) {
+          index1 = index;
+        }
+        //接受工单号返回的值
+        let data = val[index];
+        //获得当前第二层表的值
+        if (this.$refs["tableFields"].cloneData.length - 1 < index) {
+          this.$refs["tableFields"].cloneData[
+            index
+          ] = this.initData.initData.stockBoxUseOutItemFm;
+        }
+
+        let demo = this.$refs["tableFields"].cloneData[index1];
+        this.transformation(demo, data, index1);
+        this.getboQtySum();
+      }
+    },
+    //工单号点击事件
+    Slave_list_table_editRowModify(index) {
+      //debugger;
+      // if (
+      //   !this.formDataInfo.boxUseOutItemSlave.defaultList[index].ppoNoOrder
+      // ) {
+      this.salveWindow.showEditWindow = true;
+      this.index1 = index;
+      if (
+        this.formDataInfo.master.workerCode &&
+        this.formDataInfo.master.stationCode
+      ) {
+        // this.List = this.formDataInfo.master.workerCode;
+        let ppuer = this.salveWindow.showEditWindow;
+        this.salveWindow.isLoaddingDone = true;
+        this.salveWindow.action = "add";
+        var _this = this;
+        request
+          .post(`/stock/boxUseOut/getBoiOutCo`, {
+            // inProvider: this.getsupplierCode
+          })
+          .then(res => {
+            //debugger;
+            // _this.WorkOrderNumber = res;
+            //给领用数赋值
+            for (var i = 0; i < res.length; i++) {
+              if (res[i].bpStoreQty) {
+                res[i].bpOutStore = res[i].bpStoreQty;
+              }
+            }
+            _this.$refs.mychild.getFormInitDataObj(res);
+          });
+      } else {
+        this.salveWindow.showEditWindow = false;
+        if (!this.formDataInfo.master.workerCode)
+          this.$Message.error("领料人不能为空");
+        if (!this.formDataInfo.master.stationCode)
+          this.$Message.error("仓位不能为空");
+      }
+      // } else {
+      //   this.salveWindow.showEditWindow = false;
+      // }
+    },
+
+    //判断数据是新增还是修改
+    formDetailDataCall() {
+      //debugger
+      if (this.action != "add") {
+        //debugger
+        this.getworkerId = this.formDataInfo.master.workerId;
+        // this.id = this.formDataInfo.master.id;
+      }
+    },
+    //当主表客户弹框改变时促发初始化子表数据
+    Initializationdata() {
+      // let tableData = this.$refs["tableFields"].getCategorizeData();
+      //debugger
+      if (this.formDataInfo.master.workerId) {
+        if (this.formDataInfo.master.workerId != this.getworkerId) {
+          this.formDataInfo.boxUseOutItemSlave.defaultList = [];
+          // tableData.deleteList = tableData.updateList;
+        }
+        this.getworkerId = this.formDataInfo.master.workerId;
+      }
+    },
+    // 重写父类 关闭窗口时 触发事件
+    closeActionTigger() {
+      //debugger
+      // fix 清除上次的错误提示 formDataInfo 为表单ref名称
+      this.$refs["formDataInfo"].resetFields();
+      this.$refs["tableFields"].reset();
+    },
+    //判断主表供应商弹框不能为空
+    clickValuedate() {
+      //debugger;
+      if (
+        !this.formDataInfo.master.supplierCode ||
+        this.formDataInfo.master.supplierCode == ""
+      ) {
+        this.$Message.error("供应商编号不能为空");
+        return false;
+      }
+      console.log(this.$refs["tableFields"].data);
+      return true;
+    },
+    //判断子表供应商弹框不能为空
+    // clickValueleng(){
+    //   for (let i = 0; i < this.$refs['tableFields'].cloneData.length; i++) {
+    //     //debugger
+    //     this.cliclleng = this.$refs['tableFields'].cloneData[i].ppoArtId
+    //     if(!this.cliclleng || this.cliclleng == ""){
+    //       this.$Message.error("供应商纸质不能为空")
+    //       return false
+    //     }
+    //     console.log(this.$refs['tableFields'].data)
+    //       return true
+
+    //   }
+
+    // },
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo() {
+      //debugger;
+      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    },
+    // 重写父类,修改提交数据
+    resetformDataInfo(_data) {
+      let tableData = this.$refs["tableFields"].getCategorizeData();
+      //debugger;
+      // for (let i = 0; i < tableData.addList.length; i++) {
+      //   tableData.addList[i].supplierArtId = this.WorkOrderNumber[
+      //     i
+      //   ].supplierArtId; //供应商纸质id
+      //   tableData.addList[i].artId = this.WorkOrderNumber[i].ppoCorpartId; //纸质id|本厂
+      // }
+      if(_data.master.boDate==""){
+        this.$Message.error("请选择日期");
+        return 
+      }
+      this.formDataInfo.boxUseOutItemSlave = tableData;
+      if (!!_data.master.accDate || !!_data.master.boDate) {
+        _data.master.accDate = dayjs(_data.master.accDate).format(
+          "YYYY-MM-DD HH:mm:ss"
+        );
+        _data.master.boDate = dayjs(_data.master.boDate).format(
+          "YYYY-MM-DD HH:mm:ss"
+        );
+      }
+      return this.formDataInfo;
+    },
+    //领用数改变 主表数量改变
+    changeBoiQty(value, index, row, name){
+      //debugger
+      let dataLength = this.$refs["tableFields"].cloneData
+      this.formDataInfo.master.boQty = this.sum(dataLength);
+    },
+       // 提交主从表数据
+    // formTableDataSubmit () {
+    //   //debugger
+    //   let _self = this
+    //   this.$refs['formDataInfo'].validate(valid => {
+    //     if (!valid) {
+    //       return
+    //     }
+    //     let result = this.$refs['tableFields'].validate()
+    //     if (result) {
+    //       return
+    //     }
+    //     _self.insertOrUpdateData()
+    //   })
+    // },
+  }
+ 
+};
+</script>
+
+<style>
+.cl-edit-boxUseOut .ivu-form-item {
+  margin-bottom: 5px !important;
+}
+.cl-edit-boxUseOut .ivu-select-item {
+  display: block;
+}
+/* .cl-edit-boxUseOut .ivu-input-type-text{
+  width: 200px
+} */
+.cl-edit-boxUseOut .right-text {
+  width: 500px;
+}
+</style>

@@ -1,0 +1,875 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-boxDeli"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="true"
+      width="90%"
+      :loading="!isLoaddingDone"
+      :spinLoaddingText="spinLoaddingText"
+      @on-ok="formTableDataSubmit()"
+      v-if="initData.columns"
+    >
+      <div ref="masterHeight" class="masterHeightClass" :style="{ height: getMasterheight() + '%' }" >  
+        <Form
+            ref="formDataInfo"
+            :show-message="true"
+            :model="formDataInfo.master"
+            :rules="masterRuleValidate"
+            :label-width="80"
+        >
+            <Row>
+            <Col span="6">
+                <FormItem label="送货单号" prop="bdNo">
+                    <Input :disabled="true" v-model="formDataInfo.master.bdNo" maxlength="80" placeholder="送货单号"></Input>
+                </FormItem>
+            </Col>
+            <Col span="6">
+                <FormItem  label="送货日期" prop="bdDate">
+                   <DatePicker
+                    @on-change="onChange_bdBackDate"
+                    transfer
+                    :value="formDataInfo.master.bdDate" 
+                    type="datetime"
+                    format="yyyy-MM-dd HH:mm:ss"
+                  ></DatePicker>
+                </FormItem>
+            </Col>
+            <Col span="6">
+                <FormItem label="客户编号" prop="custCode">
+                  <popup 
+                    v-model="formDataInfo.master.custCode"
+                    field-name="custCode"
+                    :disabled="disabledCustCode"
+                    popup-name="BoxDeliCustomerSingBox"
+                    :fill-model.sync="formDataInfo.master"
+                    render-fields="custId,custCode,custName,coinId,areaIds,bdDeAddr,addrDetail,bdSaleId,bdSaleCode,bdSaleName,followerId,followerCode,followerName"
+                    from-fields="id,cusCode,cusName,coinId,areaIds,areaNames,addrDetail,salerId,saleCode,saleName,followerId,followerCode,followerName"
+                    :suffix="true"
+                    :suffix-model="formDataInfo.master.custName"
+                    @on-fill="custCodeOnFillEvent"
+                    />
+                </FormItem>
+            </Col>
+              <!--  参数： workOptType  1---业务员 -->
+            <Col span="6">
+                <FormItem label="业务员" prop="bdSaleCode">
+                     <popup 
+                        v-model="formDataInfo.master.bdSaleCode"
+                        field-name="bdSaleCode"
+                        :disabled="true"
+                        popup-name="WorkerSingleBox"
+                        :fill-model.sync="formDataInfo.master"
+                        render-fields="bdSaleId,bdSaleCode,bdSaleName"
+                        from-fields="id,workCode,workName"
+                        :suffix="true"
+                        :suffix-model="formDataInfo.master.bdSaleName"
+                        :query-params="{workOptType:1}"
+                        />
+                </FormItem>
+            </Col>
+            <Col span="6">
+                <FormItem label="发货员" prop="senderCode">
+                     <popup 
+                        v-model="formDataInfo.master.senderCode"
+                        field-name="senderCode"
+                        :disabled="false"
+                        popup-name="WorkerSingleBox"
+                        :fill-model.sync="formDataInfo.master"
+                        render-fields="senderId,senderCode,senderName"
+                        from-fields="id,workCode,workName"
+                        :suffix="true"
+                        :suffix-model="formDataInfo.master.senderName"
+                        :query-params="{workOptType:1}"
+                        />
+                </FormItem>
+            </Col>
+             <!--  参数： workOptType  2--跟单员 -->
+            <Col span="6">
+                <FormItem label="跟单员" prop="followerCode">
+                   <popup 
+                        v-model="formDataInfo.master.followerCode"
+                        field-name="followerCode"
+                        :disabled="true"
+                        popup-name="WorkerSingleBox"
+                        :fill-model.sync="formDataInfo.master"
+                        render-fields="followerId,followerCode,followerName"
+                        from-fields="id,workCode,workName"
+                        :suffix="true"
+                        :suffix-model="formDataInfo.master.followerName"
+                        :query-params="{workOptType:3}"
+                        />
+                </FormItem>
+            </Col>
+             <!-- 参数： workOptType 5---装车员 -->
+            <Col span="6">
+                <FormItem label="装车员" prop="loadorCode">
+                   <popup 
+                        v-model="formDataInfo.master.loadorCode"
+                        field-name="loadorCode"
+                        :disabled="false"
+                        popup-name="WorkerSingleBox"
+                        :fill-model.sync="formDataInfo.master"
+                        render-fields="loadorId,loadorCode,loadorName"
+                        from-fields="id,workCode,workName"
+                        :suffix="true"
+                        :suffix-model="formDataInfo.master.loadorName"
+                        :query-params="{workOptType:5}"
+                        />
+                </FormItem>
+            </Col>
+              <!--参数： workOptType 5---装车员-->
+            <Col span="6">
+                <FormItem label="跟车员" prop="followCarCode">
+                     <popup 
+                        v-model="formDataInfo.master.followCarCode"
+                        field-name="followCarCode"
+                        :disabled="false"
+                        popup-name="WorkerSingleBox"
+                        :fill-model.sync="formDataInfo.master"
+                        render-fields="followCarId,followCarCode,followCarName"
+                        from-fields="id,workCode,workName"
+                        :suffix="true"
+                        :suffix-model="formDataInfo.master.followCarName"
+                        :query-params="{workOptType:4}"
+                        />
+                </FormItem>
+            </Col>
+             <Col span="6">
+                <FormItem label="车牌" prop="bdCarNo">
+                  <popup 
+                        v-model="formDataInfo.master.bdCarNo"
+                        field-name="bdCarNo"
+                        :disabled="false"
+                        popup-name="CarSingleBox"
+                        :fill-model.sync="formDataInfo.master"
+                        render-fields="bdCarNo"
+                        from-fields="carNo"
+                        />
+                   <!-- <Input  v-model="formDataInfo.master.bdCarNo" maxlength="80" placeholder="车牌"></Input> -->
+                </FormItem>
+            </Col>
+             <!-- 参数： workOptType   6--司机-->
+            <Col span="6">
+                <FormItem label="司机" prop="boQty">
+                     <popup 
+                        v-model="formDataInfo.master.carDriverCode"
+                        field-name="carDriverCode"
+                        :disabled="false"
+                        popup-name="WorkerSingleBox"
+                        :fill-model.sync="formDataInfo.master"
+                        render-fields="carDriverId,carDriverCode,carDriverName"
+                        from-fields="id,workCode,workName"
+                        :suffix="true"
+                        :suffix-model="formDataInfo.master.carDriverName"
+                        :query-params="{workOptType:6}"
+                        />
+                </FormItem>
+            </Col>
+            <Col span="6">
+                <FormItem label="运费" prop="bdFeer">
+                   <InputNumber  placeholder="运费" :min="0" v-model="formDataInfo.master.bdFeer"/>
+                </FormItem>
+            </Col>
+           
+              <Col span="6">
+                <FormItem :label-width="90" label="月结日期" prop="bdMonthDate">
+                   <DatePicker
+                    @on-change="onChange_bdMonthDate"
+                    transfer
+                    :value="formDataInfo.master.bdMonthDate" 
+                    type="datetime"
+                    format="yyyy-MM-dd HH:mm:ss"
+                  ></DatePicker>
+                </FormItem>
+            </Col>
+            <Col span="6">
+                <FormItem label="送货地址" prop="bdDeAddr">
+                     <popup   :popupClickValidator="popupClickValidator" v-model="formDataInfo.master.bdDeAddr" field-name="bdDeAddr" :disabled="false" popup-name="AddrDetailSingleBox"
+                      :fill-model.sync="formDataInfo.master" render-fields="areaIds,bdDeAddr,addrDetail" from-fields="areaIds,areaNames,addrDetail"
+                      :query-params="{custId:formDataInfo.master.custId}"
+                      :blur-focus-load-data="false"
+                      />
+                </FormItem>
+            </Col>
+            <Col span="6">
+                <FormItem label="详细地址" prop="addrDetail">
+                   <popup   :popupClickValidator="popupClickValidator" v-model="formDataInfo.master.addrDetail" field-name="addrDetail" :disabled="false" popup-name="AddrDetailSingleBox"
+                      :fill-model.sync="formDataInfo.master" render-fields="areaIds,areaNames,addrDetail" from-fields="areaIds,areaNames,addrDetail"
+                      :query-params="{custId:formDataInfo.master.custId}"
+                      :blur-focus-load-data="false"
+                      />
+                </FormItem>
+            </Col>
+            <Col span="3">
+                <FormItem label="数量">
+                  <InputNumber  :disabled="true"  placeholder="数量" :min="0" v-model="formDataInfo.master.biQty"/>
+                </FormItem>
+            </Col>
+            <Col span="3">
+                <FormItem label="金额" prop="bdMoney">
+                  <InputNumber   :disabled="true" placeholder="运费" :min="0" v-model="formDataInfo.master.bdMoney"/>
+                </FormItem>
+            </Col>
+            <Col span="3">
+                <FormItem label="面积" prop="bdArea">
+                  <InputNumber   :disabled="true" placeholder="运费" :min="0" v-model="formDataInfo.master.bdArea"/>
+                </FormItem>
+            </Col>
+            <Col span="3">
+                <FormItem label="体积" prop="bdCube">
+                  <InputNumber   :disabled="true" placeholder="体积" :min="0" v-model="formDataInfo.master.bdCube"/>
+                </FormItem>
+            </Col>
+            <Col span="3">
+                <FormItem label="重量" prop="bdWeight">
+                  <InputNumber  :disabled="true"  placeholder="重量" :min="0" v-model="formDataInfo.master.bdWeight"/>
+                </FormItem>
+            </Col>
+          
+            <Col span="3">
+                <FormItem :label-width="40">
+                  <Checkbox :disabled="true" class="CheckboxItem" v-model="formDataInfo.master.bdIsAcc">月结</Checkbox>
+                  <Checkbox class="CheckboxItem" v-model="formDataInfo.master.bdIsSelf">自提</Checkbox>
+                </FormItem>
+            </Col>
+            <Col span="12">
+                <FormItem label="备注" prop="remark">
+                   <Input v-model="formDataInfo.master.remark" maxlength="80" placeholder="备注"></Input>
+                </FormItem>
+            </Col>
+            </Row>
+        </Form>
+      </div>
+         <div ref="otherHeight" class="otherHeightClass">  
+        <Tabs :animated="false" :value="currentTabName">
+            <TabPane label="纸箱出货明细" name="stockboxdeliitem">
+                <eTable
+                ref="slave_list_table_edit"
+                unqiue-mark="id"
+                :height="otherHeight-40"
+                :index-menu="true"
+                :col-start="0"
+                :row-init-data="initData.initData[`${functionParams.formInitPreName}itemFm`]"
+                :data.sync="formDataInfo['boxDeliItems'].defaultList"
+                :rules="slaveTableFieldsValidator"
+                @row-delete='slave_list_table_edit_Delete'
+                @tableColTiggerEventCall="tableColTiggerEventSlaveCall"
+            >
+            <template slot="head">
+              <tr v-for="(columnGroup,index) in initData.columns[`${functionParams.formInitPreName}itemFm`].editGroups" :key="index">
+                    <template  v-for="(column,index2) in columnGroup" >
+                        <th v-if="excludeFiled('itemFm',column.key)"
+                        :key="index2" :class="`ivu-table-column-${column.titleAlign}`"
+                        :width="column.editWidth"
+                        :colspan="column.colSpan"
+                        :rowspan="column.rowSpan"
+                        :columnKey="column.key"
+                        >
+                        <div  class="ivu-table-cell">
+                        <span class="">{{column.title}}</span>
+                        </div>
+                    </th>
+                    </template>
+                </tr>
+            </template>
+            <template
+              slot="body"
+              slot-scope="{ row, index,valueChangeAssign,tableColTiggerEvent }"
+            >
+             <template  v-for="(column,subIndex) in initData.columns[`${functionParams.formInitPreName}itemFm`].editColumns">
+                   <td :key="subIndex" :class="`ivu-table-column-${column.align}`" v-if="excludeFiled('itemFm',column.key)" :width="column.editWidth">
+                     <!-- 控件特殊处理 工单号 -->
+                      <template v-if="column.key =='workNo'">
+                        <Input v-model="row[column.key]"  :disabled="column.readOnly"  @input="value => {valueChangeAssign(value, index, row,column.key)}" >
+                            <Icon @click="openProductsList()"  slot="suffix" type="md-add" />
+                        </Input>
+                     </template>
+                      <!-- 开单单位类型-->
+                    <Select @on-change="value => {valueChangeAssign(value, index, row,column.key)}" :disabled="column.readOnly" v-else-if="column.key == 'unitType'" v-model="row[column.key]" transfer>
+                      <Option v-for="(item,index) in bpUnitList" :key="index" :value="item.dicValue+''">{{item.dicLabel}}</Option>
+                    </Select>
+                     <!-- 新单价-->
+                     <template  v-else-if="column.key ==='biNewPrice'">
+                      <formControl  @input="tableColTiggerEvent(row,column,index,'biNewPriceChangeEvent')"  :control-type="column.controlType" v-model="row[column.key]"></formControl>
+                    </template>
+                       <!--其它 控件 :placeholder="column.title"-->
+                     <template v-else>
+                      <formControl :align="column.align" :control-type="column.controlType"
+                        v-model="row[column.key]" 
+                         :disabled="column.readOnly"
+                        @input="value => {valueChangeAssign(value, index, row,column.key)}"
+                      ></formControl>
+                     </template>
+                  </td>
+             </template>
+            </template>
+             </eTable>
+            </TabPane>
+            <TabPane label="出货其他费用" name="boxDeliOtherFee">
+                <eTable
+                ref="sub_list_table_edit"
+                unqiue-mark="id"
+                :height="otherHeight-40"
+                :index-menu="true"
+                :col-start="0"
+                :row-init-data="initData.initData[`${functionParams.formInitPreName}otherfeeFm`]"
+                :data.sync="formDataInfo['boxDeliOtherFee'].defaultList"
+                :rules="subTableFieldsValidator"
+                @tableColTiggerEventCall="tableColTiggerEventCall"
+            >
+            <template slot="head">
+              <tr v-for="(columnGroup,index) in initData.columns[`${functionParams.formInitPreName}otherfeeFm`].editGroups" :key="index">
+                    <template  v-for="(column,index2) in columnGroup" >
+                        <th v-if="excludeFiled('otherfeeFm',column.key)"
+                        :key="index2" :class="`ivu-table-column-${column.titleAlign}`"
+                        :width="column.editWidth"
+                        :colspan="column.colSpan"
+                        :rowspan="column.rowSpan"
+                        :columnKey="column.key"
+                        >
+                        <div  class="ivu-table-cell">
+                        <span class="">{{column.title}}</span>
+                        </div>
+                    </th>
+                    </template>
+                </tr>
+            </template>
+            <template
+              slot="body"
+              slot-scope="{ row, index,valueChangeAssign,tableColTiggerEvent }"
+            >
+             <template  v-for="(column,subIndex) in initData.columns[`${functionParams.formInitPreName}otherfeeFm`].editColumns">
+                   <td :key="subIndex" :class="`ivu-table-column-${column.align}`" v-if="excludeFiled('otherfeeFm',column.key)" :width="column.editWidth">
+                   <!-- 费用类型-->
+                   <Select @on-change="value => {valueChangeAssign(value, index, row,column.key)}" :disabled="column.readOnly" v-if="column.key == 'feeType'" v-model="row[column.key]" transfer>
+                     <Option v-for="(item,index) in feeTypeList" :key="index" :value="item.dicValue+''">{{item.dicLabel}}</Option>
+                   </Select>
+                   <!-- 费用类型-->
+                   <Select @on-change="value => {valueChangeAssign(value, index, row,column.key)}" :disabled="column.readOnly" v-else-if="column.key == 'priceType'" v-model="row[column.key]" transfer>
+                     <Option v-for="(item,index) in otherFee_priceTypeList" :key="index" :value="item.dicValue+''">{{item.dicLabel}}</Option>
+                   </Select>
+                    <template  v-else-if="column.key ==='unitPrice'">
+                      <formControl  @input="tableColTiggerEvent(row,column,index,'unitPriceChangeEvent')"  :control-type="column.controlType" v-model="row[column.key]"></formControl>
+                    </template>
+                      <template  v-else-if="column.key ==='qty'">
+                      <formControl  @input="tableColTiggerEvent(row,column,index,'qtyChangeEvent')"  :control-type="column.controlType" v-model="row[column.key]"></formControl>
+                    </template>
+                    <template v-else>
+                        <formControl :align="column.align" :control-type="column.controlType"
+                          v-model="row[column.key]" 
+                          :disabled="column.readOnly"
+                          @input="value => {valueChangeAssign(value, index, row,column.key)}"
+                        ></formControl>
+                     </template>
+                  </td>
+             </template>
+            </template>
+             </eTable>
+            </TabPane>
+        </Tabs>
+        </div>
+    </editWindow>
+    <editForm
+      @on-cancel="onCancelEditForm"
+      @submit-success="onSubmitEditForm"
+      :isLoaddingDone="salveWindow.isLoaddingDone"
+      :action="salveWindow.action"
+      v-model="salveWindow.showEditWindow"
+      :searchParams="searchParams"
+    />
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-boxDeli 描述 纸箱出货
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 editBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2020/04/10
+ */
+import popup from "@/components/popup/popup";
+import editWindow from "@/components/edit-window/edit-window";
+import eTable from "@/components/e-table/e-table";
+import request from "@/libs/request";
+import editBaseMixins from "../../mixins/edit";
+import optionSearch from "../../components/optionSearch";
+import InputNumber from "@/components/input-number";
+import dayjs from "dayjs";
+import Sys from "@/api/sys";
+import formControl from "@/components/form-control/form-control";
+import editForm from "./edit-boxDeliSlave";
+import { deepCopy } from "view-design/src/utils/assist";
+const default_formDataInfo = {
+  // 主表 更改字段
+  master: {
+    addrDetail: "",
+    areaIds: "",
+		// auditTime: "",
+		// auditUser: "",
+    // auditUsername: "",
+		bdAcceptDate: '',//验收日期
+		bdAcceptNo: "",
+		bdArea: null,
+		bdBackDate: '',//签回日期
+		bdBackOper: "",
+		bdBackType: "",
+		bdCarNo: "",
+		bdCube: null,
+    bdDate: new Date(dayjs().format("YYYY-MM-DD HH:mm:ss")),//送货日期
+		bdDeAddr: "",
+		bdDecAmount: null,
+		bdDecReason: "",
+		bdFeer: null,
+		bdIsAcc: false,
+    bdIsSelf: false,
+    biQty:null,// 数量
+		bdMoney: null,
+    bdMonthDate:new Date(dayjs().format("YYYY-MM-DD HH:mm:ss")),//月结日期
+		bdNo: "",
+		bdSaleCode: "",
+		bdSaleId: '',
+		bdSaleName: "",
+		bdWeight: '',
+		carDriverCode: "",
+		carDriverId: '',
+		carDriverName: "",
+		// companyId: null,
+		// createTime: "",
+		// createUser: "",
+		// createUsername: "",
+		custCode: "",
+		custId: 0,
+		custName: "",
+		followCarCode: "",
+		followCarId: '',
+		followCarName: "",
+		followerCode: "",
+		followerId: '',
+		followerName: "",
+		hasDelete: false,
+		id: '',
+		iisAudit: 0, //审核状态：0未审核1已审核
+		loadorCode: "",
+		loadorId: '',
+		loadorName: "",
+		remark: "",
+		senderCode: "",
+		senderId: '',
+		senderName: "",
+		status: 1, //状态：0停用,1正常
+		// updateTime: "",
+		// updateUser: "",
+		// updateUsername: ""
+  },
+  boxDeliItems: {
+    addList: [], // 添加列
+    defaultList: [], // 默认列
+    deleteList: [], // 删除列
+    updateList: []
+  },
+ boxDeliOtherFee: {
+    addList: [], // 添加列
+    defaultList: [], // 默认列
+    deleteList: [], // 删除列
+    updateList: []
+  }
+};
+export default {
+  name: "edit-boxDeli",
+  mixins: [editBaseMixins],
+  components: {
+    editWindow,
+    optionSearch,
+    eTable,
+    InputNumber,
+    popup,
+    editForm,
+    formControl
+  },
+  data() {
+    return {
+      currentTabName:'stockboxdeliitem',
+      formName: "stockboxdeliFm", // 重写父类 查询表单名称
+        // 查询配置参数
+      functionParams: {
+        formInitPreName: 'stockboxdeli', // 查询表格列头信息 前缀 例如:saleboxproductprice Fm/itemFm/mdataFm
+        requestBaseUrl: '/stock/boxDeli', // 查询 表格行 数据 接口前缀地址
+        uniqueId: 'bdId' // 查询详细的唯一ID,需要顶部查询中使用
+      },
+      actionSubtitle: "纸箱出货", //重写父类 当前操作副标题
+      salveWindow: {
+        isLoaddingDone: false, // 窗口是否加载完成
+        showEditWindow: false, // 是否显示edit-boxSalesOrderSlave 编辑窗口
+        action: "add", // 当前操作功能 添加/编辑
+      },
+      formDataInfo:deepCopy(default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      masterRuleValidate: { 
+         bdDate: [{ required: true,type:'date', message: '送货日期不能为空', trigger: 'blur' }],
+         custCode: [{ required: true, message: '客户编号不能为空', trigger: 'blur' }],
+         bdMonthDate: [{ required: true,type:'date', message: '月结日期不能为空', trigger: 'blur' }] 
+      }, // 纸箱出货 需要验证的数据
+      slaveTableFieldsValidator: {}, // 纸箱出货明细 需要验证的数据
+      subTableFieldsValidator:{}, // 出货其他费用 需要验证的数据
+      masterHeight:0,//表单高度
+      otherHeight:0,//剩余高度
+      searchParams:{},//传递查询参数
+      feeTypeList:[],//费用类型列表
+      bpUnitList:[],// 开单单位列表
+      selectedWorkNoList:[],//已经选择的工单列表ID
+      otherFee_priceTypeList:[],//单价类型列表
+      disabledCustCode:false,// 是否禁用 客户编号
+    };
+  },
+   watch: {
+     showWindow:function(n,o){
+        if(n){
+          let _self = this
+          this.$nextTick(()=>{
+             this.registerEvent()
+             this.pageResize()
+             // 延迟赋值,不然数据还没有正确返回的情况下,无法绑定默认值
+           setTimeout(() => {
+               this.setDefaultData()
+           }, 1000);
+            
+          })
+        }
+      },
+},
+ created() {
+   this.getbpUnitList() // 开单单位
+   this.getfeeTypeList() //费用类型
+   this.getotherFee_priceTypeList() // 单价类型 
+  },
+  methods: {
+       onChange_bdBackDate(item){
+          if(!_.isEmpty(item)){
+              this.formDataInfo.master.bdDate = new Date(item) 
+          }
+        },
+        onChange_bdMonthDate(item){
+           if(!_.isEmpty(item)){
+              this.formDataInfo.master.bdMonthDate = new Date(item) 
+          }
+        },
+     // 表格列值改变 回调事件处理event：{row, column, index, event,config}
+        tableColTiggerEventCall (obj) {
+          switch (obj.event) {  
+            case 'unitPriceChangeEvent':
+            case 'qtyChangeEvent':
+                let currentItem = this.formDataInfo['boxDeliOtherFee'].defaultList[obj.index]
+                 let crrentPrice =0
+                 if(currentItem.unitPrice!=null || currentItem.unitPrice!='' ){
+                   crrentPrice =Number(currentItem.unitPrice)
+                 }
+                let totalMoney = crrentPrice * Number(currentItem.qty==null?0:currentItem.qty)
+                  // 触发修改值 直接修改原始数据 无效
+                this.$refs['sub_list_table_edit'].set({ unitPrice: obj.row.unitPrice, qty: obj.row.qty, money:Number(totalMoney).toFixed(2)}, obj.index)
+              break 
+            default:
+              break
+          }
+        },
+       // 表格列值改变 回调事件处理event：{row, column, index, event,config}
+        tableColTiggerEventSlaveCall (obj) {
+          switch (obj.event) {  
+            case 'biNewPriceChangeEvent':
+                let currentItem = this.formDataInfo['boxDeliItems'].defaultList[obj.index]
+                 let crrentPrice =0
+                 if(currentItem.biNewPrice==null || currentItem.biNewPrice=='' || currentItem.biNewPrice=='0'){
+                   crrentPrice =Number(currentItem.biPrice)
+                 }else{
+                   crrentPrice =Number(currentItem.biNewPrice)
+                 }
+                let totalMoney =crrentPrice * Number(currentItem.biQty==null?0:currentItem.biQty)
+                  // 触发修改值 直接修改原始数据 无效
+                this.$refs['slave_list_table_edit'].set({biMoney:Number(totalMoney).toFixed(2)}, obj.index)
+              break 
+            default:
+              break
+          }
+        },    
+    // 设置默认值
+    setDefaultData(){
+        this.formDataInfo.master.bdDate = new Date(this.formDataInfo.master.bdDate) 
+        this.formDataInfo.master.bdMonthDate = new Date(this.formDataInfo.master.bdMonthDate) 
+        let otherFeeFm = this.formDataInfo['boxDeliOtherFee'].defaultList[0]
+          if(otherFeeFm && otherFeeFm.feeTypeText==''){
+              otherFeeFm.feeType="1"
+              otherFeeFm.feeTypeText="1:客户自提优惠"
+        }
+        if( otherFeeFm && otherFeeFm.priceTypeText==''){
+              otherFeeFm.priceType="1"
+              otherFeeFm.priceTypeText="1:量价"
+        }
+    },
+  
+    slave_list_table_edit_Delete(index){
+      let tt = this.formDataInfo['boxDeliItems'].defaultList
+
+    },
+    getbpUnitList(){
+        //获取  开单单位  
+      this.getDataFromDictionaryBy('bpUnit').then(res=>{
+        this.bpUnitList = res
+      })
+    },
+    getfeeTypeList(){
+           //获取  费用类型 
+          this.getDataFromDictionaryBy('feeType').then(res=>{
+            this.feeTypeList = res
+          })
+        },
+    getotherFee_priceTypeList(){
+           //获取   单价类型  
+          this.getDataFromDictionaryBy('otherFee_priceType').then(res=>{
+            this.otherFee_priceTypeList = res
+          })
+        },    
+      // 验证产品编号选择前先选择客户
+    popupClickValidator () {
+      if (!this.formDataInfo.master.custCode || this.formDataInfo.master.custCode == '') {
+        this.$Message.error('请先选择客户编号')
+        return false
+      }
+      return true
+    },
+     // 弹框==确认==回调事件,返回选择的数据
+     onSubmitEditForm(dataList){
+       if(dataList && Array.isArray(dataList) && dataList.length>0){
+          this.disabledCustCode=true // 禁用客户选择
+          dataList=JSON.parse(JSON.stringify(this.itemAdapter(dataList)))  
+          let boxDeliItems = this.formDataInfo['boxDeliItems'].defaultList
+          if(boxDeliItems[0].bcNo==''){
+              this.formDataInfo['boxDeliItems'].defaultList = dataList
+          }else{
+            dataList.forEach(item=>{
+              if(!this.checkIsExistBy(item)){
+                this.formDataInfo['boxDeliItems'].defaultList.push(item)
+              }
+            })
+          }
+           this.sumMoneyAreaVolumeWeight()
+       }
+     },
+     //实体转换,获取相同Key的value,个别不同的手动修改值
+     itemAdapter(dataList){
+        let newDataList =[]
+        dataList.forEach(oldItem=>{
+             let newItem =JSON.parse(JSON.stringify(this.initData.initData[`${this.functionParams.formInitPreName}itemFm`])) 
+             let newItemKeys = Object.keys(newItem)
+             newItemKeys.forEach(itemKey=>{
+                 newItem[itemKey]=null
+                 if(oldItem[itemKey]){
+                  newItem[itemKey] = oldItem[itemKey]
+                 } 
+             })
+             newItem.biQty=oldItem.deliQty  // 送货数
+             newItem.biPrepQty=oldItem.deliPrepQty // 备品数
+             //合计计算   
+             let toFixedUnit= 2
+             let biQty = Number(newItem.biQty)
+             newItem.biMoney =Number((biQty * Number(newItem.biPrice)).toFixed(toFixedUnit)) // 金额 = 送货数量*单价
+             newItem.biWeight =Number((biQty * Number(newItem.biSWeight)).toFixed(toFixedUnit))// 重量 = 送货数量*单重
+             newItem.biCube =Number((biQty * Number(newItem.biSCube)).toFixed(toFixedUnit))// 体积 = 送货数量*单体积
+             newItem.biArea =Number((biQty * Number(newItem.biSArea)).toFixed(toFixedUnit))// 面积 = 送货数量*单面积
+            newDataList.push(newItem) 
+        })
+       return newDataList
+     },
+     // 检查列表数据是否已经存在,避免重复添加
+     checkIsExistBy(item){
+       let currentList = this.formDataInfo['boxDeliItems'].defaultList
+       let isExistIndex = currentList.findIndex(subItem=>{
+         return (subItem.workNo== item.workNo && subItem.biProdNo== item.biProdNo && subItem.bdStationName== item.bdStationName)
+       })
+       if(isExistIndex!=-1){
+         return true
+       }else{
+         return false
+       }
+     },
+      // 汇总 数量,金额, 面积,体积,重量
+     sumMoneyAreaVolumeWeight(){
+      let totalQuantity=0,totalMoney=0,totalArea=0,totalVolume=0,totalWeight=0
+      this.formDataInfo['boxDeliItems'].defaultList.forEach(item=>{
+             let biQty = Number(item.biQty==null?0:item.biQty)
+             if(biQty!='' && biQty!=null){
+               totalQuantity+=biQty
+             } 
+             let biMoney = Number(item.biMoney==null?0:item.biMoney)
+             if(biMoney!='' && biMoney!=null){
+               totalMoney+=biMoney
+             }
+             let biArea = Number(item.biArea==null?0:item.biArea)
+             if(biArea!='' && biArea!=null){
+               totalArea+=biArea
+             }
+             let biCube =Number(item.biCube==null?0:item.biCube)
+             if(biCube!='' && biCube!=null){
+               totalVolume+=biCube
+             }
+             let biWeight = Number(item.biWeight==null?0:item.biWeight)
+            if(biWeight!='' && biWeight!=null){
+               totalWeight+=biWeight
+            }
+             
+      })
+      //合计计算   
+      let toFixedUnit= 2
+      this.formDataInfo.master.biQty =totalQuantity.toFixed(toFixedUnit) // 数量
+      this.formDataInfo.master.bdMoney =totalMoney.toFixed(toFixedUnit) // 金额
+      this.formDataInfo.master.bdArea =totalArea.toFixed(toFixedUnit) // 面积
+      this.formDataInfo.master.bdCube =totalVolume.toFixed(toFixedUnit) // 体积
+      this.formDataInfo.master.bdWeight =totalWeight.toFixed(toFixedUnit) // 重量
+    },
+     // 弹框==取消==回调事件
+     onCancelEditForm(){
+
+     },
+     // 订单编号 点击事件,打开选择产品列表窗口
+     openProductsList(){
+        this.selectedWorkNoList=''
+        this.formDataInfo['boxDeliItems'].defaultList.forEach(item=>{
+         if( this.selectedWorkNoList==''){
+            this.selectedWorkNoList = item.workNo
+         }else{
+             this.selectedWorkNoList += ','+item.workNo
+         }
+       })
+       this.searchParams = {
+         custId:this.formDataInfo.master.custId,// 客户id
+         areaIds:this.formDataInfo.master.areaIds, // 详细地址
+         addrDetail:this.formDataInfo.master.addrDetail, // 送货地址id
+         workNoList:this.selectedWorkNoList,//(过滤已选的工单号集合,多个都好隔开)
+       }
+       if(this.popupClickValidator()){
+          this.salveWindow.showEditWindow = true
+       }
+     },
+     custCodeOnFillEvent(){
+
+     },
+      // 排除不需要显示的字段
+      excludeFiled(type,key){
+        let exListItemFm = ['bpCArtId','bpCBoxId','bdStationId']
+        let exListOtherfeeFm = []
+        let exList=[]
+        switch (type) {
+            case 'itemFm':
+              exList = exListItemFm 
+              break;
+            default:
+              exList = exListOtherfeeFm
+              break;
+        }
+        if(exList.includes(key)){
+          return false
+        }else{
+          return true
+        }
+      }, 
+    // 注册窗口事件
+      registerEvent(){
+         let _self = this;//赋值vue的this
+          window.onresize = ()=>{
+    　　　　//调用methods中的事件
+            _self.pageResize();
+        }
+      }, 
+      // 触发窗口大小变化事件
+    pageResize(){
+        this.$nextTick(()=>{
+           this.getTabWindowHeight()
+        })
+    }, 
+      // 获取当前TAB标签的实际高度
+      getTabWindowHeight(){
+         this.getMasterheight()
+         // 因为使用V-SHOW 隐藏,实际还会占用高度,所以切换时,设置为0 或使用V-IF 可以不用那么麻烦,但性能较低
+         this.masterHeight = this.$refs['masterHeight'].offsetHeight 
+         this.otherHeight = this.$refs['otherHeight'].offsetHeight
+      },
+     getMasterheight(){
+         return 30
+    },  
+    //判断数据是新增还是修改
+    formDetailDataCall() {
+      if (this.action != "add") {
+        
+      }
+    },
+    // 重写父类 关闭窗口时 触发事件
+    closeActionTigger() {
+      // fix 清除上次的错误提示 formDataInfo 为表单ref名称
+      this.$refs["formDataInfo"].resetFields();
+      this.disabledCustCode=false
+      this.formDataInfo = deepCopy(default_formDataInfo)
+    },
+    // 重写父类,添加时候,清空数据
+    // HandleFormDataInfo() {
+    //   this.formDataInfo = deepCopy(default_formDataInfo)
+    // },
+    // 重写父类,修改提交数据
+    resetformDataInfo() {
+      let boxDeliItems = this.$refs["slave_list_table_edit"].getCategorizeData()
+      let boxDeliOtherFee = this.$refs["sub_list_table_edit"].getCategorizeData()
+      this.formDataInfo['boxDeliItems'] = boxDeliItems
+      this.formDataInfo['boxDeliOtherFee'] = boxDeliOtherFee
+      if (this.formDataInfo.master.bdMonthDate!='') {
+        this.formDataInfo.master.bdMonthDate = dayjs(this.formDataInfo.master.bdMonthDate).format( "YYYY-MM-DD HH:mm:ss")
+      }
+      if (this.formDataInfo.master.bdDate!='') {
+        this.formDataInfo.master.bdDate = dayjs(this.formDataInfo.master.bdDate).format("YYYY-MM-DD HH:mm:ss")
+      }
+      return this.formDataInfo;
+    },
+
+    // 提交主从表数据
+    formTableDataSubmit () {
+       this.$refs['formDataInfo'].validate(valid => {
+          if (!valid) {
+            return
+          }
+           let submitData = this.resetformDataInfo()
+          request.post(`${this.functionParams.requestBaseUrl}/saveOrUpdate`, submitData).then(res => {
+            this.showWindow = false // 关闭当前编辑页面
+            this.$Message.success('执行成功')
+            this.$emit('submit-success') // 刷新主页面数据
+          })
+        })
+     
+    }
+  }
+ 
+};
+</script>
+
+<style>
+.masterHeightClass{
+  height: 30%;overflow:auto
+}
+.otherHeightClass{
+  height: 70%;overflow:hidden
+}
+.cl-edit-boxDeli .ivu-form-item-label {
+    text-align: right;
+    vertical-align: middle;
+    float: left;
+    font-size: 14px;
+    color: #515a6e;
+    line-height: 17px;
+    padding: 7px 12px 10px 0;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+</style>

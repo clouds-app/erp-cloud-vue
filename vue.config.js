@@ -51,8 +51,16 @@ module.exports = {
       errors: true
     },
     proxy: {
+      '/account': {
+        target: 'http://192.168.0.5:9999/', //对应自己的接口
+        changeOrigin: true,//是否跨域
+        ws: true,
+        pathRewrite: {
+          '^/': ''
+        }
+      },
       '/mrp': {
-        target: 'http://134.175.53.247/erp/', //对应自己的接口
+        target: 'http://192.168.0.5:9999/', //对应自己的接口
         changeOrigin: true,//是否跨域
         ws: true,
         pathRewrite: {
@@ -60,7 +68,7 @@ module.exports = {
         }
       },
       '/stock': {
-        target: 'http://134.175.53.247/erp/', //对应自己的接口
+        target: 'http://192.168.0.5:9999/', //对应自己的接口
         changeOrigin: true,//是否跨域
         ws: true,
         pathRewrite: {

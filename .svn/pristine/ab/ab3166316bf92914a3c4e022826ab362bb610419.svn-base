@@ -1,0 +1,1036 @@
+<template>
+  <div class="cl-moudle">
+    <htmlTemplate
+      :currrentRowItem="currrentRowItem"
+      @isLoaddingDone="getLoaddingDone"
+      :requestBaseUrl="functionParams.requestBaseUrl"
+      :uniqueId="functionParams.uniqueId"
+      :queryParamsDefault="queryParamsDefault"
+    >
+    </htmlTemplate>
+    <div class="content-container" v-if="formInitData.listView" :style="{ height: tableHeight + 'px' }">
+      <Split :v-model="splitModel" mode="vertical">
+        <div slot="top" class="demo-split-pane">
+          <vTable
+            :height="tableHeight / 2"
+            ref="master_list_table"
+            :url="`${functionParams.requestBaseUrl}/page`"
+            :columns="formInitData.columns[`${functionParams.formInitPreName}Fm`].listColumns"
+            :pagination="true"
+            @row-click="master_list_tableRowClick"
+            name="stockboxdeliFm"
+          ></vTable>
+        </div>
+        <div slot="bottom" :style="{ 'padding-top': '6px' }">
+          <Tabs>
+            <TabPane label="纸箱出货明细" name="boxDeliItems">
+              <vTable
+                :height="tableHeight / 2.3"
+                ref="slave_list_table"
+                :url="`${functionParams.requestBaseUrl}/item/list`"
+                :columns="formInitData.columns[`${functionParams.formInitPreName}itemFm`].listColumns"
+                :pagination="false"
+                @row-click="slave_list_tableRowClick"
+                name="boxDeliItems"
+              ></vTable>
+            </TabPane>
+             <TabPane label="出货其他费用" name="boxDeliOtherFee">
+              <vTable
+                :height="tableHeight / 2.3"
+                ref="sub_list_table"
+                :url="`${functionParams.requestBaseUrl}/fee/list`"
+                :columns="formInitData.columns[`${functionParams.formInitPreName}otherfeeFm`].listColumns"
+                :pagination="false"
+                name="boxDeliOtherFee"
+              ></vTable>
+            </TabPane>
+          </Tabs>
+        </div>
+      </Split>
+    </div>
+    <editWindow
+      title="少数修改"
+      :fullscreen="false"
+      v-model="showSetLessQtyWindow"
+       width="330"
+      :loading="formLess.loading"
+      @on-ok="onOkShowSetLessQtyWindow()"
+      @on-cancel="onCancelshowSetLessQtyWindow()"
+    >
+    <Form :label-width="80" ref="setLessQtyWindow" :model="formLess" :rules="ruleFormLessQty">
+            <FormItem label="少数数量" prop="qty">
+                <Input style="width: 210px" :number="true" maxlength="10" type="number" v-model="formLess.qty" placeholder="少数数量">
+                </Input>
+            </FormItem>
+            <FormItem label="少数原因" prop="reason">
+                <Input style="width: 210px" type="textarea" maxlength="80" v-model="formLess.reason" placeholder="少数原因">
+                </Input>
+            </FormItem>
+        </Form>
+     </editWindow>
+     <editWindow
+      customerActionBtnText="签回向导"
+      @onCustomerAction="onCustomerAction"
+      title="纸箱送货单签回"
+      :fullscreen="false"
+      v-model="showSetGetBackWindow"
+       width="330"
+      :loading="formGetBack.loading"
+      @on-ok="onOkShowSetGetBackWindow()"
+      @on-cancel="onCancelSetGetBackWindow()"
+    >
+      <Form :label-width="80" ref="setGetBackWindow" :model="formGetBack" :rules="ruleGetBackWindow">
+            <FormItem label="出货单号" prop="bdNo">
+                <Input :disabled="true" style="width: 210px"  v-model="formGetBack.bdNo" placeholder="出货单号">
+                </Input>
+            </FormItem>
+            <FormItem label="客户名称" prop="custName">
+                 <popup 
+                    style="width: 210px"
+                    v-model="formGetBack.custCode"
+                    field-name="custCode"
+                    :disabled="true"
+                    popup-name="BoxDeliCustomerSingBox"
+                    :fill-model.sync="formGetBack"
+                    render-fields="custId,custCode,custName,areaIds,bdDeAddr,addrDetail,bdSaleId,bdSaleCode,bdSaleName,followerId,followerCode,followerName"
+                    from-fields="id,cusCode,cusName,areaIds,areaNames,addrDetail,salerId,saleCode,saleName,followerId,followerCode,followerName"
+                    :suffix="true"
+                    :suffix-model="formGetBack.custName"
+                    />
+            </FormItem>
+             <FormItem label="出货日期" prop="bdDate">
+                  <DatePicker
+                  :disabled="true"
+                  style="width: 210px"
+                   transfer
+                    v-model="formGetBack.bdDate" 
+                    type="datetime"
+                    format="yyyy-MM-dd HH:mm:ss"
+                  ></DatePicker>
+            </FormItem>
+             <FormItem label="签回状况" prop="bdBackTypeTextDesc">
+                <Input v-if="!isGetBack" :disabled="true" style="width: 210px" value="" type="text" maxlength="80" placeholder="">
+                </Input>
+                <Input v-if="isGetBack" :disabled="true" style="width: 210px" :value="formGetBack.bdBackTypeText+' '+formGetBack.createUsername+' '+(formGetBack.bdBackDateText==null?'':formGetBack.bdBackDateText)" type="text" maxlength="80" placeholder="签回状况">
+                </Input>
+            </FormItem>
+             <FormItem label="车 牌 号" prop="bdCarNo">
+                  <popup 
+                        style="width: 210px"
+                        v-model="formGetBack.bdCarNo"
+                        field-name="bdCarNo"
+                        :disabled="true"
+                        popup-name="CarSingleBox"
+                        :fill-model.sync="formGetBack"
+                        render-fields="bdCarNo"
+                        from-fields="carNo"
+                        />
+            </FormItem>
+             <FormItem label="建 档 人" prop="createUsername">
+                <Input :disabled="true" style="width: 210px" type="text" maxlength="80" v-model="formGetBack.createUsername" placeholder="建 档 人">
+                </Input>
+            </FormItem>
+             <FormItem label="签回类型" prop="bdBackType">
+                  <Select @on-change="onChange_bdBackType" style="width: 210px"  v-model="formGetBack.bdBackType" transfer>
+                     <Option v-for="(item,index) in bdBackTypeList" :key="index" :value="item.dicValue">{{item.dicLabel}}</Option>
+                  </Select>
+            </FormItem>
+             <FormItem label="签回日期" prop="bdBackDate">
+                <DatePicker
+                    @on-change="onChange_bdBackDate"
+                    style="width: 210px"
+                    transfer
+                    :value="formGetBack.bdBackDate" 
+                    type="date"
+                    :clearable="false"
+                    format="yyyy-MM-dd"
+                  ></DatePicker>
+            </FormItem>
+             <FormItem label="送货司机" prop="carDriverCode">
+                 <popup 
+                        style="width: 210px"
+                        v-model="formGetBack.carDriverCode"
+                        field-name="carDriverCode"
+                        :disabled="true"
+                        popup-name="WorkerSingleBox"
+                        :fill-model.sync="formGetBack"
+                        render-fields="carDriverId,carDriverCode,carDriverName"
+                        from-fields="id,workCode,workName"
+                        :suffix="true"
+                        :suffix-model="formGetBack.carDriverName"
+                        :query-params="{workOptType:6}"
+                        />
+            </FormItem>
+             <FormItem label="出货金额" prop="bdMoney">
+                <Input :disabled="true" style="width: 210px" type="text" maxlength="80" v-model="formGetBack.bdMoney" placeholder="出货金额">
+                </Input>
+            </FormItem>
+        </Form>
+     </editWindow>
+
+        <editWindow
+        title="纸箱送货单签回"
+        :fullscreen="false"
+        v-model="showSetGetBackGuideOneWindow"
+        width="360"
+        :loading="false"
+     >
+     <template slot="footer">
+        <div>
+          
+            <Button @click="preStep_guideOne()" type="primary">
+                <Icon type="ios-arrow-back" />
+                上一步
+            </Button>
+          <Button @click="nextStep_guideOne()" type="primary">
+                <Icon type="ios-arrow-forward" />
+                下一步
+            </Button>
+         
+           <Button @click="cancel_guideOne()">
+                <Icon color="red" type="md-close" />
+                取 消
+            </Button>
+        </div>
+     </template>
+    <Form :label-width="80" ref="setGetBackWindow" :model="formGuideOne">
+            <FormItem label="出货单号" prop="bdNo">
+                <Input :disabled="false" style="width: 247px"  v-model="formGuideOne.bdNo" placeholder="出货单号">
+                </Input>
+            </FormItem>
+            <FormItem label="客户名称" prop="custName">
+                 <popup 
+                    style="width: 247px"
+                    v-model="formGuideOne.custCode"
+                    field-name="custCode"
+                    :disabled="false"
+                    popup-name="BoxDeliCustomerSingBox"
+                    :fill-model.sync="formGuideOne"
+                    render-fields="custId,custCode,custName,areaIds,bdDeAddr,addrDetail,bdSaleId,bdSaleCode,bdSaleName,followerId,followerCode,followerName"
+                    from-fields="id,cusCode,cusName,areaIds,areaNames,addrDetail,salerId,saleCode,saleName,followerId,followerCode,followerName"
+                    :suffix="true"
+                    :suffix-model="formGuideOne.custName"
+                    />
+            </FormItem>
+             <FormItem label="出货日期" prop="bdDate">
+                  <DatePicker
+                  :disabled="false"
+                  style="width: 115px"
+                   transfer
+                    v-model="formGuideOne.bdDate" 
+                    type="date"
+                    format="yyyy-MM-dd"
+                  ></DatePicker>->
+                  <DatePicker
+                  :disabled="false"
+                  style="width: 115px"
+                   transfer
+                    v-model="formGuideOne.bdEndDate" 
+                    type="date"
+                    format="yyyy-MM-dd"
+                  ></DatePicker>
+            </FormItem>
+            
+             <FormItem label="车 牌 号" prop="bdCarNo">
+                  <popup 
+                        style="width: 247px"
+                        v-model="formGuideOne.bdCarNo"
+                        field-name="bdCarNo"
+                        :disabled="false"
+                        popup-name="CarSingleBox"
+                        :fill-model.sync="formGuideOne"
+                        render-fields="bdCarNo"
+                        from-fields="carNo"
+                        />
+            </FormItem>
+             <FormItem label="签回类型" prop="bdBackType">
+                  <Select @on-change="onChange_bdBackType" style="width: 247px"  v-model="formGuideOne.bdBackType" transfer>
+                     <Option v-for="(item,index) in bdBackTypeList" :key="index" :value="item.dicValue">{{item.dicLabel}}</Option>
+                  </Select>
+            </FormItem>
+        </Form>
+     </editWindow>
+     <editWindow
+        title="纸箱送货单签回"
+        :fullscreen="false"
+        v-model="showSetGetBackGuideTwoWindow"
+        width="800"
+        :loading="false"
+     >
+     <template slot="footer">
+        <div>
+            <Button :disabled="disabled_nextStep_guideTwoBtn" @click="guideTwo_selectAll()" type="primary">
+                <Icon type="ios-apps" />
+                全 选
+            </Button>
+            <Button @click="preStep_guideTwo()" type="primary">
+                <Icon type="ios-arrow-back" />
+                上一步
+            </Button>
+          <Button :disabled="disabled_nextStep_guideTwoBtn" @click="nextStep_guideTwo()" type="primary">
+                <Icon type="ios-arrow-down" />
+                确 定
+            </Button>
+         
+           <Button @click="cancel_guideTwo()">
+                <Icon color="red" type="md-close" />
+                取 消
+            </Button>
+        </div>
+     </template>
+     <div  v-if="tableColTitleData.columns">
+        <eTable
+            :showContextMenu="false"
+            :disabledAddRowWhenfocusNull="true"
+            :height="280"
+            ref="sub_list_table_boxdelibackdataFm"
+            unqiue-mark="id"
+            :index-menu="true"
+            :col-start="0"
+            :width="227"
+            :row-init-data="tableColTitleData.initData[`boxdelibackdataFm`]"
+            :data="boxDeliBackPopupDataList"
+          >
+                              <template slot="head">
+                                  <tr v-for="(columnGroup,index) in tableColTitleData.columns[`boxdelibackdataFm`].editGroups" :key="index">
+                                          <template  v-for="(column,index2) in columnGroup" >
+                                            <th v-if="excludeFiled('tableColTitleData',column.key)"
+                                                :key="index2" :class="`ivu-table-column-${column.titleAlign}`"
+                                                :width="column.editWidth"
+                                                :colspan="column.colSpan"
+                                                :rowspan="column.rowSpan"
+                                                :columnKey="column.key"
+                                                >
+                                              <div  class="ivu-table-cell">
+                                                <span class="">{{column.title}}</span>
+                                              </div>
+                                          </th>
+                                          </template>
+                                </tr>
+                              </template>
+                                <template
+                                  slot="body"
+                                  slot-scope="{ row, index, valueChangeAssign }"
+                                >
+                                    <template v-for="(column,subIndex) in tableColTitleData.columns[`boxdelibackdataFm`].editColumns">
+                                        <td :key="subIndex" :class="`ivu-table-column-${column.align}`" v-if="excludeFiled('tableColTitleData',column.key)" :width="column.editWidth">
+                                          <!-- 控件特殊处理 签回类型 -->
+                                          <template v-if="column.key =='bdBackType'">
+                                            <Select  v-model="row[column.key]" transfer>
+                                              <Option v-for="(item,index) in bdBackTypeList" :key="index" :value="item.dicValue+''">{{item.dicLabel}}</Option>
+                                            </Select>
+                                        </template>
+                                         <!-- 控件特殊处理 签回类型 -->
+                                         <template v-else-if="column.key =='bdBackDate'">
+                                              <DatePicker
+                                                  transfer
+                                                  v-model="row[column.key]" 
+                                                  type="date"
+                                                  :clearable="false"
+                                                  format="yyyy-MM-dd"
+                                                ></DatePicker>
+                                        </template>
+                                          <!--其它 控件-->
+                                        <template v-else>
+                                          <formControl :align="column.align" :control-type="column.controlType"
+                                            v-model="row[column.key]" 
+                                            :disabled="column.readOnly"
+                                            @input="value => {valueChangeAssign(value, index, row,column.key)}"
+                                          ></formControl>
+                                        </template>
+                                      </td>
+                                    </template>
+
+                                </template>
+                            </eTable>
+     </div>
+        
+     </editWindow>
+       <editWindow
+        title="月结日期批量修改"
+        :fullscreen="false"
+        v-model="showEndDataBatchWindow"
+        width="80%"
+        :loading="false"
+     >
+     <template slot="footer">
+        <div>
+            <Button :disabled="disabled_endData_submitBtn" @click="endData_selectAll()" type="primary">
+                <Icon type="ios-apps" />
+                全 选
+            </Button>
+          <Button :disabled="disabled_endData_submitBtn" @click="endData_submit()" type="primary">
+                <Icon type="ios-arrow-down" />
+                确 定
+            </Button>
+         
+           <Button @click="endData_cancel()">
+                <Icon color="red" type="md-close" />
+                取 消
+            </Button>
+        </div>
+     </template>
+     <div>
+        <Form
+            ref="formEndDataInfo"
+            :show-message="true"
+            :model="formEndDataInfo"
+            :label-width="80"
+        >
+           <Row>
+              <Col span="5">
+                  <FormItem label="出货单号" prop="bdNo">
+                      <Input v-model="formEndDataInfo.bdNo" maxlength="80" placeholder="送货单号"></Input>
+                  </FormItem>
+              </Col>
+             <Col span="8">
+                   <FormItem label="出货日期" prop="bdDate">
+                    <DatePicker
+                    :disabled="false"
+                    style="width: 115px"
+                    transfer
+                      v-model="formEndDataInfo.bdDate" 
+                      type="date"
+                      format="yyyy-MM-dd"
+                    ></DatePicker>->
+                    <DatePicker
+                    :disabled="false"
+                    style="width: 115px"
+                    transfer
+                      v-model="formEndDataInfo.bdEndDate" 
+                      type="date"
+                      format="yyyy-MM-dd"
+                    ></DatePicker>
+            </FormItem>
+               </Col>
+                <Col span="3">
+                <FormItem  :label-width="0">
+                   <Checkbox class="CheckboxItem" v-model="formEndDataInfo.biIsAcc">采用设定日期</Checkbox>
+                </FormItem>
+            </Col>
+             <Col span="4">
+                <FormItem :label-width="100" label="月结设置日期" prop="bdDate">
+               
+                  <DatePicker
+                  :disabled="!formEndDataInfo.biIsAcc"
+                  style="width: 115px"
+                  transfer
+                    v-model="formEndDataInfo.biIsAccDate" 
+                    type="date"
+                    format="yyyy-MM-dd"
+                  ></DatePicker>
+                    
+              </FormItem>
+            </Col>
+             <Col span="1">
+               <FormItem>
+                   <Button :loading="isLoadingSearchBtn" @click="getDataByMode()" type="primary">搜索</Button>
+                </FormItem>
+              </Col>
+           </Row>
+         </Form>
+         <div v-if="tableColEndDateTitleData.columns">
+            <eTable
+            :showContextMenu="false"
+            :disabledAddRowWhenfocusNull="true"
+            :height="300"
+            ref="sub_list_table_boxdelimonthdateFm"
+            unqiue-mark="id"
+            :index-menu="true"
+            :col-start="0"
+            :row-init-data="tableColEndDateTitleData.initData[`boxdelimonthdateFm`]"
+            :data="tableEndDateDataList"
+          >
+                              <template slot="head">
+                                  <tr v-for="(columnGroup,index) in tableColEndDateTitleData.columns[`boxdelimonthdateFm`].editGroups" :key="index">
+                                          <template  v-for="(column,index2) in columnGroup" >
+                                            <th v-if="excludeFiled('tableColEndDateTitleData',column.key)"
+                                                :key="index2" :class="`ivu-table-column-${column.titleAlign}`"
+                                                :width="column.editWidth"
+                                                :colspan="column.colSpan"
+                                                :rowspan="column.rowSpan"
+                                                :columnKey="column.key"
+                                                >
+                                              <div  class="ivu-table-cell">
+                                                <span class="">{{column.title}}</span>
+                                              </div>
+                                          </th>
+                                          </template>
+                                </tr>
+                              </template>
+                                <template
+                                  slot="body"
+                                  slot-scope="{ row, index, valueChangeAssign }"
+                                >
+                                    <template v-for="(column,subIndex) in tableColEndDateTitleData.columns[`boxdelimonthdateFm`].editColumns">
+                                        <td :key="subIndex" :class="`ivu-table-column-${column.align}`" v-if="excludeFiled('tableColEndDateTitleData',column.key)" :width="column.editWidth">
+                                         
+                                         <!-- 控件特殊处理 签回类型 -->
+                                         <template v-if="column.key =='bdMonthDate'">
+                                              <DatePicker
+                                                  transfer
+                                                  v-model="row[column.key]" 
+                                                  type="date"
+                                                  :clearable="false"
+                                                  format="yyyy-MM-dd"
+                                                ></DatePicker>
+                                        </template>
+                                          <!--其它 控件-->
+                                        <template v-else>
+                                          <formControl :align="column.align" :control-type="column.controlType"
+                                            v-model="row[column.key]" 
+                                            :disabled="column.readOnly"
+                                            @input="value => {valueChangeAssign(value, index, row,column.key)}"
+                                          ></formControl>
+                                        </template>
+                                          <!-- <formControl :align="column.align" :disabled="column.readOnly" :control-type="column.controlType" v-model="row[column.key]"></formControl> -->
+                                      </td>
+                                    </template>
+
+                                </template>
+                            </eTable>
+         </div>
+        
+     </div>
+        
+     </editWindow>
+    <editForm
+      :isLoaddingDone="isLoaddingDone"
+      :form-detail-data="formDetailData"
+      :action="action"
+      @submit-success="search()"
+      v-model="showEditWindow"
+    />
+  </div>
+</template>
+<script>
+let _ = require('lodash')
+import dayjs from "dayjs"
+import formControl from "@/components/form-control/form-control";
+import popup from "@/components/popup/popup";
+import vTable from "@/components/tables/vTable";
+import eTable from "@/components/e-table/e-table";
+import htmlTemplate from "../components/htmlTemplate";
+import listBaseMixins from "../mixins/list";
+import editWindow from "@/components/edit-window/edit-window";
+import request from "@/libs/request"
+const formLess_default={
+          loading:false,
+          qty:null,
+          reason:''
+      }
+//出货单号 客户名称 出货日期 签回状况 车 牌 号 建 档 人 签回类型 签回日期 送货司机 出货金额
+const formGetBack_default={
+          loading:false,
+          bdNo:'',
+          custName:'',
+          bdDate:'',
+          bdEndDate:'',
+          bdCarNo:'',
+          createUsername:'',
+          bdBackDate:'',
+          bdBackDateText:'',//格式化日期显示
+          biIsAcc:true,// 采用月结
+          biIsAccDate:'',// 月结日期 
+          bdBackType:1,
+          bdBackTypeText:'',
+          carDriverId:'',
+          carDriverCode:'',
+          carDriverName:'',
+          bdMoney:'',
+          custId:'',
+          custCode:'',
+          custName:'',
+          areaIds:'',
+          bdDeAddr:'',
+          addrDetail:'',
+          bdSaleId:'',
+          bdSaleCode:'',
+          bdSaleName:'',
+          followerId:'',
+          followerCode:'',
+          followerName:'',
+      }
+export default {
+  mixins: [listBaseMixins],
+  components: {
+    formControl,
+    eTable,
+    popup,
+    'editForm':function(resolve) { //组件的异步加载
+                require(["./edit/edit-boxDeli"], resolve);
+            },
+        
+    htmlTemplate,
+    vTable,
+    editWindow
+  },
+  data() {
+    return {
+      //数据查询修改等基本参数设置
+      functionParams: {
+        formInitPreName: 'stockboxdeli', // 查询表格列头信息 前缀 例如:stockboxdeli Fm/itemFm/otherfeeFm 	
+        requestBaseUrl: "/stock/boxDeli",
+        uniqueId: "bdId"
+      },
+      showSetGetBackGuideOneWindow:false,// 向导一 窗体 是否显示
+      showSetGetBackGuideTwoWindow:false,//向导二 窗体 是否显示
+      showSetLessQtyWindow:false,// 是否显示 "少数修改" 窗体
+      showSetGetBackWindow:false,// 是否显示 "纸箱送货单签回" 窗体
+      showEndDataBatchWindow:false,// 批量修改月结日期 窗体 是否显示
+      // '纸箱出货明细' 选择行实体
+      slaveRowSelected:{
+        index:0,
+        item:{}
+      },
+      bdBackTypeList:[],// 签回类型 列表
+      //"纸箱送货单签回"窗体 表单
+      formGetBack:Object.assign({},formGetBack_default),
+      //"纸箱送货单签回向导一"窗体 表单
+      formGuideOne:Object.assign({},formGetBack_default),
+      formEndDataInfo:Object.assign({},formGetBack_default),
+      //"纸箱送货单签回"窗体验证规则
+      ruleGetBackWindow:{
+         // type 类型包括: 'integer','float','array','regexp','object','method','email','number','date','url','hex',
+        bdBackDate: [{ required: true,type:'date', message: '签回日期不能为空', trigger: 'blur,change' }],
+      },
+      //"少数修改窗体"表单
+      formLess:Object.assign({},formLess_default),
+       //"少数修改窗体"验证规则
+      ruleFormLessQty:{
+        qty: [{ required: true, type:'number', message: '少数数量不能为空', trigger: 'blur' }],
+        reason: [{ required: true, message: '少数原因不能为空', trigger: 'blur' }],
+      },
+      tableColTitleData:[],//签回弹框列表表头数据
+      boxDeliBackPopupDataList:[],//签回弹框数据列表
+      tableColEndDateTitleData:[],//纸箱出货月结日期功能界面 表头
+      tableEndDateDataList:[],//纸箱出货月结日期功能界面 数据列表
+      isGetBack:false,// 当前行是否已经签回
+      isLoadingSearchBtn:false,// 月结查询按钮 加载中
+      // 查询参数 ,注意格式
+      queryParamsDefault: [
+        {
+          title: "请输入送货单号",
+          code: "bdNo",
+          bdNo: ""
+        },
+        {
+          title: "请输入客户名称",
+          name: "custName$like",
+          custName$like: ""
+        }
+      ],
+    };
+  },
+  computed:{
+    //是否禁用向导二 确定按钮
+    disabled_nextStep_guideTwoBtn(){
+        if(this.boxDeliBackPopupDataList && this.boxDeliBackPopupDataList.length>0){
+          return false
+        }else{
+          return true
+        }
+    },
+    //是否禁用月结 确定按钮
+    disabled_endData_submitBtn(){
+        if(this.tableEndDateDataList && this.tableEndDateDataList.length>0){
+          return false
+        }else{
+          return true
+        }
+    }
+  },
+  watch:{
+    // 监控月结窗体打开
+    showEndDataBatchWindow:function(n,o){
+        if(n){
+          let _self = this
+          this.$nextTick(()=>{
+            // 初始化日期
+            _self.formEndDataInfo.bdDate = dayjs().subtract(10, 'day').format("YYYY-MM-DD")
+            _self.formEndDataInfo.bdEndDate =dayjs().format("YYYY-MM-DD")
+            _self.formEndDataInfo.biIsAccDate =dayjs().format("YYYY-MM-DD")
+            _self.searchEndDateDataList()
+          })
+        }
+      },
+  },
+  created () {
+    // 查询多个表格列表头数据
+    // 无需变更,配置functionParams 参数即可
+    if (this.functionParams.formInitPreName) {
+      this.getFormInitData(`${this.functionParams.formInitPreName}Fm`)
+    }
+    this.getbdBackTypeList() //签回类型
+    this.loadColumsData() // 签回弹框列表表头
+    this.loadEndDateColumsData() // 纸箱出货月结日期功能界面 列表表头
+  },
+  methods: {
+        //批量回签出货
+        setBatchBackData(){
+         let url = '/stock/boxDeli/batchBackData'
+         let params = {
+           backDatas:[]
+         }
+         this.boxDeliBackPopupDataList.forEach(item=>{
+           if(!!item.iisBack){
+             params.backDatas.push(item)
+           }
+         })
+         if(params.backDatas.length==0){
+           this.$Message.warning('请选择需要操作的数据')
+           return
+         }
+         let _self = this
+          this.getDataByUrl(url,params).then(res=>{
+            if(res){
+               _self.$Message.success('执行成功')
+               _self.showSetGetBackGuideTwoWindow= false
+            }
+          })
+        },
+        // 获取回签列表数据
+        searchGetBackDataList(){
+        this.boxDeliBackPopupDataList=[]
+        let url = '/stock/boxDeli/getBackData'
+        let params = {
+          //根据bdNo(出货单号),bdCarNo(车牌号),cusCode(客户编号)，startDate(开始日期),endDate(结束日期),bdBackType(回签类型)查询
+          bdNo:this.formGuideOne.bdNo,
+          bdCarNo:this.formGuideOne.bdCarNo,
+          cusCode:this.formGuideOne.custCode,
+          startDate:dayjs(this.formGuideOne.bdDate).format("YYYY-MM-DD"),
+          endDate:dayjs(this.formGuideOne.bdEndDate).format("YYYY-MM-DD"),
+          bdBackType:this.formGuideOne.bdBackType
+        }
+        this.getDataByUrl(url,params).then(res=>{
+          if(res && res.length>0){
+            this.boxDeliBackPopupDataList = res
+          }
+        })
+      },
+      //获取需要修改月结日期的数据 
+      searchEndDateDataList(){
+        this.tableEndDateDataList= []
+        let url = '/stock/boxDeli/getMonthData'
+        let params = {
+          //获取需要修改月结日期的数据,bdNo(送货单号),startDate(开始时间),endDate(结束时间)
+          bdNo:this.formEndDataInfo.bdNo,
+          startDate:dayjs(this.formEndDataInfo.bdDate).format("YYYY-MM-DD"),
+          endDate:dayjs(this.formEndDataInfo.bdEndDate).format("YYYY-MM-DD"),
+        }
+         this.getDataByUrl(url,params).then(res=>{
+          if(res && res.length>0){
+            this.tableEndDateDataList = res
+          }
+        })
+      },
+    // 排除不需要显示的字段
+      excludeFiled(type,key){
+        let exListPrize = []
+        let exList=[]
+        switch (type) {
+            case 'tableColTitleData':
+            default:
+              break;
+        }
+        if(exList.includes(key)){
+          return false
+        }else{
+          return true
+        }
+      },
+     // 加载列头数据(弹框签回表头)
+    loadColumsData(){
+       //纸箱出货签回数据表单
+        let formName="boxdelibackdataFm"
+        let url = `/sys/form/init/${formName}`
+        request.get(url).then(res => {
+          if(res!=null){
+            this.tableColTitleData = res 
+          } 
+        })
+    },
+     // 加载列头数据(纸箱出货月结日期功能界面)
+    loadEndDateColumsData(){
+        let formName="boxdelimonthdateFm"
+        let url = `/sys/form/init/${formName}`
+        request.get(url).then(res => {
+          if(res!=null){
+            this.tableColEndDateTitleData = res
+          } 
+        })
+    },
+    // 向导二 全选 事件
+    guideTwo_selectAll(){
+       let selectAllData = this.boxDeliBackPopupDataList.map(item=>{
+          if(!!!item.iisBack){
+             item.iisBack = true
+          }else{
+             item.iisBack = false
+          }
+          return item
+      })
+      this.boxDeliBackPopupDataList = selectAllData
+    },
+    // 月结窗体 全选 事件
+    endData_selectAll(){
+      let selectAllData = this.tableEndDateDataList.map(item=>{
+          if(!!!item.iisChose){
+             item.iisChose = true
+          }else{
+             item.iisChose = false
+          }
+          return item
+      })
+      this.tableEndDateDataList = selectAllData
+    },
+    // 月结窗体 提交 事件
+     endData_submit(){
+       this.setEndDate()
+     },
+    // 月结窗体 取消 事件
+     endData_cancel(){
+        this.showEndDataBatchWindow = false
+     },
+    //向导二上一步 事件
+    preStep_guideTwo(){
+      this.showSetGetBackGuideOneWindow = true
+      this.showSetGetBackGuideTwoWindow= false
+    },
+    //向导二确定 事件
+    nextStep_guideTwo(){
+      this.setBatchBackData()
+    },
+    //向导二取消 事件
+    cancel_guideTwo(){
+       this.showSetGetBackGuideTwoWindow= false
+    },
+    //向导一上一步 事件
+    preStep_guideOne(){
+      this.showSetGetBackWindow = true
+      this.showSetGetBackGuideOneWindow = false
+    },
+    //向导一下一步 事件
+    nextStep_guideOne(){
+      this.showSetGetBackGuideOneWindow = false
+      this.showSetGetBackGuideTwoWindow= true
+      this.searchGetBackDataList() //获取回签列表数据
+    },
+    //向导一取消 事件
+    cancel_guideOne(){
+      this.showSetGetBackGuideOneWindow = false
+    },
+    // 签回向导 点击事件
+    onCustomerAction(){
+      this.showSetGetBackWindow = false
+      this.showSetGetBackGuideOneWindow = true
+    },
+    onChange_bdBackDate(item){
+      if(!_.isEmpty(item)){
+          this.formGetBack.bdBackDate = new Date(item) 
+          this.formGetBack.bdBackDateText = dayjs(item).format("YYYY-MM-DD")
+      }
+    },
+    // 签回类型改变触发事件 回调
+    onChange_bdBackType(index){
+       if(!_.isEmpty(index)){
+          this.formGetBack.bdBackTypeText = this.bdBackTypeList[index].dicLabel
+       }
+    },
+    getbdBackTypeList(){
+      //获取  签回类型 
+      this.getDataFromDictionaryBy('bdBackType').then(res=>{
+        this.bdBackTypeList = res
+      })
+    },
+    // 主表点击事件,需要修改 查询参数:productPriceId 和 查询反馈内容  rowData.custCode + " " + rowData.custName 一般对应 queryParamsDefault 即可
+    master_list_tableRowClick (rowData, rowIndex) {
+     
+      this.isGetBack= false
+      this.masterRowSelection = rowData
+      this.defaultSetting()
+      this.currrentRowItem.rowName = rowData.bdNo + ' ' + rowData.custName
+      this.$refs['slave_list_table'].search({ bdId: rowData.id })
+      this.$refs['sub_list_table'].search({ bdId: rowData.id })
+    },
+    // 默认设置
+    defaultSetting(){
+       this.formGetBack = Object.assign({},this.masterRowSelection)
+       if(!_.isEmpty(this.formGetBack.bdBackDate)){
+         this.isGetBack= true // 已经签回
+         this.formGetBack.bdBackDate = new Date(this.formGetBack.bdBackDate) 
+         this.formGetBack.bdBackDateText = dayjs(this.formGetBack.bdBackDate).format("YYYY-MM-DD")
+      }else{
+         this.formGetBack.bdBackDate = new Date(dayjs().format("YYYY-MM-DD")) 
+         this.formGetBack.bdBackDateText = dayjs().format("YYYY-MM-DD")
+      }
+      if(_.isEmpty(this.formGetBack.bdBackType)){
+          this.formGetBack.bdBackType = 1 // 设置签回类型默认值
+          this.formGetBack.bdBackTypeText = this.bdBackTypeList[1].dicLabel
+      }else{
+         this.formGetBack.bdBackType = Number(this.formGetBack.bdBackType)
+         this.formGetBack.bdBackTypeText = this.bdBackTypeList[this.formGetBack.bdBackType].dicLabel
+      }
+      // 出货日期 向导默认值
+      this.formGuideOne.bdDate = new Date(dayjs().format("YYYY-MM-DD")) 
+      this.formGuideOne.bdEndDate = new Date(dayjs().format("YYYY-MM-DD")) 
+    },
+    // 纸箱出货明细 行点击事件
+    slave_list_tableRowClick(rowData, rowIndex){
+      debugger
+      
+      this.slaveRowSelected.index = rowIndex
+      this.slaveRowSelected.item = rowData
+    },
+    /**
+     * @desc 重写父类,自定义菜单功能,与functionBtnList.vue 页面绑定 
+     *
+     * @params 参数  type:当前主菜单名称,func:功能名称
+     *
+     */
+    customerAction(type,func){
+      if(type!=='stock-boxDeli'){
+        return
+      }
+      switch (func) {
+        case 'setLessQty':
+          //少数
+          let tableDataItems = this.$refs['slave_list_table'].tableDataItems
+            if(tableDataItems.length==0){
+              this.slaveRowSelected ={
+                  index:-1,
+                  item:{}
+                }
+            }
+          this.showSetLessQtyWindow = true
+          break;
+        case 'setGetBack':
+          //签回
+          this.showSetGetBackWindow = true
+          break;
+        case 'setEndDate':
+          //月结
+          this.showEndDataBatchWindow = true
+          break;    
+        default:
+          break;
+      }
+    },
+    // 确认==设置"少数修改"窗体==回调事件
+    onOkShowSetLessQtyWindow(){
+      this.$refs['setLessQtyWindow'].validate(valid => {
+        if (!valid) {
+          return
+        }
+        this.setLessQty()
+      })
+    },
+    // 取消==设置少数原因数量窗体==回调事件
+    onCancelshowSetLessQtyWindow(){
+      this.resetLessQtyWindow()
+    },
+    resetLessQtyWindow(){
+      // fix 清除上次的错误提示 formDataInfo 为表单ref名称
+       this.$refs['setLessQtyWindow'].resetFields()
+       this.formLess = Object.assign({},formLess_default)
+    },
+    resetSetGetBackWindow(){
+      // fix 清除上次的错误提示 formDataInfo 为表单ref名称
+       this.$refs['setGetBackWindow'].resetFields()
+       this.defaultSetting()
+     
+    },
+    //少数 
+    setLessQty(){
+      if(this.slaveRowSelected.index==-1){
+         this.$Message.warning('请选择需要操作的数据')
+          return
+      }
+     //根据id,biLessQty(少数),biLessRemark(少数原因)进行少数操作
+     let currentItem = this.slaveRowSelected.item
+     let url = '/stock/boxDeli/updateLessQty'
+     let params = {
+        id:currentItem.id,
+        biLessQty:this.formLess.qty,
+        biLessRemark:this.formLess.reason,
+     }
+     this.getDataByUrl(url,params).then(res=>{
+       this.$Message.success('执行成功')
+       this.resetLessQtyWindow()
+       this.showSetLessQtyWindow = false
+       this.refresh()
+     })
+    },
+    // 确认==设置"纸箱送货单签回"窗体==回调事件
+    onOkShowSetGetBackWindow(){
+       this.$refs['setGetBackWindow'].validate(valid => {
+        if (!valid) {
+          return
+        }
+        this.setGetBack()
+      })
+    },
+    // 取消==设置"纸箱送货单签回"窗体==回调事件
+    onCancelSetGetBackWindow(){
+      this.resetSetGetBackWindow()
+    },
+    //签回
+    setGetBack(){
+      //根据id,bdBackType(回签类型),bdBackDate(回签日期)来回签
+      let currentItem = this.masterRowSelection
+      let url = '/stock/boxDeli/updateBackOper'
+      let params = {
+          id:currentItem.id,
+          bdBackType:this.formGetBack.bdBackType+'',
+          bdBackDate:dayjs(this.formGetBack.bdBackDate).format("YYYY-MM-DD ")+dayjs().format("HH:mm:ss"),
+      }
+      this.getDataByUrl(url,params).then(res=>{
+        this.$Message.success('执行成功')
+        this.resetSetGetBackWindow()
+        this.showSetGetBackWindow = false
+        this.refresh()
+      })
+    },
+     //月结
+    setEndDate(){
+      //批量修改月结日期,deliList(选择的列表数据),dateFlag(采用设定日期),monthDate(月结设定日期)
+      let currentItem = this.masterRowSelection
+      let url = '/stock/boxDeli/batchUpdateMonthDate'
+      let params = {
+            deliList:[],
+            dateFlag:this.formEndDataInfo.biIsAcc,
+            monthDate:dayjs(this.formEndDataInfo.biIsAccDate).format("YYYY-MM-DD"),
+      }
+      let hasNullDate=false
+        // 后去勾选后的数据
+      let choseDataList = this.tableEndDateDataList.forEach(item=>{
+          if(!!item.iisChose){
+            if(!this.formEndDataInfo.biIsAcc)
+            {//不采用设定日期 
+              if(item.bdMonthDate=='' || item.bdMonthDate==null){
+                  hasNullDate=true
+              }
+            }
+            params.deliList.push(item)
+          }
+      })
+
+       if(params.deliList.length==0){
+           this.$Message.warning('请选择需要操作的数据')
+           return
+       }
+       if(hasNullDate){
+          this.$Message.warning('勾选数据未填写月结日期')
+            return
+       }
+      this.getDataByUrl(url,params).then(res=>{
+        this.$Message.success('执行成功')
+        this.showEndDataBatchWindow = false
+      })
+    }
+
+  }
+};
+</script>
+
+<style></style>

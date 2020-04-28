@@ -1,0 +1,136 @@
+<template>
+  <div class="cl-moudle">
+    <htmlTemplate
+      :currrentRowItem="currrentRowItem"
+      @isLoaddingDone="getLoaddingDone"
+      :requestBaseUrl="functionParams.requestBaseUrl"
+      :uniqueId="functionParams.uniqueId"
+      :queryParamsDefault="queryParamsDefault"
+    >
+    <!-- 主表purSupplierArtFm  第二层pursupplierartitemFm  第三层purSupplierArtPZFm-->
+    </htmlTemplate>
+    <div :style="{ height: tableHeight + 'px' }" v-if="formInitData.listView">
+      <Row>
+        <vTable                 
+          :height="tableHeight / 3 - 30"
+          ref="master_list_table"
+          :url="`${functionParams.requestBaseUrl}/page`"
+          :columns="formInitData.columns[`${functionParams.formInitPreName}Fm`].listColumns"
+          :pageSize="formInitData.listView[`${functionParams.formInitPreName}Fm`].pageSize"
+          :pagination="true"
+          @row-click="masterTableRowClick"
+          name="purSupplierArtFm"
+        ></vTable>
+      </Row>
+      <Row>
+          <Tabs>
+            <TabPane :label="formInitData.listView[`${functionParams.formInitPreName}itemFm`].tableDesc" name="name1">
+              <vTable
+                :height="tableHeight / 3 "
+                ref="slave_list_table"
+                :url="`${functionParams.requestBaseUrl}/item/list`"
+                :columns="formInitData.columns[`${functionParams.formInitPreName}itemFm`].listColumns"  
+                :pagination="false"
+                @row-click="pursupplierartitemFmTableRowClick"
+                :query-params="{supplierArtId:-1}"
+                name="purSupplierArtitemFm"
+              ></vTable>
+            </TabPane>
+          </Tabs>
+      </Row>
+      <Row>
+          <Tabs>
+            <TabPane :label="formInitData.listView[`${functionParams.formInitPreName}mdataFm`].tableDesc" name="name1">
+              <vTable
+                :height="tableHeight / 3"
+                ref="sub_list_table"
+                :url="`${functionParams.requestBaseUrl}/pz/list`"
+                :columns="formInitData.columns[`${functionParams.formInitPreName}mdataFm`].listColumns"  
+                :pagination="false"
+                :query-params="{supplierArtId:-1}"
+                name="purSupplierArtmdataFm"
+              ></vTable>
+            </TabPane>
+          </Tabs>
+        </Col>
+          
+      </Row>
+      
+    </div>
+      <editForm
+        :formInitData="formInitData"
+        :isLoaddingDone="isLoaddingDone"
+        :form-detail-data="formDetailData"
+        :action="action"
+        @submit-success="search()"
+        v-model="showEditWindow"
+        :detailDisabled="detailDisabled"
+        :detailConvertUpdate="detailConvertUpdate"
+      />
+    </div>
+</template>
+<script>
+import vTable from "@/components/tables/vTable";
+import htmlTemplate from "../components/htmlTemplate";
+//import editForm from "./edit/edit-warehouse";
+import listBaseMixins from "../mixins/list";
+import request from "@/libs/request";
+export default {
+  mixins: [listBaseMixins],
+  components: {
+    editForm:function(resolve) { //组件的异步加载
+                require(["./edit/edit-supplierArt"], resolve);
+            },
+    htmlTemplate,
+    vTable,
+  },
+  data() {
+    return {
+      functionParams: {
+        formInitPreName:'purSupplierArt',// 查询表格列头信息 前缀 例如:purchasesupplierArt Fm/itemFm/mdataFm
+        requestBaseUrl: "/purchase/supplierArt",// 查询 表格行 数据 接口前缀地址
+        uniqueId: "supplierArtId"// 查询详细的唯一ID,需要顶部查询中使用
+      },
+      // 查询参数 ,注意格式
+      queryParamsDefault: [
+        {
+          title: "请输入供应商编号",
+          code: "purCode",
+          purCode: ""
+        },
+        {
+          title: "请输入供应商名称",
+          name: "purName$like",
+          'purName$like': ""
+        }
+      ]
+    };
+  },
+  methods: {
+    // 主表点击事件,需要修改 查询参数:supplierArtId 和 查询反馈内容  rowData.custCode + " " + rowData.custName 一般对应 queryParamsDefault 即可
+    masterTableRowClick(rowData, rowIndex){
+      this.masterRowSelection = rowData;
+      this.currrentRowItem.rowName = rowData.purCode + " " + rowData.purName;
+      this.$refs['slave_list_table'].search({supplierArtId:rowData.id});
+    },
+    pursupplierartitemFmTableRowClick(rowData,rowIndex){
+      this.slaveRowselection = rowData;
+      this.$refs['sub_list_table'].search({supplierArtItemId:rowData.id});
+    },
+  //   created () {
+   
+  // }
+
+  },created () {
+    // 查询多个表格列表头数据
+    // 无需变更,配置functionParams 参数即可
+    if (this.functionParams.formInitPreName) {
+      this.getFormInitData(`${this.functionParams.formInitPreName}Fm`)
+    }
+  }
+};
+  
+   
+</script>
+
+<style></style>

@@ -1,0 +1,555 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-paperPrice"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="90%"
+      :loading="!isLoaddingDone"
+      :spinLoaddingText="spinLoaddingText"
+      @on-ok="formTableDataSubmit()"
+      v-if="initData.columns"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-message="true"
+        :model="formDataInfo.master"
+        :rules="ruleValidate"
+        :label-width="100"
+      >
+        <Row>
+          <Col span="8">
+            <FormItem label="排程单号" prop="bppNo">
+              <Input disabled v-model="formDataInfo.master.bppNo" maxlength="20" placeholder></Input>
+            </FormItem>
+          </Col>
+          <Col span="8">
+            <FormItem label="排程日期" prop="bppDate">
+              <DatePicker
+                type="date"
+                format="yyyy-MM-dd HH:mm:ss "
+                v-model="formDataInfo.master.bppDate"
+              ></DatePicker>
+            </FormItem>
+          </Col>
+          <Col span="8">
+            <FormItem label="班别" prop="bppClassCode">
+              <popup
+                @on-fill="Initializationdata"
+                v-model="formDataInfo.master.bppClassCode"
+                field-name="bppClassCode"
+                :disabled="false"
+                popup-name="TeamSingleBox"
+                :fill-model.sync="formDataInfo.master"
+                render-fields="bppClassId,bppClassCode,bppClassName"
+                from-fields="id,teamCode,teamName"
+                :suffix="true"
+                :suffix-model="formDataInfo.master.bppClassName"
+                :query-params="{}"
+              />
+            </FormItem>
+          </Col>
+
+          <Col span="24">
+            <FormItem label="备注">
+              <Input
+                v-model="formDataInfo.master.remark"
+                type="textarea"
+                maxlength="100"
+                :autosize="{ minRows: 1, maxRows: 2 }"
+                placeholder="请输入备注..."
+              ></Input>
+            </FormItem>
+          </Col>
+        </Row>
+      </Form>
+
+      <Tabs>
+        <!--  注意:eTable formDataInfo.artLengs.defaultList  ===artLengs=== 需要根据实际接口修改,其它不变-->
+        <TabPane label="纸箱生产排程明细" name="name1">
+          <eTable
+            ref="tableFields"
+            unqiue-mark="id"
+            :index-menu="true"
+            :col-start="0"
+            :width="200"
+            :height="300"
+            :row-init-data="initData.initData.mrpBoxProdPlanItemFm"
+            :data.sync="formDataInfo.boxProdPlanItemSlave.defaultList"
+            :rules="tableFieldsValidator"
+            :showContextMenu="!detailDisabled"
+          >
+            <template slot="head">
+              <tr
+                v-for="(columnGroup,index) in initData.columns.mrpBoxProdPlanItemFm.editGroups"
+                :key="index"
+              >
+                <th
+                  class="ivu-table-column-left"
+                  v-for="(column,index2) in columnGroup"
+                  :key="index2"
+                  :width="column.width"
+                  :colspan="column.colSpan"
+                  :rowspan="column.rowSpan"
+                  style="text-align:center;"
+                >
+                  <div class="ivu-table-cell">
+                    <span class>{{column.title}}</span>
+                  </div>
+                </th>
+              </tr>
+            </template>
+
+            <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
+              <td
+                class="ivu-table-column-left"
+                v-for="(column,columnIndex) in initData.columns.mrpBoxProdPlanItemFm.editColumns"
+                :key="columnIndex"
+                :width="column.width"
+              >
+                <!--控件特殊处理 序号  -->
+                <Input
+                  v-if="column.key == 'bppIndexNo'"
+                  v-model="row[column.key]"
+                  @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'bppIndexNo');
+                      }
+                    "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+                <!--控件特殊处理 工单号  -->
+                <Input
+                  v-else-if="column.key == 'bppWorkNo'"
+                  v-model="row[column.key]"
+                  @on-blur="onFill(index)"
+                  icon="md-add"
+                  @on-click="Slave_list_table_editRowModify(index)"
+                  @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'bppWorkNo');
+                      }
+                    "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+                <!--控件特殊处理 交货日期  -->
+                <DatePicker
+                  v-else-if="column.key == 'biDeDate'"
+                  v-model="row[column.key]"
+                  type="date"
+                  format="yyyy-MM-dd"
+                  @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'biDeDate');
+                      }
+                    "
+                ></DatePicker>
+
+                <formControl
+                  v-else
+                  :control-type="column.controlType"
+                  v-model="row[column.key]"
+                  :disabled="column.readOnly"
+                  @input="value => {valueChangeAssign(value, index, row,column.key)}"
+                ></formControl>
+              </td>
+            </template>
+          </eTable>
+        </TabPane>
+      </Tabs>
+    </editWindow>
+    <Slave
+      ref="mychild"
+      :isLoaddingDone="salveWindow.isLoaddingDone"
+      :formDetailData="salveWindow.formDetailData"
+      :action="salveWindow.action"
+      v-model="salveWindow.showEditWindow"
+      @closeMain="closeMain"
+    />
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:07:54
+ */
+// import preferential from "@/components/preferential/preferential";
+import popup from "@/components/popup/popup";
+import editWindow from "@/components/edit-window/edit-window";
+import formControl from "@/components/form-control/form-control";
+// import Form from '@/components/form/form'
+import eTable from "@/components/e-table/e-table";
+import request from "@/libs/request";
+import editBaseMixins from "../../mixins/edit";
+import optionSearch from "../../components/optionSearch";
+import dayjs from "dayjs";
+import Sys from "@/api/sys";
+import Slave from "./edit-boxprodplanSlave";
+const default_formDataInfo = {
+  // 主表 更改字段
+  master: {
+    bppClassName: "",
+    bppNo: "",
+    createTime: "",
+    createUser: "",
+    createUsername: "",
+    bppDate: dayjs().format("YYYY-MM-DD"),
+    remark: ""
+  },
+  // 子表 artLengs 根据实际接口更改,其它不变
+  boxProdPlanItemSlave: {
+    addList: [], // 添加列
+    defaultList: [], // 默认列
+    deleteList: [], // 删除列
+    updateList: [] // 更新列
+  }
+};
+export default {
+  name: "edit-boxprodplan",
+  mixins: [editBaseMixins],
+  components: {
+    editWindow,
+    optionSearch,
+    // preferential,
+    eTable,
+    popup,
+    Slave,
+    formControl
+    // Form,
+  },
+  data() {
+    return {
+      salveWindow: {
+        // Tips:"提示：此窗口只显示有供应商纸质/纸板进价的工单！",
+        isLoaddingDone: false, // 窗口是否加载完成
+        showEditWindow: false, // 是否显示edit-boxSalesOrderSlave 编辑窗口
+        action: "add", // 当前操作功能 添加/编辑
+        formDetailData: {} // 当前表单的详细信息
+      },
+      WorkOrderNumber: null,
+      List: null,
+      actionSubtitle: "纸箱生产排程", // 当前操作副标题
+      formName: "mrpBoxProdPlanItemFm",
+      requestBaseUrl: "/mrp/boxprodplan", // 请求 查询 操作的基础路径
+      formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {
+        // purCode:[{
+        //     required: true,
+        //     message: "供应商错误",
+        //     trigger: "blur,change"
+        // }],
+        //  pactNo: [
+        //   { required: true, message: "合同编号不能为空", trigger: "blur" }
+        //  ],
+        bppDate: [
+          {
+            type: "date",
+            required: true,
+            message: "排程日期不能为空",
+            trigger: "change"
+          }
+        ]
+      },
+      tableFieldsValidator: {
+        // supplierArtName:[{
+        //     required: true,
+        //     message: "供应商纸质错误",
+        //     trigger: "blur"
+        // }],
+      },
+      subBoxClickIndex: -1,
+      getsupplierId: 0,
+      index1: 0
+    };
+  },
+  watch: {
+    "formDataInfo.boxProdPlanItemSlave.defaultList": {
+      handler(n, o) {
+        //debugger;
+        this.getbppIndexNo(n);
+      },
+      deep: true
+    }
+    // 'formDataInfo.boxProdPlanItemSlave.defaultList':function(n,o){
+    //   //debugger
+    //   this.getbppIndexNo()
+    // }
+  },
+  mounted() {
+    // this.init()
+    //排程日期初始化
+    this.formDataInfo.master.bppDate = new Date();
+  },
+  methods: {
+    //自动生成序号
+    getbppIndexNo() {
+      //debugger;
+      let infrom = this.formDataInfo.boxProdPlanItemSlave.defaultList;
+      if(infrom){
+          for (let index = 0; index < infrom.length; index++) {
+          //拿到序号字段
+          if (
+            !this.formDataInfo.boxProdPlanItemSlave.defaultList[index]
+              .bppIndexNo &&
+            infrom[index].bppWorkNo
+          ) {
+            infrom[index].bppIndexNo = Number((index + 1) * 10);
+          }
+        }
+
+      }
+   
+    },
+    //转换 工单号数据传递给从表
+    Transformation(data, demo) {
+      //debugger;
+      demo.bppWorkNo = data.biWorkNo; //工单号
+      demo.biDeDate = data.biDeliDate; //交货日期
+      demo.custName = data.custName; //客户名称
+      demo.bpCustId = data.custId; //客户bpCustId
+      demo.bppProdNo = data.biProdNo; //产品编号
+
+      demo.bpName = data.bpName; //产品名称
+      demo.bppBatchNo = data.biBatchNo; //料号
+
+      demo.bppProdQty = data.bpProQty; //工单数
+      demo.bppQty = data.bppQty; //本次排程数
+      demo.artCode = data.bpPArtCode; //生产纸质代号
+      demo.boxCode = data.bpPBoxCode; //生产盒式编号
+      demo.bpPSizeL = data.bpPSizeL; //生产规格长
+      demo.bpPSizeW = data.bpPSizeW; //生产规格宽
+      demo.bpPSizeH = data.bpPSizeH; //生产规格高
+      demo.lbCode = data.lbCode; //生产楞别代号
+      demo.bpPMNo = data.bpPMNo; //唛头编号
+      demo.bpPPNo = data.bpPPNo; //印版编号
+      demo.bpDPNo = data.bpDPNo; //模板编号
+      demo.bpColorName = data.colorName; //颜色
+      demo.bpCustProdNo = data.bpCustProdNo; //客户产品编号
+      demo.bpCustProdName = data.bpCustProdName; //客户产品名称
+      demo.bppDRemark = data.biDRemark; //送货备注
+
+      demo.artId = data.bpPArtId; //生产纸质id
+      demo.lengId = data.lengId; //生产楞别id
+      demo.boxId = data.bpPBoxId; //生产盒式id
+      demo.wplId = data.bppWplId; //工序Id
+      demo.bpColor = data.bpColorId; //颜色Id
+      demo.remark = data.biPRemark; //备注
+      demo.wplName = data.bppWplName; //工序名称
+      demo.bppArtWL = data.bppArtWL; //用料规格
+    },
+    //工单号失去焦点事件
+    onFill(index) {
+      //debugger;
+      //获取供应商id
+      let masterbppDate = this.formDataInfo.master.bppDate;
+      //获取工单号
+      let inWorkNo = this.formDataInfo.boxProdPlanItemSlave.defaultList[index]
+        .bppWorkNo;
+      let bppClassCodeClone = this.formDataInfo.master.bppClassCode;
+      //获取当前子表数据
+      let two = this.formDataInfo.boxProdPlanItemSlave.defaultList[index];
+      let one = this.$refs["tableFields"].cloneData[index];
+      //获取子表初始化时的数据
+      let defulit = this.initData.initData.mrpBoxProdPlanItemFm;
+      if (masterbppDate === "") {
+        this.$Message.error("排程日期不能为空");
+        return;
+      }
+      if (!bppClassCodeClone) {
+        this.$Message.error("班别不能为空");
+        return;
+      }
+      if (inWorkNo) {
+        request
+          .post(`/mrp/boxprodplan/getBoxProductWorkInfo`, {
+            inWorkNo: inWorkNo
+          })
+          .then(ref => {
+            //debugger;
+            let data = ref[0];
+            if (data === [] || data === undefined) {
+              this.$Message.error("工单号错误");
+              //$set(要修改的对象,属性,属性的值是啥)
+              this.$set(
+                this.formDataInfo.boxProdPlanItemSlave.defaultList,
+                index,
+                this.initData.initData.mrpBoxProdPlanItemFm
+              );
+              // console.log(
+              //   this.formDataInfo.boxProdPlanItemSlave.defaultList[index]
+              // );
+              // console.log(this.formDataInfo.boxProdPlanItemSlave.defaultList);
+              return;
+            }
+            let demo = this.$refs["tableFields"].cloneData[index];
+            this.Transformation(data, demo);
+          });
+      }
+      //debugger;
+      //拿到工单号
+      // let ppoGroupNo = this.formDataInfo.boxProdPlanItemSlave.defaultList[index].bppWorkNo;
+      // request.post(`/mrp/boxprodplan/getBoxProductWorkInfo`).then(res=>{
+      //   let data = res[index];
+      //   let demo = this.$refs["tableFields"].cloneData[index];
+      //       this.Transformation(data,demo)
+      // })
+    },
+    //接受工单号传回来的数据
+    closeMain(val) {
+      //debugger
+      let index2 = this.index1;
+      for (let index = 0; index < val.length; index++) {
+        if (index2 === 0) {
+          index2 = index;
+        }
+        //接受工单号返回的值
+        let data = val[index];
+        // data.biDeDate = dayjs(data.biDeDate).format("YYYY-MM-DD HH:mm:ss")
+        //获得当前第二层表的值
+        if (this.$refs["tableFields"].cloneData.length - 1 < index) {
+          this.$refs["tableFields"].cloneData[
+            index
+          ] = this.initData.initData.mrpBoxProdPlanItemFm;
+        }
+        let demo = this.$refs["tableFields"].cloneData[index2];
+        this.Transformation(data, demo);
+      }
+    },
+    //工单号点击事件
+    Slave_list_table_editRowModify(index) {
+      //debugger;
+      if (
+        !this.formDataInfo.boxProdPlanItemSlave.defaultList[index].bppClassName
+      ) {
+        this.salveWindow.showEditWindow = true;
+        this.index1 = index;
+        if (this.formDataInfo.master.bppClassCode) {
+          this.List = this.formDataInfo.master.supplierId;
+          let ppuer = this.salveWindow.showEditWindow;
+          this.salveWindow.isLoaddingDone = true;
+          this.salveWindow.action = "add";
+          request
+            .post(`/mrp/boxprodplan/getBoxProductWorkInfo`, {
+              // vendId: this.formDataInfo.master.supplierId
+            })
+            .then(res => {
+              // this.WorkOrderNumber1 = res;
+              // console.log(res)
+              this.$refs.mychild.getFormInitDataObj(res);
+            });
+        } else {
+          this.salveWindow.showEditWindow = false;
+          this.$Message.error("班别不能为空");
+        }
+      } else {
+        this.salveWindow.showEditWindow = false;
+      }
+      // this.index1 = index
+      // this.salveWindow.showEditWindow=true
+      // this.salveWindow.isLoaddingDone =true
+      // this.salveWindow.action ='add'
+      // request.post(`/mrp/boxprodplan/getBoxProductWorkInfo`).then(res=>{
+      //   this.$refs.mychild.getFormInitDataObj(res);
+      //   console.log(res)
+      // })
+    },
+    //判断数据是新增还是修改
+    formDetailDataCall() {
+      //debugger;
+      if (this.action != "add") {
+        //debugger
+        this.getsupplierId = this.formDataInfo.master.bppClassId;
+      }
+    },
+    //当主表客户弹框改变时促发初始化子表数据
+    Initializationdata(data) {
+      //debugger;
+      //   let tableData = this.$refs["tableFields"].dataChangeMark.data.row;
+      if (this.formDataInfo.master.bppClassId) {
+        if (this.formDataInfo.master.bppClassId != this.getsupplierId) {
+          this.formDataInfo.boxProdPlanItemSlave.defaultList = [];
+          //   tableData.deleteList = tableData.updateList;
+        }
+        this.getsupplierId = this.formDataInfo.master.bppClassId;
+      }
+    },
+    // 重写父类 关闭窗口时 触发事件
+    closeActionTigger() {
+      //debugger
+      // fix 清除上次的错误提示 formDataInfo 为表单ref名称
+      if(this.$refs["formDataInfo"])
+      this.$refs["formDataInfo"].resetFields();
+      if(this.$refs["tableFields"])
+      this.$refs["tableFields"].reset();
+    },
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo() {
+      //debugger
+      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    },
+    // 重写父类,修改提交数据
+    resetformDataInfo(_data) {
+      let tableData = this.$refs["tableFields"].getCategorizeData();
+      //debugger;
+      this.formDataInfo.boxProdPlanItemSlave = tableData;
+      if (!!_data.master.bppDate) {
+        _data.master.bppDate = dayjs(_data.master.bppDate).format(
+          "YYYY-MM-DD HH:mm:ss"
+        );
+        // return this.formDataInfo;
+      }
+      //从表时间处理
+      if (tableData.addList.length) {
+        for (let i = 0; i < tableData.addList.length; i++) {
+          if (!!_data.boxProdPlanItemSlave.addList[i].biDeDate) {
+            _data.boxProdPlanItemSlave.addList[i].biDeDate = dayjs(
+              _data.boxProdPlanItemSlave.addList[i].biDeDate
+            ).format("YYYY-MM-DD HH:mm:ss");
+          }
+        }
+        // return this.formDataInfo;
+      }
+      if (tableData.updateList.length) {
+        for (let i = 0; i < tableData.updateList.length; i++) {
+          if (!!_data.boxProdPlanItemSlave.updateList[i].biDeDate) {
+            _data.boxProdPlanItemSlave.updateList[i].biDeDate = dayjs(
+              _data.boxProdPlanItemSlave.updateList[i].biDeDate
+            ).format("YYYY-MM-DD HH:mm:ss");
+          }
+        }
+        // return this.formDataInfo;
+      }
+      return this.formDataInfo;
+    },
+  }
+};
+</script>
+
+<style>
+.cl-edit-paperPrice .ivu-form-item {
+  margin-bottom: 5px !important;
+}
+.cl-edit-paperPrice .ivu-select-item {
+  display: block;
+}
+/* .cl-edit-paperPrice .ivu-input-type-text{
+  width: 200px
+}*/
+.cl-edit-paperPrice .right-text {
+  width: 160%;
+}
+</style>

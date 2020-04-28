@@ -6,6 +6,9 @@ http://192.168.0.5:9999 xff new
 ERP原型图
 http://120.78.91.203/CLERP/start.html#g=0&p=登录
 
+在线错误文档:
+https://docs.qq.com/doc/DZmlQYWlYcmhoeWJs
+
 http://134.175.53.247/CLERP/start.html#g=0&p=主界面 new
 
 原型图新的地址
@@ -19,3 +22,5 @@ http://134.175.53.247
 旧版本bs:http://192.168.168.188:8080/clerp-publish/main/
 
 http://192.168.168.224:8081/
+ 
+

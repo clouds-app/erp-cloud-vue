@@ -1,0 +1,127 @@
+<template>
+  <div class="cl-moudle">
+    <htmlTemplate
+      :currrentRowItem="currrentRowItem"
+      @isLoaddingDone="getLoaddingDone"
+      :requestBaseUrl="functionParams.requestBaseUrl"
+      :uniqueId="functionParams.uniqueId"
+      :queryParamsDefault="queryParamsDefault"
+    >
+    </htmlTemplate>
+    <div class="content-container" v-if="formInitData.listView" :style="{ height: tableHeight + 'px' }">
+      <Split :v-model="splitModel" mode="vertical">
+        <div slot="top" class="demo-split-pane">
+          <vTable
+            :height="tableHeight / 2"
+            ref="master_list_table"
+            :url="`${functionParams.requestBaseUrl}/page`"
+            :columns="formInitData.columns[`${functionParams.formInitPreName}Fm`].listColumns"
+            :pagination="true"
+            @row-click="master_list_tableRowClick"
+            :name="`${functionParams.formInitPreName}Fm`"
+          ></vTable>
+        </div>
+        <div slot="bottom" :style="{ 'padding-top': '6px' }">
+          <Tabs>
+            <TabPane label="纸箱退货明细" :name="`${functionParams.formInitPreName}itemFm`">
+              <vTable
+                :height="tableHeight / 2.3"
+                ref="slave_list_table"
+                :url="`${functionParams.requestBaseUrl}/item/list`"
+                :columns="formInitData.columns[`${functionParams.formInitPreName}itemFm`].listColumns"
+                :pagination="false"
+                @row-click="slave_list_tableRowClick"
+                :name="`${functionParams.formInitPreName}itemFm`"
+              ></vTable>
+            </TabPane>
+          </Tabs>
+        </div>
+      </Split>
+    </div>
+    <editForm
+      :isLoaddingDone="isLoaddingDone"
+      :form-detail-data="formDetailData"
+      :action="action"
+      @submit-success="search()"
+      v-model="showEditWindow"
+    />
+  </div>
+</template>
+<script>
+import vTable from "@/components/tables/vTable";
+import htmlTemplate from "../components/htmlTemplate";
+import listBaseMixins from "../mixins/list";
+import request from "@/libs/request"
+export default {
+  mixins: [listBaseMixins],
+  components: {
+    'editForm':function(resolve) { //组件的异步加载
+                require(["./edit/edit-boxRe"], resolve);
+            },
+        
+    htmlTemplate,
+    vTable,
+  },
+  data() {
+    return {
+      //数据查询修改等基本参数设置
+      functionParams: {
+        formInitPreName: 'stockboxre', //  查询表格列头信息 前缀 例如:stockboxre Fm/itemFm 	
+        requestBaseUrl: "/stock/boxRe",
+        uniqueId: "brId"
+      },
+      // 查询参数 ,注意格式
+      queryParamsDefault: [
+        {
+          title: "请输入退货单号",
+          code: "brNo",
+          brNo: ""
+        },
+        {
+          title: "请输入客户名称",
+          name: "cusName$like",
+          cusName$like: ""
+        }
+      ],
+    };
+  },
+ 
+  created () {
+    // 查询多个表格列表头数据
+    // 无需变更,配置functionParams 参数即可
+    if (this.functionParams.formInitPreName) {
+      this.getFormInitData(`${this.functionParams.formInitPreName}Fm`)
+    }
+  },
+  methods: {
+    // 主表点击事件,需要修改 查询参数:productPriceId 和 查询反馈内容  rowData.custCode + " " + rowData.custName 一般对应 queryParamsDefault 即可
+    master_list_tableRowClick (rowData, rowIndex) {
+      this.masterRowSelection = rowData
+      this.currrentRowItem.rowName = rowData.brNo + ' ' + rowData.cusName
+      this.$refs['slave_list_table'].search({ brId: rowData.id })
+    },
+    // 纸箱出货明细 行点击事件
+    slave_list_tableRowClick(rowData, rowIndex){
+
+    },
+     customerAction(type,func){
+      if(type!=='stock-boxRe'){
+        return
+      }
+      switch (func) {
+        case 'batchUpdateMonthDate':
+          alert('月结日期修改')
+          break;
+        case 'batchUpdateBrDate':
+         alert('退货日期修改')
+          break;    
+        default:
+          break;
+      }
+    },
+
+  }
+};
+</script>
+
+<style></style>

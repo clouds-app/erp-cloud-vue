@@ -1,0 +1,450 @@
+<template>
+  <div>
+    <editWindow
+      id="cl-edit-salesOrder"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="90%"
+      :loading="!isLoaddingDone"
+      :spinLoaddingText="spinLoaddingText"
+      @on-ok="submitFormDataEvent"
+      v-if="initData.columns"
+    >
+      <div v-if="formDataInfo.master">
+        <Form
+          ref="formDataInfo"
+          :show-message="true"
+          :model="formDataInfo.master"
+          :rules="ruleValidate"
+          :label-width="124"
+        >
+          <div class="edit-purPaperPoSlave">
+            <Row>
+              <Col span="5">
+                <FormItem :label="title" prop="inBiWorkNo">
+                  <Input
+                    v-model="formDataInfo.master.inBiWorkNo"
+                    maxlength="20"
+                    :placeholder="title"
+                  ></Input>
+                </FormItem>
+              </Col>
+              <Col span="5">
+                <FormItem label>
+                  <RadioGroup v-model="formDataInfo.master.likeFlag">
+                    <Radio label="1">模糊</Radio>
+                    <Radio label="0">精准</Radio>
+                  </RadioGroup>
+                </FormItem>
+              </Col>
+              <Col span="8">
+                <Row>
+                  <Col span="12" style="width: 62%;">
+                    <FormItem label="订单日期">
+                      <DatePicker
+                        type="date"
+                        format="yyyy-MM-dd"
+                        v-model="formDataInfo.master.startDate"
+                      ></DatePicker>
+                    </FormItem>
+                  </Col>
+                  <Col span="12" style="width: 38%;">
+                    <FormItem label="--" style="margin-left:-60%;">
+                      <DatePicker
+                        type="date"
+                        format="yyyy-MM-dd"
+                        v-model="formDataInfo.master.endDate"
+                      ></DatePicker>
+                    </FormItem>
+                  </Col>
+                </Row>
+              </Col>
+              <Col span="1">
+                <FormItem label>
+                  <Button type="primary" @click="clickmaster()">搜索</Button>
+                </FormItem>
+              </Col>
+            </Row>
+          </div>
+        </Form>
+
+        <Tabs>
+          <!--  注意:eTable formDataInfo.wareHouseItems.defaultList  ===wareHouseItems=== 需要根据实际接口修改,其它不变-->
+          <TabPane>
+            <eTable
+              ref="slave_edit-boxUseLost"
+              :height="400"
+              unqiue-mark="id"
+              :index-menu="true"
+              :col-start="0"
+              :width="200"
+              :row-init-data="initData.initData.boxworkinstoredtoFm"
+              :data.sync="productMDatasTableDataList"
+              :rules="tableFieldsValidator"
+              :showContextMenu="!detailDisabled"
+            >
+              <!-- <template slot="head">
+                <tr>
+                  <th class="ivu-table-column-center" width="35">
+                    <div class="ivu-table-cell">
+                      <span class>选择</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="60">
+                    <div class="ivu-table-cell">
+                      <span class @click="purPaperPoClick('订单编号','bcNo')">订单编号</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="50">
+                    <div class="ivu-table-cell">
+                      <span class>工单号</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="60">
+                    <div class="ivu-table-cell">
+                      <span class>客户编号</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="60">
+                    <div class="ivu-table-cell">
+                      <span class @click="purPaperPoClick('客户名称','custName')">客户名称</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="70">
+                    <div class="ivu-table-cell">
+                      <span class @click="purPaperPoClick('客户PO号','bcCustPo')">客户PO号</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="60">
+                    <div class="ivu-table-cell">
+                      <span class>产品编号</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="60">
+                    <div class="ivu-table-cell">
+                      <span class >产品名称</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="30">
+                    <div class="ivu-table-cell">
+                      <span class >料号</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="50">
+                    <div class="ivu-table-cell">
+                      <span class >工单数</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="60">
+                    <div class="ivu-table-cell">
+                      <span class >已入库数</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="70">
+                    <div class="ivu-table-cell">
+                      <span class >本次入库数</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="60">
+                    <div class="ivu-table-cell">
+                      <span class >生产盒式</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="90">
+                    <div class="ivu-table-cell">
+                      <span class >生产纸质/楞别</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="50">
+                    <div class="ivu-table-cell">
+                      <span class >生产长</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="50">
+                    <div class="ivu-table-cell">
+                      <span class >生产宽</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="50">
+                    <div class="ivu-table-cell">
+                      <span class >生产高</span>
+                    </div>
+                  </th>
+                </tr>
+              </template>-->
+              <template slot="head">
+                <tr
+                  v-for="(columnGroup,index) in initData.columns.boxworkinstoredtoFm.editGroups"
+                  :key="index"
+                >
+                  <th
+                    class="ivu-table-column-left"
+                    v-for="(column,index2) in columnGroup"
+                    :key="index2"
+                    :width="column.Width"
+                    :colspan="column.colSpan"
+                    :rowspan="column.rowSpan"
+                    style="text-align:center;"
+                  >
+                    <div v-if="column.key == 'bcNo'" @click="purPaperPoClick('订单编号','bcNo')" class="ivu-table-cell">
+                      <span class>订单编号</span>
+                    </div>
+                    <div v-else-if="column.key == 'custName'" @click="purPaperPoClick('客户名称','custName')" class="ivu-table-cell">
+                      <span class >客户名称</span>
+                    </div>
+                    <div v-else-if="column.key == 'bcCustPo'" class="ivu-table-cell">
+                      <span class @click="purPaperPoClick('客户PO号','bcCustPo')">客户PO号</span>
+                    </div> 
+                    <div v-else class="ivu-table-cell">
+                      <span class>{{column.title}}</span>
+                    </div>
+                  </th>
+                </tr>
+              </template>
+              <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
+                <td
+                  class="ivu-table-column-left"
+                  v-for="(column,columnIndex) in initData.columns.boxworkinstoredtoFm.editColumns"
+                  :key="columnIndex"
+                  :width="column.Width"
+                >
+                  <formControl
+                    :control-type="column.controlType"
+                    v-model="row[column.key]"
+                    :disabled="column.readOnly"
+                    @input="value => {valueChangeAssign(value, index, row,column.key)}"
+                  ></formControl>
+                </td>
+              </template>
+            </eTable>
+          </TabPane>
+        </Tabs>
+        <!-- <productSpec
+          v-model="productSpecShow"
+          ref="productSpec"
+          
+
+          :bpMoCut="formDataInfo.master.bpMoCut"
+        ></productSpec>-->
+      </div>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:07:54
+ */
+import tableSelect from "@/components/table-select/table-select";
+import editWindow from "@/components/edit-window/edit-window";
+// import Form from '@/components/form/form'
+import eTable from "@/components/e-table/e-table";
+import request from "@/libs/request";
+import popup from "@/components/popup/popup";
+import editBaseMixins from "../../mixins/edit";
+import InputNumber from "@/components/input-number";
+import formControl from "@/components/form-control/form-control";
+import { customValidator } from "@/libs/validator";
+import calc from "@/libs/calc";
+import list from "../../mixins/list";
+import dayjs from "dayjs";
+export default {
+  name: "edit-purPaperPoSlave",
+  mixins: [editBaseMixins],
+  components: {
+    editWindow,
+    popup,
+    tableSelect,
+    eTable,
+    InputNumber,
+    formControl
+  },
+
+  created() {
+    //debugger
+    // console.log(this.List)
+  },
+  props: {
+    List: {
+      type: String,
+      default: "0"
+    },
+    WorkOrderNumber1: {
+      type: Object,
+      defaule: "null"
+    }
+  },
+  data() {
+    return {
+      //actionSubtitle: "纸箱销售订单明细", // 当前操作副标
+      productSpecShow: false,
+      formDataInfo: {
+        // 主表 更改字段
+        master: {},
+        productMDatas: {
+          artCode: "",
+          bcCustPo: "",
+          bcNo: "",
+          biBatchNo: "",
+          biProdName: "",
+          biProdNo: "",
+          bpProBoxCode: "",
+          bpProBoxId: 0,
+          bpProBoxName: "",
+          bpProQty: 0,
+          custCode: "",
+          custName: "",
+          finishInQty: 0,
+          proSizeHeight: 0,
+          proSizeLength: 0,
+          proSizeWidth: 0,
+          thisInQty: 0,
+          workNo: ""
+        }
+        // List:thsi.list
+      }, // 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {},
+      tableFieldsValidator: {},
+      WorkOrderNumber: {
+        boxUseBatchNo: "", //用料批次号
+        artCode: "",
+        bcCustPo: "",
+        bcNo: "",
+        biBatchNo: "",
+        biProdName: "",
+        biProdNo: "",
+        bpProBoxCode: "",
+        bpProBoxId: 0,
+        bpProBoxName: "",
+        bpProQty: 0,
+        custCode: "",
+        custName: "",
+        finishInQty: 0,
+        proSizeHeight: 0,
+        proSizeLength: 0,
+        proSizeWidth: 0,
+        thisInQty: 0,
+        workNo: ""
+      },
+      title: "客户PO号",
+      formName: "boxworkinstoredtoFm",
+      propvalue: "bcCustPo", //存储子表每个对应的字段
+      productMDatasTableDataList: [], //存放处理过后的数据:[],
+      table: [], //存储子表全部对应的字段
+      bcCustPo: "",
+      custName: "",
+      bcNo: ""
+    };
+  },
+  computed: {},
+  methods: {
+    purPaperPoClick(name, value) {
+      // debugger
+      this.title = name;
+      this.propvalue = value;
+    },
+    //搜索点击事件
+    clickmaster() {
+      // debugger
+      let ddata = this.formDataInfo;
+      if (!!ddata.master.startDate) {
+        ddata.master.startDate = dayjs(ddata.master.startDate).format(
+          "YYYY-MM-DD"
+        );
+      }
+      if (!!ddata.master.endDate) {
+        ddata.master.endDate = dayjs(ddata.master.endDate).format("YYYY-MM-DD");
+      }
+      if (this.propvalue == "bcCustPo") {
+        this.bcCustPo = this.formDataInfo.master.inBiWorkNo;
+        this.custName = "";
+        this.bcNo = "";
+      } else if (this.propvalue == "custName") {
+        this.custName = this.formDataInfo.master.inBiWorkNo;
+        this.bcCustPo = "";
+        this.bcNo = "";
+      } else {
+        this.bcNo = this.formDataInfo.master.inBiWorkNo;
+        this.bcCustPo = "";
+        this.custName = "";
+      }
+      let params = {
+        // flag:this.formDataInfo.master.flag,
+        startDate: this.formDataInfo.master.startDate,
+        endDate: this.formDataInfo.master.endDate,
+        bcCustPo: this.bcCustPo,
+        custName: this.custName,
+        bcNo: this.bcNo,
+        issInput: 0,
+        likeFlag: this.formDataInfo.master.likeFlag
+      };
+
+      request.post(`/sale/boxCo/getBoxWorkInStoreData`, params).then(res => {
+        this.$refs["slave_edit-boxUseLost"].cloneData = res;
+      });
+    },
+
+    //加载表单初始化数据
+    getFormInitDataObj(data) {
+      // debugger;
+      var begin = new Date();
+      let startDate = dayjs(
+        new Date(begin.setMonth(new Date().getMonth() - 1))
+      ).format("YYYY-MM-DD");
+      //加载表单初始化数据
+      this.formDataInfo["master"] = {
+        inBiWorkNo: "",
+        likeFlag: "1",
+        endDate: dayjs().format("YYYY-MM-DD"),
+        startDate: startDate
+      };
+      if (data == "" || data == null) {
+        return;
+      }
+      this.$refs["slave_edit-boxUseLost"].cloneData = data;
+    },
+
+    //表单数据提交事件
+    submitFormDataEvent() {
+      //  debugger;
+      //表单数据提交事件
+      // true就是有问题
+      let result = this.$refs["slave_edit-boxUseLost"].validate();
+      if (result) {
+        return;
+      }
+      let parms = [];
+      let submitDataObj = this.$refs["slave_edit-boxUseLost"].cloneData;
+      for (let index = 0; index < submitDataObj.length; index++) {
+        let Choice = this.$refs["slave_edit-boxUseLost"].cloneData[index]
+          .iisChose;
+        if (Choice === true) {
+          parms.push(submitDataObj[index]);
+        }
+      }
+      //提交数据
+      // 向外暴露的方法:
+      this.$emit("closeMain", parms);
+      this.showWindow = false; // 关闭当前窗口
+      // });
+    }
+  }
+};
+</script>
+<style >
+.ivu-form-item-text2 .ivu-form-item-content {
+  margin-left: 2.8125rem !important;
+}
+</style>

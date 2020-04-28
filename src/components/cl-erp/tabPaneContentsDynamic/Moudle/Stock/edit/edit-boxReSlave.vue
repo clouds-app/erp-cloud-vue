@@ -1,0 +1,373 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-window-boxRe"
+      title="纸箱退货工单选择"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="90%"
+      :loading="false"
+      :spinLoaddingText="spinLoaddingText"
+      @on-ok="formTableDataSubmit()"
+      v-if="initColData.columns"
+    >
+      <div ref="masterHeight">  
+       <Form
+            ref="formDataInfo"
+            :show-message="true"
+            :model="formDataInfo.master"
+            :rules="masterRuleValidate"
+            :label-width="40"
+        >
+            <Row>
+            <Col span="4">
+                <FormItem :label-width="80" :label="searchConfig.title" prop="keyWord">
+                    <Input :clearable="true" maxlength="20" v-model="formDataInfo.master.keyWord" placeholder="搜索关键字"></Input>
+                </FormItem>
+            </Col>
+              <Col span="3">
+                <FormItem :label-width="20">
+                    <RadioGroup v-model="formDataInfo.master.likeFlag">
+                    <Radio label="1">模糊</Radio>
+                    <Radio label="0">精准</Radio>
+                  </RadioGroup>
+                </FormItem>
+            </Col>
+              <Col span="6">
+                <FormItem label="日期" prop="searchDay">
+                   <DatePicker
+                   transfer
+                   style="width: 120px"
+                    v-model="formDataInfo.master.startDate" 
+                    type="datetime"
+                    format="yyyy-MM-dd"
+                  ></DatePicker> - <DatePicker
+                   transfer
+                   style="width: 120px"
+                    v-model="formDataInfo.master.endDate" 
+                    type="datetime"
+                    format="yyyy-MM-dd"
+                  ></DatePicker>
+                </FormItem>
+            </Col>
+              
+             <Col span="1">
+                 <FormItem>
+                   <Button :loading="loadingData" @click="searchDataBy()" type="primary">搜索</Button>
+                </FormItem>
+             
+            </Col>
+            </Row>
+        </Form>
+           <eTable
+                ref="slave_list_table_edit"
+                :showContextMenu="false"
+                unqiue-mark="id"
+                :height="500"
+                :index-menu="true"
+                :col-start="0"
+                :row-init-data="initColData.initData.master"
+                :data="formDataInfo['boxReItems'].defaultList"
+                :rules="slaveTableFieldsValidator"
+                @row-click="slave_list_table_editRowClick"
+            >
+            <template slot="head">
+              <tr v-for="(columnGroup,index) in initColData.columns[`${functionParams.formInitPreName}Fm`].editGroups" :key="index">
+                    <template  v-for="(column,index2) in columnGroup" >
+                        <th v-if="excludeFiled('itemFm',column.key)"
+                        @click="searchKeyType(column.key,column.title)"
+                        :key="index2" :class="`ivu-table-column-${column.titleAlign}`"
+                        :width="column.editWidth"
+                        :colspan="column.colSpan"
+                        :rowspan="column.rowSpan"
+                        :columnKey="column.key"
+                        :style="excludeFiled('search',column.key)?'cursor:pointer':''"
+                        >
+                        <div  class="ivu-table-cell">
+                        <span class="">{{column.title}}</span>
+                        </div>
+                    </th>
+                    </template>
+                </tr>
+            </template>
+            <template
+              slot="body"
+              slot-scope="{ row, index,valueChangeAssign }"
+            >
+             <template  v-for="(column,subIndex) in initColData.columns[`${functionParams.formInitPreName}Fm`].editColumns">
+                   <td :key="subIndex" :class="`ivu-table-column-${column.align}`" v-if="excludeFiled('itemFm',column.key)" :width="column.editWidth">
+                     <!-- 控件特殊处理 订单编号 -->
+                       <template v-if="column.key =='iisChose'">
+                         <Checkbox @on-change="onChange_SlaveItemChcBox(index)"  v-model="row[column.key]"  :disabled="column.readOnly" ></Checkbox>
+                       </template>
+                       <!--其它 控件 -->
+                     <template v-else>
+                      <formControl  :control-type="column.controlType"
+                        v-model="row[column.key]" 
+                        :disabled="column.readOnly"
+                        
+                        @input="value => {valueChangeAssign(value, index, row,column.key)}"
+                      ></formControl>
+                     </template>
+                  </td>
+             </template>
+            </template>
+             </eTable>
+      </div>
+    </editWindow>
+  
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-boxDeli 描述 纸箱出货
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 editBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2020/04/10
+ */
+import popup from "@/components/popup/popup";
+import editWindow from "@/components/edit-window/edit-window";
+import eTable from "@/components/e-table/e-table";
+import request from "@/libs/request";
+import editBaseMixins from "../../mixins/edit";
+import optionSearch from "../../components/optionSearch";
+import dayjs from "dayjs";
+import Sys from "@/api/sys";
+import formControl from "@/components/form-control/form-control";
+import { deepCopy } from "view-design/src/utils/assist";
+const default_formDataInfo = {
+  // 主表 更改字段
+  master: {
+     keyWord: "",
+     likeFlag:"1",
+     startDate:dayjs().subtract(1, 'month').format("YYYY-MM-DD" ),
+     endDate:dayjs().format("YYYY-MM-DD"),
+  },
+  boxReItems: {
+    addList: [], // 添加列
+    defaultList: [], // 默认列
+    deleteList: [], // 删除列
+    updateList: []
+  }
+};
+export default {
+  name: "edit-boxDeli",
+  mixins: [editBaseMixins],
+  components: {
+    editWindow,
+    optionSearch,
+    eTable,
+    popup,
+    formControl
+  },
+  props:{
+    // 搜索参数对象,从父类填充参数过来
+    searchParams:{
+      type:Object,
+      default: () => {
+        return {
+        //  custId,// 客户id
+        }
+      }
+    }
+  },
+  data() {
+    return {
+      formName: "boxreitemdataFm", // 重写父类 查询表单名称
+        // 查询配置参数
+      functionParams: {
+        formInitPreName: 'boxreitemdata', // 查询表格列头信息 前缀 例如:saleboxproductprice Fm/Fm/mdataFm
+        requestBaseUrl: '/stock/boxRe', // 查询 表格行 数据 接口前缀地址
+        uniqueId: 'brId' // 查询详细的唯一ID,需要顶部查询中使用
+      },
+      salveWindow: {
+        isLoaddingDone: false, // 窗口是否加载完成
+        showEditWindow: false, // 是否显示edit-boxSalesOrderSlave 编辑窗口
+        action: "add", // 当前操作功能 添加/编辑
+      },
+      formDataInfo:deepCopy(default_formDataInfo),// Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      masterRuleValidate: {}, // 纸箱出货 需要验证的数据
+      slaveTableFieldsValidator: {}, // 纸箱出货明细 需要验证的数据
+      subTableFieldsValidator:{}, // 出货其他费用 需要验证的数据
+      boxDeliSubItemsList:[],//工单明细列表
+      masterHeight:0,//表单高度
+      otherHeight:0,//剩余高度
+      initColData:{},
+      loadingData:false,// 查询中
+      searchConfig:{
+         title:'工单号',
+         keyField:'workNo'
+      }
+    };
+  },
+   watch: {
+     showWindow:function(n,o){
+        if(n){
+          let _self = this
+          this.$nextTick(()=>{
+            _self.searchDataBy()
+          })
+        }
+      },
+},
+  created(){
+    this.loadColumsData()
+  },
+  methods: {
+      // 工单row选择事件回调
+      onChange_SlaveItemChcBox(index){
+          // let rowItem = this.formDataInfo['boxDeliSlaveItems'].defaultList[index] 
+          // //设置送货数根据条件变化
+          // rowItem= this.setDeliQtyBy(rowItem)
+          // let subRowData = this.formDataInfo['boxDeliSubItems'].defaultList
+          //  subRowData = subRowData.map(item=>{
+          //    if(!!rowItem.iisChose){
+          //       item.iisChose = true
+          //       item.deliQty = rowItem.deliQty
+          //       return item
+          //    }else{
+          //       item.iisChose = false
+          //       item.deliQty = 0
+          //       return item
+          //    }
+          //  })
+      },
+
+      // 通过参数查询数据列表
+      searchDataBy(){
+        this.formDataInfo['boxReItems'].defaultList =[]
+       //参数包括
+        let params = {
+          startDate:dayjs(this.formDataInfo.master.startDate).format("YYYY-MM-DD"),//(开始日期)
+          endDate:dayjs(this.formDataInfo.master.endDate).format("YYYY-MM-DD"),//(结束日期)
+          mode:'0',//0获取退货弹出框数据 1其他
+          custId:this.searchParams.custId,//(客户id)
+          biDeNo:this.getCurrentKeyTypeWords('biDeNo'),//(送货单号)
+          biProdNo:this.getCurrentKeyTypeWords('biProdNo'),//(产品编号)
+          bpName:this.getCurrentKeyTypeWords('biProdName'),//(产品名称)
+          biBatchNo:this.getCurrentKeyTypeWords('biBatchNo'),//(料号)
+          workNo:this.getCurrentKeyTypeWords('workNo'),//(工单号)
+          likeFlag:this.formDataInfo.master.likeFlag,//(1模糊查询0精准查询)
+        }
+        this.loadingData=true
+         request.post(`${this.functionParams.requestBaseUrl}/getBoxDeliBoxData`, params).then(res => {
+          if(res && res.length>0){
+            this.formDataInfo['boxReItems'].defaultList =res
+          }
+          this.loadingData=false
+        }).catch(err=>{
+          this.loadingData=false
+        })
+      },
+      // 工单列表行点击事件回调
+      slave_list_table_editRowClick (index){
+        // let rowItem = this.formDataInfo['boxDeliSlaveItems'].defaultList[index] 
+        // if(rowItem && rowItem.biProdNo!=''){
+        //    let mapData = this.boxDeliSubItemsList.filter(item=>{
+        //        if (item.biProdNo==rowItem.biProdNo && item.workNo==rowItem.workNo){
+        //          return item
+        //        }
+        //    })
+       
+        //    this.formDataInfo['boxDeliSubItems'].defaultList = mapData
+        // }
+      },
+       // 默认选择行数据
+      setDefaultSelectedRow (index=0) {
+        //debugger
+        let slaveObj = this.$refs['slave_list_table_edit']
+        if (slaveObj) {
+          slaveObj.rowClick(index, 'row-click')
+        }
+      },
+      // 获取关键字类型
+      searchKeyType(keyField,keyTitle){
+        //订单编号 bcNo，产品编号 biProdNo，产品名称 bpName,客户po号 bcCustPo,工单号 workNo
+        if(this.excludeFiled('search',keyField)){
+          this.searchConfig.title = keyTitle
+          this.searchConfig.keyField = keyField
+        } 
+      },
+      // 获取当前搜索类型的关键字
+      getCurrentKeyTypeWords(field){
+        if(field==this.searchConfig.keyField){
+          return this.formDataInfo.master.keyWord
+        }else{
+          return ''
+        }
+      },
+      // 加载列头数据
+      loadColumsData(){
+        //纸箱出货弹出框主表数据(虚拟)
+          let _self = this
+          let formName="boxreitemdataFm"
+          let url = `/sys/form/init/${formName}`
+          request.get(url).then(res => {
+            if(res!=null){
+              _self.initColData = res
+            } 
+          })
+      },
+      // 排除不需要显示的字段
+      excludeFiled(type,key){
+        let exListItemFm = ['bpCBoxId','stationId','bpCArtId']
+        let searchList = ['biDeNo','biProdName','biProdNo','workNo','biBatchNo']
+        let exList=[]
+        switch (type) {
+            case 'itemFm':
+              exList = exListItemFm 
+              break;
+            case 'search':
+              exList = searchList 
+              break;  
+            default:
+              exList = []
+              break;
+        }
+        let isExist = exList.includes(key)
+        if(type==='search'){
+          isExist=!isExist
+        }
+        if(isExist){
+          return false
+        }else{
+          return true
+        }
+      }, 
+
+    // 重写父类,修改提交数据
+    resetformDataInfo() {
+      let choseDataList = this.formDataInfo['boxReItems'].defaultList.filter(item=>{
+        return item.isChose==true
+      })
+      return choseDataList
+    },
+
+    // 提交主从表数据
+    formTableDataSubmit () {
+      debugger
+        let submitData = this.resetformDataInfo()
+        this.showWindow = false // 关闭当前编辑页面
+        this.$emit('submit-success',submitData) // 刷新主页面数据
+    }
+  }
+ 
+};
+</script>
+
+<style>
+.cl-edit-window-boxRe .masterHeightClass{
+  height: 50%;overflow:auto
+}
+.cl-edit-window-boxRe .otherHeightClass{
+  height: 50%;overflow:hidden
+}
+</style>
