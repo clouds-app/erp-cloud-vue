@@ -1,0 +1,305 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-snaddebt"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="80%"
+      :loading="!isLoaddingDone"
+      @on-ok="formDataSubmit()"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-message="true"
+        :model="formDataInfo"
+        :rules="ruleValidate"
+        :label-width="100"
+        :disabled="detailDisabled"
+      >
+        <Row>
+          <Col span="6">
+            <FormItem label="呆账单号" prop="bdNo">
+              <Input disabled v-model="formDataInfo.bdNo" maxlength="80" placeholder="呆账单号"></Input>
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="呆账日期" prop="bdDate">
+              <DatePicker type="date" v-model="formDataInfo.bdDate" format="yyyy-MM-dd"></DatePicker>
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="客户" prop="custCode">
+              <popup
+                v-model="formDataInfo.custCode"
+                field-name="custCode"
+                popup-name="BoxDeliCustomerSingBox"
+                :fill-model.sync="formDataInfo"
+                render-fields="custId,custCode,custName,curyId,coinCode,coinName,salesman,taxRat"
+                from-fields="id,cusCode,cusName,coinId,coinCode,coinName,saleName,taxRate"
+                :suffix="true"
+                :suffix-model="formDataInfo.custName"
+              />
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="会计月份" prop="bdYm">
+              <Input  v-model="formDataInfo.bdYm"  maxlength="80"></Input>
+            </FormItem>
+          </Col>
+
+          <Col span="24">
+            <Row>
+              <Col span="6">
+                <FormItem label="未开票金额" prop="bdNoIvAmt">
+                  <Input
+                    disabled
+                    v-model="formDataInfo.bdNoIvAmt"
+                    maxlength="80"
+                    placeholder="未开票金额"
+                  ></Input>
+                </FormItem>
+              </Col>
+              <Col span="6">
+                <FormItem label="已开票金额" prop="bdIvAmt">
+                  <Input disabled v-model="formDataInfo.bdIvAmt" maxlength="80" placeholder="已开票金额"></Input>
+                </FormItem>
+              </Col>
+              <Col span="6">
+                <FormItem label="货币" prop="coinCode">
+                  <popup
+                    v-model="formDataInfo.coinCode"
+                    field-name="coinCode"
+                    popup-name="CoinSingleBox"
+                    :fill-model.sync="formDataInfo"
+                    render-fields="curyId,coinCode,coinName"
+                    from-fields="id,coinCode,coinName"
+                    :suffix="true"
+                    :suffix-model="formDataInfo.coinName"
+                  />
+                </FormItem>
+              </Col>
+
+              <Col span="6">
+                <FormItem label="税率" prop="taxRat">
+                  <Input v-model="formDataInfo.taxRat" maxlength="80" placeholder="税率"></Input>
+                </FormItem>
+              </Col>
+            </Row>
+          </Col>
+          <Col span="24">
+            <Row>
+              <Col span="6">
+                <FormItem label="呆账金额" prop="bdZqAmt">
+                  <Input v-model="formDataInfo.bdZqAmt" maxlength="80" placeholder="呆账金额"></Input>
+                </FormItem>
+              </Col>
+              <Col span="6">
+                <FormItem label="关联单号" prop="relationNo">
+                  <Input
+                    v-model="formDataInfo.relationNo"
+                    maxlength="80"
+                    @on-blur="onFill()"
+                    placeholder="关联单号"
+                  >
+                    <Icon @click="Slave_list_table_editRowModify()" slot="suffix" type="md-add" />
+                  </Input>
+                  <!--@on-blur="onFill()"-->
+                </FormItem>
+              </Col>
+              <Col span="6">
+                <FormItem label="呆账原因" prop="bdReason">
+                  <Input v-model="formDataInfo.bdReason" maxlength="80" placeholder="呆账原因"></Input>
+                </FormItem>
+              </Col>
+              <Col span="6">
+                <FormItem label="税别" prop="taxTp">
+                  <optionSearch
+                    @onChange="optionOnChange"
+                    :defaultItem="formDataInfo.taxTp"
+                    :loaddingDataWhen="showWindow"
+                    query="taxType"
+                  />
+                  <!-- <Input :disabled="detailDisabled" v-model="formDataInfo.taxType" maxlength="80" placeholder="送货单号"></Input> -->
+                </FormItem>
+              </Col>
+            </Row>
+          </Col>
+          <Col span="6">
+            <FormItem label="业务员" prop="salesman">
+              <Input disabled v-model="formDataInfo.salesman" maxlength="80" placeholder="业务员"></Input>
+            </FormItem>
+          </Col>
+          <Col span="18">
+            <FormItem label="备注" prop="remark">
+              <Input v-model="formDataInfo.remark" maxlength="80" placeholder="备注"></Input>
+            </FormItem>
+          </Col>
+        </Row>
+      </Form>
+    </editWindow>
+    <snaddebtSlave
+      ref="mychild"
+      :isLoaddingDone="salveWindow.isLoaddingDone"
+      :formDetailData="salveWindow.formDetailData"
+      :action="salveWindow.action"
+      v-model="salveWindow.showEditWindow"
+      :CustId="CustId"
+      @closeMain="closeMain"
+    />
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:07:54
+ */
+import referenceField from "@/components/referenceField/referenceField";
+import editBaseMixins from "../../mixins/edit";
+import popup from "@/components/popup/popup";
+import optionSearch from "../../components/optionSearch";
+import request from "@/libs/request";
+import dayjs from "dayjs";
+import { customValidator, uniqueValidator } from "@/libs/validator";
+import snaddebtSlave from "./edit-snaddebtSlave";
+import { deepCopy } from "view-design/src/utils/assist";
+const default_formDataInfo = {
+  bdDate: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+  bdIvAmt: 0,
+  bdNo: "",
+  bdNoIvAmt: 0,
+  bdReason: "",
+  bdYm:dayjs().format("YYYYMM"), 
+  bdZqAmt: 0,
+  coinCode: "",
+  coinName: "",
+  curyId: 0,
+  custCode: "",
+  custId: "",
+  custName: "",
+  rate: 0,
+  relationNo: "",
+  taxRat: 0,
+  taxTp:"0",
+  taxTpText: ""
+};
+export default {
+  name: "edit-snaddebt",
+  mixins: [editBaseMixins],
+  components: {
+    optionSearch,
+    popup,
+    referenceField,
+    snaddebtSlave
+  },
+
+  data() {
+    return {
+      CustId: null,
+      frommastername: "accountCustInitFm",
+      actionSubtitle: "应收呆账", // 当前操作副标题
+      requestBaseUrl: "/account/snaddebt", // 请求 查询 操作的基础路径
+      formDataInfo: deepCopy(default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {
+        custCode: [
+          { required: true, message: "客户不能为空", trigger: "blur" }
+        ],
+        coinCode: [
+          { required: true, message: "客户不能为空", trigger: "blur" }
+        ],
+        relationNo: [
+          { required: true, message: "关联单号不能为空", trigger: "blur" }
+        ],
+        bdYm: [///^[1-9]\d*$/
+          { pattern:/^\d{6}$/, message: "会计月份不正确", trigger: "blur" }
+        ],
+      },
+      cityCascader: [],
+      cityCascaderCount: 0,
+      salveWindow: {
+        // Tips:"提示：此窗口只显示有供应商纸质/纸板进价的工单！",
+        isLoaddingDone: false, // 窗口是否加载完成
+        showEditWindow: false, // 是否显示edit-boxSalesOrderSlave 编辑窗口
+        action: null, // 当前操作功能 添加/编辑
+        formDetailData: {} // 当前表单的详细信息
+      }
+    };
+  },
+
+  methods: {
+    onFill() {
+      this.CustId = this.formDataInfo.custId;
+      if (this.CustId == "") {
+        this.$Message.error("请先选择客户");
+        this.formDataInfo.relationNo = JSON.parse(JSON.stringify(""));
+        return;
+      }
+      let inSrelatioNo = this.formDataInfo.relationNo;
+      request
+        .post(`/account/snaddebt/getSrelationNo`, {
+          inCustId: this.CustId,
+          inSrelatioNo,
+          isFlag: 1
+        })
+        .then(res => {
+          if (res.result == [] || res.result == undefined) {
+            this.$Message.error("关联单号错误");
+            this.formDataInfo.relationNo = JSON.parse(JSON.stringify(""));
+          }
+        });
+    },
+    closeMain(vlu) {
+      this.formDataInfo.relationNo = vlu;
+    },
+    Slave_list_table_editRowModify() {
+      // debugger
+      this.CustId = this.formDataInfo.custId;
+      if (this.CustId == "") {
+        this.$Message.error("请先选择客户");
+        return;
+      }
+      this.salveWindow.showEditWindow = true;
+      let ppuer = this.salveWindow.showEditWindow;
+      this.salveWindow.action = "add";
+      this.salveWindow.isLoaddingDone = true;
+      request
+        .post(`/account/snaddebt/getSrelationNo`, {
+          inCustId: this.CustId,
+          inSrelationType: "2"
+        })
+        .then(res => {
+          this.$refs.mychild.getFormInitDataObj(res);
+        });
+    },
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo() {
+      // debugger
+      this.formDataInfo = Object.assign({}, default_formDataInfo);
+      this.formDataInfo = deepCopy(default_formDataInfo);
+    },
+    //关闭窗口触发
+    closeActionTigger() {
+      this.formDataInfo = deepCopy(default_formDataInfo);
+    },
+    //打开窗口触发
+    openActionTigger() {}
+  }
+};
+</script>
+
+<style>
+.cl-edit-snaddebt .ivu-select-item {
+  display: block;
+}
+</style>

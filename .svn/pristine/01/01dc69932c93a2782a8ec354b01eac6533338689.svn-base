@@ -1,0 +1,85 @@
+<template>
+  <div>
+    <!-- Account  -->
+    <div id="Account_sun">
+      <div id="Account_one">
+        <p>
+          <Button @click="handleSubMenuEvent('purinit','account-purinit','供应商财务初始化')" type="success">供应商财务初始化</Button>
+        </p>
+        <br />
+         <p style="padding: 10px;">
+          <Button @click="handleSubMenuEvent('custinit','Account-custinit','客户财务初始化')" type="info">客户财务初始化</Button>
+        </p>
+        <br />
+         <p style="padding: 10px;">
+          <Button @click="handleSubMenuEvent('snaddebt','Account-snaddebt','应收呆账')" type="info">应收呆账</Button>
+        </p>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import globleMixin from "@/mixins";
+export default {
+  mixins: [globleMixin],
+  data() {
+    return {};
+  },
+  methods: {
+    // 子页面 参数: 页面.vue,唯一区别ID,TAB 标签显示名称
+    handleSubMenuEvent(currentPage, uniqueKey, tabName) {
+      //  debugger
+      let subItem = {
+        uniqueKey: uniqueKey,
+        lable: tabName
+      };
+      let params = {
+        type: "Account",
+        page: currentPage, //显示控件页面
+        uniqueKey: subItem.uniqueKey,
+        lable: subItem.lable,
+        isActive: true
+      };
+      //判断是否已经存在,不要重复添加菜单
+      let isExist = false;
+      let currentOperateMenu = this.currentSelectedSubMenu.Account;
+      if (this.currentSelectedSubMenu && currentOperateMenu.length > 0) {
+        currentOperateMenu.forEach(item => {
+          item.isActive = false; //重置其它菜单为 未选中
+          if (item.uniqueKey == params.uniqueKey) {
+            isExist = true;
+            item.isActive = true; // 当前的设置为 TRUE
+          }
+        });
+      }
+
+      // 不存在则添加 子页面
+      if (!isExist) {
+        currentOperateMenu = Object.assign(
+          currentOperateMenu,
+          currentOperateMenu.push(params)
+        );
+      }
+      this.$store.commit("setCurrentSubMenu", this.currentSelectedSubMenu);
+      //打开指定页面
+      this.$emit("openSubMenu", params);
+    }
+  }
+};
+</script>
+
+<style >
+#Account_sun {
+  margin-top: 4%;
+  margin-left: 10%;
+
+  text-align: center;
+  height: 600px;
+  width: 100%;
+}
+#Account_one {
+  float: left;
+  padding-left: 100px;
+}
+</style>
