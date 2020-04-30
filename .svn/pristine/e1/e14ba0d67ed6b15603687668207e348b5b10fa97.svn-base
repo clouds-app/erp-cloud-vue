@@ -56,8 +56,8 @@
                     @on-change="onChange_initDate"
                     transfer
                     :value="formDataInfo.initDate" 
-                    type="date"
-                    format="yyyy-MM-dd"
+                    type="datetime"
+                    format="yyyy-MM-dd HH:mm:ss"
                   ></DatePicker>
             </FormItem>
           </Col>
@@ -65,9 +65,8 @@
             <FormItem label="初始化金额" prop="initAmt">
               <Input
                 :disabled="false"
-                type="number"
                 v-model="formDataInfo.initAmt"
-                maxlength="20"
+                maxlength="80"
                 placeholder="初始化金额"
               ></Input>
             </FormItem>
@@ -103,9 +102,8 @@
             <FormItem label="税率" prop="taxRate">
               <Input
                 :disabled="false"
-                 type="number"
                 v-model="formDataInfo.taxRate"
-                maxlength="20"
+                maxlength="80"
                 placeholder="税率"
               ></Input>
             </FormItem>
@@ -189,9 +187,6 @@ export default {
         purCode: [
           { required: true, message: "供应商编号不能为空", trigger: "blur" }
         ],
-        initDate: [
-          { required: true,type:'date',message: "初始化日期不能为空", trigger: "blur" }
-        ],
       }
     };
   },
@@ -212,10 +207,8 @@ export default {
   methods: {
      // 设置默认值
     setDefaultData(){
-        if(this.formDataInfo.initDate==''|| this.formDataInfo.initDate==null){
-            this.formDataInfo.initDate = new Date(dayjs().format("YYYY-MM-DD"))
-        }else{
-            this.formDataInfo.initDate = new Date(dayjs(this.formDataInfo.initDate).format("YYYY-MM-DD"))
+        if(this.formDataInfo.initDate==''){
+            this.formDataInfo.initDate = new Date(dayjs(this.formDataInfo.initDate).format("YYYY-MM-DD HH:mm:ss"))
         }
     },
     //初始化日期 变动日期
