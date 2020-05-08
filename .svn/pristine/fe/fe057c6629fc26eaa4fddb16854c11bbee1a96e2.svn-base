@@ -1,63 +1,25 @@
 <template>
   <div>
     <!-- Account  -->
-    <Row>
-      <Col span="1">&nbsp;</Col>
-
-      <Col span="6" offset="1">
-        <Card>
-          <p slot="title">应收</p>
-          <br />
-          <p style="padding: 10px;">
-            <Button @click="handleSubMenuEvent('custinit','Account-custinit','客户财务初始化')" type="info">客户财务初始化</Button>
-          </p>
-          <p style="padding: 10px;">
-            <Button @click="handleSubMenuEvent('otherMoeny','account-otherMoeny','客户其它应收')" type="info">客户其它应收</Button>
-          </p>
-          <p style="padding: 10px;">
-            <Button @click="handleSubMenuEvent('snaddebt','Account-snaddebt','应收呆账')" type="info">应收呆账</Button>
-          </p>
-        </Card>
-      </Col>
-      <Col span="6">
-        <Card>
-          <p slot="title">应付</p>
-          <br />
-          <p style="padding: 10px;">
-            <Button @click="handleSubMenuEvent('purinit','account-purinit','供应商财务初始化')" type="info">供应商财务初始化</Button>
-          </p>
-        </Card>
-      </Col>
-    </Row>
-    <!-- Account  -->
-    <!-- <div id="Account_sun">
+    <div id="Account_sun">
       <div id="Account_one">
         <p>
-          <Button
-            @click="handleSubMenuEvent('purinit','account-purinit','供应商财务初始化')"
-            type="success"
-          >供应商财务初始化</Button>
+          <Button @click="handleSubMenuEvent('purinit','account-purinit','供应商财务初始化')" type="success">供应商财务初始化</Button>
         </p>
         <br />
         <p>
-          <Button
-            @click="handleSubMenuEvent('otherMoeny','account-otherMoeny','客户其它应收')"
-            type="success"
-          >客户其它应收</Button>
+          <Button @click="handleSubMenuEvent('otherMoeny','account-otherMoeny','客户其它应收')" type="success">客户其它应收</Button>
         </p>
         <br />
-        <p style="padding: 10px;">
-          <Button
-            @click="handleSubMenuEvent('custinit','Account-custinit','客户财务初始化')"
-            type="info"
-          >客户财务初始化</Button>
+         <p style="padding: 10px;">
+          <Button @click="handleSubMenuEvent('custinit','Account-custinit','客户财务初始化')" type="info">客户财务初始化</Button>
         </p>
         <br />
-        <p style="padding: 10px;">
+         <p style="padding: 10px;">
           <Button @click="handleSubMenuEvent('snaddebt','Account-snaddebt','应收呆账')" type="info">应收呆账</Button>
         </p>
       </div>
-    </div>-->
+    </div>
   </div>
 </template>
 
@@ -72,13 +34,13 @@ export default {
     // 子页面 参数: 页面.vue,唯一区别ID,TAB 标签显示名称
     handleSubMenuEvent(currentPage, uniqueKey, tabName) {
       let params = {
-        menuName: "Account",
-        page: currentPage, //显示控件页面
-        uniqueKey: uniqueKey,
-        lable: tabName,
-        isActive: true
-      };
-      this.handleMenuBaseEvent(params); // 调用MIXIN 共用方法
+              menuName: 'Account',
+              page: currentPage, //显示控件页面
+              uniqueKey: uniqueKey,
+              lable: tabName,
+              isActive: true
+            };
+      this.handleMenuBaseEvent(params) // 调用MIXIN 共用方法
       // //  debugger
       // let subItem = {
       //   uniqueKey: uniqueKey,
@@ -114,13 +76,14 @@ export default {
       // let menuConfig = {
       //       isNew:!isExist,
       //       topMenu:params.type,
-      //       subMenu:uniqueKey,
+      //       subMenu:uniqueKey, 
       //   }
       // this.$store.commit('setOperationConfig', menuConfig)
       // this.$store.commit("setCurrentSubMenu", this.currentSelectedSubMenu);
       // //打开指定页面
       // this.$emit("openSubMenu", params);
-    }
+    },
+    
   }
 };
 </script>

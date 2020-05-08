@@ -58,8 +58,8 @@
           <Col span="24">
             <Row>
               <Col span="8">
-                <FormItem label="业务员" prop="workName">
-                  <Input disabled v-model="formDataInfo.workName" maxlength="80" placeholder="业务员"></Input>
+                <FormItem label="业务员" prop="salesman">
+                  <Input disabled v-model="formDataInfo.salesman" maxlength="80" placeholder="业务员"></Input>
                 </FormItem>
               </Col>
               <Col span="8">
@@ -69,7 +69,7 @@
                     field-name="custCode"
                     popup-name="CustomerSingleBox"
                     :fill-model.sync="formDataInfo"
-                    render-fields="custId,custCode,custName,curyId,coinCode,coinName,workName,taxRat,rate"
+                    render-fields="custId,custCode,custName,curyId,coinCode,coinName,salesman,taxRat,rate"
                     from-fields="id,cusCode,cusName,coinId,coinCode,coinName,saleName,taxRate,coinRate"
                     :suffix="true"
                     :suffix-model="formDataInfo.custName"
@@ -127,14 +127,7 @@
           </Col>
           <Col span="8">
             <FormItem label="会计月份" prop="bdYm">
-              <!-- <Input v-model="formDataInfo.bdYm" maxlength="80"></Input> -->
-              <DatePicker
-                @on-change="onChange_omYm"
-                transfer
-                :value="formDataInfo.bdYm"
-                type="month"
-                format="yyyyMM"
-              ></DatePicker>
+              <Input v-model="formDataInfo.bdYm" maxlength="80"></Input>
             </FormItem>
           </Col>
 
@@ -187,7 +180,7 @@ const default_formDataInfo = {
   bdNo: "",
   bdNoIvAmt: 0,
   bdReason: "",
-  bdYm: new Date(dayjs().format("YYYY-MM")), // 会计月份
+  bdYm: dayjs().format("YYYYMM"),
   bdZqAmt: 0,
   coinCode: "",
   coinName: "",
@@ -199,8 +192,7 @@ const default_formDataInfo = {
   relationNo: "",
   taxRat: 0,
   taxTp: "0",
-  taxTpText: "",
-  workName: ""
+  taxTpText: ""
 };
 export default {
   name: "edit-snaddebt",
@@ -231,12 +223,8 @@ export default {
           { required: true, message: "关联单号不能为空", trigger: "blur" }
         ],
         bdYm: [
-          {
-            required: true,
-            type: "date",
-            message: "会计月份不能为空",
-            trigger: "blur"
-          }
+          ///^[1-9]\d*$/
+          { pattern: /^\d{6}$/, message: "会计月份不正确", trigger: "blur" }
         ]
       },
       cityCascader: [],
@@ -250,35 +238,8 @@ export default {
       }
     };
   },
-  wacth: {
-    showWindow: function(n, o) {
-      if (n) {
-        let _self = this;
-        this.$nextTick(() => {
-          // 延迟赋值,不然数据还没有正确返回的情况下,无法绑定默认值
-          setTimeout(() => {
-            this.setDefaultData();
-          }, 1000);
-        });
-      }
-    }
-  },
+
   methods: {
-    setDefaultData() {
-      if (this.formDataInfo.bdYm == "" || this.formDataInfo.bdYm == null) {
-        this.formDataInfo.bdYm = new Date(dayjs().format("YYYY-MM"));
-      } else {
-        this.formDataInfo.bdYm = new Date(
-          dayjs(this.formDataInfo.bdYm).format("YYYY-MM")
-        );
-      }
-    },
-    //会计月份 变动日期
-    onChange_omYm(item) {
-      if (!_.isEmpty(item)) {
-        this.formDataInfo.bdYm = new Date(dayjs(item).format("YYYY-MM"));
-      }
-    },
     onFill() {
       this.CustId = this.formDataInfo.custId;
       if (this.CustId == "") {
@@ -301,7 +262,7 @@ export default {
         });
     },
     closeMain(vlu) {
-      this.formDataInfo.relationNo = vlu;
+      this.formDataInfo.relationNo = vluz;
     },
     Slave_list_table_editRowModify() {
       // debugger
@@ -322,18 +283,6 @@ export default {
         .then(res => {
           this.$refs.mychild.getFormInitDataObj(res);
         });
-    },
-    // 继承中修改,更新数据时,重置修改一些提交的数据
-    resetformDataInfo(_data) {
-      _data.bdDate = dayjs(_data.bdDate).format("YYYY-MM-DD HH:mm:ss");
-      _data.bdYm = dayjs(_data.bdYm).format("YYYYMM");
-      return _data;
-    },
-    // 继承中修改,添加数据时,重置修改一些提交的数据
-    resetAddformDataInfo(_data) {
-      _data.bdDate = dayjs(_data.bdDate).format("YYYY-MM-DD HH:mm:ss");
-      _data.bdYm = dayjs(_data.bdYm).format("YYYYMM");
-      return _data;
     },
     // 重写父类,添加时候,清空数据
     HandleFormDataInfo() {

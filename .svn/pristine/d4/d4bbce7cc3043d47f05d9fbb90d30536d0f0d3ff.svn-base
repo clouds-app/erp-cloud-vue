@@ -292,14 +292,6 @@
                     <Select @on-change="value => {valueChangeAssign(value, index, row,column.key)}" :disabled="column.readOnly" v-else-if="column.key == 'unitType'" v-model="row[column.key]" transfer>
                       <Option v-for="(item,index) in bpUnitList" :key="index" :value="item.dicValue+''">{{item.dicLabel}}</Option>
                     </Select>
-                     <!-- 少数-->
-                     <template  v-else-if="column.key ==='biLessQty'">
-                      <formControl  @input="tableColTiggerEvent(row,column,index,'biLessQtyChangeEvent')"  :control-type="column.controlType" v-model="row[column.key]"></formControl>
-                    </template>
-                      <!-- 单价-->
-                     <template  v-else-if="column.key ==='biPrice'">
-                      <formControl  @input="tableColTiggerEvent(row,column,index,'biPriceChangeEvent')"  :control-type="column.controlType" v-model="row[column.key]"></formControl>
-                    </template>
                      <!-- 新单价-->
                      <template  v-else-if="column.key ==='biNewPrice'">
                       <formControl  @input="tableColTiggerEvent(row,column,index,'biNewPriceChangeEvent')"  :control-type="column.controlType" v-model="row[column.key]"></formControl>
@@ -591,39 +583,22 @@ export default {
         },
        // 表格列值改变 回调事件处理event：{row, column, index, event,config}
         tableColTiggerEventSlaveCall (obj) {
-           let currentItem = this.formDataInfo['boxDeliItems'].defaultList[obj.index]
-           let totalMoney = 0,crrentPrice = 0
-           let biQty=  Number(currentItem.biQty==null?0:currentItem.biQty) // 送货数量
-           let biLessQty=  Number(currentItem.biLessQty==null?0:currentItem.biLessQty) // 少数
-          if(currentItem.biNewPrice==null || currentItem.biNewPrice=='' || currentItem.biNewPrice=='0' || currentItem.biNewPrice==0){
-                crrentPrice =Number(currentItem.biPrice)
-              }else{
-                crrentPrice =Number(currentItem.biNewPrice)
-          }
           switch (obj.event) {  
-             // 少数 变更
-            case 'biLessQtyChangeEvent':
-                // 少数变更时,还需要触发变更(重量 体积 面积) 
-              let toFixedUnit = 2 // 保留小数位数
-                let leftQty = (biQty - biLessQty)
-                let biWeight =Number((leftQty * Number(currentItem.biSWeight)).toFixed(toFixedUnit))// 重量 = (送货数量-少数)*单重
-                let biCube =Number((leftQty * Number(currentItem.biSCube)).toFixed(toFixedUnit))// 体积 = (送货数量-少数)*单体积
-                let biArea =Number((leftQty * Number(currentItem.biSArea)).toFixed(toFixedUnit))// 面积 = (送货数量-少数)*单面积
-              this.$refs['slave_list_table_edit'].set({biWeight:Number(biWeight).toFixed(2),biCube:Number(biCube).toFixed(2),biArea:Number(biArea).toFixed(2)}, obj.index)
-              break 
-            // 单价 变更
-            case 'biPriceChangeEvent':
-              break 
-             // 新单价 变更
             case 'biNewPriceChangeEvent':
-               
+                let currentItem = this.formDataInfo['boxDeliItems'].defaultList[obj.index]
+                 let crrentPrice =0
+                 if(currentItem.biNewPrice==null || currentItem.biNewPrice=='' || currentItem.biNewPrice=='0'){
+                   crrentPrice =Number(currentItem.biPrice)
+                 }else{
+                   crrentPrice =Number(currentItem.biNewPrice)
+                 }
+                let totalMoney =crrentPrice * Number(currentItem.biQty==null?0:currentItem.biQty)
+                  // 触发修改值 直接修改原始数据 无效
+                this.$refs['slave_list_table_edit'].set({biMoney:Number(totalMoney).toFixed(2)}, obj.index)
               break 
             default:
               break
           }
-            totalMoney = crrentPrice * (biQty - biLessQty)
-              // 触发修改值 直接修改原始数据 无效
-            this.$refs['slave_list_table_edit'].set({biMoney:Number(totalMoney).toFixed(2)}, obj.index)
         },    
     // 设置默认值
     setDefaultData(){

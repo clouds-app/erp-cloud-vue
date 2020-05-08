@@ -1,7 +1,7 @@
 <template>
   <div>
     <editWindow
-      id="cl-edit-boxUseRe"
+      id="cl-edit-boxLibMove"
       :title="actionLableName"
       v-model="showWindow"
       :fullscreen="false"
@@ -19,9 +19,47 @@
           :rules="ruleValidate"
           :label-width="124"
         >
-          <div class="edit-boxUseReSlave">
+          <div class="edit-boxLibMoveSlave">
             <Row>
-              <Col span="5">
+             <Col span="4">
+                <FormItem label="工单号" prop="workNo">
+                  <Input
+                    v-model="formDataInfo.master.workNo"
+                    maxlength="20"
+                    placeholder="工单号"
+                  ></Input>
+                </FormItem>
+              </Col>
+              <Col span="4">
+                <FormItem label="产品编号" prop="bpNo">
+                  <Input
+                    v-model="formDataInfo.master.bpNo"
+                    maxlength="20"
+                    placeholder="产品编号"
+                  ></Input>
+                </FormItem>
+              </Col>
+              <Col span="5" >
+                    <FormItem label="规格(L*W*H)">
+                        <Row>
+                            <Col span="8" >
+                             <Input v-model="formDataInfo.master.bpCSizeL" maxlength="20"></Input>
+                             </Col>
+                             <Col span="8" >
+                            <Input v-model="formDataInfo.master.bpCSizeW" maxlength="20"></Input>
+                            </Col>
+                            <Col span="8" >
+                            <Input v-model="formDataInfo.master.bpCSizeH" maxlength="20"></Input>
+                            </Col>
+                        </Row>                      
+                    </FormItem>
+              </Col>
+              <Col span="7">
+                    <FormItem label>
+                        <Checkbox v-model="formDataInfo.master.mode">是否显示不同于此产品的工单</Checkbox>
+                    </FormItem>
+                  </Col> 
+              <!-- <Col span="5">
                 <FormItem :label="title" prop="inBiWorkNo">
                   <Input
                     v-model="formDataInfo.master.inBiWorkNo"
@@ -29,15 +67,15 @@
                     :placeholder="title"
                   ></Input>
                 </FormItem>
-              </Col>
-              <Col span="5">
+              </Col> -->
+              <!-- <Col span="5">
                 <FormItem label>
                   <RadioGroup v-model="formDataInfo.master.flag">
                     <Radio label="0">模糊</Radio>
                     <Radio label="1">精准</Radio>
                   </RadioGroup>
                 </FormItem>
-              </Col>
+              </Col> -->
               <!-- <Col span="8">
                 <Row>
                   <Col span="12" style="width: 62%;">
@@ -73,20 +111,20 @@
           <!--  注意:eTable formDataInfo.wareHouseItems.defaultList  ===wareHouseItems=== 需要根据实际接口修改,其它不变-->
           <TabPane>
             <eTable
-              ref="slave_edit-boxUseRe"
+              ref="slave_edit-boxLibMove"
               :height="400"
               unqiue-mark="id"
               :index-menu="true"
               :col-start="0"
               :width="200"
-              :row-init-data="initData.initData.paperReInWorkDtoFm"
+              :row-init-data="initData.initData.boxlibmoveitemworknodataFm"
               :data.sync="productMDatasTableDataList"
               :rules="tableFieldsValidator"
               :showContextMenu="!detailDisabled"
             >
               <template slot="head">
                 <tr
-                  v-for="(columnGroup,index) in initData.columns.paperReInWorkDtoFm.editGroups"
+                  v-for="(columnGroup,index) in initData.columns.boxlibmoveitemworknodataFm.editGroups"
                   :key="index"
                 >
                   <th
@@ -98,16 +136,16 @@
                     :rowspan="column.rowSpan"
                     style="text-align:center;"
                   >
-                    <div v-if="column.key == 'inWorkNo'" @click="purPaperPoClick('工单','inWorkNo')" class="ivu-table-cell">
-                      <span class>工单</span>
-                    </div>
+                    <!-- <div v-if="column.key == 'stationCode'" @click="purPaperPoClick('仓位编号','stationCode')" class="ivu-table-cell" v-show="isSourceStation">
+                      <span class>仓位编号</span>
+                    </div> -->
                     <!-- <div v-else-if="column.key == 'custName'" @click="purPaperPoClick('客户名称','custName')" class="ivu-table-cell">
                       <span class >客户名称</span>
                     </div>
                     <div v-else-if="column.key == 'bcCustPo'" class="ivu-table-cell">
                       <span class @click="purPaperPoClick('客户PO号','bcCustPo')">客户PO号</span>
                     </div>  -->
-                    <div v-else class="ivu-table-cell">
+                    <div class="ivu-table-cell">
                       <span class>{{column.title}}</span>
                     </div>
                   </th>
@@ -116,10 +154,11 @@
               <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
                 <td
                   class="ivu-table-column-left"
-                  v-for="(column,columnIndex) in initData.columns.paperReInWorkDtoFm.editColumns"
+                  v-for="(column,columnIndex) in initData.columns.boxlibmoveitemworknodataFm.editColumns"
                   :key="columnIndex"
                   :width="column.width"
                 >
+                   
                   <formControl
                     :control-type="column.controlType"
                     v-model="row[column.key]"
@@ -153,9 +192,9 @@
  *
  * @return 返回
  *
- * @author ming xing
+ * @author Andy Huang
  *
- * @created 2020/03/23 17:07:54
+ * @created 2019/11/20 17:07:54
  */
 import tableSelect from "@/components/table-select/table-select";
 import editWindow from "@/components/edit-window/edit-window";
@@ -171,7 +210,7 @@ import calc from "@/libs/calc";
 import list from "../../mixins/list";
 import dayjs from "dayjs";
 export default {
-  name: "edit-boxUseReSlave",
+  name: "edit-boxLibMoveSlave",
   mixins: [editBaseMixins],
   components: {
     editWindow,
@@ -182,21 +221,29 @@ export default {
     formControl
   },
 
-  created() {
-    // console.log(this.List)
+  mounted() {
+    
   },
   props: {
-    batchNoList:{
-      type:String,
-      default:""
-    },
     inSupplierId: {
+      type: String,
+      default: ""
+    },
+    isSourceStation: {
+      type: Boolean,
+      default: false
+    },
+    stationId: {
       type: String,
       default: ""
     },
     List: {
       type: String,
       default: ""
+    },
+    workNoList: {
+      type: String,
+      defaule: ""
     },
     WorkOrderNumber1: {
       type: Object,
@@ -224,7 +271,7 @@ export default {
         artCode: "",
       },
       title: "工单",
-      formName: "paperReInWorkDtoFm",
+      formName: "boxlibmoveitemworknodataFm",
       propvalue: "inWorkNo", //存储子表每个对应的字段
       productMDatasTableDataList: [], //存放处理过后的数据:[],
       table: [], //存储子表全部对应的字段
@@ -233,7 +280,37 @@ export default {
       bcNo: ""
     };
   },
-  computed: {},
+  watch: {
+    // isSourceStation(a,b){
+    //   debugger
+    //   console.log(a)
+    //   console.log(this.isSourceStation)
+    //   console.log(this.initData.columns.boxlibmoveitemworknodataFm)
+    //   if(a){
+    //     let arr = this.initData.columns.boxlibmoveitemworknodataFm.editColumns
+    //     for(let i=0;i<arr.length;i++){
+    //       if(arr[i].key=="stationCode"){
+    //         arr.splice(i,1)
+    //         i--
+    //       }
+    //     }
+    //     let arr2 = this.initData.columns.boxlibmoveitemworknodataFm.listColumns
+    //     for(let i=0;i<arr2.length;i++){
+    //       if(arr2[i].key=="stationCode"){
+    //         arr2.splice(i,1)
+    //         i--
+    //       }
+    //     }
+    //     let arr3 = this.initData.columns.boxlibmoveitemworknodataFm.editGroups[0]
+    //     for(let i=0;i<arr3.length;i++){
+    //       if(arr3[i].key=="stationCode"){
+    //         arr3.splice(i,1)
+    //         i--
+    //       }
+    //     }
+    //   }
+    // }
+  },
   methods: {
     purPaperPoClick(name, value) {
       //debugger
@@ -243,32 +320,21 @@ export default {
     //搜索点击事件
     clickmaster() {
       //debugger
-     
-      // if (this.propvalue == "bcCustPo") {
-      //   this.bcCustPo = this.formDataInfo.master.inBiWorkNo;
-      //   this.custName = "";
-      //   this.bcNo = "";
-      // } else if (this.propvalue == "custName") {
-      //   this.custName = this.formDataInfo.master.inBiWorkNo;
-      //   this.bcCustPo = "";
-      //   this.bcNo = "";
-      // } else {
-      //   this.bcNo = this.formDataInfo.master.inBiWorkNo;
-      //   this.bcCustPo = "";
-      //   this.custName = "";
-      // }
       let params = {
-        flag:this.formDataInfo.master.flag,
-        // bcCustPo: this.bcCustPo,
-        // custName: this.custName,
-        inSupplierId: this.inSupplierId,
-        inWorkNo: this.formDataInfo.master.inBiWorkNo,
-        issInput: 0,
-        batchNoList:this.batchNoList,
+            // stationId: this.formDataInfo.master.sourceStationId,
+            bpNo:this.formDataInfo.master.bpNo,  //调出产品编号
+            workNoList:this.workNoList,
+            workNo: this.formDataInfo.master.workNo,
+            productNo:"",
+            mode: this.formDataInfo.master.mode?1:0,
+            bpCSizeL: this.formDataInfo.master.bpCSizeL,
+            bpCSizeW: this.formDataInfo.master.bpCSizeW,
+            bpCSizeH: this.formDataInfo.master.bpCSizeH,
+            stationId: this.stationId,
       };
 
-      request.post(`/stock/BoxUseRe/getWorkInStore`, params).then(res => {
-        this.$refs["slave_edit-boxUseRe"].cloneData = res;
+      request.post(`/stock/boxLibMove/getMoveItemBoxData`, params).then(res => {
+        this.$refs["slave_edit-boxLibMove"].cloneData = res;
       });
     },
 
@@ -281,7 +347,9 @@ export default {
       ).format("YYYY-MM-DD");
       //加载表单初始化数据
       this.formDataInfo["master"] = {
-        inBiWorkNo: "",
+        bpCSizeL: 0,
+        bpCSizeW: 0,
+        bpCSizeH: 0,
         flag: "1",
         endDate: dayjs().format("YYYY-MM-DD"),
         startDate: startDate
@@ -289,7 +357,7 @@ export default {
       if (data == "" || data == null) {
         return;
       }
-      this.$refs["slave_edit-boxUseRe"].cloneData = data;
+      this.$refs["slave_edit-boxLibMove"].cloneData = data;
     },
 
     //表单数据提交事件
@@ -297,14 +365,14 @@ export default {
       //debugger;
       //表单数据提交事件
       // true就是有问题
-      let result = this.$refs["slave_edit-boxUseRe"].validate();
+      let result = this.$refs["slave_edit-boxLibMove"].validate();
       if (result) {
         return;
       }
       let parms = [];
-      let submitDataObj = this.$refs["slave_edit-boxUseRe"].cloneData;
+      let submitDataObj = this.$refs["slave_edit-boxLibMove"].cloneData;
       for (let index = 0; index < submitDataObj.length; index++) {
-        let Choice = this.$refs["slave_edit-boxUseRe"].cloneData[index]
+        let Choice = this.$refs["slave_edit-boxLibMove"].cloneData[index]
           .iisChose;
         if (Choice === true) {
           parms.push(submitDataObj[index]);

@@ -41,7 +41,6 @@
             <Col span="6">
                 <FormItem label="客户编号" prop="cusCode">
                   <popup 
-                   :beforeOnFillValidator="beforeOnFillValidator"
                     v-model="formDataInfo.master.cusCode"
                     field-name="cusCode"
                     :disabled="false"
@@ -401,28 +400,6 @@ export default {
    this.getboxReTypeList() //费用类型
   },
   methods: {
-      // 更新选择客户,确认提交前验证
-      beforeOnFillValidator () {
-          return new Promise((resolve,reject)=>{
-              if(this.action=='add'){
-                reject()
-                return
-              } 
-              this.$Modal.confirm({
-              title: '提示',
-              content: `客户编号改变，退货明细也会跟着改变?`,
-              onOk: () => {
-                this.formDataInfo['boxReItems'].defaultList.forEach((item,index)=>{
-                    this.$refs["slave_list_table_edit"].deleteRow(index)
-                })
-                resolve(true)
-              },
-              onCancel:()=>{
-                resolve(false)
-              }
-            })
-          })
-      },
       setDefaultData(){
         // debugger
         this.formDataInfo.master.brDate = new Date(dayjs(this.formDataInfo.master.brDate).format("YYYY-MM-DD HH:mm:ss")) 

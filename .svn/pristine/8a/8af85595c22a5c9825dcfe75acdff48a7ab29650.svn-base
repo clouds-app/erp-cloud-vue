@@ -1,5 +1,5 @@
 <template>
-  <div style=" ">
+  <div id="Bas_sun" style=" ">
     <Row>
       <Col span="1">&nbsp;</Col>
       <Col span="6" offset="1">
