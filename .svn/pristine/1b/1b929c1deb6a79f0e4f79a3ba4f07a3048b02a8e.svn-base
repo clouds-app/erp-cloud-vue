@@ -1,0 +1,77 @@
+<template>
+  <div>
+    <!-- Account  -->
+    <Row>
+      <Col span="1">&nbsp;</Col>
+
+      <Col span="6" offset="1">
+        <Card>
+          <p slot="title">应收</p>
+          <br />
+          <p style="padding: 10px;">
+            <Button @click="handleSubMenuEvent('custinit','Account-custinit','客户财务初始化')" type="info">客户财务初始化</Button>
+          </p>
+          <p style="padding: 10px;">
+            <Button @click="handleSubMenuEvent('accRece','account-accRece','应收对账单')" type="info">应收对账单</Button>
+          </p>
+          <p style="padding: 10px;">
+            <Button @click="handleSubMenuEvent('otherMoeny','account-otherMoeny','客户其它应收')" type="info">客户其它应收</Button>
+          </p>
+          <p style="padding: 10px;">
+            <Button @click="handleSubMenuEvent('snaddebt','Account-snaddebt','应收呆账')" type="info">应收呆账</Button>
+          </p>
+           <p style="padding: 10px;">
+            <Button @click="handleSubMenuEvent('invoiceCheck','Account-invoiceCheck','开票')" type="info">开票</Button>
+          </p>
+        </Card>
+      </Col>
+      <Col span="6">
+        <Card>
+          <p slot="title">应付</p>
+          <br />
+          <p style="padding: 10px;">
+            <Button @click="handleSubMenuEvent('purinit','account-purinit','供应商财务初始化')" type="info">供应商财务初始化</Button>
+          </p>
+        </Card>
+      </Col>
+    </Row>
+  </div>
+</template>
+
+<script>
+import globleMixin from "@/mixins";
+export default {
+  mixins: [globleMixin],
+  data() {
+    return {};
+  },
+  methods: {
+    // 子页面 参数: 页面.vue,唯一区别ID,TAB 标签显示名称
+    handleSubMenuEvent(currentPage, uniqueKey, tabName) {
+      let params = {
+        menuName: "Account",
+        page: currentPage, //显示控件页面
+        uniqueKey: uniqueKey,
+        lable: tabName,
+        isActive: true
+      };
+      this.handleMenuBaseEvent(params); // 调用MIXIN 共用方法
+    }
+  }
+};
+</script>
+
+<style >
+#Account_sun {
+  margin-top: 4%;
+  margin-left: 10%;
+
+  text-align: center;
+  height: 600px;
+  width: 100%;
+}
+#Account_one {
+  float: left;
+  padding-left: 100px;
+}
+</style>

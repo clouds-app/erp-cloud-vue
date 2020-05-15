@@ -1,0 +1,412 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-gathering"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="70%"
+      :loading="!isLoaddingDone"
+      @on-ok="formDataSubmit()"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-massage="true"
+        :model="formDataInfo"
+        :rules="ruleValidate"
+        :label-width="100"
+        :disabled="detailDisabled"
+      >
+        <Row>
+          <Col span="6">
+            <FormItem label="收款单号" prop="gNo">
+              <!-- <referenceField v-model="formDataInfo.initNo"
+               :disabled="true" 
+                maxlength="20"
+                placeholder="初始单号"
+                :form-name="frommastername"
+                :id="formDataInfo.id"
+              ></referenceField>-->
+              <Input
+                :disabled="true"
+                v-model="formDataInfo.gNo"
+                maxlength="80"
+                placeholder="收款单号"
+              ></Input>
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="单据日期" prop="gDate">
+              <DatePicker
+                transfer
+                :value="formDataInfo.gDate"
+                type="date"
+                format="yyyy-MM-dd HH:mm:ss"
+              ></DatePicker>
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="客户编号" prop="custCode">
+                <popup
+                    v-model="formDataInfo.custCode"
+                    field-name="custCode"
+                    popup-name="CustomerMultiBox"
+                    :fill-model.sync="formDataInfo"
+                    render-fields="custId,custCode,custName"
+                    from-fields="id,cusCode,cusName"
+                    :suffix="true"
+                    :suffix-model="formDataInfo.custName"
+                />
+            </FormItem>
+            <!-- <FormItem label="客户编号" prop="custCode">
+              <popup
+                v-model="formDataInfo.custCode"
+                field-name="custCode"
+                :disabled="false"
+                popup-name="SupplierSingleBox"
+                :fill-model.sync="formDataInfo"
+                render-fields="custId,custCode,custName,coinCode,coinName,coinId,taxType,taxRate"
+                from-fields="id,custCode,custName,coinCode,coinName,coinId,taxTP,taxRate"
+                :suffix="true"
+                :suffix-model="formDataInfo.purName"
+              />
+            </FormItem> -->
+          </Col>
+          <Col span="6">
+            <FormItem label="会计月份" prop="gYm">
+              <DatePicker
+                transfer
+                :value="formDataInfo.gYm"
+                type="month"
+                format="yyyyMM"
+              ></DatePicker>
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="收据单号" prop="billNo">
+              <Input
+                :disabled="false"
+                v-model="formDataInfo.billNo"
+                maxlength="20"
+                placeholder="收据单号"
+              ></Input>
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="收款类型" prop="gType">
+              <optionSearch
+                @onChange="optionOnChange"
+                :defaultItem="formDataInfo.gType"
+                :loaddingDataWhen="showWindow"
+                formKey="gatheringType"
+                query="gatheringType"
+              />
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="货币" prop="coinCode">
+              <popup
+                v-model="formDataInfo.coinCode"
+                field-name="coinCode"
+                :disabled="false"
+                popup-name="CoinSingleBox "
+                :fill-model.sync="formDataInfo"
+                render-fields="coinId,coinCode,coinName"
+                from-fields="id,coinCode,coinName"
+                :suffix="true"
+                :suffix-model="formDataInfo.coinName"
+                :query-params="{}"
+              />
+            </FormItem>
+          </Col>
+          <!-- <Col span="6">
+            <FormItem label="税别" prop="taxType">
+               <optionSearch
+                    @onChange="optionOnChange"
+                    :defaultItem="formDataInfo.taxType"
+                    :loaddingDataWhen="showWindow"
+                    formKey="taxType"
+                    query="taxTypePur"
+                  />
+            </FormItem>
+          </Col>-->
+          <Col span="6">
+            <FormItem label="税率" prop="taxRat">
+              <Input
+                :disabled="false"
+                type="number"
+                v-model="formDataInfo.taxRat"
+                maxlength="20"
+                placeholder="税率"
+              ></Input>
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="收款金额" prop="gAmt">
+              <Input
+                :disabled="false"
+                type="number"
+                v-model="formDataInfo.gAmt"
+                maxlength="20"
+                placeholder="收款金额"
+              ></Input>
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="汇算金额" prop="inAmt">
+              <Input
+                :disabled="true"
+                type="number"
+                v-model="formDataInfo.inAmt"
+                maxlength="20"
+                placeholder="汇算金额"
+              ></Input>
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="折扣(%)" prop="discount">
+              <Input
+                :disabled="false"
+                type="number"
+                v-model="formDataInfo.discount"
+                maxlength="20"
+                placeholder="折扣(%)"
+              ></Input>
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="入账金额" prop="accAmt">
+              <Input
+                :disabled="true"
+                type="number"
+                v-model="formDataInfo.accAmt"
+                maxlength="20"
+                placeholder="入账金额"
+              ></Input>
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="单据类型" prop="billType">
+              <optionSearch
+                @onChange="optionOnChange"
+                :defaultItem="formDataInfo.billType"
+                :loaddingDataWhen="showWindow"
+                formKey="gatheringBillType"
+                query="gatheringBillType"
+              />
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="票据单号" prop="invNo">
+              <Input
+                :disabled="false"
+                v-model="formDataInfo.invNo"
+                maxlength="20"
+                placeholder="票据单号"
+              ></Input>
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="到账日期" prop="indate">
+              <DatePicker
+                transfer
+                :value="formDataInfo.indate"
+                type="date"
+                format="yyyy-MM-dd"
+              ></DatePicker>
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="备注" prop="remark">
+              <Input
+                :disabled="false"
+                v-model="formDataInfo.remark"
+                maxlength="80"
+                placeholder="备注"
+              ></Input>
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="已冲金额" prop="writeOffAmt">
+              <Input
+                :disabled="true"
+                type="number"
+                v-model="formDataInfo.writeOffAmt"
+                maxlength="20"
+                placeholder="已冲金额"
+              ></Input>
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="未冲金额" prop="noWriteOffAmtt">
+              <Input
+                :disabled="true"
+                type="number"
+                v-model="formDataInfo.initAmt"
+                maxlength="20"
+                placeholder="未冲金额"
+              ></Input>
+            </FormItem>
+          </Col>
+        </Row>
+      </Form>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-gathering 已收款 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author mingxing
+ *
+ * @created 2020/05/14
+ */
+import dayjs from "dayjs";
+import optionSearch from "../../components/optionSearch";
+import popup from "@/components/popup/popup";
+import editBaseMixins from "../../mixins/edit";
+import { deepCopy } from "view-design/src/utils/assist";
+import { customValidator, uniqueValidator } from "@/libs/validator";
+import referenceField from "@/components/referenceField/referenceField";
+const default_formDataInfo = {
+  coinCode: "",
+  coinId: 0,
+  coinName: "",
+  //iisAudit: 0,
+  billNo: 0,
+  gDate:dayjs().format("YYYY-MM-DD HH:mm:ss"), //初始化日期
+  gNo: "",
+  supplierId: "",
+  custCode: "",
+  purName: "",
+  remark: "",
+  status: 1, // 禁用
+  taxRat: 0,
+  gType: "",
+  gatheringType: "",
+  gAmt: 0,
+  inAmt: 0,
+  discount: 0,
+  accAmt: 0,
+  billType: "",
+  invNo: "",
+  writeOffAmt: 0,
+  noWriteOffAmtt: 0,
+};
+export default {
+  name: "edit-gathering",
+  mixins: [editBaseMixins],
+  components: {
+    optionSearch,
+    popup,
+    referenceField
+  },
+
+  data() {
+    return {
+      frommastername: "accountGatheringFm",
+      actionSubtitle: "已收款", // 当前操作副标题
+      requestBaseUrl: "/account/gathering", // 请求 查询 操作的基础路径
+      formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {
+        custCode: [
+          { required: true, message: "客户编号不能为空", trigger: "blur" }
+        ]
+        // initDate: [
+        //   { required: true,type:'date',message: "初始化日期不能为空", trigger: "blur" }
+        // ],
+      }
+    };
+  },
+  watch: {
+    // showWindow: function(n, o) {
+    //   debugger;
+    //   if (n) {
+    //     let _self = this;
+    //     this.$nextTick(() => {
+    //       // 延迟赋值,不然数据还没有正确返回的情况下,无法绑定默认值
+    //       setTimeout(() => {
+    //         this.setDefaultData();
+    //       }, 1000);
+    //     });
+    //   }
+    // }
+  },
+  methods: {
+    // 设置默认值
+    setDefaultData() {
+      debugger;
+    //   if (!!!this.formDataInfo.taxType) {
+    //     this.formDataInfo.taxType = "0";
+    //   }
+    //   if (
+    //     this.formDataInfo.gDate == "" ||
+    //     this.formDataInfo.gDate == null
+    //   ) {
+    //     this.formDataInfo.gDate = new Date(
+    //       dayjs().format("YYYY-MM-DD")
+    //     );
+    //   } else {
+    //     this.formDataInfo.gDate = new Date(
+    //       dayjs(this.formDataInfo.gDate).format("YYYY-MM-DD")
+    //     );
+    //   }
+    },
+    //初始化日期 变动日期
+    // onChange_gDate(item) {
+    //   debugger;
+    //   if (!_.isEmpty(item)) {
+    //     this.formDataInfo.gDate = new Date(item);
+    //   }
+    // },
+    // 继承中修改,添加数据时,重置修改一些提交的数据
+    resetAddformDataInfo (_data) {
+        debugger
+        if(_data.gDate){
+            _data.gDate = dayjs(_data.gDate).format("YYYY-MM-DD HH:mm:ss");
+        }
+        if(_data.indate){
+            _data.indate = dayjs(_data.indate).format("YYYY-MM-DD")
+        }
+      return _data
+    },
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo() {
+      debugger;
+      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    },
+    // 重写父类 关闭窗口时 触发事件
+    closeActionTigger() {
+      debugger;
+      // fix 清除上次的错误提示 formDataInfo 为表单ref名称
+      this.$refs["formDataInfo"].resetFields();
+      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    }
+  }
+};
+</script>
+
+<style>
+.cl-edit-gathering .ivu-form-item-label {
+  text-align: right;
+  vertical-align: middle;
+  float: left;
+  font-size: 14px;
+  color: #515a6e;
+  line-height: 17px;
+  padding: 7px 12px 10px 0;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+.cl-edit-gathering .right-text {
+  width: 160%;
+}
+</style>

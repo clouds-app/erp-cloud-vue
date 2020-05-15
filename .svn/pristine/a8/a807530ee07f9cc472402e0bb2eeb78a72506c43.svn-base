@@ -1,0 +1,819 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-accRece"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="90%"
+      :loading="!isLoaddingDone"
+      :spinLoaddingText="spinLoaddingText"
+      @on-ok="formTableDataSubmit()"
+      v-if="initData.columns"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-message="true"
+        :model="formDataInfo.master"
+        :rules="ruleValidate"
+        :label-width="100"
+      >
+        <Row>
+          <Col span="22">
+            <Col span="6">
+              <FormItem label="立账单号" prop="arNo">
+                <Input disabled v-model="formDataInfo.master.arNo" maxlength="20" placeholder></Input>
+              </FormItem>
+            </Col>
+            <Col span="6">
+              <FormItem label="日期">
+                <DatePicker
+                  :disabled="detailDisabled"
+                  type="date"
+                  format="yyyy-MM-dd HH:mm:ss"
+                  v-model="formDataInfo.master.arDate"
+                ></DatePicker>
+              </FormItem>
+            </Col>
+            <Col span="6">
+              <FormItem label="客户编号" prop="cusCode">
+                <div>
+                  <!-- @on-fill="Initializationdata" -->
+                  <popup
+                    @on-fill="Initializationdata"
+                    v-model="formDataInfo.master.cusCode"
+                    field-name="cusCode"
+                    :disabled="detailDisabled||isHaveData"
+                    popup-name="CustomerSingleBox"
+                    :fill-model.sync="formDataInfo.master"
+                    render-fields="custId,cusCode,cusName,signBack,arpType,salerId,saleCode,saleName,coinId,areaIds,bdDeAddr,addrDetail,followerId,followerCode,followerName"
+                    from-fields="id,cusCode,cusName,signBack,arpType,salerId,saleCode,saleName,coinId,areaIds,areaNames,addrDetail,followerId,followerCode,followerName"
+                    :suffix="true"
+                    :suffix-model="formDataInfo.master.cusName"
+                    :query-params="{}"
+                  />
+                </div>
+              </FormItem>
+            </Col>
+            <Col span="6">
+              <FormItem label="业务员" prop="saleName">
+                <Input
+                  disabled
+                  v-model="formDataInfo.master.saleName"
+                  maxlength="20"
+                  placeholder="业务员"
+                ></Input>
+              </FormItem>
+            </Col>
+          </Col>
+          <Col span="22">
+            <Col span="6">
+              <FormItem label="月结年月" prop="arMonth">
+                <DatePicker
+                  :disabled="detailDisabled||isHaveData"
+                  type="month"
+                  format="yyyyMM"
+                  v-model="formDataInfo.master.arMonth"
+                ></DatePicker>
+              </FormItem>
+            </Col>
+            <Col span="6">
+              <FormItem label="起始日期" prop="startDate">
+                <DatePicker
+                  :disabled="detailDisabled||isHaveData"
+                  v-model="formDataInfo.master.startDate"
+                  type="datetime"
+                  format="yyyy-MM-dd"
+                ></DatePicker>
+              </FormItem>
+            </Col>
+            <Col span="6">
+              <FormItem label="结束日期" prop="endDate">
+                <DatePicker
+                  :disabled="detailDisabled||isHaveData"
+                  v-model="formDataInfo.master.endDate"
+                  type="datetime"
+                  format="yyyy-MM-dd"
+                ></DatePicker>
+              </FormItem>
+            </Col>
+            <Col span="6">
+              <FormItem label="货款到期" prop="arMDate">
+                <DatePicker
+                  :disabled="detailDisabled||isHaveData"
+                  v-model="formDataInfo.master.arMDate"
+                  type="date"
+                  format="yyyy-MM-dd"
+                ></DatePicker>
+              </FormItem>
+            </Col>
+          </Col>
+          <Col span="22">
+            <Col span="6">
+              <FormItem label="金额" prop="amt">
+                <InputNumber disabled placeholder="金额" v-model="formDataInfo.master.amt" />
+              </FormItem>
+            </Col>
+            <!-- 参数： workOptType   6--司机-->
+            <Col span="6">
+              <FormItem label="明细折后金额" prop="itemDisAmt" id="itemDisAmt">
+                <InputNumber
+                  disabled
+                  placeholder="明细折后金额"
+                  v-model="formDataInfo.master.itemDisAmt"
+                />
+              </FormItem>
+            </Col>
+            <Col span="6">
+              <FormItem label="折扣(%)" prop="discount">
+                <InputNumber placeholder="折扣(%)" v-model="formDataInfo.master.discount" />
+              </FormItem>
+            </Col>
+            <Col span="6">
+              <FormItem label="折后金额">
+                <InputNumber disabled placeholder="折后金额" v-model="formDataInfo.master.disAmt" />
+              </FormItem>
+            </Col>
+          </Col>
+          <Col span="22">
+            <Col span="2">
+              <FormItem class="iisReturnColClass">
+                <Checkbox class="iisReturnClass" disabled v-model="formDataInfo.master.iisReturn">回传</Checkbox>
+              </FormItem>
+            </Col>
+            <Col span="4">
+              <FormItem label="回传人">
+                <Input placeholder="回传人" disabled v-model="formDataInfo.master.returnerName"></Input>
+              </FormItem>
+            </Col>
+            <Col span="6">
+              <FormItem label="回传日期" prop="returnDate">
+                <DatePicker
+                  disabled
+                  transfer
+                  :value="formDataInfo.master.returnDate"
+                  type="datetime"
+                  format="yyyy-MM-dd HH:mm:ss"
+                ></DatePicker>
+              </FormItem>
+            </Col>
+            <Col span="6">
+              <FormItem label="传真" prop="faxNo">
+                <Input disabled v-model="formDataInfo.master.faxNo" maxlength="20" placeholder="传真"></Input>
+              </FormItem>
+            </Col>
+            <Col span="6">
+              <FormItem label="备注">
+                <Input
+                  :disabled="detailDisabled"
+                  v-model="formDataInfo.master.remark"
+                  maxlength="100"
+                  :autosize="{ minRows: 1, maxRows: 2 }"
+                  placeholder="请输入备注..."
+                ></Input>
+              </FormItem>
+            </Col>
+          </Col>
+        </Row>
+      </Form>
+      <Tabs>
+        <!--  注意:eTable formDataInfo.artLengs.defaultList  ===artLengs=== 需要根据实际接口修改,其它不变-->
+        <TabPane label="应收对账单明细" name="name1">
+          <eTable
+            ref="tableFields"
+            unqiue-mark="id"
+            :index-menu="true"
+            :col-start="0"
+            :width="200"
+            :height="400"
+            :insertDirection="insertDirection"
+            :row-init-data="initData.initData.accountaccreceitemFm"
+            :data.sync="formDataInfo.accReceItems.defaultList"
+            :rules="tableFieldsValidator"
+            :showContextMenu="!detailDisabled"
+            v-if="showWindow"
+          >
+            <template slot="head">
+              <tr
+                v-for="(columnGroup,index) in initData.columns.accountaccreceitemFm.editGroups"
+                :key="index"
+              >
+                <th
+                  class="ivu-table-column-left"
+                  v-for="(column,index2) in columnGroup"
+                  :key="index2"
+                  :width="column.editWidth"
+                  :colspan="column.colSpan"
+                  :rowspan="column.rowSpan"
+                  style="text-align:center;"
+                >
+                  <div class="ivu-table-cell">
+                    <span class>{{column.title}}</span>
+                  </div>
+                </th>
+              </tr>
+            </template>
+            <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
+              <td
+                class="ivu-table-column-left"
+                v-for="(column,columnIndex) in initData.columns.accountaccreceitemFm.editColumns"
+                :key="columnIndex"
+                :width="column.editWidth"
+              >
+                <!-- 控件特殊处理 报损类型-->
+                <!-- <Select :disabled="detailDisabled" v-if="column.key == 'pliLostType'" v-model="row[column.key]" transfer>
+                     <Option  v-for="(item,index) in pliLostTypeList" :key="index" :value="item.dicValue">{{item.dicLabel}}</Option>
+                </Select>-->
+                <!--单据号 -->
+                <Input
+                  v-if="column.key == 'billNo'"
+                  v-model="row[column.key]"
+                  field-name="billNo"
+                  :disabled="detailDisabled"
+                  @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'billNo');
+                      }
+                    "
+                  size="small"
+                  :maxlength="20"
+                >
+                  <Icon
+                    @click="Slave_list_table_editRowModify(index,'billNo')"
+                    slot="suffix"
+                    type="md-add"
+                  />
+                </Input>
+                 <!-- 计量单位类型-->
+                    <Select @on-change="value => {valueChangeAssign(value, index, row,column.key)}" :disabled="column.readOnly" v-else-if="column.key == 'unitId'" v-model="row[column.key]" transfer>
+                      <Option v-for="(item,index) in bsUnitList" :key="index" :value="item.dicValue+''">{{item.dicLabel}}</Option>
+                    </Select>
+                    <!-- <Select
+                    disabled
+                    v-else-if="column.key == 'unitId'"
+                    v-model="row[column.key]"
+                    transfer
+                  >
+                    <Option
+                      v-for="(item,index) in bsUnitList"
+                      :key="index"
+                      :value="item.dicValue"
+                    >{{item.dicLabel}}</Option>
+                  </Select> -->
+                <!--控件特殊处理 实盘数量  -->
+                <Input
+                  v-else-if="column.key == 'biChkQty'"
+                  v-model="row[column.key]"
+                  :disabled="detailDisabled"
+                  @on-blur="getCouponSelected(value, index, row, 'biChkQty')"
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+
+                <formControl
+                  v-else
+                  :control-type="column.controlType"
+                  v-model="row[column.key]"
+                  :disabled="detailDisabled||column.readOnly"
+                  @input="value => {valueChangeAssign(value, index, row,column.key)}"
+                ></formControl>
+              </td>
+            </template>
+          </eTable>
+        </TabPane>
+      </Tabs>
+    </editWindow>
+    <accReceSlave
+      ref="mychild"
+      :isLoaddingDone="salveWindow.isLoaddingDone"
+      :formDetailData="salveWindow.formDetailData"
+      :action="salveWindow.action"
+      v-model="salveWindow.showEditWindow"
+      :List="List"
+      :stationId="stationId"
+      :inSupplierId="inSupplierId"
+      :workNoList="workNoList"
+      :WorkOrderNumber="WorkOrderNumber"
+      @closeMain="closeMain"
+    />
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author ming xing
+ *
+ * @created 2020/04/12 17:07:54
+ */
+import referenceField from "@/components/referenceField/referenceField";
+import popup from "@/components/popup/popup";
+import editWindow from "@/components/edit-window/edit-window";
+import eTable from "@/components/e-table/e-table";
+import request from "@/libs/request";
+import editBaseMixins from "../../mixins/edit";
+import optionSearch from "../../components/optionSearch";
+import dayjs from "dayjs";
+import Sys from "@/api/sys";
+import formControl from "@/components/form-control/form-control";
+import accReceSlave from "./edit-accReceSlave";
+import { deepCopy } from "view-design/src/utils/assist";
+const default_formDataInfo = {
+  // 主表 更改字段
+  master: {
+    arNo: "",
+    saleName:"",
+    startDate: "",
+    arMDate: "",
+    endDate: "",
+    arDate: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+    arMonth: dayjs().format("YYYYMM"),
+    disAmt: 0,
+    itemDisAmt: 0,
+    discount: 0,
+    amt: 0,
+    cusCode: "",
+    // cusName: "",
+    bmQty: 0,
+    iisReturn:false,
+    returnerName:"",
+    // returnDate: "",
+    faxNo:"",
+    bmNo: "",
+    bmDate: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+    sourceStationCode: "",
+    destStationCode: "",
+    allocatorCode: "",
+    supplierId: "",
+    isAcc: "",
+    reason: "",
+    burMonthDate: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+    remark: ""
+  },
+  // 子表 artLengs 根据实际接口更改,其它不变
+  accReceItems: {
+    addList: [], // 添加列
+    defaultList: [], // 默认列
+    deleteList: [], // 删除列
+    updateList: [] // 更新列
+  }
+};
+export default {
+  name: "edit-accRece",
+  mixins: [editBaseMixins],
+  components: {
+    editWindow,
+    optionSearch,
+    eTable,
+    popup,
+    formControl,
+    referenceField,
+    accReceSlave
+    // rightMenu
+    // Form,
+  },
+  directives: {
+    focus: {
+      inserted: function(el) {
+        //debugger;
+        el.children[0].focus();
+      }
+    }
+  },
+  data() {
+    return {
+      insertDirection: "down", //表单插入方向
+      salveWindow: {
+        // Tips:"提示：此窗口只显示有供应商纸质/纸板进价的工单！",
+        isLoaddingDone: false, // 窗口是否加载完成
+        showEditWindow: false, // 是否显示edit-boxSalesOrderSlave 编辑窗口
+        action: null, // 当前操作功能 添加/编辑
+        formDetailData: {} // 当前表单的详细信息
+      },
+      pliLostTypeList: [], //报损类型
+      showContextMenu: true,
+      showEditMenu: false,
+      actionSubtitle: "应收对账单", // 当前操作副标题
+      biLostTypeList: [], //报损类型
+      id: 0,
+      formName: "accountaccreceitemFm",
+      formmasterName: "accountaccreceFm",
+      requestBaseUrl: "/account/accRece", // 请求 查询 操作的基础路径
+      formDataInfo: deepCopy(default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {
+        cusCode: [
+          {
+            required: true,
+            message: "客户编号不能为空",
+            trigger: "blur"
+          }
+        ]
+      },
+      tableFieldsValidator: {
+        // workNo: [
+        //   {
+        //     required: true,
+        //     message: "工单号不能为空",
+        //     trigger: "blur"
+        //   }
+        // ],
+      },
+      subBoxClickIndex: -1,
+      getbppClassId: 0,
+      whId: "null", //传给用料批次号的参数
+      List: "null", //传给用料批次号的参数
+      workNoList: "", //过滤用的字符串传给工单
+      WorkOrderNumber: "null",
+      index1: 0, //工单号里面用
+      inSupplierId: null,
+      isDisabled: false, //
+      stationId: "",
+      destStationCode: "",
+      bsUnitList:[],// 计量单位列表
+      isHaveData:false, //判断客户编号 日期是否禁用
+    };
+  },
+  created() {
+    this.getbsUnitList() // 计量单位
+  },
+  methods: {
+     getbsUnitList(){
+        //获取  计量单位  
+      this.getDataFromDictionaryBy('bsUnit').then(res=>{
+        this.bsUnitList = res
+      })
+    },
+    //判断一个值是数字
+    myIsNaN(value) {
+      return typeof value === "number" && !isNaN(value);
+    },
+    //计算调整数量  biQty
+    biInQtyChange() {
+      //debugger;
+      let masterstockqty = 0;
+      let tableData = this.$refs["tableFields"].get();
+      for (let index = 0; index < tableData.length; index++) {
+        let bmiQty = Number(tableData[index].bmiQty);
+        let scStoreQty = Number(tableData[index].scStoreQty);
+        if (bmiQty > scStoreQty) {
+          tableData[index].bmiQty = 0;
+          bmiQty = 0;
+          this.$Message.error("调拨数量不能大于调出当时库存数");
+        }
+        masterstockqty += bmiQty;
+      }
+      this.formDataInfo.master.bmQty = Number(masterstockqty);
+    },
+    //数据传递
+    transformation(selectedValue, sundata) {
+      //debugger;
+      let transData = JSON.parse(
+        JSON.stringify(this.initData.initData.accountaccreceitemFm)
+      );
+      Object.assign(transData, selectedValue);
+      // transData.scBatchNo = selectedValue.bpBatchNo //调出料号
+      if(transData.billNo){
+        this.isHaveData = true
+      }
+      return transData;
+    },
+    //接受工单号传回来的数据
+    closeMain(selectedValues) {
+      //debugger;
+      let pushData = [];
+      // let 子表数据 = this.$refs["tableFields"].get()
+      let sundata = this.$refs["tableFields"].get();
+      selectedValues.forEach((selectedValue, index) => {
+        let sData = sundata[index];
+        let transData = this.transformation(selectedValue, sData);
+        pushData.push(transData);
+      });
+      //工单号唯一校验
+      // let hiddensundata = {};
+      // for (let index = 0; index < sundata.length; index++) {
+      //   if (sundata[index].workNo != "") {
+      //     let key = JSON.stringify(sundata[index].workNo);
+      //     let value = index;
+      //     hiddensundata[key] = value;
+      //   }
+      // }
+      // for (let i = pushData.length - 1; i >= 0; i--) {
+      //   if (hiddensundata[JSON.stringify(pushData[i].workNo)] != undefined) {
+      //     this.$Message.error(pushData[i].workNo + "该工单号已经存在");
+      //     pushData.splice(i, 1);
+      //   }
+      // }
+      // this.$refs["tableFields"].set(pushData,this.index)
+
+      let index2 = this.index1;
+      for (let a = 0; a < pushData.length; a++) {
+        this.$refs["tableFields"].set(pushData[a], index2);
+        index2++;
+      }
+      // this.biInQtyChange(this.index1);
+    },
+    //工单号失去焦点带出参数事件
+    onFill(index, keyWord) {
+      let pushData = [];
+      //debugger;
+      //获取供应商编号
+      let sourceStationCode = this.formDataInfo.master.sourceStationCode;
+      //获取纸质
+      let artCode = this.formDataInfo.accReceItems.defaultList[index].artCode;
+      //获取工单号
+      let billNo = this.formDataInfo.accReceItems.defaultList[index].billNo;
+      //获取工单号
+      let dtWorkNo = this.formDataInfo.accReceItems.defaultList[index].dtWorkNo;
+      //获取批次号
+      let boxUseBatchOn = this.formDataInfo.accReceItems.defaultList[index]
+        .boxUseBatchOn;
+      //获取当前子表数据
+      // let two = this.formDataInfo.accReceItems.defaultList[index];
+      //明细表数据
+      let tabData = this.$refs["tableFields"].cloneData;
+      //获取子表初始化时的数据
+      let defulit = this.initData.initData.accountaccreceitemFm;
+      if (this.formDataInfo.master.cusCode == "") {
+        this.$Message.error("客户编号不能为空");
+        return;
+      }
+      // arpType(月结类型:1:送退货主档,0:送退货明细),custId(客户id),startDate(起始日期),endDate(终止日期),signBack(需回签)
+      request
+        .post(`/account/accRece/spAutoAccRece`, {
+          arpType: this.formDataInfo.master.arpType,
+          custId: this.formDataInfo.master.custId,
+          startDate: this.formDataInfo.master.startDate,
+          endDate: this.formDataInfo.master.endDate,
+          signBack: this.formDataInfo.master.signBack
+        })
+        .then(res => {
+          //debugger;
+          let data = res[0];
+          if (data === [] || data === undefined) {
+            this.$Message.error("单据号错误");
+            //$set(要修改的对象,索引,属性的值是啥)
+            this.$set(
+              this.formDataInfo.accReceItems.defaultList,
+              index,
+              this.initData.initData.accountaccreceitemFm
+            );
+            return;
+          }
+          //获取子表数据
+          let sundata = this.$refs["tableFields"].get();
+          res.forEach(selectedValue => {
+            let transData = this.transformation(selectedValue, sundata[index]);
+            pushData.push(transData);
+          });
+          this.$refs["tableFields"].set(pushData, index);
+
+          // let demo = this.$refs["tableFields"].cloneData[index];
+
+          //判断用料批次号是否存在
+          // for (let index2 = 0; index2 < tabData.length; index2++) {
+          //   if (index != index2) {
+          //     if (data.boxUseBatchOn === tabData[index2].boxUseBatchOn) {
+          //       this.$Message.error("该用料批次号已经存在");
+          //       tabData[index] = JSON.parse(
+          //         JSON.stringify(this.initData.initData.accountaccreceitemFm)
+          //       );
+          //       return;
+          //     }
+          //   }
+          // }
+          // this.transformation(demo, data);
+          // this.pliQtyChange(index);
+        });
+    },
+    //工单号点击事件
+    Slave_list_table_editRowModify(index, keyWord) {
+      //debugger;
+      let workNoList = "";
+      let tabData = this.$refs["tableFields"].cloneData;
+      if (tabData.length == 1) {
+        if (tabData[0].billNo == "") {
+          workNoList = "";
+        } else {
+          workNoList = tabData[0].billNo;
+        }
+      } else {
+        for (let i = 0; i < tabData.length; i++) {
+          if (i === tabData.length - 1) {
+            if (tabData[i].billNo == "") {
+              workNoList = workNoList.substr(0, workNoList.length - 1);
+            }
+          } else {
+            workNoList += tabData[i].billNo + ",";
+          }
+        }
+      }
+      if (this.formDataInfo.master.cusCode == "") {
+        this.$Message.error("客户编号不能为空");
+        return;
+      }
+      if (this.formDataInfo.master.cusCode) {
+        this.inSupplierId = this.formDataInfo.master.supplierId;
+        this.salveWindow.showEditWindow = true;
+        this.index1 = index;
+        let ppuer = this.salveWindow.showEditWindow;
+        this.salveWindow.action = "add";
+        this.salveWindow.isLoaddingDone = true;
+        let scProductNo = "";
+        this.workNoList = workNoList;
+        // arpType(月结类型:1:送退货主档,0:送退货明细),custId(客户id),startDate(起始日期),endDate(终止日期),signBack(需回签)
+        request
+          .post(`/account/accRece/spAutoAccRece`, {
+            arpType: this.formDataInfo.master.arpType,
+            custId: this.formDataInfo.master.custId,
+            startDate: this.formDataInfo.master.startDate,
+            endDate: this.formDataInfo.master.endDate,
+            signBack: this.formDataInfo.master.signBack
+          })
+          .then(res => {
+            //debugger;
+            this.WorkOrderNumber1 = res;
+            // console.log(res)
+            this.$refs.mychild.getFormInitDataObj(res);
+          });
+      }
+      // else {
+      //   this.salveWindow.showEditWindow = false;
+      //   this.$Message.error("调拨人不能为空");
+      // }
+    },
+
+    //判断数据是新增还是修改
+    formDetailDataCall() {
+      //debugger;
+      if (this.action != "add") {
+        //debugger;
+        // this.getworkerId = this.formDataInfo.master.allocatorId;
+        this.id = this.formDataInfo.master.id;
+      }
+    },
+    //当主表弹框改变时促发初始化子表数据
+    Initializationdata(data) {
+      //debugger;
+      let tableData = this.$refs["tableFields"].getCategorizeData();
+      if (this.formDataInfo.master.custId) {
+        if (this.formDataInfo.master.custId != this.getworkerId) {
+          this.formDataInfo.accReceItems.defaultList = [];
+          tableData.deleteList = tableData.updateList;
+        }
+        this.getworkerId = this.formDataInfo.master.custId;
+      }
+      this.searchGetBackDataList();
+    },
+    // 重写父类 关闭窗口时 触发事件
+    closeActionTigger() {
+      //debugger;
+      // fix 清除上次的错误提示 formDataInfo 为表单ref名称
+      if (this.$refs["formDataInfo"]) this.$refs["formDataInfo"].resetFields();
+      this.$refs["tableFields"].reset();
+      this.formDataInfo.accReceItems.defaultList = this.initData.initData.accountaccreceitemFm;
+      this.formDataInfo = deepCopy(default_formDataInfo);
+      this.formDataInfo.master.cusName = ""
+    },
+    //主表弹框判空
+    clickValuedate() {
+      //debugger;
+      // if (
+      //   !this.formDataInfo.master.workCode ||
+      //   this.formDataInfo.master.workCode == ""
+      // ) {
+      //   this.$Message.error("报损人不能为空");
+      //   return false;
+      // }
+      // return true;
+    },
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo() {
+      //debugger;
+      this.formDataInfo = Object.assign({}, default_formDataInfo);
+      this.isHaveData = false //判断客户编号 日期等是否禁用
+      if(this.formDataInfo.master.cusName !=""){
+        this.formDataInfo.master.cusName =""
+      }
+    },
+    // 重写父类,修改提交数据
+    resetformDataInfo() {
+      //debugger;
+      let _data = this.formDataInfo;
+      let tableData = this.$refs["tableFields"].getCategorizeData();
+      this.formDataInfo.accReceItems = tableData;
+       if (!!_data.master.arDate) {
+        _data.master.arDate = dayjs(_data.master.arDate).format(
+          "YYYY-MM-DD HH:mm:ss"
+        );
+      }
+      if (!!_data.master.arMDate) {
+        _data.master.arMDate = dayjs(_data.master.arMDate).format(
+          "YYYY-MM-DD HH:mm:ss"
+        );
+      }
+      if (!!_data.master.bmDate) {
+        _data.master.bmDate = dayjs(_data.master.bmDate).format(
+          "YYYY-MM-DD HH:mm:ss"
+        );
+      }
+      if (!!_data.master.burMonthDate) {
+        _data.master.burMonthDate = dayjs(_data.master.burMonthDate).format(
+          "YYYY-MM-DD HH:mm:ss"
+        );
+      }
+      if (!!_data.master.endDate) {
+        _data.master.endDate = dayjs(_data.master.endDate).format(
+          "YYYY-MM-DD HH:mm:ss"
+        );
+      }
+      if (!!_data.master.startDate) {
+        _data.master.startDate = dayjs(_data.master.startDate).format(
+          "YYYY-MM-DD HH:mm:ss"
+        );
+      }
+      return this.formDataInfo;
+    },
+    changeBmiQty(index) {
+      //debugger;
+      let masterstockqty = 0;
+      let tableData = this.$refs["tableFields"].get();
+      let bmiQtyClone = tableData[index].bmiQty;
+      let isNumber = this.myIsNaN(Number(bmiQtyClone));
+      if (!isNumber || bmiQtyClone.substr(0, 1) == "-") {
+        this.$Message.error("请输入正数");
+        return;
+      }
+
+      for (let index = 0; index < tableData.length; index++) {
+        let bmiQty = Number(tableData[index].bmiQty);
+        let scStoreQty = Number(tableData[index].scStoreQty);
+        if (bmiQty > scStoreQty) {
+          tableData[index].bmiQty = 0;
+          bmiQty = 0;
+          this.$Message.error("调拨数不能大于调出的当时库存数");
+        }
+        masterstockqty += bmiQty;
+      }
+      this.formDataInfo.master.bmQty = Number(masterstockqty);
+    },
+    // 获取月结向导的列表数据
+    searchGetBackDataList() {
+      //debugger;
+      this.boxDeliBackPopupDataList = [];
+      let url = "/account/accRece/getAccReceCustData" + "?pageSize=" + 10;
+      let params = {
+        //mode(采用客户数据中的设定:0,1),custCodes(客户编号【多个用,隔开】),monthEnd(月结终止日),arMonth(月结月份),startDate(起始日期),endDate(终止日期),arDate(立账日期)
+        // mode: this.formGetBack.mode?1:0,
+        mode: 1,
+        custCodes: this.formDataInfo.master.cusCode,
+        arDate: dayjs(this.formDataInfo.master.arDate).format("YYYY-MM-DD"),
+        arMonth: dayjs(this.formDataInfo.master.arMonth).format("YYYYMM")
+        // monthEnd:dayjs(this.formGetBack.monthEnd).format("YYYY-MM-DD"),
+        // startDate:dayjs(this.formGetBack.startDate).format("YYYY-MM-DD"),
+        // endDate:dayjs(this.formGetBack.endDate).format("YYYY-MM-DD"),
+      };
+      this.getDataByUrl(url, params).then(res => {
+        //debugger;
+        if (res && res.records.length > 0) {
+          this.formDataInfo.master.signBack = res.records[0].signBack; //需回签
+          this.formDataInfo.master.arpType = res.records[0].arpType; //月结类型
+          this.formDataInfo.master.discount = res.records[0].discount; //折扣
+          this.formDataInfo.master.endDate = res.records[0].endDate;
+          this.formDataInfo.master.arMDate = res.records[0].mDate; //货款到期日
+          this.formDataInfo.master.startDate = res.records[0].startDate;
+          // this.formDataInfo.master.saleName = res.records[0].saleName
+        }
+      });
+    }
+  }
+};
+</script>
+
+<style>
+.cl-edit-accRece .ivu-form-item {
+  /* margin-bottom: 5px !important; */
+}
+.cl-edit-accRece .ivu-select-item {
+  display: block;
+}
+/* .cl-edit-accRece .ivu-input-type-text{
+  width: 200px
+}*/
+.cl-edit-accRece .right-text {
+  width: 160%;
+}
+.iisReturnColClass .ivu-form-item-content {
+  margin-left: 60px !important;
+}
+.iisReturnClass {
+  width: 80px;
+}
+</style>

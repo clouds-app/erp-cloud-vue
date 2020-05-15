@@ -1,0 +1,153 @@
+<template>
+  <!--
+  弹窗文本框
+  -->
+  <Input v-model="inputValue" size="small" :disabled="disabled" @on-change="onChange" @on-blur="inputOnBlur"  v-bind="$attrs" v-on="$listeners">
+  <Icon type="md-add" slot="suffix" v-if="!disabled" @click="plusClick"></Icon>
+  </Input>
+</template>
+
+<script>
+  import request from '@/libs/request'
+  export default {
+    name: 'popupField',
+    data() {
+      return {
+        inputValue: '',
+        oldInputValue:'',
+        loadingSuccess:false
+      }
+    },
+    props: {
+      disabled: {
+        type: Boolean,
+        default: false
+      },
+      value: {
+        type: [String, Number, Date, Boolean]
+      },
+      popupName: {
+        type: String,
+        required: true
+      },
+      queryParams: Object,
+      url: String,
+      fieldName: String,
+      fillMappingList: Array, //值填充映射
+      blurLoadData:{
+        type:Boolean,
+        value:true
+      }
+    },
+    watch: {
+      value: {
+        immediate: true,
+        handler(n, o) {
+          this.inputValue = n;
+        }
+      },
+      inputValue(n, o) {
+        this.$emit('input', n);
+      }
+    },
+    methods: {
+      onChange () {
+        if(this.blurLoadData && (this.inputValue == undefined || this.inputValue == null || this.inputValue == '')){
+          this.$emit('on-fill',this.getNotDataReturnObj());
+        }
+         this.$emit('on-change');
+      },
+      //当文本框的+被点击
+      plusClick() {
+        this.$emit('on-click');
+      },
+      inputOnBlur() {
+        debugger
+        if(!this.blurLoadData){
+          return;
+        }
+        /**
+         * 文本框失去焦点，需要做的事情包括需要去后台查询数据，
+         * 并且将查询回来的数据填充的对应的内容上去
+         */
+        //必须要不为空才去加载数据
+        if (this.inputValue && this.inputValue != null && this.inputValue != '') {
+          //失去焦点发现值并没有改变并且上一次是加载成功了，那就不要去重复加载了
+          if(this.oldInputValue  == this.inputValue && this.loadingSuccess){
+            return;
+          }
+          this.oldInputValue = this.inputValue;
+          //没有指定加载数据的URL，就使用默认的URL
+          let url = this.url;
+          if (!this.url) {
+            url = `/common/sys/popup/${this.popupName}/query`;
+          }
+          let fieldName = this.getFieldMappingName(); //获取真实的fieldName
+          //查询参数
+          let queryParams = JSON.parse(JSON.stringify(this.queryParams));
+          // 不应该过滤自身的查询条件,不然就没有数据了 queryParams[fieldName+'$notIn'] fix by andy
+          queryParams[fieldName+'$notIn']  = queryParams[fieldName+'$notIn'].replace(this.inputValue,'')
+         
+          if (!queryParams) {
+            queryParams = {};
+          }
+          queryParams[fieldName] = this.inputValue;
+          request.fsLoading = true;
+          request.post(url, queryParams).then(res => {
+            this.loadingSuccess = true;
+            let result = {};
+            let multiple = false;
+            if(res.records){
+              if(res.records.length > 1){
+                multiple = true;
+                result = res.records;
+              }else if(res.records.length == 1){
+                result = res.records[0];
+              }
+            }else{
+              if(res.length > 1){
+                multiple = true;
+                result = res;
+              }else if(res.length == 1){
+                result = res[0];
+              }
+            }
+            //if(result){
+              if(multiple){
+                this.$emit('on-fill-multiple',result);
+              }else{
+                this.$emit('on-fill',result);
+              }
+            //}
+          }).catch(()=>{
+            this.loadingSuccess = false;
+          });
+        }else{
+           this.$emit('on-fill',this.getNotDataReturnObj());
+        }
+      },
+      getFieldMappingName() {
+        /**
+         * 会存在这样的情况，后面接口中返回的数据时字段A,但是此处的名称是 字段B
+         * 所以需要这样的一个映射，A,B映射，将A的值赋给B
+         */
+        for (let i = 0;i < this.fillMappingList.length;i++) {
+          if (this.fillMappingList[i].renderField == this.fieldName) {
+            return this.fillMappingList[i].fromField;
+          }
+        }
+        return this.fieldName;
+      },getNotDataReturnObj(){
+        //如果没有输入，返回一个空对象
+        let data = {};
+        for (let i = 0;i < this.fillMappingList.length;i++) {
+          data[this.fillMappingList[i].renderField] = null;
+        }
+        return data;
+      }
+    }
+  }
+</script>
+
+<style>
+</style>
