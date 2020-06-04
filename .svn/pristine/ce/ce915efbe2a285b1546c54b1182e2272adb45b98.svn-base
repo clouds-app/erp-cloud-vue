@@ -1,0 +1,65 @@
+<template>
+  <div>
+    <!--
+    <tableSelect size="small" v-model="row.controlType" @change="value=>{valueChangeAssign(value,index,row,'controlType');}">
+      <option value="input">文本框</option>
+      <option value="textarea">文本域</option>
+      <option value="number">数字框</option>
+      <option value="tableSelect">下拉框</option>
+      <option value="popup">窗口选择器</option>
+      <option value="checkbox">复选框</option>
+      <option value="date">日期</option>
+      <option value="switch">开关</option>
+      <option value="hidden">隐藏域</option>
+      <option value="file">文件上传</option>
+    </tableSelect>
+    -->
+      <Input :class="`text-input-${align}`"  v-if="controlType == 'input' || controlType == 'textarea'"
+      :value="value"
+      size="small"
+      v-bind="$attrs"
+      v-on="$listeners">
+     </Input>
+      <InputNumber :class="`text-input-${align}`" v-if="controlType == 'number'" size="small"  :value="value" v-bind="$attrs" v-on="$listeners"></InputNumber>
+      <Checkbox v-if="controlType == 'checkbox'"  size="small"  :value="!!value" v-bind="$attrs" v-on="$listeners"></Checkbox>
+      <popup v-if="controlType == 'popup'" :value="value" v-bind="$attrs" v-on="$listeners"></popup>
+      <!-- <date v-if="controlType == 'date'"  :value="value" v-bind="$attrs" v-on="$listeners"></date> -->
+       <DatePicker :clearable="false" v-if="controlType == 'date'" type="date" format="yyyy-MM-dd"  :value="value"></DatePicker>
+  </div>
+</template>
+
+<script>
+  import popup from "@/components/popup/popup";
+  import InputNumber from '@/components/input-number'
+  export default {
+    components:{popup,InputNumber},
+    name:'formControl',
+    props:{
+      // INPUT文字居左 中 右 :默认:left,可选:center,right,Add by andy
+      align:{
+        type:String,
+        default:'left'
+      },
+      controlType:String,
+      value: {
+          type: [String, Number,Boolean,Date],
+          default: ''
+      }
+    }
+  }
+</script>
+
+<style>
+.ivu-input-number-small{
+  width: 100% !important;
+}
+.text-input-center input{
+  text-align: center;
+}
+.text-input-left input{
+  text-align: left;
+}
+.text-input-right input{
+  text-align: right;
+}
+</style>

@@ -77,7 +77,7 @@ export default {
       functionParams: {
         formInitPreName:'stockBoxUseAdjust',// 查询表格列头信息 前缀 例如:purchasesupplierArt Fm/itemFm/mdataFm
         requestBaseUrl: "/stock/boxUseAdjust",
-        uniqueId: "boxUseAdjustId",
+        uniqueId: "adjustId",
         editShow:false,
         deleteShow:false,
       },
@@ -128,7 +128,7 @@ export default {
       //debugger
       let url = `/stock/boxUseAdjust/item/list`;
       let data = {
-        boxUseAdjustId: this.masterRowSelection.id
+        adjustId: this.masterRowSelection.id
       };
       let _self = this;
       request.post(url, data).then(res => {

@@ -1,0 +1,277 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-purinit"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="60%"
+      :loading="!isLoaddingDone"
+      @on-ok="formDataSubmit()"
+      :disabledSubmitBtn="disabledSubmitBtn"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-massage="true"
+        :model="formDataInfo"
+        :rules="ruleValidate"
+        :label-width="100"
+        :disabled="detailDisabled"
+      >
+        <Row>
+          <Col span="12">
+            <FormItem label="初始单号" prop="initNo">
+              <!-- <referenceField v-model="formDataInfo.initNo"
+               :disabled="true" 
+                maxlength="20"
+                placeholder="初始单号"
+                :form-name="frommastername"
+                :id="formDataInfo.id"
+              ></referenceField> -->
+              <Input
+                :disabled="true"
+                v-model="formDataInfo.initNo"
+                maxlength="80"
+                placeholder="初始单号"
+              ></Input>
+            </FormItem>
+          </Col>
+          <Col span="12">
+            <FormItem label="供应商编号" prop="purCode">
+              <popup
+                v-model="formDataInfo.purCode"
+                field-name="purCode"
+                :disabled="false"
+                popup-name="SupplierSingleBox"
+                :fill-model.sync="formDataInfo"
+                render-fields="supplierId,purCode,purName,coinCode,coinName,coinId,taxType,taxRate,rate"
+                from-fields="id,purCode,purName,coinCode,coinName,coinId,taxTP,taxRate,coinRate"
+                :suffix="true"
+                :suffix-model="formDataInfo.purName"
+              />
+            </FormItem>
+          </Col>
+          <Col span="12">
+            <FormItem label="初始化日期" prop="initDate">
+               <DatePicker
+                    @on-change="onChange_initDate"
+                    transfer
+                    :value="formDataInfo.initDate" 
+                    type="date"
+                    format="yyyy-MM-dd HH:mm:ss"
+                  ></DatePicker>
+            </FormItem>
+          </Col>
+          <Col span="12">
+            <FormItem label="初始化金额" prop="initAmt">
+              <Input
+                :disabled="false"
+                type="number"
+                v-model="formDataInfo.initAmt"
+                maxlength="20"
+                placeholder="初始化金额"
+              ></Input>
+            </FormItem>
+          </Col>
+          <Col span="12">
+            <FormItem label="货币" prop="coinName">
+                <popup 
+                  v-model="formDataInfo.coinCode"
+                  field-name="coinCode"
+                  :disabled="false"
+                  popup-name="CoinSingleBox "
+                  :fill-model.sync="formDataInfo"
+                  render-fields="coinId,coinCode,coinName"
+                  from-fields="id,coinCode,coinName"
+                  :suffix="true"
+                  :suffix-model="formDataInfo.coinName"
+                  :query-params="{}"
+                  />
+            </FormItem>
+          </Col>
+          <Col span="12">
+            <FormItem label="税别" prop="taxType">
+               <optionSearch
+                    @onChange="optionOnChange"
+                    :defaultItem="formDataInfo.taxType"
+                    :loaddingDataWhen="showWindow"
+                    formKey="taxType"
+                    query="taxTypePur"
+                  />
+            </FormItem>
+          </Col>
+          <Col span="12">
+            <FormItem label="税率" prop="taxRate">
+              <Input
+                :disabled="false"
+                 type="number"
+                v-model="formDataInfo.taxRate"
+                maxlength="20"
+                placeholder="税率"
+              ></Input>
+            </FormItem>
+          </Col>
+          <Col span="12">
+            <FormItem label="备注" prop="remark">
+              <Input
+                :disabled="false"
+                v-model="formDataInfo.remark"
+                maxlength="80"
+                placeholder="备注"
+              ></Input>
+            </FormItem>
+          </Col>
+        </Row>
+      </Form>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-purinit 供应商财务初始化 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2020/04/27
+ */
+import dayjs from "dayjs"
+import optionSearch from "../../components/optionSearch";
+import popup from '@/components/popup/popup'
+import editBaseMixins from "../../mixins/edit";
+import { deepCopy } from "view-design/src/utils/assist";
+import { customValidator, uniqueValidator } from "@/libs/validator";
+import referenceField from "@/components/referenceField/referenceField";
+const default_formDataInfo = {
+  coinCode: "",
+  coinId: 0,
+  coinName: "",
+  initAmt: 0,
+  initDate: new Date(dayjs().format("YYYY-MM-DD HH:mm:ss")), //初始化日期
+  initNo: "",
+  invoicedAmt: 0,
+  notInvoicedAmt: 0,
+  notWriteOffAmt: 0,
+  supplierId: '',
+  purCode: "",
+  purName: "",
+  rate: 0,
+  remark: "",
+  status: 1, // 禁用
+  taxRate: 0,
+  taxType: "",
+  taxTypeText: "",
+  writeOffAmt: 0
+};
+export default {
+  name: "edit-purinit",
+  mixins: [editBaseMixins],
+  components: {
+    optionSearch,
+    popup,
+    referenceField
+  },
+
+  data() {
+    return {
+      disabledSubmitBtn:false,
+      frommastername: "accountPurInitFm",
+      actionSubtitle: "供应商财务初始化信息", // 当前操作副标题
+      requestBaseUrl: "/account/purinit", // 请求 查询 操作的基础路径
+      formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {
+        purCode: [
+          { required: true, message: "供应商编号不能为空", trigger: "blur" }
+        ],
+        initDate: [
+          { required: true,type:'date',message: "初始化日期不能为空", trigger: "blur" }
+        ],
+      }
+    };
+  },
+  watch: {
+     showWindow:function(n,o){
+        if(n){
+          let _self = this
+          this.$nextTick(()=>{
+             // 延迟赋值,不然数据还没有正确返回的情况下,无法绑定默认值
+           setTimeout(() => {
+               this.setDefaultData()
+           }, 1000);
+            
+          })
+        }
+      },
+},
+  methods: {
+     // 设置默认值
+    setDefaultData(){
+       this.disabledSubmitBtn = false
+        let writeOffAmt = Number(this.formDataInfo.invoicedAmt) 
+        if(writeOffAmt>0){
+          this.disabledSubmitBtn = true
+        }
+
+        if(!!!this.formDataInfo.taxType){
+          this.formDataInfo.taxType='0'
+        }
+        if(this.formDataInfo.initDate==''|| this.formDataInfo.initDate==null){
+            this.formDataInfo.initDate = new Date(dayjs().format("YYYY-MM-DD HH:mm:ss"))
+        }else{
+            this.formDataInfo.initDate = new Date(dayjs(this.formDataInfo.initDate).format("YYYY-MM-DD HH:mm:ss"))
+        }
+    },
+    //初始化日期 变动日期
+    onChange_initDate(item){
+       if(!_.isEmpty(item)){
+              this.formDataInfo.initDate = new Date(item) 
+          }
+    },
+     // 继承中修改,添加数据时,重置修改一些提交的数据
+    resetAddformDataInfo (_data) {
+        _data.initDate = dayjs(_data.initDate).format("YYYY-MM-DD HH:mm:ss")
+      return _data
+    },
+      // 继承中修改,更新数据时,重置修改一些提交的数据
+    resetformDataInfo (_data) {
+      _data.initDate = dayjs(_data.initDate).format("YYYY-MM-DD HH:mm:ss")
+      return _data
+    },
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo() {
+      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    },
+      // 重写父类 关闭窗口时 触发事件
+    closeActionTigger() {
+      // fix 清除上次的错误提示 formDataInfo 为表单ref名称
+      this.$refs["formDataInfo"].resetFields();
+      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    },
+    
+  }
+}
+</script>
+
+<style>
+.cl-edit-purinit .ivu-form-item-label {
+    text-align: right;
+    vertical-align: middle;
+    float: left;
+    font-size: 14px;
+    color: #515a6e;
+    line-height: 17px;
+    padding: 7px 12px 10px 0;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+.cl-edit-purinit .right-text {
+  width: 160%;
+}
+</style>

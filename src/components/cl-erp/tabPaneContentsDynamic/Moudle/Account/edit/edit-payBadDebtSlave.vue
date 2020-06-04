@@ -1,0 +1,338 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-window-boxRe"
+      title="关联单号选择"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="80%"
+      :loading="false"
+      :spinLoaddingText="spinLoaddingText"
+      @on-ok="formTableDataSubmit()"
+      v-if="initColData.columns"
+      :disabledSubmitBtn="disabledSubmitBtn"
+    >
+      <div ref="masterHeight">  
+       <Form
+            ref="formDataInfo"
+            :show-message="true"
+            :model="formDataInfo.master"
+            :rules="masterRuleValidate"
+            :label-width="40"
+        >
+            <Row>
+            <Col span="4">
+                <FormItem :label-width="80" label="单据类型">
+                 <optionSearch
+                    @onChange="optionOnChangeBy"
+                    :defaultItem="formDataInfo.master.searchType"
+                    :loaddingDataWhen="showWindow"
+                    query="bpType"
+                    formKey="searchType"
+                />
+                </FormItem>
+            </Col>
+            <Col span="4">
+                <FormItem :label-width="80" :label="searchConfig.title" prop="keyWord">
+                    <Input :clearable="true" maxlength="20" v-model="formDataInfo.master.keyWord" placeholder="搜索关键字"></Input>
+                </FormItem>
+            </Col>
+              <Col span="3">
+                <FormItem :label-width="20">
+                    <RadioGroup v-model="formDataInfo.master.likeFlag">
+                    <Radio label="1">模糊</Radio>
+                    <Radio label="0">精准</Radio>
+                  </RadioGroup>
+                </FormItem>
+            </Col>
+              <Col span="8">
+                <FormItem label="日期" prop="searchDay">
+                   <DatePicker
+                   transfer
+                   style="width: 120px"
+                    v-model="formDataInfo.master.startDate" 
+                    type="datetime"
+                    format="yyyy-MM-dd"
+                  ></DatePicker> - <DatePicker
+                   transfer
+                   style="width: 120px"
+                    v-model="formDataInfo.master.endDate" 
+                    type="datetime"
+                    format="yyyy-MM-dd"
+                  ></DatePicker>
+                </FormItem>
+            </Col>
+              
+             <Col span="1">
+                 <FormItem>
+                   <Button :loading="loadingData" @click="searchDataBy()" type="primary">
+                     <Icon type="md-search" />
+                     搜索
+                     </Button>
+                </FormItem>
+             
+            </Col>
+            </Row>
+        </Form>
+           <eTable
+                ref="slave_list_table_edit"
+                :showContextMenu="false"
+                unqiue-mark="id"
+                :height="500"
+                :index-menu="true"
+                :col-start="0"
+                :row-init-data="{}"
+                :data="formDataInfo['SrelationNoItem'].defaultList"
+                :rules="slaveTableFieldsValidator"
+                @row-click="slave_list_table_editRowClick"
+                @row-dbClick="slave_list_table_editRowDbClick"
+            >
+            <template slot="head">
+              <tr v-for="(columnGroup,index) in initColData.columns[`${functionParams.formInitPreName}Fm`].editGroups" :key="index">
+                    <template  v-for="(column,index2) in columnGroup" >
+                        <th v-if="excludeFiled('itemFm',column.key)"
+                        :key="index2" :class="`ivu-table-column-${column.titleAlign}`"
+                        :width="column.editWidth"
+                        :colspan="column.colSpan"
+                        :rowspan="column.rowSpan"
+                        :columnKey="column.key"
+                        :style="excludeFiled('search',column.key)?'cursor:pointer':''"
+                        >
+                        <div  class="ivu-table-cell">
+                        <span class="">{{column.title}}</span>
+                        </div>
+                    </th>
+                    </template>
+                </tr>
+            </template>
+            <template
+              slot="body"
+              slot-scope="{ row, index,valueChangeAssign }"
+            >
+             <template  v-for="(column,subIndex) in initColData.columns[`${functionParams.formInitPreName}Fm`].editColumns">
+                   <td :key="subIndex" :class="`ivu-table-column-${column.align}`" v-if="excludeFiled('itemFm',column.key)" :width="column.editWidth">
+                   
+                       <!--其它 控件 -->
+                     <template>
+                      <formControl  :control-type="column.controlType"
+                        v-model="row[column.key]" 
+                        :disabled="column.readOnly"
+                        @input="value => {valueChangeAssign(value, index, row,column.key)}"
+                      ></formControl>
+                     </template>
+                  </td>
+             </template>
+            </template>
+             </eTable>
+      </div>
+    </editWindow>
+  
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-boxDeli 描述 关联单号
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 editBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2020/05/18
+ */
+import popup from "@/components/popup/popup";
+import editWindow from "@/components/edit-window/edit-window";
+import eTable from "@/components/e-table/e-table";
+import request from "@/libs/request";
+import editBaseMixins from "../../mixins/edit";
+import optionSearch from "../../components/optionSearch";
+import dayjs from "dayjs";
+import Sys from "@/api/sys";
+import formControl from "@/components/form-control/form-control";
+import { deepCopy } from "view-design/src/utils/assist";
+const default_formDataInfo = {
+  // 主表 更改字段
+  master: {
+     keyWord: "",
+     likeFlag:"1", // (1模糊查询0精准查询)
+     searchType:'2',// 默认为2也就是 应付对账单
+     startDate:dayjs().subtract(1, 'month').format("YYYY-MM-DD" ),
+     endDate:dayjs().format("YYYY-MM-DD"),
+  },
+  SrelationNoItem: {
+    addList: [], // 添加列
+    defaultList: [], // 默认列
+    deleteList: [], // 删除列
+    updateList: []
+  }
+};
+export default {
+  name: "edit-payBadDebtSlave",
+  mixins: [editBaseMixins],
+  components: {
+    editWindow,
+    optionSearch,
+    eTable,
+    popup,
+    formControl
+  },
+  props:{
+    // 搜索参数对象,从父类填充参数过来
+    searchParams:{
+      type:Object,
+      default: () => {
+        return {
+        }
+      }
+    }
+  },
+  data() {
+    return {
+        // 查询配置参数
+      functionParams: {
+        formInitPreName: 'sbadDebtNoDto', // 查询表格列头信息 前缀 例如:saleboxproductprice Fm/Fm/mdataFm
+        requestBaseUrl: '/account/payBadDebt', // 查询 表格行 数据 接口前缀地址
+        uniqueId: '' // 查询详细的唯一ID,需要顶部查询中使用
+      },
+      salveWindow: {
+        isLoaddingDone: false, // 窗口是否加载完成
+        showEditWindow: false, // 是否显示edit-boxSalesOrderSlave 编辑窗口
+        action: "add", // 当前操作功能 添加/编辑
+      },
+      slaveSelectRowItem:null,
+      formDataInfo:deepCopy(default_formDataInfo),// Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      masterRuleValidate: {}, // 纸箱出货 需要验证的数据
+      slaveTableFieldsValidator: {}, // 纸箱出货明细 需要验证的数据
+      masterHeight:0,//表单高度
+      otherHeight:0,//剩余高度
+      initColData:{},
+      loadingData:false,//  按钮查询中 状态
+      searchConfig:{
+         title:'单据号',
+         keyField:'srelationNo'
+      }
+    };
+  },
+  computed:{
+    // 是否禁用确认按钮
+     disabledSubmitBtn(){
+       let datalist = this.formDataInfo['SrelationNoItem'].defaultList
+        if(datalist && datalist.length>0){
+          return false
+        }else{
+          return true
+        }
+    },
+  },
+   watch: {
+     showWindow:function(n,o){
+        if(n){
+          let _self = this
+          this.$nextTick(()=>{
+            _self.searchDataBy()
+          })
+        }
+      },
+},
+  created(){
+    this.loadColumsData()
+  },
+  methods: {
+      // 通过参数查询数据列表
+      searchDataBy(){
+        this.formDataInfo['SrelationNoItem'].defaultList =[]
+       //参数名称:(inCompanyId 单位id(不用传),inSupplierId 客户id(必传),inSrelationType 单据类型(传key 默认为2也就是应付对账单),inSrelatioNo 单据号,beginDate 起始日期,endDate 结束日期,isFlag 手输不加日期判断)
+        let params = {
+          beginDate:dayjs(this.formDataInfo.master.startDate).format("YYYY-MM-DD"),//(开始日期)
+          endDate:dayjs(this.formDataInfo.master.endDate).format("YYYY-MM-DD"),//(结束日期)
+          inSupplierId:this.searchParams.custId,//(客户id)
+          inSrelationType:this.formDataInfo.master.searchType,//(单据类型)
+          inSrelatioNo:this.formDataInfo.master.keyWord,//(单据号)
+          isFlag:this.formDataInfo.master.likeFlag,//(1模糊查询0精准查询)
+        }
+        this.loadingData=true
+         request.post(`${this.functionParams.requestBaseUrl}/getSrelationNo`, params).then(res => {
+          if(res && res.length>0){
+            this.formDataInfo['SrelationNoItem'].defaultList =res
+            this.setDefaultSelectedRow()
+          }
+          this.loadingData=false
+        }).catch(err=>{
+          this.loadingData=false
+        })
+      },
+      // 工单列表行点击事件回调
+      slave_list_table_editRowClick (index){
+          this.slaveSelectRowItem = this.formDataInfo['SrelationNoItem'].defaultList[index]
+      },
+       // 工单列表行"双击"事件回调
+      slave_list_table_editRowDbClick(index){
+        this.formTableDataSubmit()
+      },
+       // 默认选择行数据
+      setDefaultSelectedRow (index=0) {
+        let slaveObj = this.$refs['slave_list_table_edit']
+        if (slaveObj) {
+          slaveObj.rowClick(index, 'row-click')
+        }
+      },
+
+      // 加载列头数据
+      loadColumsData(){
+        // 呆账关联单号弹框(虚拟) 
+          let _self = this
+          let formName="sbadDebtNoDtoFm"
+          let url = `/sys/form/init/${formName}`
+          request.get(url).then(res => {
+            if(res!=null){
+              _self.initColData = res
+            } 
+          })
+      },
+      // 排除不需要显示的字段
+      excludeFiled(type,key){
+        let exListItemFm = []
+        let exList=[]
+        switch (type) {
+            case 'itemFm':
+              exList = exListItemFm 
+              break;
+            default:
+              exList = []
+              break;
+        }
+        let isExist = exList.includes(key)
+        if(isExist){
+          return false
+        }else{
+          return true
+        }
+      }, 
+
+    // 提交主从表数据
+    formTableDataSubmit () {
+        let submitData = this.slaveSelectRowItem.srelationNo // 当前选择的行
+        if(submitData){
+            this.showWindow = false // 关闭当前编辑页面
+            this.$emit('submit-success',submitData) // 刷新主页面数据
+        }else{
+             this.$Message.error('请先选择数据')
+        }
+    }
+  }
+ 
+};
+</script>
+
+<style>
+.cl-edit-window-boxRe .masterHeightClass{
+  height: 50%;overflow:auto
+}
+.cl-edit-window-boxRe .otherHeightClass{
+  height: 50%;overflow:hidden
+}
+</style>

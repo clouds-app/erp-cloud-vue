@@ -1,0 +1,360 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-otherMoeny"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="90%"
+      :loading="!isLoaddingDone"
+      :disabledSubmitBtn="disabledSubmitBtn"
+      @on-ok="formDataSubmit()"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-massage="true"
+        :model="formDataInfo"
+        :rules="ruleValidate"
+        :label-width="100"
+        :disabled="detailDisabled"
+      >
+        <Row>
+          <Col span="6">
+            <FormItem label="其他应付单号" prop="opNo">
+              <Input
+                :disabled="true"
+                v-model="formDataInfo.opNo"
+                maxlength="80"
+                placeholder="其他应付单号"
+              ></Input>
+            </FormItem>
+          </Col>
+        <Col span="6">
+            <FormItem label="单据日期" prop="opDate">
+               <DatePicker
+                    @on-change="onChange_opDate"
+                    transfer
+                    :value="formDataInfo.opDate" 
+                    type="datetime"
+                    format="yyyy-MM-dd"
+                  ></DatePicker>
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="供应商编号" prop="supplierCode">
+                  <popup 
+                    v-model="formDataInfo.supplierCode"
+                    field-name="supplierCode"
+                    :disabled="false"
+                    popup-name="SupplierSingleBox"
+                    :fill-model.sync="formDataInfo"
+                    render-fields="supplierId,supplierCode,supplierName,curyId,curyCode,curyName,taxRate,taxTp,rate"
+                    from-fields="id,purCode,purName,coinId,coinCode,coinName,taxRate,taxTP,coinRate"
+                    :suffix="true"
+                    :suffix-model="formDataInfo.supplierName"
+                    />
+                </FormItem>
+          </Col>
+           <Col span="6">
+            <FormItem label="会计月份" prop="opYm">
+               <DatePicker
+                    @on-change="onChange_opYm"
+                    transfer
+                    :value="formDataInfo.opYm" 
+                    type="month"
+                    format="yyyyMM"
+                  ></DatePicker>
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="未开票金额" prop="opNoIvAmt">
+              <Input
+                :disabled="true"
+                type="number"
+                v-model="formDataInfo.opNoIvAmt"
+                maxlength="20"
+                placeholder="未开票金额"
+              ></Input>
+            </FormItem>
+          </Col>
+           <Col span="6">
+            <FormItem label="已开票金额" prop="opIvAmt">
+              <Input
+                :disabled="true"
+                type="number"
+                v-model="formDataInfo.opIvAmt"
+                maxlength="20"
+                placeholder="已开票金额"
+              ></Input>
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="货币" prop="curyCode">
+                <popup 
+                  v-model="formDataInfo.curyCode"
+                  field-name="curyCode"
+                  :disabled="false"
+                  popup-name="CoinSingleBox "
+                  :fill-model.sync="formDataInfo"
+                  render-fields="curyId,curyCode,curyName"
+                  from-fields="id,coinCode,coinName"
+                  :suffix="true"
+                  :suffix-model="formDataInfo.curyName"
+                  :query-params="{}"
+                  />
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="税率" prop="taxRate">
+              <Input
+                :disabled="false"
+                 type="number"
+                v-model="formDataInfo.taxRate"
+                maxlength="20"
+                placeholder="税率"
+              ></Input>
+            </FormItem>
+          </Col>
+           <Col span="6">
+            <FormItem label="应付金额" prop="opZqAmt">
+              <Input
+               @on-change="onChange_discount"
+                :disabled="false"
+                 type="number"
+                v-model="formDataInfo.opZqAmt"
+                maxlength="20"
+                placeholder="应付金额"
+              ></Input>
+            </FormItem>
+          </Col>
+            <Col span="6">
+            <FormItem label="折扣(%)" prop="discount">
+              <Input
+                :disabled="false"
+                @on-change="onChange_discount"
+                 type="number"
+                v-model="formDataInfo.discount"
+                maxlength="20"
+                placeholder="折扣(%)"
+              ></Input>
+            </FormItem>
+          </Col>
+            <Col span="6">
+            <FormItem label="折后金额" prop="opAmt">
+              <Input
+                :disabled="true"
+                 type="number"
+                v-model="formDataInfo.opAmt"
+                maxlength="20"
+                placeholder="折后金额"
+              ></Input>
+            </FormItem>
+          </Col>
+            <Col span="6">
+            <FormItem label="税别" prop="taxTp">
+               <optionSearch
+                    @onChange="optionOnChange"
+                    :defaultItem="formDataInfo.taxTp"
+                    :loaddingDataWhen="showWindow"
+                    formKey="taxTp"
+                    query="taxTypePur"
+                  />
+            </FormItem>
+          </Col>
+          <Col span="16">
+            <FormItem label="备注" prop="remark">
+              <Input
+                :disabled="false"
+                v-model="formDataInfo.remark"
+                maxlength="80"
+                placeholder="备注"
+              ></Input>
+            </FormItem>
+          </Col>
+        </Row>
+      </Form>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-purinit 其他应付信息 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 editBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2020/05/18
+ */
+import dayjs from "dayjs"
+import optionSearch from "../../components/optionSearch";
+import popup from '@/components/popup/popup'
+import editBaseMixins from "../../mixins/edit";
+import { deepCopy } from "view-design/src/utils/assist";
+import { customValidator, uniqueValidator } from "@/libs/validator";
+import referenceField from "@/components/referenceField/referenceField";
+const default_formDataInfo = {
+  // auditTime: "",
+	// auditUser: "",
+	// auditUsername: "",
+	// companyId: 0,
+	// createTime: "",
+	// createUser: "",
+	// createUsername: "",
+	curyId: 0, // 货币
+	discount: 0,
+	//hasDelete: true,
+	//id: 0,
+	//iisAudit: 0,
+	opAmt: 0,
+	opDate: "",// 应付日期/应付日期
+	opIvAmt: 0,
+	opNo: "",
+	opNoIvAmt: 0,
+	opYm: "",
+	opZqAmt: 0,
+	rate: 0,
+	remark: "",
+	//status: 0,
+	supplierCode: "",
+	supplierId: 0,
+	supplierName: "",
+	taxRate: 0,
+	taxTp: 0,
+	taxTpText: "",
+	// updateTime: "",
+	// updateUser: "",
+	// updateUsername: ""
+};
+export default {
+  name: "edit-purinit",
+  mixins: [editBaseMixins],
+  components: {
+    optionSearch,
+    popup,
+    referenceField
+  },
+
+  data() {
+    return {
+        disabledSubmitBtn:false,// 是否禁用提交按钮
+      actionSubtitle: "其他应付", // 当前操作副标题
+      requestBaseUrl: "/account/otherPay", // 请求 查询 操作的基础路径
+      formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {
+        supplierCode: [
+          { required: true, message: "供应商编号不能为空", trigger: "blur" }
+        ],
+        opDate: [
+          { required: true,type:'date',message: "单据日期不能为空", trigger: "blur" }
+        ],
+        opYm: [
+          { required: true,type:'date',message: "会计月份不能为空", trigger: "blur" }
+        ],
+      }
+    };
+  },
+  watch: {
+     showWindow:function(n,o){
+        if(n){
+          let _self = this
+          this.$nextTick(()=>{
+             // 延迟赋值,不然数据还没有正确返回的情况下,无法绑定默认值
+           setTimeout(() => {
+               this.setDefaultData()
+           }, 1000);
+            
+          })
+        }
+      },
+},
+  methods: {
+    // 折扣 触发事件
+    onChange_discount(){
+      //折后金额=应付金额*（折扣/100)
+      let moneyAfterDis = Number(this.formDataInfo.opZqAmt)  * (this.formDataInfo.discount/100)
+      this.formDataInfo.opAmt = moneyAfterDis.toFixed(2)
+      this.formDataInfo.opNoIvAmt =moneyAfterDis.toFixed(2)
+    },
+  
+     // 设置默认值
+    setDefaultData(){
+        // 判断是否禁用提交按钮
+        if(this.action !='add' && this.formDataInfo.opIvAmt!=null &&  Number(this.formDataInfo.opIvAmt) >0){
+            this.disabledSubmitBtn = true
+        }
+        if(this.formDataInfo.taxTp==''|| this.formDataInfo.taxTp==null){
+            this.formDataInfo.taxTp = '0'
+        }else{
+             this.formDataInfo.taxTp =  this.formDataInfo.taxTp+''
+        }
+        if(this.formDataInfo.opDate==''|| this.formDataInfo.opDate==null){
+            this.formDataInfo.opDate = new Date(dayjs().format("YYYY-MM-DD"))
+        }else{
+            this.formDataInfo.opDate = new Date(dayjs(this.formDataInfo.opDate).format("YYYY-MM-DD"))
+        }
+
+        if(this.formDataInfo.opYm==''|| this.formDataInfo.opYm==null){
+            this.formDataInfo.opYm = new Date(dayjs().format("YYYY-MM"))
+        }else{
+            this.formDataInfo.opYm = new Date(dayjs(this.formDataInfo.opYm).format("YYYY-MM"))
+        }
+    },
+    //单据日期/应付日期 变动日期
+    onChange_opDate(item){
+       if(!_.isEmpty(item)){
+              this.formDataInfo.opDate = new Date(item) 
+          }
+    },
+     //会计月份 变动日期
+    onChange_opYm(item){
+       if(!_.isEmpty(item)){
+              this.formDataInfo.opYm = new Date(dayjs(item).format("YYYY-MM")) 
+          }
+    },
+      // 继承中修改,更新数据时,重置修改一些提交的数据
+    resetformDataInfo (_data) {
+         _data.opDate = dayjs(_data.opDate).format("YYYY-MM-DD")
+         _data.opYm = dayjs(_data.opYm).format("YYYYMM")
+      return _data
+    },
+     // 继承中修改,添加数据时,重置修改一些提交的数据
+    resetAddformDataInfo (_data) {
+         _data.opDate = dayjs(_data.opDate).format("YYYY-MM-DD")
+         _data.opYm = dayjs(_data.opYm).format("YYYYMM")
+      return _data
+    },
+
+      // 重写父类 关闭窗口时 触发事件
+    closeActionTigger() {
+      // fix 清除上次的错误提示 formDataInfo 为表单ref名称
+      this.$refs["formDataInfo"].resetFields();
+      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    },
+    
+  }
+}
+</script>
+
+<style>
+.cl-edit-otherMoeny .ivu-form-item-label {
+    text-align: right;
+    vertical-align: middle;
+    float: left;
+    font-size: 14px;
+    color: #515a6e;
+    line-height: 17px;
+    padding: 7px 12px 10px 0;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+.cl-edit-otherMoeny .right-text {
+  width: 160%;
+}
+</style>

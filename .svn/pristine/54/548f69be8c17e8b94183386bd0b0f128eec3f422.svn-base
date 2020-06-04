@@ -1,0 +1,771 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-window-writeOff"
+      :title="writeOffTitle"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="80%"
+      :loading="false"
+      :spinLoaddingText="spinLoaddingText"
+      @on-ok="formTableDataSubmit()"
+    >
+      <div ref="masterHeight" class="masterHeightClass">
+        <Form
+          ref="formDataInfo"
+          :show-message="true"
+          :model="formDataInfo.master"
+          :rules="masterRuleValidate"
+          :label-width="40"
+        >
+          <Row>
+            <Col span="22">
+              <Row>
+                <Col span="6" v-if="this.searchParams.mode=='icNo'">
+                  <FormItem :label-width="80" label="开票编号" prop="icNo">
+                    <Input
+                      :clearable="true"
+                      maxlength="20"
+                      v-model="formDataInfo.master.icNo"
+                      placeholder="开票编号"
+                    ></Input>
+                  </FormItem>
+                </Col>
+                <Col span="6" v-if="this.searchParams.mode=='gNo'">
+                  <FormItem :label-width="80" label="收款编号" prop="gNo">
+                    <Input
+                      :clearable="true"
+                      maxlength="20"
+                      v-model="formDataInfo.master.gNo"
+                      placeholder="收款编号"
+                    ></Input>
+                  </FormItem>
+                </Col>
+                <!-- <Col span="5" style="margin-left:50px">
+                  <FormItem label="开票编号" prop="icNo">
+                    <Input v-model="formDataInfo.master.icNo" maxlength="20" placeholder="开票编号"></Input>
+                  </FormItem>
+                </Col>-->
+                <Col span="5">
+                  <FormItem>
+                    <RadioGroup v-model="formDataInfo.master.likeflag">
+                      <Radio label="0">精准</Radio>
+                      <Radio label="1">模糊</Radio>
+                    </RadioGroup>
+                  </FormItem>
+                </Col>
+                <Col span="5">
+                  <FormItem label="日期">
+                    <DatePicker
+                      type="date"
+                      format="yyyy-MM-dd"
+                      v-model="formDataInfo.master.startDate"
+                    ></DatePicker>
+                  </FormItem>
+                </Col>
+                <Col span="5">
+                  <FormItem label="--" class="labelClassWriteOff" style="margin-left:-6px;">
+                    <DatePicker
+                      type="date"
+                      format="yyyy-MM-dd"
+                      v-model="formDataInfo.master.endDate"
+                    ></DatePicker>
+                  </FormItem>
+                </Col>
+                <Col span="1">
+                  <FormItem>
+                    <Button type="primary" @click="getDataByMode()" :loading="loadingData">搜索</Button>
+                  </FormItem>
+                </Col>
+              </Row>
+            </Col>
+          </Row>
+        </Form>
+        <eTable
+          v-if="this.searchParams.mode=='icNo'"
+          ref="slave_list_table_edit"
+          :showContextMenu="false"
+          :disabledAddRowWhenfocusNull="true"
+          unqiue-mark="id"
+          :height="420"
+          :index-menu="true"
+          :col-start="0"
+          :row-init-data="{}"
+          :data="formDataInfo['writeOffInItems'].defaultList"
+          :rules="slaveTableFieldsValidator"
+          @row-click="slave_list_table_editRowClick"
+          @tableColTiggerEventCall="tableColTiggerEventCall"
+        >
+          <template slot="head">
+            <tr
+              v-for="(columnGroup,index) in initColData.columns[`${functionParams.formInitPreName}Fm`].editGroups"
+              :key="index"
+            >
+              <template v-for="(column,index2) in columnGroup">
+                <th
+                  @click="searchKeyType(column.key,column.title)"
+                  :key="index2"
+                  :class="`ivu-table-column-${column.titleAlign}`"
+                  :width="column.editWidth"
+                  :colspan="column.colSpan"
+                  :rowspan="column.rowSpan"
+                  :columnKey="column.key"
+                >
+                  <div class="ivu-table-cell">
+                    <span class>{{column.title}}</span>
+                  </div>
+                </th>
+              </template>
+            </tr>
+          </template>
+          <template slot="body" slot-scope="{ row, index,valueChangeAssign }">
+            <template
+              v-for="(column,subIndex) in initColData.columns[`${functionParams.formInitPreName}Fm`].editColumns"
+            >
+              <td
+                :key="subIndex"
+                :class="`ivu-table-column-${column.align}`"
+                :width="column.editWidth"
+              >
+                <!-- 控件特殊处理 订单编号 -->
+                <template v-if="column.key =='iisChose'">
+                  <Checkbox
+                    @on-change="onChange_SlaveItemChcBox(index)"
+                    v-model="row[column.key]"
+                    :disabled="column.readOnly"
+                  ></Checkbox>
+                </template>
+                <!--其它 控件 -->
+                <template v-else>
+                  <formControl
+                    :control-type="column.controlType"
+                    v-model="row[column.key]"
+                    :disabled="column.readOnly"
+                    @input="value => {valueChangeAssign(value, index, row,column.key)}"
+                  ></formControl>
+                </template>
+              </td>
+            </template>
+          </template>
+        </eTable>
+        <!-- 收款明细 -->
+        <eTable
+          v-if="this.searchParams.mode == 'gNo'"
+          ref="slave_list_table_edit"
+          :showContextMenu="false"
+          :disabledAddRowWhenfocusNull="true"
+          unqiue-mark="id"
+          :height="420"
+          :index-menu="true"
+          :col-start="0"
+          :row-init-data="{}"
+          :data="formDataInfo['writeOffOutItems'].defaultList"
+          :rules="slaveTableFieldsValidator"
+          @row-click="slave_list_table_editRowClick"
+          @tableColTiggerEventCall="tableColTiggerEventCall"
+        >
+          <template slot="head">
+            <tr
+              v-for="(columnGroup,index) in initColDataOut.columns[`writeoffoutboxdataFm`].editGroups"
+              :key="index"
+            >
+              <template v-for="(column,index2) in columnGroup">
+                <th
+                  @click="searchKeyType(column.key,column.title)"
+                  :key="index2"
+                  :class="`ivu-table-column-${column.titleAlign}`"
+                  :width="column.editWidth"
+                  :colspan="column.colSpan"
+                  :rowspan="column.rowSpan"
+                  :columnKey="column.key"
+                >
+                  <div class="ivu-table-cell">
+                    <span class>{{column.title}}</span>
+                  </div>
+                </th>
+              </template>
+            </tr>
+          </template>
+          <template slot="body" slot-scope="{ row, index,valueChangeAssign }">
+            <template
+              v-for="(column,subIndex) in initColDataOut.columns[`writeoffoutboxdataFm`].editColumns"
+            >
+              <td
+                :key="subIndex"
+                :class="`ivu-table-column-${column.align}`"
+                :width="column.editWidth"
+              >
+                <!-- 控件特殊处理 订单编号 -->
+                <template v-if="column.key =='iisChose'">
+                  <Checkbox
+                    @on-change="onChange_SlaveItemChcBox(index)"
+                    v-model="row[column.key]"
+                    :disabled="column.readOnly"
+                  ></Checkbox>
+                </template>
+                <!--其它 控件 -->
+                <template v-else>
+                  <formControl
+                    :control-type="column.controlType"
+                    v-model="row[column.key]"
+                    :disabled="column.readOnly"
+                    @input="value => {valueChangeAssign(value, index, row,column.key)}"
+                  ></formControl>
+                </template>
+              </td>
+            </template>
+          </template>
+        </eTable>
+      </div>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-writeOff 描述 应收冲销
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 editBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author mingxing
+ *
+ * @created 2020/04/10
+ */
+import popup from "@/components/popup/popup";
+import editWindow from "@/components/edit-window/edit-window";
+import eTable from "@/components/e-table/e-table";
+import request from "@/libs/request";
+import editBaseMixins from "../../mixins/edit";
+import optionSearch from "../../components/optionSearch";
+import dayjs from "dayjs";
+import Sys from "@/api/sys";
+import formControl from "@/components/form-control/form-control";
+import { deepCopy } from "view-design/src/utils/assist";
+
+const default_formDataInfo = {
+  // 主表 更改字段
+  master: {
+    custId: "",
+    keyWord: "",
+    likeFlag: "1",
+    startDate: dayjs()
+      .subtract(1, "month")
+      .format("YYYY-MM-DD"),
+    endDate: dayjs().format("YYYY-MM-DD")
+  },
+  writeOffInItems: {
+    addList: [], // 添加列
+    defaultList: [], // 默认列
+    deleteList: [], // 删除列
+    updateList: []
+  },
+  writeOffOutItems: {
+    //收款明细
+    addList: [], // 添加列
+    defaultList: [], // 默认列
+    deleteList: [], // 删除列
+    updateList: []
+  }
+};
+export default {
+  name: "edit-writeOff",
+  mixins: [editBaseMixins],
+  components: {
+    editWindow,
+    optionSearch,
+    eTable,
+    popup,
+    formControl
+  },
+  props: {
+    // 搜索参数对象,从父类填充参数过来
+    searchParams: {
+      type: Object,
+      default: () => {
+        return {};
+      }
+    }
+  },
+  data() {
+    return {
+      formName: "accountwriteoffFm", // 重写父类 查询表单名称
+      writeOffTitle: "冲销选开票",
+      // 查询配置参数
+      functionParams: {
+        formInitPreName: "writeoffinboxdata", // 查询表格列头信息 前缀
+        requestBaseUrl: "/account/writeOff", // 查询 表格行 数据 接口前缀地址
+        uniqueId: "woId" // 查询详细的唯一ID,需要顶部查询中使用
+      },
+      actionSubtitle: "应收冲销", //重写父类 当前操作副标题
+      salveWindow: {
+        isLoaddingDone: false, // 窗口是否加载完成
+        showEditWindow: false, // 是否显示edit-writeOffSlave 编辑窗口
+        action: "add" // 当前操作功能 添加/编辑
+      },
+      slaveTableSelectedIndex: 0, // 主表当前选择行,默认第一行
+
+      formDataInfo: deepCopy(default_formDataInfo), // Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      masterRuleValidate: {}, // 纸箱出货 需要验证的数据
+      slaveTableFieldsValidator: {}, // 纸箱出货明细 需要验证的数据
+      subTableFieldsValidator: {}, // 出货其他费用 需要验证的数据
+
+      masterHeight: 0, //表单高度
+      otherHeight: 0, //剩余高度
+      loadingData: false, // 查询中
+      initColData: {},
+      initColDataOut: {}, //
+      sub_list_table_edit_currentIndex: 0, //工单明细 当前选择 下标
+      // searchConfig: {
+      //   title: "开票编号",
+      //   keyField: "icNo"
+      // }
+    };
+  },
+  computed: {
+    // 是否禁用确认按钮
+    disabledSubmitBtn() {
+      let datalist = this.formDataInfo["writeOffInItems"].defaultList;
+      if (datalist && datalist.length > 0) {
+        return false;
+      } else {
+        return true;
+      }
+    }
+  },
+  watch: {
+    showWindow: function(n, o) {
+      if (n) {
+        let _self = this;
+        this.$nextTick(() => {
+          this.needAllocate = false;
+          this.registerEvent();
+          this.pageResize();
+          this.getDataByMode();
+        });
+      }
+    }
+  },
+  created() {
+    this.loadColumsDataWriteOffIn();
+    this.loadColumsDataWriteOffOut();
+    this.formDataInfo.master.likeflag = "1";
+  },
+  methods: {
+    // 获取快速工单调拨
+    searchGetBackDataList() {
+      //debugger;
+      // this.tableSetOrderDataList = [];
+      // let url = `/stock/boxLibMove/getBoxDeliMoveData?bpNo=${this.formSetOrderInfo.productCode}&workNo=${this.formSetOrderInfo.boxWordNo}`;
+      // let params = {};
+      // this.getDataByUrl(url, params).then(res => {
+      //   if (res && res.length > 0) {
+      //     this.tableSetOrderDataList = res;
+      //   }
+      // });
+    },
+
+    // 表格列值改变 回调事件处理event：{row, column, index, event,config}
+    tableColTiggerEventCall(obj) {
+      //debugger;
+      switch (obj.event) {
+        case "deliQtyChangeEvent":
+          this.handleSlaveDeliQtyChangeEvent(obj.index, "slave");
+          break;
+        default:
+          break;
+      }
+    },
+
+    handleSlaveDeliQtyChangeEvent(index, type) {
+      //debugger;
+      this.needAllocate = false; // 是否需要快速调拨
+      this.needAllocateIndex = -1;
+      let currentItem = this.formDataInfo["writeOffInItems"].defaultList[index];
+      let deliQty = Number(currentItem.deliQty); // 送货数
+      if (deliQty > 0) {
+        currentItem.iisChose = true;
+      } else {
+        currentItem.iisChose = false;
+      }
+      let bsQty = Number(currentItem.bsQty); // 库存数
+      let noDeliQty = Number(currentItem.noDeliQty); // 未送货数
+      if (deliQty > 0 && deliQty > noDeliQty) {
+        this.$Modal.warning({
+          width: "260",
+          title: "警告",
+          content: `送货数不能大于未送货数,请检查!`,
+          onOk: () => {
+            this.$refs["slave_list_table_edit"].set({ deliQty: 0 }, index);
+            currentItem.iisChose = false;
+          }
+        });
+      } else if (deliQty > bsQty) {
+        if (type == "sub") {
+          this.needAllocate = true;
+          this.needAllocateIndex = index;
+
+          return;
+        }
+        this.$Modal.warning({
+          width: "260",
+          title: "警告",
+          content: `存在库存不足的工单,请采用快速调拨!`,
+          onOk: () => {
+            this.needAllocate = true;
+            this.needAllocateIndex = index;
+
+            // 默认选择需要调拨的所在行,也就是最后一行
+            //debugger;
+            let dataList = this.formDataInfo["boxDeliSubItems"].defaultList;
+            if (dataList) {
+              let countNum = dataList.length;
+              setTimeout(() => {
+                this.setDefaultSelectedSubRow(Number(countNum - 1));
+              }, 200);
+            }
+          }
+        });
+      }
+    },
+    // 计算主表当前行是否可选
+    resetDisable(index) {
+      //debugger;
+      if (this.needAllocate) {
+        let rowItem = this.formDataInfo["writeOffInItems"].defaultList[index];
+        if (!!!rowItem.iisChose) {
+          return true;
+        }
+      } else {
+        return false;
+      }
+    },
+    // 设置主表送货数
+    setSlaveListDeliQty() {
+      //debugger;
+      // let totalDeliQty = 0;
+
+      // let slaveDataList = this.formDataInfo["writeOffInItems"].defaultList;
+      // if (subDataList) {
+      //   if (subDataList.length > 0) {
+      //     subDataList.forEach(item => {
+      //       totalDeliQty = totalDeliQty + Number(item.deliQty);
+      //     });
+      //     slaveDataList[this.slaveTableSelectedIndex].deliQty = totalDeliQty;
+      //     slaveDataList[this.slaveTableSelectedIndex].iisChose = true;
+      //   } else {
+      //     slaveDataList[this.slaveTableSelectedIndex].deliQty = 0;
+      //     slaveDataList[this.slaveTableSelectedIndex].iisChose = false;
+      //   }
+      // }
+      // this.handleSlaveDeliQtyChangeEvent(this.slaveTableSelectedIndex, "sub");
+    },
+
+    // 工单row选择事件回调
+    onChange_SlaveItemChcBox(index) {
+      //debugger;
+      if (this.needAllocate && this.needAllocateIndex == index) {
+        this.needAllocate = false;
+      }
+      let rowItem = this.formDataInfo["writeOffInItems"].defaultList[index];
+      //设置送货数根据条件变化
+      // rowItem = this.setDeliQtyBy(rowItem);
+    },
+
+    //设置送货数根据条件变化
+    // setDeliQtyBy(rowItem) {
+    //   //debugger;
+    //   let BoxDeliOutOrder = this.$params.BoxDeliOutOrder; //纸箱送货可以超订单数
+    //   let coType = this.formDataInfo.master.coType; //送货数为库存数
+    //   if (rowItem.iisChose) {
+    //     let noDeliQty = Number(
+    //       rowItem.noDeliQty == null ? 0 : rowItem.noDeliQty
+    //     ); //未送数
+    //     let bsQty = Number(rowItem.bsQty == null ? 0 : rowItem.bsQty); // 库存数
+    //     //默认 送货数=未送数
+    //     rowItem.deliQty = noDeliQty;
+    //     if (coType) {
+    //       if (BoxDeliOutOrder == "1") {
+    //         // 不管订单数，未送数是多少，送货数=库存数
+    //         rowItem.deliQty = bsQty;
+    //       } else {
+    //         //送货数为库存数
+    //         if (noDeliQty > bsQty) {
+    //           // 未送数大于库存数，送货数=库存数，
+    //           rowItem.deliQty = bsQty;
+    //         }
+    //       }
+    //     }
+    //   } else {
+    //     rowItem.deliQty = 0;
+    //   }
+    //   return rowItem;
+    // },
+    //获取数据BY MODE
+    getDataByMode() {
+      //debugger;
+      let _self = this;
+      //MODE1 仓位数据
+      // 查询前 表格 数据清空
+      let mode = this.searchParams.mode;
+      // this.formDataInfo["writeOffInItems"].defaultList = [];
+      this.boxDeliSubItemsList = [];
+      this.searchDataBy(mode).then(res => {
+        //debugger;
+        _self.boxDeliSubItemsList = res;
+        if (mode == "icNo") {
+          //开票明细
+          _self.formDataInfo["writeOffInItems"].defaultList = res;
+        } else if (mode == "gNo") {
+          //收款明细
+          _self.formDataInfo["writeOffOutItems"].defaultList = res;
+        }
+        // _self.formDataInfo["writeOffInItems"].defaultList = res;
+        _self.setDefaultSelectedRow(); // 默认选择第一行
+        _self.setDefaultSelectedSubRow();
+      });
+    },
+    // 通过参数查询数据列表
+    searchDataBy(mode) {
+      // startDate(开始日期),endDate(结束日期),custId(客户id),likeFlag(1模糊查询0精准查询),icNo(开票编号),
+      // icNoList(已选的开票编号集合，用逗号隔开)，明细列表输入开票编号时带出开票明细信息的条件：likeFlag=0,icNo=xx,custId=xx
+      //debugger;
+      let params = {},
+        url = "";
+      if (mode == "icNo") {
+        //开票明细
+        this.writeOffTitle = "冲销选开票";
+        params = {
+          startDate: dayjs(this.formDataInfo.master.startDate).format(
+            "YYYY-MM-DD"
+          ), //(开始日期)
+          endDate: dayjs(this.formDataInfo.master.endDate).format("YYYY-MM-DD"), //(结束日期)
+          custId:this.searchParams.custId, //(客户id)
+          likeFlag: this.formDataInfo.master.likeFlag, //(1模糊查询0精准查询)
+          icNo: this.formDataInfo.master.icNo, //(编号)
+          icNoList: this.searchParams.icNoList //(过滤已选的工单号集合)
+        };
+        url = `/account/writeOff/getInvoiceInfoBoxData`;
+      } else if (mode == "gNo") {
+        //收款明细
+        //参数包括：startDate(开始日期),endDate(结束日期),custId(客户id),likeFlag(1模糊查询0精准查询),gNo(收款编号),
+        //gNoList(已选的收款编号集合，用逗号隔开)，明细列表输入收款编号时带出收款明细信息的条件：likeFlag=0,gNo=xx,custId=xx
+        this.writeOffTitle = "冲销选收款";
+        params = {
+          startDate: dayjs(this.formDataInfo.master.startDate).format(
+            "YYYY-MM-DD"
+          ), //(开始日期)
+          endDate: dayjs(this.formDataInfo.master.endDate).format("YYYY-MM-DD"), //(结束日期)
+          custId:this.searchParams.custId, //(客户id)
+          likeFlag: this.formDataInfo.master.likeFlag, //(1模糊查询0精准查询)
+          gNo: this.formDataInfo.master.gNo, //(编号)
+          gNoList: this.searchParams.gNoList //(过滤已选的工单号集合)
+        };
+        url = `/account/writeOff/getGatherInfoBoxData`;
+      }
+      return new Promise((resolve, reject) => {
+        this.loadingData = true;
+        request
+          .post(url, params)
+          .then(res => {
+            //debugger;
+            if (res && res.length > 0) {
+              resolve(res);
+            }
+            this.loadingData = false;
+          })
+          .catch(err => {
+            this.loadingData = false;
+          });
+      });
+    },
+    // 工单明细选择行事件
+    sub_list_table_editRowClick(index) {
+      //debugger;
+      this.sub_list_table_edit_currentIndex = index;
+    },
+    // 工单列表行点击事件回调
+    slave_list_table_editRowClick(index) {
+      //debugger;
+      this.slaveTableSelectedIndex = index;
+      let rowItem = this.formDataInfo["writeOffInItems"].defaultList[index];
+      if (rowItem && rowItem.biProdNo != "") {
+        let mapData = this.boxDeliSubItemsList.filter(item => {
+          if (
+            item.biProdNo == rowItem.biProdNo &&
+            item.workNo == rowItem.workNo
+          ) {
+            return item;
+          }
+        });
+
+        this.setDefaultSelectedSubRow();
+      }
+    },
+    // 默认选择行数据
+    setDefaultSelectedRow(index = 0) {
+      //debugger;
+      let slaveObj = this.$refs["slave_list_table_edit"];
+      if (slaveObj) {
+        slaveObj.rowClick(index, "row-click");
+      }
+    },
+    // 默认选择行数据
+    setDefaultSelectedSubRow(index = 0) {},
+    // 获取关键字类型
+    searchKeyType(keyField, keyTitle) {
+      //debugger;
+      //订单编号 bcNo，产品编号 biProdNo，产品名称 bpName,客户po号 bcCustPo,工单号 workNo
+      // if (this.excludeFiled("search", keyField)) {
+      //   this.searchConfig.title = keyTitle;
+      //   this.searchConfig.keyField = keyField;
+      // }
+    },
+    // 获取当前搜索类型的关键字
+    getCurrentKeyTypeWords(field) {
+      //debugger;
+      // if (field == this.searchConfig.keyField) {
+      //   return this.formDataInfo.master.keyWord;
+      // } else {
+      //   return "";
+      // }
+    },
+    // 加载列头数据
+    loadColumsDataWriteOffIn() {
+      //弹出框主表数据(虚拟)
+      //debugger;
+      let formName = "writeoffinboxdataFm";
+      let _self = this;
+      let url = `/sys/form/init/${formName}`;
+      request.get(url).then(res => {
+        //debugger;
+        if (res != null) {
+          _self.initColData = res;
+        }
+      });
+    },
+    // 加载列头数据
+    loadColumsDataWriteOffOut() {
+      //debugger;
+      let formName = "writeoffoutboxdataFm";
+      let _self = this;
+      let url = `/sys/form/init/${formName}`;
+      request.get(url).then(res => {
+        //debugger;
+        if (res != null) {
+          _self.initColDataOut = res;
+        }
+      });
+    },
+
+    // 排除不需要显示的字段
+    excludeFiled(type, key) {
+      let exListItemFm = [
+        "iisChose",
+        "cusName",
+        "billType",
+        "bcCustPo",
+        "icAmt"
+      ];
+      let exListOtherfeeFm = [];
+      let searchList = ["icNo", "billType", "cusName", "bcCustPo", "icAmt"];
+      let exList = [];
+      switch (type) {
+        case "itemFm":
+          exList = exListItemFm;
+          break;
+        case "search":
+          exList = searchList;
+          break;
+        default:
+          exList = [];
+          break;
+      }
+      let isExist = exList.includes(key);
+      if (type === "itemFm" || type === "search") {
+        isExist = !isExist;
+      }
+      if (isExist) {
+        return false;
+      } else {
+        return true;
+      }
+    },
+    // 注册窗口事件
+    registerEvent() {
+      let _self = this; //赋值vue的this
+      window.onresize = () => {
+        //调用methods中的事件
+        _self.pageResize();
+      };
+    },
+    // 触发窗口大小变化事件
+    pageResize() {
+      this.$nextTick(() => {
+        this.getTabWindowHeight();
+      });
+    },
+    // 获取当前TAB标签的实际高度
+    getTabWindowHeight() {
+      this.getMasterheight();
+      // 因为使用V-SHOW 隐藏,实际还会占用高度,所以切换时,设置为0 或使用V-IF 可以不用那么麻烦,但性能较低
+      if (this.$refs["masterHeight"]) {
+        // this.masterHeight = this.$refs["masterHeight"].offsetHeight;
+        // this.otherHeight = this.$refs["otherHeight"].offsetHeight;
+      }
+    },
+    getMasterheight() {
+      return 50;
+    },
+    // 重写父类,修改提交数据
+    resetformDataInfo() {
+      //debugger;
+      let choseDataList = this.boxDeliSubItemsList.filter(item => {
+        return item.iisChose == true;
+      });
+      return choseDataList;
+    },
+
+    // 提交主从表数据
+    formTableDataSubmit() {
+      //debugger;
+      if (this.needAllocate) {
+        this.$Modal.warning({
+          width: "260",
+          title: "警告",
+          content: `存在库存不足的工单,请采用快速调拨!`,
+          onOk: () => {
+            return;
+          }
+        });
+      } else {
+        let submitData = this.resetformDataInfo();
+        if (submitData.length > 0) {
+          this.showWindow = false; // 关闭当前编辑页面
+          this.$emit("submit-success", submitData); // 刷新主页面数据
+        } else {
+          this.$Message.error("请勾选需要操作的数据!!");
+          return;
+        }
+      }
+    }
+  }
+};
+</script>
+
+<style>
+.cl-edit-window-writeOff .masterHeightClass {
+  height: 50%;
+  overflow: auto;
+}
+.cl-edit-window-writeOff .otherHeightClass {
+  height: 50%;
+  overflow: hidden;
+}
+.:label-widthclasswriteoff .ivu-form-item-content {
+  margin-left: 60px;
+}
+</style>

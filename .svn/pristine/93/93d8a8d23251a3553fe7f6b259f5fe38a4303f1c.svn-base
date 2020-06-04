@@ -1,0 +1,136 @@
+<template>
+  <div class="cl-moudle">
+    <!-- 0. 无需变更,修改 functionParams 配置参数即可 -->
+    <htmlTemplate
+      :currrentRowItem="currrentRowItem"
+      @isLoaddingDone="getLoaddingDone"
+      :requestBaseUrl="functionParams.requestBaseUrl"
+      :uniqueId="functionParams.uniqueId"
+      :queryParamsDefault="queryParamsDefault"
+    >
+    </htmlTemplate>
+    <div ref="contextMenuTarget" :style="{ height: tableHeight + 'px' }" v-if="formInitData.listView">
+      <Row>
+        <!-- 1. 无需变更,修改 functionParams 配置参数即可 master_list_table 固定不变,不要修改-->
+        <vTable
+          name="saleboxproductpriceFm"
+          :height="tableHeight / 3 - 60"
+           ref="master_list_table"
+          :url="`${functionParams.requestBaseUrl}/page`"
+          :columns="formInitData.columns[`${functionParams.formInitPreName}Fm`].listColumns"
+          :pageSize="formInitData.listView[`${functionParams.formInitPreName}Fm`].pageSize"
+          :pagination="true"
+          @row-click="master_list_tableRowClick"
+        ></vTable>
+      </Row>
+      <Row>
+         <!-- 2. 变更 query-params 参数为详细查询唯一ID,其它修改functionParams配置参数即可 slave_list_table 固定不变,不要修改-->
+        <Tabs>
+          <TabPane :label="formInitData.listView[`${functionParams.formInitPreName}itemFm`].tableDesc" name="name1">
+            <vTable
+              name="saleboxproductpriceitemFm"
+              :height="tableHeight / 3 - 30"
+              ref="slave_list_table"
+              :url="`${functionParams.requestBaseUrl}/item/list`"
+              :columns="formInitData.columns[`${functionParams.formInitPreName}itemFm`].listColumns"
+              :pagination="false"
+              @row-click="slave_list_tableRowClick"
+                :query-params="{productPriceId:-1}"
+            ></vTable>
+          </TabPane>
+        </Tabs>
+      </Row>
+      <Row>
+         <!-- 3. 变更 query-params 参数为详细查询唯一ID, 其它 修改functionParams配置参数即可 sub_list_table 固定不变,不要修改-->
+        <Tabs>
+          <TabPane :label="formInitData.listView[`${functionParams.formInitPreName}mdataFm`].tableDesc" name="name1">
+            <vTable
+             name="saleboxproductpricemdataFm"
+              :height="tableHeight / 3"
+              ref="sub_list_table"
+              :url="`${functionParams.requestBaseUrl}/sub/list`"
+              :columns="formInitData.columns[`${functionParams.formInitPreName}mdataFm`].listColumns"
+              :pagination="false"
+              :query-params="{productPriceId:-1}"
+            ></vTable>
+          </TabPane>
+        </Tabs>
+      </Row>
+    </div>
+    <!-- 添加: formInitData  属性,用于表单表格初始化数据,多用于三层表-->
+    <editForm
+      :formInitData="formInitData"
+      :isLoaddingDone="isLoaddingDone"
+      :form-detail-data="formDetailData"
+      :action="action"
+      @submit-success="search()"
+      v-model="showEditWindow"
+      :detailDisabled="detailDisabled"
+      :detailConvertUpdate="detailConvertUpdate"
+    />
+
+  </div>
+</template>
+<script>
+import vTable from '@/components/tables/vTable'
+import htmlTemplate from '../components/htmlTemplate'
+import listBaseMixins from '../mixins/list'
+// import request from '@/libs/request'
+export default {
+  mixins: [listBaseMixins],
+  components: {
+    editForm: function (resolve) {
+      // 组件的异步加载
+      require(['./edit/edit-boxProductPrice'], resolve)
+    },
+    htmlTemplate,
+    vTable
+  },
+  data () {
+    return {
+      // 查询配置参数
+      functionParams: {
+        formInitPreName: 'saleboxproductprice', // 查询表格列头信息 前缀 例如:saleboxproductprice Fm/itemFm/mdataFm
+        requestBaseUrl: '/sale/boxProductPrice', // 查询 表格行 数据 接口前缀地址
+        uniqueId: 'productPriceId' // 查询详细的唯一ID,需要顶部查询中使用
+      },
+      // 分页查询接口获取字段, 查询参数配置 ,注意格式,一般为编码和名称
+      queryParamsDefault: [
+        {
+          title: '客户编号',
+          code: 'custCode',
+          custCode: ''
+        },
+        {
+          title: '客户名称',
+          name: 'custName$like',
+          custName$like: ''
+        }
+      ]
+    }
+  },
+  methods: {
+    // 主表点击事件,需要修改 查询参数:productPriceId 和 查询反馈内容  rowData.custCode + " " + rowData.custName 一般对应 queryParamsDefault 即可
+    master_list_tableRowClick (rowData, rowIndex) {
+      this.masterRowSelection = rowData
+      this.currrentRowItem.rowName = rowData.custCode + ' ' + rowData.custName
+      this.$refs['slave_list_table'].search({ productPriceId: rowData.id })
+    },
+    // 从表点击事件,需要修改 查询参数:productPriceId
+    slave_list_tableRowClick (rowData, rowIndex) {
+      // debugger
+      this.slaveRowselection = rowData
+      this.$refs['sub_list_table'].search({ productPriceItemId: rowData.id })
+    }
+  },
+  created () {
+    // 查询多个表格列表头数据
+    // 无需变更,配置functionParams 参数即可
+    if (this.functionParams.formInitPreName) {
+      this.getFormInitData(`${this.functionParams.formInitPreName}Fm`)
+    }
+  }
+}
+</script>
+
+<style></style>

@@ -1,0 +1,866 @@
+<template>
+  <div>
+    <editWindow v-model="showWindow" :fullscreen="true" width="80%"  @on-ok="formDataSubmit()">
+      <Form :label-colon="true" :label-width="80" :model="formModel" ref="editFormItem" @on-enter-over="formEnterOver">
+        <Row>
+          <Col span="5">
+          <FormItem label="表名"  prop="master.tableName" :rules="{required: true, message: '表名不能为空', trigger: 'blur' }">
+            <Input placeholder="请输入表名" v-model="formModel.master.tableName" size="small"></Input>
+          </FormItem>
+          </Col>
+          <Col span="5">
+          <FormItem label="说明" prop="master.tableDesc" :rules="{required: true, message: '说明不能为空', trigger: 'blur' }">
+            <Input placeholder="请输入说明" v-model="formModel.master.tableDesc"  size="small"></Input>
+          </FormItem>
+          </Col>
+          <Col span="5">
+            <FormItem label="表单名" prop="master.formName" :rules="{required: true, message: '表单名不能为空', trigger: 'blur' }">
+              <Input placeholder="请输入表单名" v-model="formModel.master.formName"  size="small"></Input>
+            </FormItem>
+          </Col>
+          <Col span="5">
+            <FormItem label="语言KEY" prop="master.tableDescI18n">
+              <Input placeholder="请输入多语言KEY" v-model="formModel.master.tableDescI18n"  size="small"></Input>
+            </FormItem>
+          </Col>
+
+          <Col span="5">
+            <FormItem label="表类型" prop="master.tableType" :rules="{required: true,type:'number',message: '表类型不能为空', trigger: 'change' }">
+              <Select size="small" v-model="formModel.master.tableType">
+                <Option :value="0">单表</Option>
+                <Option :value="1">主表</Option>
+                <Option :value="2">从表</Option>
+              </Select>
+            </FormItem>
+          </Col>
+
+          <Col span="5" v-if="formModel.master.tableType == 2">
+            <FormItem label="主表名称" prop="master.parentTable">
+              <Select size="small" v-model="formModel.master.parentTable">
+                <Option :value="item.formName" :key="index" v-for="(item,index) in tableList">{{item.tableDesc}}</Option>
+              </Select>
+            </FormItem>
+          </Col>
+
+          <Col span="5" v-if="formModel.master.tableType == 2">
+            <FormItem label="从表顺序" prop="master.formSort">
+             <InputNumber :min="0" v-model="formModel.master.formSort" size="small"></InputNumber>
+            </FormItem>
+          </Col>
+
+          <Col span="5">
+            <FormItem label="页大小" prop="master.pageSize">
+             <InputNumber :min="10" v-model="formModel.master.pageSize" size="small"></InputNumber>
+            </FormItem>
+          </Col>
+
+        </Row>
+      </Form>
+      <Tabs>
+        <TabPane label="页面配置" name="name1">
+          <eTable ref="tablePages_slave"
+          unqiue-mark="id"
+          :height="getTableHeight"
+          :index-menu="true"
+          :col-start="0"
+          :width="200"
+          :row-init-data="formInitData.slave.tablePages"
+          :data.sync = "formModel.tablePages"
+          :rules="tablePagesValidator"
+          >
+            <template slot="head">
+              <tr>
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">列名2</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">描述</span>
+                  </div>
+                </th>
+
+                <th class="ivu-table-column-center" width="60">
+                  <div class="ivu-table-cell">
+                    <span class="">虚拟字段</span>
+                  </div>
+                </th>
+
+                <th class="ivu-table-column-center" width="60">
+                  <div class="ivu-table-cell">
+                    <span class="">列表显示</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="60">
+                  <div class="ivu-table-cell">
+                    <span class="">编辑显示</span>
+                  </div>
+                </th>
+
+                <th class="ivu-table-column-center" width="60">
+                  <div class="ivu-table-cell">
+                    <span class="">详情显示</span>
+                  </div>
+                </th>
+
+                <th class="ivu-table-column-center" width="60">
+                  <div class="ivu-table-cell">
+                    <span class="">toolTip</span>
+                  </div>
+                </th>
+
+                <th class="ivu-table-column-center" width="70">
+                  <div class="ivu-table-cell">
+                    <span class="">列表宽</span>
+                  </div>
+                </th>
+
+                <th class="ivu-table-column-center" width="70">
+                  <div class="ivu-table-cell">
+                    <span class="">编辑宽</span>
+                  </div>
+                </th>
+
+                <th class="ivu-table-column-center" width="60">
+                  <div class="ivu-table-cell">
+                    <span class="">字段顺序</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="60">
+                  <div class="ivu-table-cell">
+                    <span class="">表头对齐</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="60">
+                  <div class="ivu-table-cell">
+                    <span class="">表格对齐</span>
+                  </div>
+                </th>
+
+                <th class="ivu-table-column-center" width="60">
+                  <div class="ivu-table-cell">
+                    <span class="">列固定</span>
+                  </div>
+                </th>
+
+                <th class="ivu-table-column-center" width="60">
+                  <div class="ivu-table-cell">
+                    <span class="">列拖拽</span>
+                  </div>
+                </th>
+
+                <th class="ivu-table-column-center" width="60">
+                  <div class="ivu-table-cell">
+                    <span class="">是否查询</span>
+                  </div>
+                </th>
+
+                <th class="ivu-table-column-center" width="80">
+                  <div class="ivu-table-cell">
+                    <span class="">查询类型</span>
+                  </div>
+                </th>
+
+                <th class="ivu-table-column-center" width="60">
+                  <div class="ivu-table-cell">
+                    <span class="">查询条件</span>
+                  </div>
+                </th>
+
+                <th class="ivu-table-column-center" width="40">
+                  <div class="ivu-table-cell">
+                    <span class="">只读</span>
+                  </div>
+                </th>
+
+                <th class="ivu-table-column-center" width="80">
+                  <div class="ivu-table-cell">
+                    <span class="">控件类型</span>
+                  </div>
+                </th>
+
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">上级字段</span>
+                  </div>
+                </th>
+
+                <th class="ivu-table-column-center" width="70">
+                  <div class="ivu-table-cell">
+                    <span class="">列格式化</span>
+                  </div>
+                </th>
+
+                <th class="ivu-table-column-center" width="90">
+                  <div class="ivu-table-cell">
+                    <span class="">多语言KEY</span>
+                  </div>
+                </th>
+                 <th class="ivu-table-column-center" width="60">
+                  <div class="ivu-table-cell">
+                    <span class="">记录日志</span>
+                  </div>
+                </th>
+                  <th class="ivu-table-column-center" width="60">
+                  <div class="ivu-table-cell">
+                    <span class="">单据编号</span>
+                  </div>
+                </th>
+                  <th class="ivu-table-column-center" width="60">
+                  <div class="ivu-table-cell">
+                    <span class="">单据日期</span>
+                  </div>
+                </th>
+                  <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">子表单据编号</span>
+                  </div>
+                </th>
+              </tr>
+            </template>
+
+            <template slot="body" slot-scope="{row,index,valueChangeAssign}">
+              <td class="ivu-table-column-center" width="100">
+                <Input v-model="row.fieldName" @input="value=>{valueChangeAssign(value,index,row,'fieldName');}" size="small"
+                  :maxlength="20" ></Input>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                <Input v-model="row.fieldDesc" @input="value=>{valueChangeAssign(value,index,row,'fieldDesc');}" size="small"
+                  :maxlength="20" ></Input>
+              </td>
+
+              <td class="ivu-table-column-center" width="100">
+                  <Checkbox size="small"  v-model="row.virtual" @input="value=>{valueChangeAssign(value,index,row,'virtual');}"></Checkbox>
+              </td>
+
+              <td class="ivu-table-column-center" width="100">
+                  <Checkbox size="small"  v-model="row.listShow" @input="value=>{valueChangeAssign(value,index,row,'listShow');}"></Checkbox>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                  <Checkbox size="small" v-model="row.editShow" @input="value=>{valueChangeAssign(value,index,row,'editShow');}"></Checkbox>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                   <Checkbox size="small" v-model="row.detailShow" @input="value=>{valueChangeAssign(value,index,row,'detailShow');}"></Checkbox>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                   <Checkbox size="small" v-model="row.tooltip" @input="value=>{valueChangeAssign(value,index,row,'tooltip');}"></Checkbox>
+              </td>
+
+              <td class="ivu-table-column-center" width="100">
+                  <InputNumber size="small" v-model="row.width" @input="value=>{valueChangeAssign(value,index,row,'width');}"></InputNumber>
+              </td>
+
+              <td class="ivu-table-column-center" width="100">
+                  <InputNumber size="small" v-model="row.editWidth" @input="value=>{valueChangeAssign(value,index,row,'editWidth');}"></InputNumber>
+              </td>
+
+            <td class="ivu-table-column-center" width="100">
+              <Input v-if="row.fieldOrder == -1" v-model="row.fieldOrder = (index + 1)*10" @input="value=>{valueChangeAssign(value,index,row,'fieldOrder');}" size="small"
+                :maxlength="20" ></Input>
+              <Input v-else v-model="row.fieldOrder" @input="value=>{valueChangeAssign(value,index,row,'fieldOrder');}" size="small"
+                :maxlength="20" ></Input>
+            </td>
+
+              <td class="ivu-table-column-center" width="100">
+                  <tableSelect size="small" v-model="row.titleAlign" @on-change="value=>{valueChangeAssign(value,index,row,'titleAlign');}">
+                    <option value="left">左</option>
+                    <option value="center">中</option>
+                    <option value="right">右</option>
+                  </tableSelect>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                  <tableSelect size="small" v-model="row.align" @change="value=>{valueChangeAssign(value,index,row,'align');}">
+                    <option value="left">左</option>
+                    <option value="center">中</option>
+                    <option value="right">右</option>
+                  </tableSelect>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                  <tableSelect size="small" v-model="row.fixed" @change="value=>{valueChangeAssign(value,index,row,'fixed');}">
+                    <option value="left">左</option>
+                    <option value="right">右</option>
+                  </tableSelect>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                   <Checkbox size="small" v-model="row.resizable" @input="value=>{valueChangeAssign(value,index,row,'resizable');}"></Checkbox>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                   <Checkbox size="small" v-model="row.query" @input="value=>{valueChangeAssign(value,index,row,'query');}"></Checkbox>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                   <tableSelect size="small" v-model="row.queryType" @change="value=>{valueChangeAssign(value,index,row,'queryType');}">
+                     <option value="0">普通查询</option>
+                     <option value="1">范围查询</option>
+                   </tableSelect>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                   <tableSelect size="small" v-model="row.queryCondition" @change="value=>{valueChangeAssign(value,index,row,'queryCondition');}">
+                     <option value="lt">&lt;</option>
+                     <option value="le">&le;</option>
+                     <option value="gt">&gt;</option>
+                     <option value="ge">&ge;</option>
+                     <option value="in">in</option>
+                     <option value="lLike">lLike</option>
+                     <option value="rLike">rLike</option>
+                     <option value="like">like</option>
+                     <option value="ne">!=</option>
+                     <option value="eq">=</option>
+                   </tableSelect>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                   <Checkbox size="small" v-model="row.readOnly" @input="value=>{valueChangeAssign(value,index,row,'readOnly');}"></Checkbox>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                   <tableSelect size="small" v-model="row.controlType" @change="value=>{valueChangeAssign(value,index,row,'controlType');}">
+                     <option value="input">文本框</option>
+                     <option value="textarea">文本域</option>
+                     <option value="number">数字框</option>
+                     <option value="tableSelect">下拉框</option>
+                     <option value="popup">窗口选择器</option>
+                     <option value="checkbox">复选框</option>
+                     <option value="date">日期</option>
+                     <option value="switch">开关</option>
+                     <option value="hidden">隐藏域</option>
+                     <option value="file">文件上传</option>
+                   </tableSelect>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                   <tableSelect size="small" v-model="row.parentField" @change="value=>{valueChangeAssign(value,index,row,'parentField');}">
+                     <option :value="item.fieldName" :key="index" v-for="(item,index) in virtualFields">{{item.fieldDesc}}</option>
+                   </tableSelect>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                  <tableSelect size="small" v-model="row.format" @change="value=>{valueChangeAssign(value,index,row,'format');}">
+                    <option value="NUMBER_MARK">千分符</option>
+                    <option value="STATUS">状态</option>
+                    <option value="AUDIT">审核</option>
+                    <option value="CHECKBOX">多选框</option>
+                    <option value="DECIMAL_DIGITS2">#,###.00</option>
+                    <option value="DECIMAL_DIGITS3">#,###.000</option>
+                    <option value="DECIMAL_DIGITS4">#,###.0000</option>
+                    <option value="DECIMAL_DIGITS6">#,###.000000</option>
+                  </tableSelect>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                <Input v-model="row.fieldI18n" @input="value=>{valueChangeAssign(value,index,row,'fieldI18n');}" size="small"
+                  :maxlength="20" ></Input>
+              </td>
+             <!-- 记录日志 -->
+              <td class="ivu-table-column-center" width="100">
+                  <Checkbox size="small"  v-model="row.issLog" @input="value=>{valueChangeAssign(value,index,row,'issLog');}"></Checkbox>
+              </td>
+                  <!-- 单据编号 -->
+              <td class="ivu-table-column-center" width="100">
+                  <Checkbox size="small"  v-model="row.issBillNo" @input="value=>{valueChangeAssign(value,index,row,'issBillNo');}"></Checkbox>
+              </td>
+                  <!-- 单据日期 -->
+              <td class="ivu-table-column-center" width="100">
+                  <Checkbox size="small"  v-model="row.issBillDate" @input="value=>{valueChangeAssign(value,index,row,'issBillDate');}"></Checkbox>
+              </td>
+                  <!-- 子表单据编号 -->
+              <td class="ivu-table-column-center" width="100">
+                  <Checkbox size="small"  v-model="row.issSubBillNo" @input="value=>{valueChangeAssign(value,index,row,'issSubBillNo');}"></Checkbox>
+              </td>
+            </template>
+          </eTable>
+
+        </TabPane>
+        <TabPane label="数据库列配置" name="name2">
+            <div style="padding: 5px;">
+              <Button size="small" type="primary" @click="syncDbField">同步实体字段</Button>
+            </div>
+            <eTable ref="tableFields_slave"
+            unqiue-mark="id"
+            :height="getTableHeight - 34"
+            :index-menu="true"
+            :col-start="0"
+            :width="200"
+            :row-init-data="formInitData.slave.tableFields"
+            :data.sync = "formModel.tableFields"
+            :rules="tableFieldsValidator"
+            >
+              <template slot="head">
+                <tr>
+                  <th class="ivu-table-column-center" width="100">
+                    <div class="ivu-table-cell">
+                      <span class="">列名</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="100">
+                    <div class="ivu-table-cell">
+                      <span class="">说明</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="100">
+                    <div class="ivu-table-cell">
+                      <span class="">数据类型</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="100">
+                    <div class="ivu-table-cell">
+                      <span class="">数据长度</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="100">
+                    <div class="ivu-table-cell">
+                      <span class="">默认值</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="100">
+                    <div class="ivu-table-cell">
+                      <span class="">是否主键</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="100">
+                    <div class="ivu-table-cell">
+                      <span class="">不为空</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="100">
+                    <div class="ivu-table-cell">
+                      <span class="">字段顺序</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="100">
+                    <div class="ivu-table-cell">
+                      <span class="">实体列名称</span>
+                    </div>
+                  </th>
+                </tr>
+              </template>
+              <template slot="body" slot-scope="{row,index,valueChangeAssign}">
+                <td class="ivu-table-column-center" width="100">
+                  <Input v-model="row.fieldName" @input="value=>{valueChangeAssign(value,index,row,'fieldName');}" size="small"
+                    :maxlength="20" ></Input>
+                </td>
+                <td class="ivu-table-column-center" width="100">
+                  <Input v-model="row.fieldDesc" @input="value=>{valueChangeAssign(value,index,row,'fieldDesc');}" size="small"
+                    :maxlength="20" ></Input>
+                </td>
+                <td class="ivu-table-column-center" width="100">
+
+                    <tableSelect v-model="row.fieldDataType" filterable size="small" @change="value=>{valueChangeAssign(value,index,row,'fieldDataType');}">
+                        <option value="int">int</option>
+                        <option value="bigint">bigint</option>
+                        <option value="varchar">varchar</option>
+                        <option value="decimal">decimal</option>
+                        <option value="boolean">boolean</option>
+                        <option value="datetime">datetime</option>
+                        <option value="date">date</option>
+                        <option value="text">text</option>
+                        <option value="char">char</option>
+                    </tableSelect>
+                </td>
+                <td class="ivu-table-column-center" width="100">
+                  <Input v-model="row.fieldLength" @input="value=>{valueChangeAssign(value,index,row,'fieldLength');}" size="small"
+                    :maxlength="20" ></Input>
+                </td>
+                <td class="ivu-table-column-center" width="100">
+                  <Input v-model="row.fieldDefault" @input="value=>{valueChangeAssign(value,index,row,'fieldDefault');}" size="small"
+                    :maxlength="20" ></Input>
+                </td>
+                <td class="ivu-table-column-center" width="100">
+                    <Checkbox v-model="row.fieldPk" @input="value=>{valueChangeAssign(value,index,row,'fieldPk');}" ></Checkbox>
+                </td>
+                <td class="ivu-table-column-center" width="100">
+                    <Checkbox v-model="row.fieldNotnull" @input="value=>{valueChangeAssign(value,index,row,'fieldNotnull');}"></Checkbox>
+                </td>
+                <td class="ivu-table-column-center" width="100">
+                  <Input v-model="row.fieldOrder = row.fieldOrder == -1 ? (index + 1) * 10 : row.fieldOrder" @input="value=>{valueChangeAssign(value,index,row,'fieldOrder');}" size="small"
+                    :maxlength="20" ></Input>
+                </td>
+                <td class="ivu-table-column-center" width="100">
+                  <Input v-model="row.entityFieldName" @input="value=>{valueChangeAssign(value,index,row,'entityFieldName');}" size="small"
+                    :maxlength="30" ></Input>
+                </td>
+              </template>
+            </eTable>
+        </TabPane>
+
+        <TabPane label="外键配置" name="name3">
+            <eTable ref="tableForeigners_slave"
+            unqiue-mark="id"
+            :height="getTableHeight"
+            :index-menu="true"
+            :col-start="0"
+            :width="200"
+            :row-init-data="formInitData.slave.tableForeigners"
+            :data = "formModel.tableForeigners"
+            >
+              <template slot="head">
+                <tr>
+                  <th class="ivu-table-column-center" width="100">
+                    <div class="ivu-table-cell">
+                      <span class="">外键字段</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="100">
+                    <div class="ivu-table-cell">
+                      <span class="">主表名称</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="100">
+                    <div class="ivu-table-cell">
+                      <span class="">主表字段</span>
+                    </div>
+                  </th>
+                </tr>
+              </template>
+
+              <template slot="body" slot-scope="{row,index,valueChangeAssign}">
+                <td class="ivu-table-column-center" width="100">
+                  <Input v-model="row.fieldName" @input="value=>{valueChangeAssign(value,index,row,'fieldName');}" size="small"
+                    :maxlength="20" ></Input>
+                </td>
+                <td class="ivu-table-column-center" width="100">
+                    <tableSelect size="small" v-model="row.masterTableName" filterable @change="value=>{valueChangeAssign(value,index,row,'masterTableName');}">
+                      <option :value="item.tableName" :key="index" v-for="(item,index) in tableList">{{item.tableDesc}}</option>
+                    </tableSelect>
+                </td>
+                <td class="ivu-table-column-center" width="100">
+                  <Input v-model="row.masterTableField" @input="value=>{valueChangeAssign(value,index,row,'masterTableField');}" size="small"
+                    :maxlength="20" ></Input>
+                </td>
+              </template>
+            </eTable>
+        </TabPane>
+
+      </Tabs>
+      <Spin size="large" fix v-if="loadding"></Spin>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+  import editWindow from '@/components/edit-window/edit-window'
+  import Form from '@/components/form/form'
+  import eTable from '@/components/e-table/e-table'
+  import request from '@/libs/request'
+  import tableSelect from '@/components/table-select/table-select'
+  export default {
+    name: 'sysEdit',
+    components: {
+      editWindow,
+      Form,
+      eTable,
+      tableSelect
+    },
+    data() {
+      return {
+        spinShow:true,
+        showWindow: false,
+        formInitData:{//表单初始化数据
+          master:{
+            tableName:'',
+            tableAlias:'',
+            tableDesc:'',
+            tableType:'',
+            parentTable:'',
+            tableDescI18n:'',
+            formName:'',
+            formSort:0,
+            pageSize:50
+          },
+          slave:{
+            tableFields:{
+              fieldName:'',
+              fieldDesc:'',
+              fieldDataType:'',
+              fieldLength:'',
+              fieldDefault:'',
+              fieldPk:false,
+              fieldNotnull:false,
+              fieldOrder:0,
+              entityFieldName:''
+            },
+            tablePages:{
+              fieldName:'',
+              fieldDesc:'',
+              listShow:true,
+              editShow:true,
+              detailShow:true,
+              width:100,
+              titleAlign:'center',
+              align:'left',
+              fixed:'',
+              ellipsis:true,
+              resizable:true,
+              query:false,
+              queryType:0,
+              queryCondition:'',
+              readOnly:false,
+              controlType:'input',
+              virtual:false,
+              parentField:'',
+              format:'',
+              fieldI18n:'',
+              fieldOrder:-1,
+              tooltip:false,
+              editWidth:100,
+              issLog:false,// 记录日志
+              issBillNo:false,// 单据编号
+              issBillDate:false,// 单据日期
+              issSubBillNo:false,// 子表单据编号
+            },
+            tableForeigners:{
+              fieldName:'',
+              masterTableName:'',
+              masterTableField:''
+            },
+            pageVirtualList:[]//虚拟节点
+          }
+        },
+        formModel:{
+          master:{
+            tableName:'',
+            tableAlias:'',
+            tableDesc:'',
+            tableType:'',
+            parentTable:'',
+            tableDescI18n:'',
+            formName:'',
+            formSort:0,
+            pageSize:50
+          },
+          tableFields:[],
+          tablePages:[],
+          tableForeigners:[]
+        },
+        dataType:['int','bigint','varchar','decimal','boolean','datetime','date','text','char'],
+        tableFieldsValidator:{
+          fieldName:[
+            {required: true, message: '列名不能为空', trigger: 'blur'},
+            {required:true,type:'string',pattern:/^[a-zA-Z]{1}[a-zA-Z0-9_]*$/,message:'列名只能包含字母数字和_且以字母开头',trigger: 'blur'},
+          ],
+          fieldDesc:[
+             {required: true, message: '列说明不能为空', trigger: 'blur'}
+          ],
+          fieldDataType:[
+             {required: true, message: '数据类型不能为空', trigger: 'change'}
+          ],
+          fieldLength:[
+             {message: '数据长度必须为数字', trigger: 'blur',pattern:/^\d+|(,\d)+$/}
+          ]
+        },
+        tablePagesValidator:{
+          fieldName:[
+            {required: true, message: '列名不能为空', trigger: 'blur'},
+            {required:true,type:'string',pattern:/^[a-zA-Z]{1}[a-zA-Z0-9_]*$/,message:'列名只能包含字母数字和_且以字母开头',trigger: 'blur'},
+          ],
+          fieldDesc:[
+             {required: true, message: '列说明不能为空', trigger: 'blur'}
+          ]
+        },tableList:[],
+        action:'add',
+        loadding:true,
+        masterTableDefaultPages:[
+          {
+            fieldName:'createUser',
+            fieldDesc:'创建人'
+          },
+          {
+            fieldName:'createTime',
+            fieldDesc:'创建时间'
+          },{
+            fieldName:'updateUser',
+            fieldDesc:'修改人'
+          },{
+            fieldName:'updateTime',
+            fieldDesc:'修改时间'
+          },{
+            fieldName:'iisAudit',
+            fieldDesc:'审核状态'
+          },{
+            fieldName:'auditUser',
+            fieldDesc:'审核人'
+          },{
+            fieldName:'auditTime',
+            fieldDesc:'审核时间'
+          },{
+            fieldName:'status',
+            fieldDesc:'状态'
+          }
+        ],masterTableDefaultFields:[
+          {
+            fieldName:'createUser',
+            fieldDesc:'创建人',
+            fieldDataType:'varchar',
+            fieldLength:'20'
+          },{
+            fieldName:'createTime',
+            fieldDesc:'创建时间',
+            fieldDataType:'datetime',
+            fieldLength:''
+          },{
+            fieldName:'updateUser',
+            fieldDesc:'修改人',
+            fieldDataType:'varchar',
+            fieldLength:'20'
+          },{
+            fieldName:'updateTime',
+            fieldDesc:'修改时间',
+            fieldDataType:'datetime',
+            fieldLength:''
+          },{
+            fieldName:'iisAudit',
+            fieldDesc:'审核状态',
+            fieldDataType:'boolean',
+            fieldLength:'',
+            fieldDefault:'false'
+          },{
+            fieldName:'auditUser',
+            fieldDesc:'审核人',
+            fieldDataType:'varchar',
+            fieldLength:'20'
+          },{
+            fieldName:'auditTime',
+            fieldDesc:'审核时间',
+            fieldDataType:'datetime',
+            fieldLength:''
+          }
+        ],
+        defaultAdd:false
+      }
+    },
+    props: {
+      value: {
+        type: Boolean,
+        default: false
+      },
+      formDetailData:{
+        default:()=>{
+          return {};
+        }
+      }
+    },
+    watch: {
+      showWindow(n, o) {
+        this.$emit('input', n);
+      },
+      value(n, o) {
+        this.showWindow = n;
+        //窗体显示，文本框获取焦点
+        this.$refs.editFormItem.setCaptureFocus();
+        if(this.action == 'add'){
+          this.formModel.master = JSON.parse(JSON.stringify(this.formInitData.master));
+          //this.spinShow = false;
+        }else{
+
+        }
+        this.$refs['tableFields_slave'].reset();
+        this.$refs['tablePages_slave'].reset();
+        this.$refs['tableForeigners_slave'].reset();
+
+      },formDetailData:{
+        handler(n,o){
+          if(n.master){
+            this.formModel.master = n.master;
+            this.formModel.tableFields = n.tableFields.defaultList;
+            this.formModel.tablePages = n.tablePages.defaultList;
+            this.formModel.tableForeigners = n.tableForeigners.defaultList;
+          }
+          this.loadding = false;
+        },
+        deep:true
+      },salaveTableFields:{
+        handler(n,o){
+          //当字段发生了变化，页面配置也是要发生变化的
+        },
+        deep:true
+      },'formModel.master.tableType':{
+        handler(n,o){
+          if(this.action == 'update' || n == 2){
+            return;
+          }
+          if(this.defaultAdd){
+            return;
+          }
+          this.masterTableDefaultPages.forEach((item)=>{
+             let pageData = Object.assign(JSON.parse(JSON.stringify(this.formInitData.slave.tablePages)),item);
+             this.$refs['tablePages_slave'].set(pageData);
+             this.defaultAdd = true;
+          })
+        }
+      }
+    },
+    computed:{
+        virtualFields(){
+          //获取虚拟字段
+          return this.formModel.tablePages.filter((item)=>{
+            return item.virtual;
+          });
+        },getTableHeight(){
+          return window.innerHeight - 215;
+        }
+    },
+    methods:{
+      formEnterOver(){
+        this.$refs['tableFields_slave'].focusInit();
+      },formDataSubmit(){
+        //提交表单数据
+        this.$refs.editFormItem.validate(valid=>{
+        				if(!valid){//主表校验
+        					return;
+        				}
+        				//子表校验
+        				let subValidate = this.$refs['tableFields_slave'].validate();
+        				//数据组装
+        				let data = {
+        						master:this.formModel.master
+        				};
+        				//提示一下,存在子表中有校验，但未通过
+        				if(subValidate){
+        					return;
+        				}else{
+        					//校验通过
+        					//子表数据组装
+                  data['tableFields'] = this.$refs['tableFields_slave'].getCategorizeData();
+                  data['tablePages'] = this.$refs['tablePages_slave'].getCategorizeData();
+                  data['tableForeigners'] = this.$refs['tableForeigners_slave'].getCategorizeData();
+        					let url = `/sys/table`;
+        					request.post(url,data).then(res=>{
+        						this.$Message.success('操作成功');
+                    this.$emit('submit-success');
+                    this.showWindow = false;
+        					});
+        				}
+        			});
+      },pagesTableChange(data){
+        let reallyFields = data.filter((item)=>{
+          return !item.virtual;
+        })
+        //console.log(reallyFields);
+        reallyFields.forEach((item,index)=>{
+          this.$refs.tableFields_slave.set({fieldName:item.fieldName,fieldDesc:item.fieldDesc},index);
+        });
+      },syncDbField(){
+        //同步数据库字段
+        let reallyFields = this.$refs.tablePages_slave.get().filter((item)=>{
+          return !item.virtual;
+        });
+         this.$refs.tableFields_slave.reset();
+        if(reallyFields.length == 0){
+          this.$Message.warning('没有实体字段');
+          return;
+        }
+        reallyFields.forEach((item,index)=>{
+          if(index > 0){
+            this.$refs.tableFields_slave.insertRow(index);
+          }
+          this.$refs.tableFields_slave.set({fieldName:item.fieldName,fieldDesc:item.fieldDesc,fieldOrder:item.fieldOrder},index);
+        });
+      },changeSortIndex(value){
+        console.log(value);
+      }
+    },created() {
+      //加载列表
+      request.post('/sys/table/list').then(res=>{
+        this.tableList = res;
+      })
+    }
+  }
+</script>
+
+<style>
+</style>
