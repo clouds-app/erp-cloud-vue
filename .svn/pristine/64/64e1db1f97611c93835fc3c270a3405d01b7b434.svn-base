@@ -58,7 +58,6 @@
       </Form>
 
      <Tabs>
-       <!-- 纸箱产品报价明细 -->
         <TabPane :label="initData.listView[`${formInitPreName}itemFm`].tableDesc" name="name1">
           <eTable
             ref="slave_list_table_edit"
@@ -137,7 +136,6 @@
       </Tabs>
 
       <Tabs>
-        <!-- 产品套件报价明细 -->
         <TabPane :label="initData.listView[`${formInitPreName}mdataFm`].tableDesc" name="name1">
           <eTable
             :showContextMenu="false"
@@ -337,20 +335,12 @@ export default {
         if(index!==0) {
             slaveObj.rowClick(index-1, 'row-click')
         } else {
-           // fix 主表只有一行数据,删除后,子表依旧显示原始数据
-            this. deleteLastOneData()
             setTimeout(()=>{
                 slaveObj.rowClick(0, 'row-click')
             },500)
         }
+      
       }
-    },
-    deleteLastOneData(){
-      // 删除主表数据,子表数据应该置空
-      if(this.slavesForm.masterList.length==0 || (this.slavesForm.masterList.length==1 && !!!this.slavesForm.masterList[0].bpNo)){
-        this.slavesForm.SubList =[]
-      }
-
     },
     // 重写父类 关闭窗口时 触发事件
     closeActionTigger () {
@@ -487,12 +477,9 @@ export default {
       return data
     },
     fillSlaveDataIntoSubTable (data) {
-      if(!!!data[0].data.bpNo){
-         // FIX 输入不存在的产品编号,返回空数据,对应的子表应该置空
-         this. deleteLastOneData()
-      }
+      debugger
        // 数据加载完成后触发点击第一型数据
-      // this.setDefaultSelectedRow(data.index)
+     // this.setDefaultSelectedRow(data.index)
       if(data[0].data.bpNo==null || this.slavesForm.CrurrentRowBpNo === data[0].data.bpNo){
         // 校验数据 没有变化 或者为NULL 不要重新查询 第三层表格数据
         return

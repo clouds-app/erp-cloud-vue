@@ -1,0 +1,316 @@
+<template>
+  <div class="cl-moudle">
+    <Form ref="masterForm" :show-message="true" :model="formDataInfo.master" :label-width="110">
+      <div class="edit-purPaperPoSlave">
+        <Row class="purPaperrowClass">
+          <Col span="8">
+            <FormItem label="客户" prop="inCustNo">
+              <popup
+                v-model="formDataInfo.master.inCustNo"
+                field-name="inCustNo"
+                popup-name="BoxDeliCustomerSingBox"
+                :fill-model.sync="formDataInfo.master"
+                render-fields="custId,inCustNo,custName,taxRate,coinId,coinCode,coinName,rate"
+                from-fields="id,cusCode,cusName,taxRate,coinId,coinCode,coinName,coinRate"
+                :suffix="true"
+                :suffix-model="formDataInfo.master.custName"
+              />
+            </FormItem>
+          </Col>
+          <Col span="8">
+            <FormItem label="产品编号/名称">
+              <Input v-model="formDataInfo.master.inProduct" maxlength="80" placeholder="产品编号/名称"></Input>
+            </FormItem>
+          </Col>
+          <Col span="2">
+            <FormItem>
+              <Button @click="searchDataBy()" type="primary">
+                <Icon type="md-search" />搜索
+              </Button>
+            </FormItem>
+          </Col>
+        </Row>
+      </div>
+    </Form>
+    <!-- <div class="content-container" v-if="formInitData.listView" :style="{ height: tableHeight + 'px' }"> -->
+    <!-- <Split mode="vertical"> -->
+    <div slot="top">
+      <Tabs @on-click="TabsClickEvent" :animated="false">
+        <TabPane label="纸箱库存查询明细" name="storeTotalData">
+          <!-- :url="`${functionParams.requestBaseUrl}/page`" -->
+          <vTable
+            v-show="functionParams.formInitPreName=='selectBoxStoreItemFm'"
+            :height="tableHeight-60"
+            ref="master_list_table_item"
+            :columns-url="functionParams.requestColBaseUrl + '/selectBoxStoreItemFm'"
+            :table-data="tableBoxCoWorkProcData"
+            :pagination="false"
+            name="selectBoxStoreItemFm"
+          ></vTable>
+        </TabPane>
+        <TabPane label="产品汇总" name="storeProductTotalData">
+          <vTable
+           v-show="functionParams.formInitPreName=='selectBoxStoreFm'"
+            :height="tableHeight / 2"
+            ref="master_list_table"
+            :columns-url="functionParams.requestColBaseUrl + '/selectBoxStoreFm'"
+            :table-data="tableBoxCoWorkProcData"
+            :pagination="false"
+            @row-click="master_list_tableRowClick"
+            name="selectBoxStoreFm"
+          ></vTable>
+        </TabPane>
+        <TabPane label="客户汇总" name="storeCustomerTotalData">
+          <vTable
+          v-show="functionParams.formInitPreName=='selectBoxStoreCusFm'"
+            :height="tableHeight-60"
+            ref="master_list_table_customer"
+            :columns-url="functionParams.requestColBaseUrl + '/selectBoxStoreCusFm'"
+            :table-data="tableBoxCoWorkProcData"
+            :pagination="false"
+            name="selectBoxStoreCusFm"
+          ></vTable>
+        </TabPane>
+      </Tabs>
+    </div>
+    <div slot="bottom" :style="{ 'padding-top': '6px' }" v-show="functionParams.formInitPreName=='selectBoxStoreFm'">
+      <Tabs :animated="false">
+        <TabPane label="未送订单" name="orderNotSentFm">
+          <vTable
+            :height="tableHeight / 2.3"
+            ref="slave_list_table"
+            :columns-url="functionParams.requestColBaseUrl + '/orderNotSentFm'"
+            :table-data="tableBoxCoWorkProcDataSlave"
+            :pagination="false"
+            @row-click="slave_list_tableRowClick"
+            name="orderNotSentitemFm"
+          ></vTable>
+        </TabPane>
+      </Tabs>
+    </div>
+    <!-- </Split> -->
+    <!-- </div> -->
+  </div>
+</template>
+<script>
+import vTable from "@/components/tables/vTable";
+import htmlTemplate from "../components/htmlTemplate";
+import listBaseMixins from "../mixins/list";
+import request from "@/libs/request";
+import eTable from "@/components/e-table/e-table";
+import editWindow from "@/components/edit-window/edit-window";
+import formControl from "@/components/form-control/form-control";
+import dayjs from "dayjs";
+import popup from "@/components/popup/popup";
+export default {
+  mixins: [listBaseMixins],
+  components: {
+    eTable,
+    editWindow,
+    formControl,
+    dayjs,
+    htmlTemplate,
+    vTable,
+    popup
+  },
+  data() {
+    return {
+      isProductShow:false, //产品汇总 的未送订单是否显示
+      tableBoxCoWorkProcData: [],
+      tableBoxCoWorkProcDataSlave: [],
+      formDataInfo: {
+        // 主表 更改字段
+        master: {
+          inProduct: "",
+          inMode: 0,
+          inCustNo: ""
+        }
+        // List:thsi.list
+      }, // 防止添加和更新数据提交发生冲突
+      //数据查询修改等基本参数设置
+      functionParams: {
+        formInitPreName: "selectBoxStoreItemFm", //  查询表格列头信息 前缀 例如:stockboxre Fm/itemFm
+        requestBaseUrl: "/stock/boxProductStore/selectStore",
+        uniqueId: "bpNo"
+      }
+      // 查询参数 ,注意格式
+      // queryParamsDefault: [
+      //   {
+      //     title: "请输入单号",
+      //     code: "brNo",
+      //     brNo: ""
+      //   },
+      //   {
+      //     title: "请输入客户名称",
+      //     name: "cusName$like",
+      //     cusName$like: ""
+      //   }
+      // ],
+    };
+  },
+  computed: {},
+  watch: {
+    // 监控窗体打开
+    // showEndDataBatchWindow:function(n,o){
+    //     if(n){
+    //       let _self = this
+    //       this.$nextTick(()=>{
+    //         // 初始化日期
+    //       })
+    //     }
+    //   },
+  },
+  created() {
+    // 查询多个表格列表头数据
+    // 无需变更,配置functionParams 参数即可
+    // if (this.functionParams.formInitPreName) {
+    //   //debugger
+    //   this.getFormInitData(`${this.functionParams.formInitPreName}`);
+    // }
+    this.LoadBoxCoWorkProcData(); //列表表头
+  },
+  methods: {
+    LoadBoxCoWorkProcData(inMode = 0) {
+      //debugger
+      //   let url = `${this.functionParams.requestBaseUrl}/sub/boxCoWorkProc/list`;
+      //(inCompanyId 单位id,inMode 模式(0明细1产品2客户)，inCustNo 客户编号，inProduct 产品)
+      let url = `/stock/boxProductStore/selectStore`;
+      let data = {
+        inMode: inMode,
+        inCustNo: this.formDataInfo.master.inCustNo,
+        inProduct: this.formDataInfo.master.inProduct
+      };
+      let _self = this;
+      request.post(url, data).then(res => {
+        //debugger
+        // 延迟赋值,不然数据还没有正确返回的情况下,无法绑定默认值
+        // setTimeout(() => {
+        _self.tableBoxCoWorkProcData = res;
+        // }, 10);
+      });
+    },
+    // 主表点击事件,需要修改 查询参数:productPriceId 和 查询反馈内容  rowData.custCode + " " + rowData.custName 一般对应 queryParamsDefault 即可
+    master_list_tableRowClick(rowData, rowIndex) {
+      //debugger
+      this.masterRowSelection = rowData;
+      this.currrentRowItem.rowName = rowData.bpNo;
+      // this.$refs["slave_list_table"].search({ bpNo: rowData.bpNo});
+      let url = "/stock/boxProductStore/orderNotSent?bpNo=" + rowData.bpNo;
+      let _self = this;
+      request.post(url).then(res => {
+        //debugger
+        _self.tableBoxCoWorkProcDataSlave = res;
+      });
+    },
+    // 明细 行点击事件
+    slave_list_tableRowClick(rowData, rowIndex) {
+      //debugger
+    },
+    // tab 切换事件
+    TabsClickEvent(name) {
+      //debugger
+      this.currentTabName = name;
+      switch (name) {
+        case "storeTotalData": //0明细1产品2客户
+          
+           this.isProductShow = false
+           this.formDataInfo.master.inMode = 0
+           this.functionParams.formInitPreName = "selectBoxStoreItemFm"
+           this.LoadBoxCoWorkProcData(0);
+          break;
+        case "storeProductTotalData":
+          
+          this.isProductShow = true
+          this.formDataInfo.master.inMode = 1
+          this.functionParams.formInitPreName = "selectBoxStoreFm"
+          this.LoadBoxCoWorkProcData(1);
+          break;
+        case "storeCustomerTotalData":
+          
+          this.isProductShow = false
+          this.formDataInfo.master.inMode = 2
+          this.functionParams.formInitPreName = "selectBoxStoreCusFm"
+          this.LoadBoxCoWorkProcData(2);
+          break;
+        default:
+          break;
+      }
+    },
+    // 加载列头数据
+    loadColumsData(inMode = "0") {
+      //debugger
+      let formName = "";
+      switch (inMode) {
+        case "0":
+          formName = "selectBoxStoreItemFm";
+          this.functionParams.formInitPreName = "selectBoxStoreItemFm";
+          
+          break;
+        case "1":
+          formName = "selectBoxStoreFm";
+          this.functionParams.formInitPreName = "selectBoxStoreFm";
+         
+          break;
+        case "2":
+          formName = "selectBoxStoreCusFm";
+          this.functionParams.formInitPreName = "selectBoxStoreCusFm";
+          
+          break;
+        default:
+          break;
+      }
+      //   if(inMode == 0)
+      //   let formName = "paperPoItemAnalyzerFm";
+      //   let url = `/sys/form/init/${formName}`;
+      //   request.get(url).then(res => {
+      //     //debugger
+      //     if (res != null) {
+      //       this.tableColTitleData = res;
+      //     }
+      //   });
+    },
+     // 通过参数查询数据列表
+    searchDataBy() {
+      //debugger
+      let inMode = this.formDataInfo.master.inMode;
+      this.loadColumsData(inMode);
+      this.LoadBoxCoWorkProcData(inMode);
+    },
+    // 加载列头数据
+    // loadEndDateColumsData(){
+    //   //debugger
+    //     let formName="selectBoxStore"
+    //     let url = `/sys/form/init/${formName}`
+    //     request.get(url).then(res => {
+    //       //debugger
+    //       if(res!=null){
+
+    //       }
+    //     })
+    // },
+
+    // 排除不需要显示的字段
+    excludeFiled(type, key) {
+      type = this.customerActionType;
+      let exListBrDate = ["returnDate"];
+      let exListMonthDate = ["brDate"]; //  需要隐藏字段
+      let exList = [];
+      switch (type) {
+        case "batchUpdateBrDate":
+          exList = exListBrDate;
+          break;
+        default:
+          exList = exListMonthDate;
+          break;
+      }
+      if (exList.includes(key)) {
+        return false;
+      } else {
+        return true;
+      }
+    }
+  }
+};
+</script>
+
+<style></style>

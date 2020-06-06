@@ -1135,7 +1135,7 @@ export default {
         // 检查是否添加了 订单明细
         let firstItem = detailList[0]
         if(!!!firstItem.biDeDate){
-          // 交货日期 
+          // 交货日期 生产工序序号不能为空
           this.$Message.warning('请添加订单明细!')
           hasError= true
         }

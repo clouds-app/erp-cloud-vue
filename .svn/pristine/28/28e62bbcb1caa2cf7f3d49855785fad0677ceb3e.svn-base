@@ -284,10 +284,6 @@ export default {
     'boxLibMove': function (resolve) { // 组件的异步加载
       require(['./moudle/Stock/boxLibMove.vue'], resolve)
     },
-    // 纸箱库存查询
-    'selectStoreTotal': function (resolve) { // 组件的异步加载
-      require(['./moudle/Stock/selectStoreTotal.vue'], resolve)
-    },
     // ===================财务模块================
     //-------应付-----------
      // 供应商财务初始化

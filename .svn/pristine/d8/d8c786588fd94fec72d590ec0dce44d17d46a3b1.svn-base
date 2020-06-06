@@ -1027,7 +1027,9 @@
          }
        
        },
-     
+       'formDataInfo.master.biPriceType':function(n,o){
+          console.log('计价方式:',n,o)
+       }
     },
     methods: {
       // 当前数据点击完结,确认事件

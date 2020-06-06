@@ -227,7 +227,6 @@
                       :query-params="{custId:formDataInfo.master.custId}"
                       :blur-focus-load-data="false"
                       />
-                       <!-- 交货日期-->
                     <Input v-else-if="column.key == 'biDeDate'"
                     v-model="row[column.key]" :disabled="true"
                     @input="value => {valueChangeAssign(value, index, row,column.key)}"
@@ -550,6 +549,19 @@ export default {
     }
   },
   computed: {
+    popUpExcludeParamsList () {
+    // eslint-disable-next-line no-tabs
+    // 获取产品编号	列表，转换为 "",""格式，用于弹出框排除数据
+    // 事件冲突,暂时屏蔽
+      let temp = []
+      this.slavesForm.masterList.forEach((item, index) => {
+        // debugger
+        if (item && item.bpNo != null) { // 注意:
+         // temp.push(item.bpNo) // 注意:
+        }
+      })
+      //return temp.toString()
+    }
   },
   created() {
       this.getPressingLineTypeList(); //获取压线类型列表
@@ -816,6 +828,7 @@ export default {
     },
     // 默认选择行数据
     setDefaultSelectedRow (index=0) {
+       //debugger
       let slaveObj = this.$refs['slave_list_table_edit']
       if (slaveObj) {
         slaveObj.rowClick(index, 'row-click')
@@ -915,9 +928,7 @@ export default {
       let slaveTableDataList = this.$refs['slave_list_table_edit'].forceUpdateGet()
       //let test111 = this.$refs["slave_list_table_edit"].getCategorizeData();
        slaveTableDataList.forEach((item, index) => {
-         if(!!item.biDeDate){
-           item.biDeDate = dayjs(item.biDeDate).format('YYYY-MM-DD HH:mm:ss') 
-         }  
+         item.biDeDate = dayjs(item.biDeDate).format('YYYY-MM-DD HH:mm:ss') 
         let sub = _self.slavesForm.SubItems[item.id] == null ? (_self.slavesForm.SubItems[index]==null?[]:_self.slavesForm.SubItems[index]) : _self.slavesForm.SubItems[item.id] // 注意:
            if(sub && sub.length>0){
              sub.map(subItem=>{
@@ -941,7 +952,7 @@ export default {
         })
       })
       data[`${this.slavesForm.name}`] = slavesItem
-      data = this.pushDeleteDataWithDeleteList(data)
+      //data = this.pushDeleteDataWithDeleteList(data)
       return data
     },
     // 填充已经删除的列表到提交数据列表中<<通过返回来的删除列表>>
@@ -1032,9 +1043,7 @@ export default {
             let editData = _self.slavesForm.masterList[index]
             // 添加默认值
             let BoxCODueDate= _self.$params.BoxCODueDate
-            if(!!BoxCODueDate){
-               editData.biDeDate= dayjs().add(BoxCODueDate,'day').format('YYYY-MM-DD HH:mm:ss')
-            }
+            editData.biDeDate= dayjs().add(BoxCODueDate,'day').format('YYYY-MM-DD HH:mm:ss')
             editData.bpQty=1
             editData.biCoType ="1"
             editData.biCoTypeText='订单'
@@ -1127,29 +1136,8 @@ export default {
       }
       this.setDefaultSelectedRow() // 默认点击选择第一行数据触发事件
     },
-    // 自定义验证,提交数据前
-    customValidationBeforeSubmit(){
-      let hasError= false
-      let detailList = this.slavesForm.masterList
-      if(detailList && Array.isArray(detailList) && detailList.length>0){
-        // 检查是否添加了 订单明细
-        let firstItem = detailList[0]
-        if(!!!firstItem.biDeDate){
-          // 交货日期 
-          this.$Message.warning('请添加订单明细!')
-          hasError= true
-        }
-      }
-
-
-      return hasError
-    },
     // 重写父类 提交数据 三层表
     formTableDataSubmit () {
-        if(this.customValidationBeforeSubmit()){
-          // 自定义验证
-          return
-        }
         this.sumMoneyAreaVolumeWeight() // 提交前,重新统计一边,预防数据不正确
         this.$refs['formDataInfo'].validate(valid => {
         if (!valid) {

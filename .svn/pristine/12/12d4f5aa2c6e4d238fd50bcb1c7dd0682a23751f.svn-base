@@ -1027,7 +1027,9 @@
          }
        
        },
-     
+       'formDataInfo.master.biPriceType':function(n,o){
+          console.log('计价方式:',n,o)
+       }
     },
     methods: {
       // 当前数据点击完结,确认事件
@@ -1331,7 +1333,6 @@
           // 请求参数必须GET的形式拼接,不然服务器请求错误
           //let strParams=`?custId=${this.formDataInfo.params.custId}&proName=${this.formDataInfo.master.biProdName}&proNo=${this.formDataInfo.master.biProdNo}`
           request.post('/sale/boxCo/getPartProductInfo',params).then(res=>{
-            
             if(res != null){
                 _self.formDataInfo.productMDatas.defaultList = res.saleBoxCoModelDatas
                 _self.formDataInfo.productworkProcs.defaultList =res.saleBoxCoWorkProcs
@@ -1358,11 +1359,10 @@
                 _self.hasSearchProduct =true
                 _self.needToCompareParams= Object.assign({},compareParams)
                 _self.needToCompareParams = _self.getValueFromObj(_self.needToCompareParams,res.master)
-               
-            }
-             // 返回数据 不再触发更新 查询
+                // 返回数据 不再触发更新 查询
                 _self.isChangeByRes=true
                 _self.loaddingBtn = false
+            }
 
           }).catch(err=>{
             this.loaddingBtn = false

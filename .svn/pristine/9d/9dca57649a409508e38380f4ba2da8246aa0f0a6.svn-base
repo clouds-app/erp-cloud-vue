@@ -43,7 +43,7 @@
                       <optionSearch
                           :disabled="true"
                           @onChange="optionOnChangeBy"
-                          :defaultItem="formDataInfo.master.biPriceType+''"
+                          :defaultItem="formDataInfo.master.biPriceType"
                           :loadDataImmediately="true"
                           formKey="biPriceType"
                           query="biPriceType"
@@ -282,12 +282,12 @@
                   不开通：a、散件下单（按面积报价）特价：只读，批准人，只读 -->
                   <Col span="3">
                   <FormItem :label-width="50"  label="特价" prop="bisPrice">
-                    <Input type="number" :disabled="($params.isCalAreaPriceSale=='0'&& formDataInfo.master.biPriceType+''=='0')"  @mousewheel.native.prevent number  v-model="formDataInfo.master.bisPrice" placeholder="特价"></Input>
+                    <Input type="number" :disabled="($params.isCalAreaPriceSale=='0'&& formDataInfo.master.biPriceType=='0')"  @mousewheel.native.prevent number  v-model="formDataInfo.master.bisPrice" placeholder="特价"></Input>
                   </FormItem>
                   </Col>
                 <Col span="3">
                   <FormItem :label-width="70"  label="批准人" :rules="rulesBiSPriceAuditor" prop="biSPriceAuditor">
-                    <Input  :disabled="$params.isCalAreaPriceSale=='0' && formDataInfo.master.biPriceType+''=='0'" v-model="formDataInfo.master.biSPriceAuditor" maxlength="80" placeholder="批准人"></Input>
+                    <Input  :disabled="$params.isCalAreaPriceSale=='0' && formDataInfo.master.biPriceType=='0'" v-model="formDataInfo.master.biSPriceAuditor" maxlength="80" placeholder="批准人"></Input>
                   </FormItem>
                   </Col>
                  <!-- row-8 -->
@@ -423,7 +423,7 @@
           <eTable
             ref="sub_list_table_edit"
             unqiue-mark="id"
-            :height="300"
+            :height="255"
             :index-menu="true"
             :col-start="0"
             :width="200"
@@ -505,7 +505,7 @@
           <eTable
             ref="sub_list_table_edit_workproc"
             unqiue-mark="id"
-            :height="300"
+            :height="255"
             :index-menu="true"
             :col-start="0"
             :width="200"
@@ -844,11 +844,11 @@
     computed: {
        // 使用禁用单价输入框B
        disabledBiTaxPriceBtn(){
-         return (this.$params.isCalAreaPriceSale=='0' && this.formDataInfo.master.biPriceType+''=='0')
+         return (this.$params.isCalAreaPriceSale=='0' && this.formDataInfo.master.biPriceType=='0')
        },
       disabledBtnByPriceType(){
         // 禁用按钮 当 计价方式 为套件产品
-        return this.formDataInfo.master.biPriceType+''=='1'
+        return this.formDataInfo.master.biPriceType=='1'
       },
       isEidtAction(){
         if(this.action=='add'){
@@ -896,7 +896,10 @@
     watch: {
       // 监控动态特价,特价不为空时,批准人不可为空
       'formDataInfo.master.bisPrice':function(n,o){
-        this.validateBiSPrice(n)
+        if(n && n!='' && n!=null){
+          this.validateBiSPrice(n)
+        }
+        
       },
       // 监控订单数量
       'formDataInfo.master.bpQty':function(n,o){
@@ -1026,8 +1029,7 @@
           this.checkArtIdExistPrice(n)
          }
        
-       },
-     
+       }
     },
     methods: {
       // 当前数据点击完结,确认事件
@@ -1196,15 +1198,15 @@
       // 动态监控批准人不能为空
       validateBiSPrice(n){
         let _self = this
-        if(n && n!='' && n!=null && Number(n)>0){
+        if(n && n!='' && n!=null && n!=0){
             let data =[]
               let itemVal =  {
                 required: true,
-                message: "有特价,批准人不能为空",
+                message: "批准人不能为空",
                 trigger: "blur,change"
               }
               data.push(itemVal)
-            _self.rulesBiSPriceAuditor = itemVal
+            _self.rulesBiSPriceAuditor = data
         }else{
         _self.rulesBiSPriceAuditor ={}
         }
@@ -1218,7 +1220,7 @@
             trigger: "blur,change"
           }
            //按面积报价下单，产品名称可以为空的
-          if(this.formDataInfo.master.biPriceType+''=='1'){
+          if(this.formDataInfo.master.biPriceType==1){
             //计价方式:0-按面积, 1-按个(套)
              _self.rulesBiProdName = itemVal
           }else{
@@ -1274,7 +1276,7 @@
          //是否启用计算面积报价 0未开通1开通
           if(this.$params.isCalAreaPriceSale=='1'){
            // 计价方式:0-按面积, 1-按个(套) 
-            if(this.formDataInfo.master.biPriceType+''=='1'){
+            if(this.formDataInfo.master.biPriceType=='1'){
                    // 按产品下单 单价=报价，
               this.formDataInfo.master.biTaxPrice = this.formDataInfo.master.biRepPrice
             }else{
@@ -1285,7 +1287,7 @@
           }else{
            
              //biPriceType 计价方式:0-按面积, 1-按个(套) 
-            if(this.formDataInfo.master.biPriceType+''=='1'){
+            if(this.formDataInfo.master.biPriceType=='1'){
 
               // 报价：只读。 订单中的报价默认0，输产品后带出产品报价，如无，弹框提示‘该产
               //  品未报价’，弹出框选产品时过滤掉无报价产品
@@ -1331,7 +1333,6 @@
           // 请求参数必须GET的形式拼接,不然服务器请求错误
           //let strParams=`?custId=${this.formDataInfo.params.custId}&proName=${this.formDataInfo.master.biProdName}&proNo=${this.formDataInfo.master.biProdNo}`
           request.post('/sale/boxCo/getPartProductInfo',params).then(res=>{
-            
             if(res != null){
                 _self.formDataInfo.productMDatas.defaultList = res.saleBoxCoModelDatas
                 _self.formDataInfo.productworkProcs.defaultList =res.saleBoxCoWorkProcs
@@ -1358,11 +1359,10 @@
                 _self.hasSearchProduct =true
                 _self.needToCompareParams= Object.assign({},compareParams)
                 _self.needToCompareParams = _self.getValueFromObj(_self.needToCompareParams,res.master)
-               
-            }
-             // 返回数据 不再触发更新 查询
+                // 返回数据 不再触发更新 查询
                 _self.isChangeByRes=true
                 _self.loaddingBtn = false
+            }
 
           }).catch(err=>{
             this.loaddingBtn = false
@@ -1492,11 +1492,11 @@
                   return item
           })
           // 默认计价方式:0-按面积, 1-按个(套)
-          // if(!isNaN(this.formDataInfo.master.biPriceType)){
-          //   this.formDataInfo.master.biPriceType =this.formDataInfo.master.biPriceType+''
-          // }else{
-          //   this.formDataInfo.master.biPriceType ="0"
-          // }
+          if(!isNaN(this.formDataInfo.master.biPriceType)){
+            this.formDataInfo.master.biPriceType =this.formDataInfo.master.biPriceType+''
+          }else{
+            this.formDataInfo.master.biPriceType ="0"
+          }
           // 默认订单类型:1-订单 ,2- 补货 ,3- 打样 
           if(!isNaN(this.formDataInfo.master.biCoType)){
             this.formDataInfo.master.biCoType =this.formDataInfo.master.biCoType+''
@@ -2162,14 +2162,14 @@
             if(result){
               return;
             }
-           // debugger
           let formatData = _self.formDataInfo.master
           // 删除空格
           formatData.bpCBoxName =formatData.bpCBoxName.trim()
           formatData.bpPBoxName = formatData.bpPBoxName.trim()
+
           formatData.areaIds = formatData.areaIds==null?'':formatData.areaIds+''
           formatData.biCoType = Number(formatData.biCoType) // 字符串转数字
-         // formatData.biPriceType = Number(formatData.biPriceType) // 字符串转数字 计价方式
+          formatData.biPriceType = Number(formatData.biPriceType) // 字符串转数字
           formatData.biDeDate = dayjs(formatData.biDeDate).format('YYYY-MM-DD HH:mm:ss') // 时间格式化
 
           let params = {

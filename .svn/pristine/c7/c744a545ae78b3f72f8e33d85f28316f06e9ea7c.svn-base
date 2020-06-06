@@ -1,0 +1,2600 @@
+<template>
+  <div class="cl-analyzerNew">
+    <Form
+      ref="masterForm"
+      :show-message="true"
+      :model="formDataInfo.master"
+      :rules="ruleValidate"
+      :label-width="134"
+    >
+      <div class="edit-purPaperPoSlave">
+        <Row>
+          <Col span="6">
+            <FormItem label="客户编号" prop="inCustNo">
+              <popup
+                v-model="formDataInfo.master.inCustNo"
+                field-name="inCustNo"
+                :disabled="false"
+                popup-name="CustomerMultiBox"
+                :fill-model.sync="formDataInfo.master"
+                render-fields="custId,inCustNo,cusName"
+                from-fields="id,cusCode,cusName"
+                :suffix="false"
+                :suffix-model="formDataInfo.master.custName"
+              />
+            </FormItem>
+            <!-- <FormItem label="客户编号" prop="inCustNo">
+              <popup
+                v-model="formDataInfo.master.inCustNo"
+                field-name="inCustNo"
+                :disabled="false"
+                popup-name="CustomerCommonSingleBox"
+                :fill-model.sync="formDataInfo.master"
+                render-fields="custId,inCustNo,custName,workName"
+                from-fields="id,cusCode,cusName,saleName"
+                :suffix="true"
+                :suffix-model="formDataInfo.master.custName"
+              />
+            </FormItem>-->
+          </Col>
+          <Col span="6">
+            <FormItem label="箱型" prop="inBoxTyoe">
+              <popup
+                v-model="formDataInfo.master.inBoxTyoe"
+                field-name="inBoxTyoe"
+                :disabled="false"
+                popup-name="BoxSingleBox"
+                :fill-model.sync="formDataInfo.master"
+                render-fields="boxId,inBoxTyoe,boxName"
+                from-fields="id,boxCode,boxName"
+                :suffix="true"
+                :suffix-model="formDataInfo.master.boxName"
+                :query-params="{}"
+              />
+            </FormItem>
+            <!-- <FormItem label="箱型">
+              <Input v-model="formDataInfo.master.inBoxTyoe" maxlength="80" placeholder="箱型"></Input>
+            </FormItem>-->
+          </Col>
+          <Col span="12">
+            <Row>
+              <Col span="12">
+                <FormItem label="订单日期" style="width:96%;">
+                  <DatePicker
+                    type="datetime"
+                    format="yyyy-MM-dd HH:mm:ss"
+                    v-model="formDataInfo.master.startDate"
+                  ></DatePicker>
+                </FormItem>
+              </Col>
+              <Col span="8">
+                <FormItem label="--" style="margin-left:-49%" class="labelClass">
+                  <DatePicker
+                    type="datetime"
+                    format="yyyy-MM-dd HH:mm:ss"
+                    v-model="formDataInfo.master.endDate"
+                  ></DatePicker>
+                </FormItem>
+              </Col>
+            </Row>
+          </Col>
+        </Row>
+        <Row>
+          <Col span="24">
+            <Row>
+              <Col span="6">
+                <FormItem label="产品编号" prop="inBpProNo">
+                  <Input v-model="formDataInfo.master.inBpProNo" maxlength="20" placeholder="产品编号"></Input>
+                </FormItem>
+              </Col>
+              <Col span="4">
+                <FormItem class="analyCheckClassNoPro">
+                  <Checkbox class="inUser" v-model="formDataInfo.master.inNotShQty">未送货</Checkbox>
+                </FormItem>
+              </Col>
+              <Col span="4">
+                <FormItem class="analyCheckClass">
+                  <Checkbox class="inUser" v-model="formDataInfo.master.inNotPlanQty">未排程</Checkbox>
+                </FormItem>
+              </Col>
+              <Col span="4">
+                <FormItem class="analyCheckClassNo">
+                  <Checkbox class="inUser" v-model="formDataInfo.master.inNotJoinQty">未入库</Checkbox>
+                </FormItem>
+              </Col>
+              <Col span="1">
+                <FormItem :label-width="24">
+                  <Button @click="searchDataBy()" type="primary">
+                    <Icon type="md-search" />搜索
+                  </Button>
+                </FormItem>
+              </Col>
+            </Row>
+          </Col>
+        </Row>
+      </div>
+    </Form>
+    <Tabs @on-click="TabsClickEvent" :height="tableHeight-116" :animated="false">
+      <TabPane label="订单明细" name="orderTotalData">
+        <eTable
+          ref="slave_edit-orderTotalData"
+          :height="tableHeight-116"
+          :index-menu="true"
+          :col-start="0"
+          :width="200"
+          :data.sync="tableBoxCoModelData"
+          :rules="tableFieldsValidator"
+        >
+          <template slot="head">
+            <tr>
+              <!-- <th class="ivu-table-column-center" width="35">
+                <div class="ivu-table-cell">
+                  <span class>选择</span>
+                </div>
+              </th>-->
+              <!-- <th class="ivu-table-column-center" width="140">
+                <div class="ivu-table-cell">
+                  <span class @click="purPaperPoClick('业务员',1,'salerName')">业务员</span>
+                </div>
+              </th>-->
+              <th class="ivu-table-column-center" width="60">
+                <div class="ivu-table-cell">
+                  <span class>客户编号</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="120">
+                <div class="ivu-table-cell">
+                  <span class>客户简称</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="70">
+                <div class="ivu-table-cell">
+                  <span class>客户Po</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="110">
+                <div class="ivu-table-cell">
+                  <span class>订单编号</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="100">
+                <div class="ivu-table-cell">
+                  <span class>送货时间</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="90">
+                <div class="ivu-table-cell">
+                  <span class>产品编号</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="90">
+                <div class="ivu-table-cell">
+                  <span class>箱型</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="90">
+                <div class="ivu-table-cell">
+                  <span class>纸质</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="90">
+                <div class="ivu-table-cell">
+                  <span class>楞别</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="90">
+                <div class="ivu-table-cell">
+                  <span class>长</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="90">
+                <div class="ivu-table-cell">
+                  <span class>宽</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="90">
+                <div class="ivu-table-cell">
+                  <span class>高</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="60">
+                <div class="ivu-table-cell">
+                  <span class>单位</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="100">
+                <div class="ivu-table-cell">
+                  <span class>订单时间</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="90">
+                <div class="ivu-table-cell">
+                  <span class>产品名称</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="60">
+                <div class="ivu-table-cell">
+                  <span class>已交数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="80">
+                <div class="ivu-table-cell">
+                  <span class>未交数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="90">
+                <div class="ivu-table-cell">
+                  <span class>含税单价</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="60">
+                <div class="ivu-table-cell">
+                  <span class>货币</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="60">
+                <div class="ivu-table-cell">
+                  <span class>税率</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="82">
+                <div class="ivu-table-cell">
+                  <span class>面积</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="100">
+                <div class="ivu-table-cell">
+                  <span class>体积</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="70">
+                <div class="ivu-table-cell">
+                  <span class>重量</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="80">
+                <div class="ivu-table-cell">
+                  <span class>业务员</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="80">
+                <div class="ivu-table-cell">
+                  <span class>跟单员</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="90">
+                <div class="ivu-table-cell">
+                  <span class>客户产品编号</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="90">
+                <div class="ivu-table-cell">
+                  <span class>客户产品名称</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="70">
+                <div class="ivu-table-cell">
+                  <span class>订单类型</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="70">
+                <div class="ivu-table-cell">
+                  <span class>订单金额</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="60">
+                <div class="ivu-table-cell">
+                  <span class>订单数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="120">
+                <div class="ivu-table-cell">
+                  <span class>生产备注</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="120">
+                <div class="ivu-table-cell">
+                  <span class>送货备注</span>
+                </div>
+              </th>
+            </tr>
+          </template>
+          <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
+            <!-- 选择 -->
+            <!-- <td class="ivu-table-column-center" width="100">
+              <Checkbox
+                size="default"
+                v-model="row.Choice"
+                @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'Choice');
+                      }
+                    "
+              ></Checkbox>
+            </td>-->
+            <!-- 客户编号-->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.cusCode"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'cusCode');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 客户简称		 -->
+            <td class="ivu-table-column-left" width="120">
+              <Input
+                disabled
+                v-model="row.shortName"
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'shortName');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 客户Po	-->
+            <td class="ivu-table-column-left" width="82">
+              <Input
+                disabled
+                v-model="row.bcCustPO"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bcCustPO');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 订单编号 -->
+            <td class="ivu-table-column-left" width="110">
+              <Input
+                v-model="row.bcNo"
+                disabled
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'bcNo');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 送货时间 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                v-model="row.biDeDate"
+                disabled
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'biDeDate');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 产品编号 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.biProdNo"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'biProdNo');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 箱型 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.bpPBoxName"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bpPBoxName');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 纸质 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.bpPArtCode"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bpPArtCode');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 楞别	 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.lbCode"
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'lbCode');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 长 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.bpPSizeL"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bpPSizeL');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 宽 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.bpPSizeW"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bpPSizeW');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 高 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.bpPSizeH"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bpPSizeH');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 单位 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.bpUnit"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bpUnit');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 订单时间 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.bcCoDate"
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'bcCoDate');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 产品名称 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.biProdName"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'biProdName');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 已交数-->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.biDelQty"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'biDelQty');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 未交数 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.biNoDelQty"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'biNoDelQty');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 含税单价 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.biTaxPrice"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'biTaxPrice');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 货币 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.coinName"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'coinName');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 税率 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.coinRate"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'coinRate');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 面积 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.bcArea"
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'bcArea');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 体积	-->
+            <td class="ivu-table-column-left" width="82">
+              <Input
+                disabled
+                v-model="row.bcCube"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bcCube');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 重量 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                v-model="row.bcWeight"
+                disabled
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'bcWeight');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 业务员	 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.salerName"
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'salerName');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 跟单员-->
+            <td class="ivu-table-column-left" width="80">
+              <Input
+                disabled
+                v-model="row.followerName"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'followerName');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 客户产品编号 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.bpCustProdNo"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bpCustProdNo');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 客户产品名称 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.bpCustProdName"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bpCustProdName');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 订单类型 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                v-model="row.biCoTypeText"
+                disabled
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'biCoTypeText');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 订单金额 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                v-model="row.bcMoney"
+                disabled
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'bcMoney');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 订单数 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.bpQty"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bpQty');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 生产备注 -->
+            <td class="ivu-table-column-left" width="120">
+              <Input
+                disabled
+                v-model="row.biPRemark"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'biPRemark');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 送货备注 -->
+            <td class="ivu-table-column-left" width="120">
+              <Input
+                v-model="row.biDRemark"
+                disabled
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'biDRemark');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+          </template>
+        </eTable>
+      </TabPane>
+      <!-- 客户汇总 -->
+      <TabPane label="客户汇总" name="customerTotalData">
+        <eTable
+          ref="slave_edit-boxprodplan"
+          :height="tableHeight-116"
+          :index-menu="true"
+          :col-start="0"
+          :width="200"
+          :data.sync="tableBoxCoModelData"
+          :rules="tableFieldsValidator"
+        >
+          <template slot="head">
+            <tr>
+              <!-- <th class="ivu-table-column-center" width="35">
+                <div class="ivu-table-cell">
+                  <span class>选择</span>
+                </div>
+              </th>-->
+              <!-- <th class="ivu-table-column-center" width="140">
+                <div class="ivu-table-cell">
+                  <span class @click="purPaperPoClick('业务员',1,'salerName')">业务员</span>
+                </div>
+              </th>-->
+              <th class="ivu-table-column-center" width="60">
+                <div class="ivu-table-cell">
+                  <span class>客户编号</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="120">
+                <div class="ivu-table-cell">
+                  <span class>客户简称</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="80">
+                <div class="ivu-table-cell">
+                  <span class>业务员</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="80">
+                <div class="ivu-table-cell">
+                  <span class>跟单员</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="60">
+                <div class="ivu-table-cell">
+                  <span class>记录数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="60">
+                <div class="ivu-table-cell">
+                  <span class>订单数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="70">
+                <div class="ivu-table-cell">
+                  <span class>订单金额</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="60">
+                <div class="ivu-table-cell">
+                  <span class>货币</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="60">
+                <div class="ivu-table-cell">
+                  <span class>本币金额</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="110">
+                <div class="ivu-table-cell">
+                  <span class>金额占比%</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="90">
+                <div class="ivu-table-cell">
+                  <span class>排程数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="60">
+                <div class="ivu-table-cell">
+                  <span class>入库数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="60">
+                <div class="ivu-table-cell">
+                  <span class>已交数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="80">
+                <div class="ivu-table-cell">
+                  <span class>未交数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="82">
+                <div class="ivu-table-cell">
+                  <span class>面积</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="100">
+                <div class="ivu-table-cell">
+                  <span class>体积</span>
+                </div>
+              </th>
+
+              <th class="ivu-table-column-center" width="70">
+                <div class="ivu-table-cell">
+                  <span class>重量</span>
+                </div>
+              </th>
+            </tr>
+          </template>
+          <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
+            <!-- 选择 -->
+            <!-- <td class="ivu-table-column-center" width="100">
+              <Checkbox
+                size="default"
+                v-model="row.Choice"
+                @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'Choice');
+                      }
+                    "
+              ></Checkbox>
+            </td>-->
+            <!-- 客户编号-->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.cusCode"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'cusCode');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 客户简称		 -->
+            <td class="ivu-table-column-left" width="120">
+              <Input
+                disabled
+                v-model="row.shortName"
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'shortName');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 业务员	 -->
+            <td class="ivu-table-column-left" width="80">
+              <Input
+                disabled
+                v-model="row.salerName"
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'salerName');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 跟单员-->
+            <td class="ivu-table-column-left" width="80">
+              <Input
+                disabled
+                v-model="row.followerName"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'followerName');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 记录数	 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.qty"
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'qty');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 订单数 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.bpQty"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bpQty');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 订单金额 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                v-model="row.bcMoney"
+                disabled
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'bcMoney');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 货币 -->
+            <td class="ivu-table-column-left" width="100">
+              <InputNumber
+                disabled
+                v-model="row.coinName"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'coinName');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></InputNumber>
+            </td>
+            <!-- 本币金额 -->
+            <td class="ivu-table-column-left" width="100">
+              <InputNumber
+                disabled
+                v-model="row.bjMoney"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bjMoney');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></InputNumber>
+            </td>
+            <!-- 金额占比 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.bjMoneyLot"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bjMoneyLot');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 排程数 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.bpProPlanQty"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bpProPlanQty');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 入库数 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.biInStoreQty"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'biInStoreQty');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 已交数-->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.biDelQty"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'biDelQty');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 未交数 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.biNoDelQty"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'biNoDelQty');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 面积 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.bcArea"
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'bcArea');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 体积	-->
+            <td class="ivu-table-column-left" width="82">
+              <Input
+                disabled
+                v-model="row.bcCube"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bcCube');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+
+            <!-- 重量 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                v-model="row.bcWeight"
+                disabled
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'bcWeight');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+          </template>
+        </eTable>
+      </TabPane>
+      <!-- 产品汇总 -->
+      <TabPane label="产品汇总" name="productTotalData">
+        <eTable
+          ref="slave_edit-productTotalData"
+          :height="tableHeight-116"
+          :index-menu="true"
+          :col-start="0"
+          :width="200"
+          :data.sync="tableBoxCoModelData"
+          :rules="tableFieldsValidator"
+        >
+          <template slot="head">
+            <tr>
+              <!-- <th class="ivu-table-column-center" width="35">
+                <div class="ivu-table-cell">
+                  <span class>选择</span>
+                </div>
+              </th>-->
+              <th class="ivu-table-column-center" width="100">
+                <div class="ivu-table-cell">
+                  <span class>产品编号</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="80">
+                <div class="ivu-table-cell">
+                  <span class>记录数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="100">
+                <div class="ivu-table-cell">
+                  <span class>产品名称</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="130">
+                <div class="ivu-table-cell">
+                  <span class>规格</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="60">
+                <div class="ivu-table-cell">
+                  <span class>订单数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="60">
+                <div class="ivu-table-cell">
+                  <span class>订单金额</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="100">
+                <div class="ivu-table-cell">
+                  <span class>排程数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="60">
+                <div class="ivu-table-cell">
+                  <span class>入库数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="50">
+                <div class="ivu-table-cell">
+                  <span class>已交数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="60">
+                <div class="ivu-table-cell">
+                  <span class>未交数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="82">
+                <div class="ivu-table-cell">
+                  <span class>面积</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="90">
+                <div class="ivu-table-cell">
+                  <span class>体积</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="70">
+                <div class="ivu-table-cell">
+                  <span class>重量</span>
+                </div>
+              </th>
+            </tr>
+          </template>
+          <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
+            <!-- 选择 -->
+            <!-- <td class="ivu-table-column-center" width="100">
+              <Checkbox
+                size="default"
+                v-model="row.Choice"
+                @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'Choice');
+                      }
+                    "
+              ></Checkbox>
+            </td>-->
+            <!-- 产品编号 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.biProdNo"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'biProdNo');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 记录数 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.qty"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'qty');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 产品名称 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.biProdName"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'biProdName');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 规格 -->
+            <td class="ivu-table-column-left" width="130">
+              <Input
+                v-model="row.bpPSize"
+                disabled
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'bpPSize');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 订单数 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.bpQty"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bpQty');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 订单金额	 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.bcMoney"
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'bcMoney');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 排程数 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                v-model="row.bpProPlanQty"
+                disabled
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'bpProPlanQty');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 入库数 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.biInStoreQty"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'biInStoreQty');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 已交数		 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.biDelQty"
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'biDelQty');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 未交数-->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.biNoDelQty"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'biNoDelQty');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 面积	-->
+            <td class="ivu-table-column-left" width="82">
+              <Input
+                disabled
+                v-model="row.bcArea"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bcArea');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 体积	-->
+            <td class="ivu-table-column-left" width="82">
+              <Input
+                disabled
+                v-model="row.bcCube"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bcCube');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 重量-->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.bcWeight"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bcWeight');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+          </template>
+        </eTable>
+      </TabPane>
+      <!-- 业务员汇总 -->
+      <TabPane label="业务员汇总" name="salerTotalData">
+        <eTable
+          ref="slave_edit-salerTotalData"
+          :height="tableHeight-116"
+          :index-menu="true"
+          :col-start="0"
+          :width="200"
+          :data.sync="tableBoxCoModelData"
+          :rules="tableFieldsValidator"
+        >
+          <template slot="head">
+            <tr>
+              <!-- <th class="ivu-table-column-center" width="35">
+                <div class="ivu-table-cell">
+                  <span class>选择</span>
+                </div>
+              </th>-->
+              <!-- <th class="ivu-table-column-center" width="140">
+                <div class="ivu-table-cell">
+                  <span class @click="purPaperPoClick('业务员',1,'salerName')">业务员</span>
+                </div>
+              </th>-->
+              <th class="ivu-table-column-center" width="50">
+                <div class="ivu-table-cell">
+                  <span class>业务员</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="60">
+                <div class="ivu-table-cell">
+                  <span class>记录数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="60">
+                <div class="ivu-table-cell">
+                  <span class>订单数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="90">
+                <div class="ivu-table-cell">
+                  <span class>排程数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="60">
+                <div class="ivu-table-cell">
+                  <span class>入库数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="60">
+                <div class="ivu-table-cell">
+                  <span class>已交数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="80">
+                <div class="ivu-table-cell">
+                  <span class>未交数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="70">
+                <div class="ivu-table-cell">
+                  <span class>订单金额</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="70">
+                <div class="ivu-table-cell">
+                  <span class>金额占比%</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="82">
+                <div class="ivu-table-cell">
+                  <span class>面积</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="100">
+                <div class="ivu-table-cell">
+                  <span class>体积</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="70">
+                <div class="ivu-table-cell">
+                  <span class>重量</span>
+                </div>
+              </th>
+            </tr>
+          </template>
+          <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
+            <!-- 选择 -->
+            <!-- <td class="ivu-table-column-center" width="100">
+              <Checkbox
+                size="default"
+                v-model="row.Choice"
+                @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'Choice');
+                      }
+                    "
+              ></Checkbox>
+            </td>-->
+            <!-- 业务员	 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.salerName"
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'salerName');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 记录数	 -->
+            <td class="ivu-table-column-left" width="100">
+              <InputNumber
+                disabled
+                v-model="row.qty"
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'qty');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></InputNumber>
+            </td>
+            <!-- 订单数 -->
+            <td class="ivu-table-column-left" width="100">
+              <InputNumber
+                disabled
+                v-model="row.bpQty"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bpQty');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></InputNumber>
+            </td>
+            <!-- 排程数 -->
+            <td class="ivu-table-column-left" width="100">
+              <InputNumber
+                disabled
+                v-model="row.bpProPlanQty"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bpProPlanQty');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></InputNumber>
+            </td>
+            <!-- 入库数 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                InputNumber
+                v-model="row.biInStoreQty"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'biInStoreQty');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 已交数-->
+            <td class="ivu-table-column-left" width="100">
+              <InputNumber
+                disabled
+                v-model="row.biDelQty"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'biDelQty');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></InputNumber>
+            </td>
+            <!-- 未交数 -->
+            <td class="ivu-table-column-left" width="100">
+              <InputNumber
+                disabled
+                v-model="row.biNoDelQty"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'biNoDelQty');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></InputNumber>
+            </td>
+            <!-- 订单金额 -->
+            <td class="ivu-table-column-left" width="100">
+              <InputNumber
+                v-model="row.bcMoney"
+                disabled
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'bcMoney');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></InputNumber>
+            </td>
+            <!-- 金额占比 -->
+            <td class="ivu-table-column-left" width="100">
+              <InputNumber
+                v-model="row.bjMoneyLot"
+                disabled
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'bjMoneyLot');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></InputNumber>
+            </td>
+            <!-- 面积 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.bcArea"
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'bcArea');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 体积	-->
+            <td class="ivu-table-column-left" width="82">
+              <Input
+                disabled
+                v-model="row.bcCube"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bcCube');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 重量 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                v-model="row.bcWeight"
+                disabled
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'bcWeight');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+          </template>
+        </eTable>
+      </TabPane>
+      <!-- 跟单员汇总 -->
+      <TabPane label="跟单员汇总" name="followerTotalData">
+        <eTable
+          ref="slave_edit-followerTotalData"
+          :height="tableHeight-116"
+          :index-menu="true"
+          :col-start="0"
+          :width="200"
+          :data.sync="tableBoxCoModelData"
+          :rules="tableFieldsValidator"
+        >
+          <template slot="head">
+            <tr>
+              <!-- <th class="ivu-table-column-center" width="35">
+                <div class="ivu-table-cell">
+                  <span class>选择</span>
+                </div>
+              </th>-->
+              <!-- <th class="ivu-table-column-center" width="140">
+                <div class="ivu-table-cell">
+                  <span class @click="purPaperPoClick('业务员',1,'salerName')">业务员</span>
+                </div>
+              </th>-->
+              <th class="ivu-table-column-center" width="60">
+                <div class="ivu-table-cell">
+                  <span class>跟单员</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="60">
+                <div class="ivu-table-cell">
+                  <span class>订单数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="90">
+                <div class="ivu-table-cell">
+                  <span class>排程数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="60">
+                <div class="ivu-table-cell">
+                  <span class>入库数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="60">
+                <div class="ivu-table-cell">
+                  <span class>已交数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="80">
+                <div class="ivu-table-cell">
+                  <span class>未交数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="60">
+                <div class="ivu-table-cell">
+                  <span class>记录数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="70">
+                <div class="ivu-table-cell">
+                  <span class>订单金额</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="82">
+                <div class="ivu-table-cell">
+                  <span class>面积</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="100">
+                <div class="ivu-table-cell">
+                  <span class>体积</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="70">
+                <div class="ivu-table-cell">
+                  <span class>重量</span>
+                </div>
+              </th>
+            </tr>
+          </template>
+          <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
+            <!-- 选择 -->
+            <!-- <td class="ivu-table-column-center" width="100">
+              <Checkbox
+                size="default"
+                v-model="row.Choice"
+                @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'Choice');
+                      }
+                    "
+              ></Checkbox>
+            </td>-->
+            <!-- 跟单员-->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.followerName"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'followerName');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 订单数 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.bpQty"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bpQty');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 排程数 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.bpProPlanQty"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bpProPlanQty');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 入库数 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.biInStoreQty"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'biInStoreQty');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 已交数-->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.biDelQty"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'biDelQty');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 未交数 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.biNoDelQty"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'biNoDelQty');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 记录数	 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.qty"
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'qty');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 订单金额 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                v-model="row.bcMoney"
+                disabled
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'bcMoney');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 面积 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.bcArea"
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'bcArea');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 体积	-->
+            <td class="ivu-table-column-left" width="82">
+              <Input
+                disabled
+                v-model="row.bcCube"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bcCube');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 重量 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                v-model="row.bcWeight"
+                disabled
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'bcWeight');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+          </template>
+        </eTable>
+      </TabPane>
+      <!-- 箱型汇总 -->
+      <TabPane label="箱型汇总" name="bpPBoxTotalData">
+        <eTable
+          ref="slave_edit-bpPBoxTotalData"
+          :height="tableHeight-116"
+          :index-menu="true"
+          :col-start="0"
+          :width="200"
+          :data.sync="tableBoxCoModelData"
+          :rules="tableFieldsValidator"
+        >
+          <template slot="head">
+            <tr>
+              <!-- <th class="ivu-table-column-center" width="35">
+                <div class="ivu-table-cell">
+                  <span class>选择</span>
+                </div>
+              </th>-->
+              <!-- <th class="ivu-table-column-center" width="140">
+                <div class="ivu-table-cell">
+                  <span class @click="purPaperPoClick('业务员',1,'salerName')">业务员</span>
+                </div>
+              </th>-->
+              <th class="ivu-table-column-center" width="60">
+                <div class="ivu-table-cell">
+                  <span class>箱型</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="60">
+                <div class="ivu-table-cell">
+                  <span class>订单数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="70">
+                <div class="ivu-table-cell">
+                  <span class>订单金额</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="82">
+                <div class="ivu-table-cell">
+                  <span class>面积</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="100">
+                <div class="ivu-table-cell">
+                  <span class>体积</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="70">
+                <div class="ivu-table-cell">
+                  <span class>重量</span>
+                </div>
+              </th>
+            </tr>
+          </template>
+          <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
+            <!-- 选择 -->
+            <!-- <td class="ivu-table-column-center" width="100">
+              <Checkbox
+                size="default"
+                v-model="row.Choice"
+                @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'Choice');
+                      }
+                    "
+              ></Checkbox>
+            </td>-->
+            <!-- 箱型-->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.bpPBoxName"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bpPBoxName');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 订单数 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.bpQty"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bpQty');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 订单金额 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                v-model="row.bcMoney"
+                disabled
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'bcMoney');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 面积 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.bcArea"
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'bcArea');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 体积	-->
+            <td class="ivu-table-column-left" width="82">
+              <Input
+                disabled
+                v-model="row.bcCube"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bcCube');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 重量 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                v-model="row.bcWeight"
+                disabled
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'bcWeight');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+          </template>
+        </eTable>
+      </TabPane>
+      <!-- 日期汇总 -->
+      <TabPane label="日期汇总" name="bcCoDateTotalData">
+        <eTable
+          ref="slave_edit-bcCoDateTotalData"
+          :height="tableHeight-116"
+          :index-menu="true"
+          :col-start="0"
+          :width="200"
+          :data.sync="tableBoxCoModelData"
+          :rules="tableFieldsValidator"
+        >
+          <template slot="head">
+            <tr>
+              <!-- <th class="ivu-table-column-center" width="35">
+                <div class="ivu-table-cell">
+                  <span class>选择</span>
+                </div>
+              </th>-->
+              <!-- <th class="ivu-table-column-center" width="140">
+                <div class="ivu-table-cell">
+                  <span class @click="purPaperPoClick('业务员',1,'salerName')">业务员</span>
+                </div>
+              </th>-->
+              <th class="ivu-table-column-center" width="100">
+                <div class="ivu-table-cell">
+                  <span class>日期</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="60">
+                <div class="ivu-table-cell">
+                  <span class>记录数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="60">
+                <div class="ivu-table-cell">
+                  <span class>订单数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="70">
+                <div class="ivu-table-cell">
+                  <span class>订单金额</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="90">
+                <div class="ivu-table-cell">
+                  <span class>排程数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="60">
+                <div class="ivu-table-cell">
+                  <span class>入库数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="60">
+                <div class="ivu-table-cell">
+                  <span class>已交数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="80">
+                <div class="ivu-table-cell">
+                  <span class>未交数</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="82">
+                <div class="ivu-table-cell">
+                  <span class>面积</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="100">
+                <div class="ivu-table-cell">
+                  <span class>体积</span>
+                </div>
+              </th>
+              <th class="ivu-table-column-center" width="70">
+                <div class="ivu-table-cell">
+                  <span class>重量</span>
+                </div>
+              </th>
+            </tr>
+          </template>
+          <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
+            <!-- 选择 -->
+            <!-- <td class="ivu-table-column-center" width="100">
+              <Checkbox
+                size="default"
+                v-model="row.Choice"
+                @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'Choice');
+                      }
+                    "
+              ></Checkbox>
+            </td>-->
+            <!-- 日期	 bcCoDate-->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.biDeDate"
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'biDeDate');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 记录数	 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.qty"
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'qty');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 订单数 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.bpQty"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bpQty');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 订单金额 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                v-model="row.bcMoney"
+                disabled
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'bcMoney');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 排程数 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.bpProPlanQty"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bpProPlanQty');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 入库数 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.biInStoreQty"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'biInStoreQty');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 已交数-->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.biDelQty"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'biDelQty');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 未交数 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.biNoDelQty"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'biNoDelQty');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 面积 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                disabled
+                v-model="row.bcArea"
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'bcArea');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 体积	-->
+            <td class="ivu-table-column-left" width="82">
+              <Input
+                disabled
+                v-model="row.bcCube"
+                @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bcCube');
+                      }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+            <!-- 重量 -->
+            <td class="ivu-table-column-left" width="100">
+              <Input
+                v-model="row.bcWeight"
+                disabled
+                @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'bcWeight');
+                        }
+                      "
+                size="small"
+                :maxlength="20"
+              ></Input>
+            </td>
+          </template>
+        </eTable>
+      </TabPane>
+    </Tabs>
+  </div>
+</template>
+<script>
+import productList from "./edit/edit-boxSalesProductsList";
+import vTable from "@/components/tables/vTable";
+import eTable from "@/components/e-table/e-table";
+import htmlTemplate from "../components/htmlTemplate";
+import listBaseMixins from "../mixins/list";
+import request from "@/libs/request";
+import popup from "@/components/popup/popup";
+import dayjs from "dayjs";
+export default {
+  mixins: [listBaseMixins],
+  components: {
+    productList,
+    htmlTemplate,
+    vTable,
+    eTable,
+    popup
+  },
+  data() {
+    return {
+      tableBoxCoModelData: [], // 纸板规格 数据
+      productMDatasTableDataList: [], //存放处理过后的数据:[],
+      tableBoxCoWorkProcData: [], // 生产工序 数据
+      currentTabName: "orderTotalData", // 当前TABL名称
+      formDataInfo: {
+        // 主表 更改字段
+        master: {
+          startDate: new Date(
+            dayjs()
+              .subtract(1, "month")
+              .format("YYYY-MM-DD")
+          ),
+          endDate: new Date(dayjs().format("YYYY-MM-DD")),
+          inCustNo: "",
+          inBpProNo: "",
+          inBoxTyoe: ""
+          // inCustNo: "",
+          // inBpProNo: "",
+          // inBoxTyoe: "",
+        },
+        productMDatas: {}
+        // List:thsi.list
+      }, // 防止添加和更新数据提交发生冲突
+      ruleValidate: {},
+      tableFieldsValidator: {},
+      // 查询配置参数
+      functionParams: {
+        formInitPreName: "boxco", // 查询表格列头信息 前缀 例如:boxco mainFm/itemFm/mdataFm
+        requestBaseUrl: "/sale/boxCo/analyzerNew", // 查询 表格行 数据 接口前缀地址
+        uniqueId: "boxCoMainId" // 查询详细的唯一ID,需要顶部查询中使用
+      }
+      // 分页查询接口获取字段, 查询参数配置 ,注意格式,一般为编码和名称
+      //   queryParamsDefault: [
+      //     {
+      //       title: '订单编号',
+      //       code: 'bcNo',
+      //       custCode: ''
+      //     },
+      //     {
+      //       title: '客户名称',
+      //       name: 'custName$like',
+      //       custName$like: ''
+      //     }
+      //   ]
+    };
+  },
+  methods: {
+     // 通过参数查询数据列表
+    searchDataBy() {
+      //debugger
+      let name = this.currentTabName;
+      this.TabsClickEvent(name);
+    },
+    checkShowCol(colList) {
+      //debugger
+      let exlistMdataFm = [
+        "iisDoubleCut",
+        "bmSizeW",
+        "bmSizeL",
+        "bmKsW",
+        "bmKsL",
+        "bmKsTotal",
+        "bmQty"
+      ];
+      let isCalPaperWidth = this.$params.isCalPaperWidth;
+      if (isCalPaperWidth == "1") {
+        exlistMdataFm = [];
+      }
+      if (colList && Array.isArray(colList) && colList.length > 0) {
+        colList = colList.filter(item => {
+          return !exlistMdataFm.includes(item.key);
+        });
+      }
+      return colList;
+    },
+    // tab 切换事件
+    TabsClickEvent(name) {
+      //debugger
+      this.currentTabName = name;
+      // if (
+      //   this.masterRowSelection &&
+      //   this.masterRowSelection.id != null &&
+      //   this.masterRowSelection.id != ""
+      // ) {
+      // if (name === "customerTotalData") {
+      //   this.LoadBoxCoModelData(1);
+      // } else if (name === "productTotalData") {
+      //   this.LoadBoxCoModelData(2);
+      // }
+      switch (name) {
+        case "orderTotalData": //订单汇总
+          this.LoadBoxCoModelData(0);
+          break;
+        case "customerTotalData": //客户汇总
+          this.LoadBoxCoModelData(1);
+          break;
+        case "productTotalData": //产品汇总
+          this.LoadBoxCoModelData(2);
+          break;
+        case "salerTotalData": //业务员汇总
+          this.LoadBoxCoModelData(3);
+          break;
+        case "followerTotalData": //跟单员汇总
+          this.LoadBoxCoModelData(4);
+          break;
+        case "bpPBoxTotalData": //箱型汇总
+          this.LoadBoxCoModelData(5);
+          break;
+        case "bcCoDateTotalData": //日期汇总
+          this.LoadBoxCoModelData(6);
+          break;
+        default:
+          break;
+      }
+      // }
+    },
+    //加载数据
+    LoadBoxCoModelData(inMode) {
+      //debugger
+      // let url = `${this.functionParams.requestBaseUrl}/sub/boxCoModelData/list`;
+      //(inMode 模式(对应下面的顺序 必填),inCustNo 客户编号，inBpProNo 产品编号,inBoxTyoe 箱型,startDate 开始时间
+      //endDate 结束时间,inNotShQty 未送货,inNotPlanQty 未排程,inNotJoinQty 未入库)
+      let url = `/sale/boxCo/analyzerNew`;
+      let data = {
+        inMode: inMode,
+        inCustNo: this.formDataInfo.master.inCustNo,
+        inBpProNo: this.formDataInfo.master.inBpProNo,
+        inBoxTyoe: this.formDataInfo.master.inBoxTyoe,
+        inNotShQty: this.formDataInfo.master.inNotShQty ? 1 : 0,
+        inNotPlanQty: this.formDataInfo.master.inNotPlanQty ? 1 : 0,
+        inNotJoinQty: this.formDataInfo.master.inNotJoinQty ? 1 : 0,
+        startDate: dayjs(this.formDataInfo.master.startDate).format(
+          "YYYY-MM-DD"
+        ),
+        endDate: dayjs(this.formDataInfo.master.endDate).format("YYYY-MM-DD")
+      };
+      // if (inMode == 1) {
+      //   //是客户汇总
+      //   data.inCustNo = this.formDataInfo.master.inCustNo;
+      // }
+      // if (inMode == 2) {
+      //   //产品汇总
+      //   data.inBpProNo = this.formDataInfo.master.inBpProNo;
+      // }
+      let _self = this;
+      request.post(url, data).then(res => {
+        //debugger
+        if (inMode == 0) {
+          res.forEach(item => {
+            item.bcCoDate = dayjs(item.bcCoDate).format("YYYY-MM-DD")
+            item.biDeDate = dayjs(item.biDeDate).format("YYYY-MM-DD")
+          })
+        }
+        if(inMode == 1) {
+          let totalMoneyOne = 0; //总金额
+          for (let i = 0; i < res.length; i++) {
+            totalMoneyOne += res[i].bjMoney;
+          }
+          //金额占比=金额/总金额×100%
+          res.forEach(item => {
+            item.bjMoneyLot = ((Number(item.bjMoney) / totalMoneyOne) * 100).toFixed(2);
+          });
+        }
+        if(inMode == 3) {
+          let totalMoney = 0; //总金额 bcMoney
+          for (let m = 0; m < res.length; m++) {
+            totalMoney += res[m].bcMoney;
+          }
+          //金额占比=金额/总金额×100%
+          res.forEach(item => {
+            item.bjMoneyLot = ((Number(item.bcMoney) / totalMoney) * 100).toFixed(2);
+          });
+        }
+        if (inMode == 6) {
+          for (let j = 0; j < res.length; j++) {
+            res[j].biDeDate = dayjs(res[j].biDeDate).format("YYYY-MM-DD");
+          }
+        }
+        _self.tableBoxCoModelData = res;
+      });
+    }
+    //加载 生产工序 数据
+    // LoadBoxCoWorkProcData() {
+    //   debugger
+    //   let url = `${this.functionParams.requestBaseUrl}/sub/boxCoWorkProc/list`;
+    //   let data = {
+    //     boxCoItemId: this.slaveRowselection.id
+    //   };
+    //   let _self = this;
+    //   request.post(url, data).then(res => {
+    //     debugger
+    //     _self.tableBoxCoWorkProcData = res;
+    //   });
+    // }
+    // 主表点击事件,需要修改 查询参数:productPriceId 和 查询反馈内容  rowData.custCode + " " + rowData.custName 一般对应 queryParamsDefault 即可
+    // master_list_tableRowClick (rowData, rowIndex) {
+    //   this.masterRowSelection = rowData
+    //   this.currrentRowItem.rowName = rowData.custCode + ' ' + rowData.custName
+    //   this.$refs['slave_list_table'].search({ boxCoMainId: rowData.id })
+    //   // 清空第三层表数据
+    //   this.$refs['sub_list_table'].reset()
+
+    // },
+
+    // 从表点击事件,需要修改 查询参数:productPriceId
+    // slave_list_tableRowClick (rowData, rowIndex) {
+    //   this.slaveRowselection = rowData
+    //   this.$refs['sub_list_table'].search({ boxCoItemId: rowData.id })
+    //   if(this.slaveRowselection){
+    //       this.TabsClickEvent(this.currentTabName)
+    //   }
+    // }
+  },
+  created() {
+    this.LoadBoxCoModelData(0);
+    // 查询多个表格列表头数据
+    // 无需变更,配置functionParams 参数即可
+    // if (this.functionParams.formInitPreName) {
+    //   this.getFormInitData(`${this.functionParams.formInitPreName}mainFm`);
+    // }
+  }
+};
+</script>
+
+<style>
+/* .cl-analyzerNew{
+  height: 540px;
+  overflow: auto;
+} */
+/* .analyCheckClassNoPro{
+  width: 120px;
+} */
+.analyCheckClass {
+  margin-left: -80px;
+}
+.analyCheckClassNo {
+  margin-left: -160px;
+}
+</style>
