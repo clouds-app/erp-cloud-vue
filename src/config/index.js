@@ -13,10 +13,12 @@ export default {
    * @description api请求基础路径
    */
   baseUrl: {
-    dev: 'http://134.175.53.247/erp',
-    pro: ''
-    //http://134.175.53.247/erp http://134.175.53.247/erp http://192.168.0.6:8080/erp
+    dev: 'http://erp.szclsoft.com/erp',//http://erp.szclsoft.com/erp
+    pro: 'http://erp.szclsoft.com/erp'
+    // http://134.175.53.247/erp
+    //http://134.175.53.247/erp
   },
+  reportUrl:'http://erp.szclsoft.com/erp',//http://erp.szclsoft.com/erp
   /**
    * @description 默认打开的首页的路由name值，默认为home
    */

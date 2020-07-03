@@ -1,0 +1,739 @@
+<template>
+  <!-- 角色资源 -->
+  <Row>
+    <Col span="5">
+      <resourceTree @on-select-change="treeSelectEvent"></resourceTree>
+    </Col>
+    <Col span="10">
+      <vTable
+        ref="table"
+        name="userRsourceTable"
+        :height="400"
+        :columns="authBtnColumns"
+        :table-data.sync="resourceList"
+      ></vTable>
+      <Spin size="large" fix v-if="resourceLoadding"></Spin>
+    </Col>
+    <Col span="9">
+      <Row>
+        <Col span="12">
+          <vTable
+            :upDownMove="false"
+            name="user-resource-expand"
+            :height="400"
+            :table-data="expandDataList"
+            :columns="expandColumns"
+            :pagination="false"
+          ></vTable>
+        </Col>
+        <Col span="12">
+          <vTable
+            :upDownMove="false"
+            name="user-resource-report"
+            :height="400"
+            :table-data="reportDataList"
+            :columns="reportColumns"
+            :pagination="false"
+          ></vTable>
+        </Col>
+      </Row>
+    </Col>
+  </Row>
+</template>
+
+<script>
+import request from "@/libs/request";
+import vTable from "@/components/tables/vTable";
+import resourceTree from "../resource-tree/resourceTree";
+export default {
+  components: { vTable, resourceTree },
+  data() {
+    const _self = this;
+    return {
+      treeLoading: true,
+      resourceLoadding: false,
+      resourceTreeData: [],
+      columnClickStatus: {},
+      columnNames: [
+        "iisShow",
+        "iisAdd",
+        "iisEdit",
+        "iisDel",
+        "iisMoney",
+        "iisPrint",
+        "iisAudit",
+        "iisNotAudit",
+        "iisExport",
+        "iisImport"
+      ],
+      selectAllStatus: false,
+      authBtnColumns: [
+        {
+          key: "resourceName",
+          title: "模块名称",
+          titleAlign: "center",
+          align: "right",
+          width: 80,
+          tooltip: true
+        },
+        {
+          key: "iisShow",
+          title: "显示",
+          align: "center",
+          titleAlign: "center",
+          renderHeader: (h, params) => {
+            return h(
+              "div",
+              {
+                style: {
+                  cursor: "pointer"
+                },
+                on: {
+                  click: () => {
+                    _self.columnClick(params.column.key);
+                  }
+                }
+              },
+              params.column.title
+            );
+          },
+          render: (h, params) => {
+            return h("Checkbox", {
+              props: {
+                value: params.row.iisShow,
+                size: "small"
+              },
+              on: {
+                "on-change": value => {
+                  _self.$set(
+                    _self.userResourceList[params.row.index],
+                    "iisShow",
+                    value
+                  );
+                }
+              }
+            });
+          }
+        },
+        {
+          key: "iisAdd",
+          title: "添加",
+          align: "center",
+          titleAlign: "center",
+
+          render: (h, params) => {
+            return h("Checkbox", {
+              props: {
+                value: params.row.iisAdd,
+                size: "small"
+              },
+              on: {
+                "on-change": value => {
+                  _self.$set(
+                    _self.userResourceList[params.row.index],
+                    "iisAdd",
+                    value
+                  );
+                }
+              }
+            });
+          },
+          renderHeader: (h, params) => {
+            return h(
+              "div",
+              {
+                style: {
+                  cursor: "pointer"
+                },
+                on: {
+                  click: () => {
+                    _self.columnClick(params.column.key);
+                  }
+                }
+              },
+              params.column.title
+            );
+          }
+        },
+        {
+          key: "iisEdit",
+          title: "修改",
+          titleAlign: "center",
+          align: "center",
+
+          render: (h, params) => {
+            return h("Checkbox", {
+              props: {
+                value: params.row.iisEdit,
+                size: "small"
+              },
+              on: {
+                "on-change": value => {
+                  _self.$set(
+                    _self.userResourceList[params.row.index],
+                    "iisEdit",
+                    value
+                  );
+                }
+              }
+            });
+          },
+          renderHeader: (h, params) => {
+            return h(
+              "div",
+              {
+                style: {
+                  cursor: "pointer"
+                },
+                on: {
+                  click: () => {
+                    _self.columnClick(params.column.key);
+                  }
+                }
+              },
+              params.column.title
+            );
+          }
+        },
+        {
+          key: "iisDel",
+          title: "删除",
+          titleAlign: "center",
+          align: "center",
+
+          render: (h, params) => {
+            return h("Checkbox", {
+              props: {
+                value: params.row.iisDel,
+                size: "small"
+              },
+              on: {
+                "on-change": value => {
+                  _self.$set(
+                    _self.userResourceList[params.row.index],
+                    "iisDel",
+                    value
+                  );
+                }
+              }
+            });
+          },
+          renderHeader: (h, params) => {
+            return h(
+              "div",
+              {
+                style: {
+                  cursor: "pointer"
+                },
+                on: {
+                  click: () => {
+                    _self.columnClick(params.column.key);
+                  }
+                }
+              },
+              params.column.title
+            );
+          }
+        },
+        {
+          key: "iisDisabled",
+          title: "禁用",
+          titleAlign: "center",
+          align: "center",
+
+          render: (h, params) => {
+            return h("Checkbox", {
+              props: {
+                value: params.row.iisDisabled,
+                size: "small"
+              },
+              on: {
+                "on-change": value => {
+                  _self.$set(
+                    _self.userResourceList[params.row.index],
+                    "iisDisabled",
+                    value
+                  );
+                }
+              }
+            });
+          },
+          renderHeader: (h, params) => {
+            return h(
+              "div",
+              {
+                style: {
+                  cursor: "pointer"
+                },
+                on: {
+                  click: () => {
+                    _self.columnClick(params.column.key);
+                  }
+                }
+              },
+              params.column.title
+            );
+          }
+        },
+        {
+          key: "iisMoney",
+          title: "金额",
+          titleAlign: "center",
+          align: "center",
+
+          render: (h, params) => {
+            return h("Checkbox", {
+              props: {
+                value: params.row.iisMoney,
+                size: "small"
+              },
+              on: {
+                "on-change": value => {
+                  _self.$set(
+                    _self.userResourceList[params.row.index],
+                    "iisMoney",
+                    value
+                  );
+                }
+              }
+            });
+          },
+          renderHeader: (h, params) => {
+            return h(
+              "div",
+              {
+                style: {
+                  cursor: "pointer"
+                },
+                on: {
+                  click: () => {
+                    _self.columnClick(params.column.key);
+                  }
+                }
+              },
+              params.column.title
+            );
+          }
+        },
+        {
+          key: "iisPrint",
+          title: "打印",
+          titleAlign: "center",
+          align: "center",
+
+          render: (h, params) => {
+            return h("Checkbox", {
+              props: {
+                value: params.row.iisPrint,
+                size: "small"
+              },
+              on: {
+                "on-change": value => {
+                  _self.$set(
+                    _self.userResourceList[params.row.index],
+                    "iisPrint",
+                    value
+                  );
+                }
+              }
+            });
+          },
+          renderHeader: (h, params) => {
+            return h(
+              "div",
+              {
+                style: {
+                  cursor: "pointer"
+                },
+                on: {
+                  click: () => {
+                    _self.columnClick(params.column.key);
+                  }
+                }
+              },
+              params.column.title
+            );
+          }
+        },
+        {
+          key: "iisAudit",
+          title: "审核",
+          titleAlign: "center",
+          align: "center",
+
+          render: (h, params) => {
+            return h("Checkbox", {
+              props: {
+                value: params.row.iisAudit,
+                size: "small"
+              },
+              on: {
+                "on-change": value => {
+                  params.row.iisAudit = value;
+                  _self.$set(
+                    _self.userResourceList[params.row.index],
+                    "iisAudit",
+                    value
+                  );
+                }
+              }
+            });
+          },
+          renderHeader: (h, params) => {
+            return h(
+              "div",
+              {
+                style: {
+                  cursor: "pointer"
+                },
+                on: {
+                  click: () => {
+                    _self.columnClick(params.column.key);
+                  }
+                }
+              },
+              params.column.title
+            );
+          }
+        },
+        {
+          key: "iisNotAudit",
+          title: "反审",
+          titleAlign: "center",
+          align: "center",
+
+          render: (h, params) => {
+            return h("Checkbox", {
+              props: {
+                value: params.row.iisNotAudit,
+                size: "small"
+              },
+              on: {
+                "on-change": value => {
+                  _self.$set(
+                    _self.userResourceList[params.row.index],
+                    "iisNotAudit",
+                    value
+                  );
+                }
+              }
+            });
+          },
+          renderHeader: (h, params) => {
+            return h(
+              "div",
+              {
+                style: {
+                  cursor: "pointer"
+                },
+                on: {
+                  click: () => {
+                    _self.columnClick(params.column.key);
+                  }
+                }
+              },
+              params.column.title
+            );
+          }
+        },
+        {
+          key: "iisImport",
+          title: "导入",
+          titleAlign: "center",
+          align: "center",
+          render: (h, params) => {
+            return h("Checkbox", {
+              props: {
+                value: params.row.iisImport,
+                size: "small"
+              },
+              on: {
+                "on-change": value => {
+                  _self.$set(
+                    _self.userResourceList[params.row.index],
+                    "iisImport",
+                    value
+                  );
+                }
+              }
+            });
+          },
+          renderHeader: (h, params) => {
+            return h(
+              "div",
+              {
+                style: {
+                  cursor: "pointer"
+                },
+                on: {
+                  click: () => {
+                    _self.columnClick(params.column.key);
+                  }
+                }
+              },
+              params.column.title
+            );
+          }
+        },
+        {
+          key: "iisExport",
+          title: "导出",
+          titleAlign: "center",
+          align: "center",
+          render: (h, params) => {
+            return h("Checkbox", {
+              props: {
+                value: params.row.iisExport,
+                size: "small"
+              },
+              on: {
+                "on-change": value => {
+                  _self.$set(
+                    _self.userResourceList[params.row.index],
+                    "iisExport",
+                    value
+                  );
+                }
+              }
+            });
+          },
+          renderHeader: (h, params) => {
+            return h(
+              "div",
+              {
+                style: {
+                  cursor: "pointer"
+                },
+                on: {
+                  click: () => {
+                    _self.columnClick(params.column.key);
+                  }
+                }
+              },
+              params.column.title
+            );
+          }
+        }
+      ],
+      expandColumns: [
+        {
+          title: "拓展名称",
+          key: "expandName",
+          align: "center",
+          titleAlign: "center"
+        },
+        {
+          key: "iisUse",
+          title: "授权",
+          titleAlign: "center",
+          align: "center",
+          render: (h, params) => {
+            return h("Checkbox", {
+              props: {
+                value: params.row.iisUse,
+                size: "small"
+              },
+              on: {
+                "on-change": value => {
+                  _self.expandTableItem[_self.treeSelectedId][
+                    params.index
+                  ].iisUse = value;
+                }
+              }
+            });
+          }
+        }
+      ],
+      reportColumns: [
+        {
+          title: "报表名称",
+          key: "templateName",
+          align: "center",
+          titleAlign: "center"
+        },
+        {
+          key: "status",
+          title: "授权",
+          titleAlign: "center",
+          align: "center",
+          render: (h, params) => {
+            return h("Checkbox", {
+              props: {
+                value: params.row.status,
+                size: "small"
+              },
+              on: {
+                "on-change": value => {
+                  _self.reportTableItem[_self.treeSelectedId][
+                    params.index
+                  ].status = value;
+                  let data = _self.reportTableItem[_self.treeSelectedId];
+                  _self.$set(_self.reportTableItem,_self.treeSelectedId,data)
+                }
+              }
+            });
+          }
+        }
+      ],
+      userResourceList: [],
+      // 当前选中的菜单
+      treeSelectedId: "",
+      // 拓展功能数据集合
+      expandTableItem: {},
+      //当前显示的拓展数据
+      expandDataList: [],
+      reportDataList: [],
+      // 用户报表数据集合
+      reportTableItem: {},
+      // 用户ID
+      userId: ""
+    };
+  },
+  computed: {
+    resourceList() {
+      //获取选中节点的资源
+      return this.userResourceList.filter((item, index) => {
+        item["index"] = index;
+        return (
+          item.parentPath.indexOf(this.treeSelectedId) != -1 ||
+          item.resourceId == this.treeSelectedId
+        );
+      });
+    }
+  },
+  props:{
+    selectedUserId:{
+      type:String,
+      default:()=>{
+        return ''
+      }
+    }
+  },
+  watch:{
+    selectedUserId(n,o){
+      // 角色ID发生改变，数据初始化
+      this.treeSelectedId = ''
+      this.expandTableItem = {}
+      this.expandDataList = []
+      this.reportDataList = []
+      this.reportTableItem = {}
+      this.userId = n
+    }
+  },
+  methods: {
+    getResourceTree() {
+      this.treeLoading = true;
+      request
+        .get("/sys/resource/tree")
+        .then(res => {
+          this.resourceTreeData.push(
+            {
+              title: "标准模块",
+              expand: true,
+              children: res.common,
+              id: "0"
+            },
+            {
+              title: "非标模块",
+              expand: true,
+              children: res.owner
+            }
+          );
+          this.treeLoading = false;
+        })
+        .catch(() => {
+          this.treeLoading = false;
+        });
+    },
+    getUserResourceList(userId) {
+      this.resourceLoadding = true;
+      request
+        .get("/sys/user/resource", {}, { userId: userId })
+        .then(res => {
+          this.userResourceList = res;
+          this.resourceLoadding = false;
+        })
+        .catch(() => {
+          this.resourceLoadding = false;
+        });
+    },
+    columnClick(columnName, selectAll) {
+      //列选中
+      let status = !this.columnClickStatus[columnName];
+      if (selectAll) {
+        status = this.selectAllStatus;
+      }
+      this.resourceList.forEach(item => {
+        this.userResourceList[item.index][columnName] = status;
+      });
+      this.columnClickStatus[columnName] = status;
+    },
+    treeSelectEvent(a, b) {
+      this.treeSelectedId = b.id;
+      this.getResourceExpand(b.id);
+      this.getResourceReport(b.id);
+    },
+    // 获取资源对应的拓展功能
+    getResourceExpand(resourceId) {
+      if (this.expandTableItem[resourceId]) {
+        this.expandDataList = this.expandTableItem[resourceId];
+        return;
+      }
+      request
+        .get(
+          "/sys/user/user-expand",
+          {},
+          { userId: this.userId, resourceId: resourceId }
+        )
+        .then(res => {
+          this.expandTableItem[resourceId] = res;
+          this.expandDataList = res;
+        });
+    },
+    getResourceReport(resourceId) {
+      if (this.reportTableItem[resourceId]) {
+        this.reportDataList = this.reportTableItem[resourceId];
+        return;
+      }
+      request
+        .get(
+          "/sys/user/user-report",
+          {},
+          { userId: this.userId, resourceId: resourceId }
+        )
+        .then(res => {
+          this.reportTableItem[resourceId] = res;
+          this.reportDataList = res;
+        });
+    },
+    getSubmitData(){
+      let data = {
+        userId:this.userId,
+        userResourceList:this.userResourceList
+      }
+      let userResourceExpList = []
+      let expandValues = Object.values(this.expandTableItem)
+      expandValues.forEach(item=>{
+        userResourceExpList = userResourceExpList.concat(item)
+      })
+      data['sysUserResourceExpList'] = userResourceExpList;
+      // 报表权限
+      let userReportList = []
+      let reportValues = Object.values(this.reportTableItem)
+      reportValues.forEach(item=>{
+        userReportList = userReportList.concat(item)
+      })
+      data['userReportList'] = userReportList
+      return data
+    }
+  },
+  created() {
+    this.getResourceTree();
+    //this.getResourceList();
+  },
+  mounted() {}
+};
+</script>
+
+<style>
+</style>

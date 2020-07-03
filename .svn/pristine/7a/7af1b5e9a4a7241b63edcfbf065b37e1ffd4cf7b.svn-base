@@ -1,0 +1,268 @@
+<template>
+  <div class="cl-modal">
+    <div class="toolbar-container">
+      <Card :bordered="false">
+        <Row>
+          <Col span="12">
+            <Row>
+              <Col span="4">
+                <page></page>
+              </Col>
+              <Col span="2">
+              
+                <clButton
+                iconColor="#0cb05b"
+                icon="md-add-circle"
+                type="customer"
+                size="small"
+                @click="addAction()"
+              >增加</clButton>
+              </Col>
+              <Col span="2"  class="marginLeft">
+                <clButton
+                iconColor="#0cb05b"
+                icon="md-create"
+                type="customer"
+                size="small"
+                @click="editAction()"
+              >修改</clButton>
+              </Col>
+              <Col span="2"  class="marginLeft">
+                 <clButton
+               
+                iconColor="#e16205"
+                icon="md-remove-circle"
+                type="customer"
+                size="small"
+                @click="deleteAction()"
+              >删除</clButton>
+              </Col>
+                <Col span="2"  class="marginLeft">
+                  <clButton
+                 
+                iconColor="#e16205"
+                icon="md-warning"
+                type="customer"
+                size="small"
+                @click="disabledAction()"
+              >禁用</clButton>
+              </Col>
+            </Row>
+          </Col>
+          <Col span="12">
+            <Row :gutter="10" type="flex" justify="end">
+              <Col span="4">
+                <Input
+                  placeholder="模板名称"
+                  v-model="queryParams.templateName"
+                  size="small"
+                />
+              </Col>
+              <Col span="4">
+                <Input
+                  placeholder="模板路径"
+                  size="small"
+                  v-model="queryParams.templatePath"
+                />
+              </Col>
+
+              <Col span="2" style="text-align: right;">
+                <Button type="info" size="small" @click="search()">搜索</Button>
+              </Col>
+            </Row>
+          </Col>
+        </Row>
+      </Card>
+    </div>
+
+    <div class="content-container" :style="{ height: tableHeight + 'px' }">
+      <div slot="top">
+        <vTable
+          name="sysTable"
+          :upDownMove="true"
+          :height="tableHeight"
+          ref="master_list_table"
+          :columns="columns"
+          url="/report/template/page"
+          :pagination="true"
+          @row-click="tableRowClick"
+        >
+           
+        </vTable>
+      </div>
+    </div>
+     <editForm
+      :formDetailData="formDetailData"
+      :action="action"
+      @submit-success="search()"
+      v-model="showEditWindow"
+    />
+  </div>
+ 
+</template>
+<script>
+import clButton from "@/components/cl-erp/button";
+import request from '@/libs/request'
+import vTable from "@/components/tables/vTable";
+import editForm from './edit-report'
+import baseMixin from '../mixins'
+import page from "@/components/page/page";
+export default {
+  components: {
+    vTable,
+    editForm,
+    page,
+    clButton
+  },
+  mixins:[baseMixin],
+  data() {
+    return {
+      queryParams: {
+          templateName:'',
+          templatePath:''
+      },
+      columns: [
+        {
+          resizable:false,
+          width: 200,
+          title: "模板路径",
+          slot: "report.slot.templatePath",
+        },
+        {
+          title: "模板名称",
+          key: 'templateName',
+          align: "left",
+          width: 150
+        },
+        {
+          title: "报表绑定资源",
+          key: "bindingResource",
+          align: "center",
+          width: 100
+        },
+         {
+          title: "报表变量",
+          key: "params",
+          align: "left",
+          width: 100
+        },
+        {
+          title: "公用",
+          key: "iisPublic",
+          render: (h, params) => {
+            return h("div", params.row.iisPublic ? "是" : "否");
+          },
+          align: "center",
+          width: 50
+        },
+          {
+          title: "备注",
+          key: "remark",
+          align: "left",
+          width: 200
+        },
+         {
+          title: "创建时间",
+          key: "createTime",
+          align: "left",
+          width: 100
+        },
+         {
+          title: "创建人",
+          key: "createUser",
+          align: "left",
+          width: 100
+        },
+         {
+          title: "禁用",
+          key: "status",
+          align: "left",
+          width: 50
+        },
+      ],
+      tableFieldColuns: [
+        {
+          title: "列名",
+          key: "fieldName",
+          align: "center",
+          resizable: true
+        },
+        {
+          title: "说明",
+          key: "fieldDesc",
+          align: "center",
+          resizable: true
+        },
+        {
+          title: "数据类型",
+          key: "fieldDataType",
+          align: "center",
+          resizable: true
+        },
+        {
+          title: "数据长度",
+          key: "fieldLength",
+          align: "center",
+          resizable: true
+        },
+        {
+          title: "默认值",
+          key: "fieldDefault",
+          align: "center",
+          resizable: true
+        },
+        {
+          title: "是否主键",
+          key: "fieldPk",
+          align: "center",
+          render: (h, params) => {
+            return params.row.fieldPk ? h("span", "是") : h("span", "否");
+          },
+          resizable: true
+        },
+        {
+          title: "不为空",
+          key: "fieldNotnull",
+          align: "center",
+          render: (h, params) => {
+            return params.row.fieldNotnull ? h("span", "是") : h("span", "否");
+          },
+          resizable: true
+        },
+        {
+          title: "字段顺序",
+          key: "fieldOrder",
+          align: "center",
+          resizable: true,
+          width: 200
+        },
+        {
+          title: "国际化KEY",
+          key: "fieldI18n",
+          align: "center",
+          resizable: true,
+          width: 200
+        }
+      ],
+       functionParams: { // 清酒基础路径
+        requestBaseUrl: '/report/template',
+        uniqueIdName: 'templateId',
+      },
+    };
+  },
+  methods: {
+     tableRowClick(rowData, rowIndex) {
+        this.masterRowSelection = rowData;
+      },
+  },
+  created() {
+   
+  }
+};
+</script>
+
+<style>
+.marginLeft{
+  margin-left: 10px;
+}
+</style>

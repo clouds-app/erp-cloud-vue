@@ -1,0 +1,65 @@
+<template>
+  <div class="cl-top-menu">
+    <Row>
+      <!-- 占位符 size="0" 不然位置不正确-->
+      <Col span="8">
+        <div>
+          <Icon type="md-call" size="0" color="#0e67b7" />
+        </div>
+      </Col>
+      <!-- 占位符 size="0" 不然位置不正确-->
+      <!-- <Col span="7"> <Icon type="ios-analytics-outline"  size="0"/> </Col> -->
+      
+    <!-- <Col span="16">
+        <Col span="12"> -->
+            <Dropdown  placement="bottom" transfer>
+                <div class="oper-more">
+                    <!-- <Icon type="ios-arrow-down"></Icon> -->
+                    <Icon type="md-person" size="30" color="#0e67b7" />
+                </div>
+                <div style="color:#000000">
+                    {{userCode}}
+                    <Icon type="ios-arrow-down"></Icon>
+                </div>
+                <DropdownMenu slot="list">
+                    <!-- <DropdownItem style="text-align:center;">用户</DropdownItem> -->
+                    <DropdownItem @click.native="outSystem()" style="text-align:center;" >退出</DropdownItem>
+                </DropdownMenu>
+            </Dropdown>
+        <!-- </Col> -->
+      <!-- </Col> -->
+    </Row>
+  </div>
+</template>
+<script>
+import {getlocalStorage,setToken}  from '@/libs/util'
+import { mapActions } from 'vuex'
+export default {
+    data() {
+        return {
+        userCode:''
+        };
+    },
+    methods: {
+    ...mapActions([
+      'handleLogOut'
+    ]),
+    outSystem(){
+        setToken('')
+        this.$router.push({ path: "/login" });
+        }
+    },
+    created(){
+        // localStoage.removeItem(key)  用来清除localStoage数据
+        this.userCode = getlocalStorage('userCode').replace(/(^\"*)|(\"*$)/g, "")
+    }
+};
+</script>
+<style>
+.oper-more {
+  padding-left: 10px;
+  line-height: 50px;
+  color: #2b85e4;
+  text-align: center;
+}
+</style>

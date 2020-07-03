@@ -1,0 +1,90 @@
+<template>
+  <div class="cl-top-menu">
+    <Row>
+      <!-- 占位符 size="0" 不然位置不正确-->
+      <Col span="8">
+        <div>
+          <Icon type="md-call" size="0" color="#0e67b7" />
+        </div>
+      </Col>
+      <!-- 占位符 size="0" 不然位置不正确-->
+      <!-- <Col span="7"> <Icon type="ios-analytics-outline"  size="0"/> </Col> -->
+            <Dropdown  placement="bottom" transfer>
+                <div class="oper-more">
+                    <!-- <Icon type="ios-arrow-down"></Icon> -->
+                    <Icon type="md-person" size="26" color="#0e67b7" />
+                </div>
+                <DropdownMenu slot="list">
+                    <DropdownItem style="text-align:center;" divided>用户名:{{userCode}}</DropdownItem>
+                    <DropdownItem @click.native="outSystem()" style="text-align:center;" divided>退出</DropdownItem>
+                </DropdownMenu>
+            </Dropdown>
+
+            <!-- 退出弹出层 -->
+             <Modal
+                v-model="showmodal"
+                title="退出系统"
+                @on-ok="asyncOK">
+                <p>确定要退出吗？</p>
+            </Modal>
+    </Row>
+  </div>
+</template>
+<script>
+import {getlocalStorage,setToken}  from '@/libs/util'
+import { mapActions } from 'vuex'
+export default {
+    data() {
+        return {
+        userCode:'',
+        showmodal:false
+        };
+    },
+    computed: {
+        getuserCode() {
+            return this.$store.state.app.userCode
+        },
+    },
+    watch: {
+      // '$store.state.app.userCode':function(n,o){
+      //   debugger
+      // },
+      getuserCode: function(newVal, oldVal) {
+        this.userCode = newVal
+      },
+    },
+    methods: {
+      ...mapActions([
+        'handleLogOut'
+      ]),
+      asyncOK(){
+        this.$store.state.app.currentSubMenu
+        for(let i in this.$store.state.app.currentSubMenu){
+          this.$store.state.app.currentSubMenu[i]= []
+        }
+        this.showmodal = false
+        this.userCode = ''
+        setToken('')
+        localStorage.clear();
+        this.$router.push({ path: "/login" });
+      },
+      outSystem(){
+        this.showmodal = true
+      }
+    },
+   
+    created(){
+        // localStoage.removeItem(key)  用来清除localStoage数据
+        let obj =JSON.parse(getlocalStorage('information')) 
+        this.userCode = obj.userCode
+    }
+};
+</script>
+<style>
+.oper-more {
+  padding-left: 10px;
+  line-height: 50px;
+  color: #2b85e4;
+  text-align: center;
+}
+</style>

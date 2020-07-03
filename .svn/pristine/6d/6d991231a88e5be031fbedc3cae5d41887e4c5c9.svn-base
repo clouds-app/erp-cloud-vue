@@ -1,0 +1,836 @@
+<template>
+  <div style="display: flex;">
+    <div>
+      <page @pageLoaddingDone="pageLoaddingDone"></page>
+    </div>
+    <div class="oper-btn-container" >
+      <div class="oper-btn-pannel">
+        <div class="cl-button-list">
+          <div class="butn-MenuDiv">
+            <div class="butn-menuText">
+              <clButton
+                :disabled="disabled_btnWhenLoadding"
+                iconColor="#0cb05b"
+                icon="md-add-circle"
+                type="customer"
+                size="small"
+                @click="showEditWindow()"
+              >增加</clButton>
+            </div>
+          </div>
+          <div class="butn-MenuDiv">
+            <div class="butn-menuText">
+              <clButton
+               :disabled="disabled_btnWhenLoadding"
+                iconColor="#0cb05b"
+                icon="md-create"
+                type="customer"
+                size="small"
+                v-show="editShow"
+                @click="editAction()"
+              >修改</clButton>
+            </div>
+          </div>
+          <div class="butn-MenuDiv">
+            <div class="butn-menuText">
+              <clButton
+                :disabled="disabled_btnWhenLoadding"
+                iconColor="#e16205"
+                icon="md-remove-circle"
+                type="customer"
+                size="small"
+                v-show="deleteShow"
+                @click="deleteAction()"
+              >删除</clButton>
+            </div>
+          </div>
+          <div class="butn-MenuDiv">
+            <div class="butn-menuText">
+              <clButton
+               :disabled="disabled_btnWhenLoadding"
+                iconColor="#e16205"
+                icon="md-bulb"
+                type="customer"
+                size="small"
+                @click="detailAction()"
+              >详情</clButton>
+            </div>|
+          </div>
+          <div class="butn-MenuDiv">
+            <div class="butn-menuText">
+              <clButton
+                :disabled="disabled_btnWhenLoadding"
+                iconColor="#0e67b7"
+                icon="md-redo"
+                type="customer"
+                size="small"
+                @click="auditAction()"
+              >审核</clButton>
+            </div>
+          </div>
+          <div class="butn-MenuDiv">
+            <div class="butn-menuText">
+              <clButton
+                :disabled="disabled_btnWhenLoadding"
+                iconColor="#0e67b7"
+                icon="md-undo"
+                type="customer"
+                size="small"
+                @click="antiAuditAction()"
+              >反审</clButton>
+            </div>
+          </div>
+          <div class="butn-MenuDiv">
+            <div class="butn-menuText">
+              <clButton
+                :disabled="disabled_btnWhenLoadding"
+                iconColor="#e16205"
+                icon="md-warning"
+                type="customer"
+                size="small"
+                @click="disabledAction()"
+              >禁用</clButton>
+            </div>
+          </div>
+          <div class="butn-MenuDiv">
+            <div class="butn-menuText">
+              <clButton
+                :iconColor="iconColor"
+                disabled
+                icon="md-cloud-upload"
+                type="customer"
+                size="small"
+                @click="importAction()"
+              >导入</clButton>
+            </div>
+          </div>
+          <div class="butn-MenuDiv">
+            <div class="butn-menuText">
+              <clButton
+                :iconColor="iconColor"
+                icon="md-cloud-download"
+                type="customer"
+                size="small"
+                @click="showChoiceModal()"
+              >导出</clButton>
+            </div>
+          </div>
+          <div class="butn-MenuDiv">
+            <div class="butn-menuText">
+              <clButton
+                :iconColor="iconColor"
+                disabled
+                icon="md-print"
+                type="customer"
+                size="small"
+                @click="printAction()"
+              >打印</clButton>
+            </div>
+          </div>
+          <div class="butn-MenuDiv">
+            <div class="butn-menuText">
+              <clButton
+                :disabled="disabled_btnWhenLoadding"
+                iconColor="#0cb05b"
+                icon="md-sync"
+                type="customer"
+                size="small"
+                @click="refreshAction()"
+              >刷新</clButton>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+     <!-- 纸箱出货 Stock(储运) 拓展菜单:少数 签回 月结 -->
+    <Dropdown :disabled="disabled_btnWhenLoadding" placement="bottom-start" v-if="currentSubMenu=='stock-boxDeli'">
+      <div class="oper-more">
+        拓展
+        <Icon type="ios-arrow-down"></Icon>
+      </div>
+      <DropdownMenu slot="list">
+        <DropdownItem @click.native="customerAction('stock-boxDeli','setLessQty')" name='setLessQty' style="text-align:center;">少数</DropdownItem>
+        <DropdownItem @click.native="customerAction('stock-boxDeli','setGetBack')" name='setGetBack' style="text-align:center;">签回</DropdownItem>
+        <DropdownItem @click.native="customerAction('stock-boxDeli','setEndDate')" name='setEndDate' style="text-align:center;">月结日期修改</DropdownItem>
+      </DropdownMenu>
+    </Dropdown>
+     <!-- 纸箱退货 Stock(储运) 拓展菜单:月结日期修改 退货日期修改 -->
+    <Dropdown  placement="bottom-start" v-if="currentSubMenu=='stock-boxRe'">
+      <div class="oper-more">
+        拓展
+        <Icon type="ios-arrow-down"></Icon>
+      </div>
+      <DropdownMenu slot="list">
+        <DropdownItem @click.native="customerAction('stock-boxRe','batchUpdateMonthDate')"  style="text-align:center;">月结日期修改</DropdownItem>
+        <DropdownItem @click.native="customerAction('stock-boxRe','batchUpdateBrDate')" style="text-align:center;">退货日期修改</DropdownItem>
+      </DropdownMenu>
+    </Dropdown>
+    <!-- 应收对账单 account 拓展菜单:月结向导 回传 -->
+    <Dropdown :disabled="disabled_btnWhenLoadding" placement="bottom-start"  v-if="currentSubMenu=='account-accRece'">
+      <div class="oper-more">
+        拓展
+        <Icon type="ios-arrow-down"></Icon>
+      </div>
+      <DropdownMenu slot="list">
+        <DropdownItem @click.native="customerAction('account-accRece','monthlySettlement')" name='monthlySettlement' style="text-align:center;">月结向导</DropdownItem>
+        <DropdownItem @click.native="customerAction('account-accRece','postBack')" name='postBack' style="text-align:center;">回传</DropdownItem>
+      </DropdownMenu>
+    </Dropdown>
+    <!-- 应付对账单 account 拓展菜单:月结向导 -->
+    <Dropdown :disabled="true" placement="bottom-start"  v-if="currentSubMenu=='account-accPay'">
+      <div class="oper-more">
+        拓展
+        <Icon type="ios-arrow-down"></Icon>
+      </div>
+      <DropdownMenu slot="list">
+        <DropdownItem @click.native="customerAction('account-accPay','monthlySettlement')" name='monthlySettlement' style="text-align:center;">月结向导</DropdownItem>
+      </DropdownMenu>
+    </Dropdown>
+    <!-- 右键菜单列表 -->
+    <ContextMenu class="right-menu" 
+        :target="contextMenuTarget" 
+        :show="contextMenuVisible" 
+        :hasClick="contextMenuHasClick"
+        @update:show="(show) => contextMenuShow(show)">
+        <ul style="list-style:none;">
+          <li> 
+            <clButton
+                :disabled="disabled_btnWhenLoadding"
+                iconColor="#0cb05b"
+                icon="md-add-circle"
+                type="customer"
+                size="small"
+                @click="showEditWindow()"
+              >增加</clButton></li>
+               <li>
+                   <clButton
+               :disabled="disabled_btnWhenLoadding"
+                iconColor="#0cb05b"
+                icon="md-create"
+                type="customer"
+                size="small"
+                v-show="editShow"
+                @click="editAction()"
+              >修改</clButton>
+              </li>
+            
+                 <clButton
+               :disabled="disabled_btnWhenLoadding"
+                iconColor="#e16205"
+                icon="md-bulb"
+                type="customer"
+                size="small"
+                @click="detailAction()"
+              >详情</clButton>
+              </li>
+             
+        </ul>
+    </ContextMenu>
+    <!-- 从表导出选择框 -->
+     <Modal
+        title="请选择导出表格"
+        v-model="showModal"
+        :closable="false"
+        @on-ok="exportAction"
+        >
+        <RadioGroup v-model="animal" v-for="(item,key) in tableDataList" :key="key">
+          <Radio :label='item.title'></Radio>
+          <!-- <Radio :label="secondtable"></Radio>
+          <Radio :label="thirdtable"></Radio> -->
+        </RadioGroup>
+    </Modal>
+
+  </div>
+</template>
+<script>
+// import FileSaver from "file-saver"
+import XLSX from "xlsx"
+import ContextMenu from "@/components/VueContextMenu";
+import clButton from "@/components/cl-erp/button";
+import request from "@/libs/request";
+import vuescroll from "vuescroll";
+import page from "@/components/page/page";
+export default {
+  name: "btnList",
+  components: {
+    ContextMenu,
+    clButton,
+    vuescroll,
+    page
+  },
+  props: {
+    currrentRowItem: {
+      type: Object,
+      default() {
+        return {
+          rowName: "",
+          rowId: ""
+        };
+      }
+    },
+    //删除按钮
+    deleteShow: {
+      type: Boolean,
+      default: true
+    },
+    //修改按钮
+    editShow: {
+      type: Boolean,
+      default: true
+    },
+    // 数据请求基地址
+    requestBaseUrl: {
+      type: String,
+      default: ""
+    },
+    // 操作数据当前表格列 唯一 ID
+    uniqueId: {
+      type: String,
+      default: ""
+    },
+    tableref: {
+      type:String,
+      default:""
+    },
+  
+  },
+  computed: {
+    // 顶部选中子菜单
+    contextMenuObj() {
+      let cxtObj = this.$store.state.app.contextMenuObj
+        return cxtObj
+    },
+    // 顶部选中子菜单
+    currentSelectedTopMenu() {
+       let topMenu =  this.$store.getters.currentTopMenu_getter;
+      return topMenu
+     
+    },
+    // 默认 选中菜单
+    currentSubMenuList(){
+        let subMenu = this.$store.state.app.currentSubMenu
+        if(!!subMenu){
+          return subMenu
+        }else{
+          return []
+        }
+    },
+     // 菜单配置信息
+    currentMenuConfig(){
+        let config = this.$store.state.app.operationConfig
+        return config
+    },
+  },
+  data() {
+    return {
+      tableDataList:[],
+      animal:'',
+      showModal:false,
+      contextMenuTimer:null,// 右键菜单计时器
+      contextMenuHasClick:false,// 是否已经点击了菜单
+      contextMenuTarget: null,// document.body 如果target是某个兄弟元素，可以使用 $refs来访问，但是注意请在父组件mounted 之后获取。
+      contextMenuVisible: false, //是否显示右键菜单
+      disabled_btnWhenLoadding:false,// 禁用菜单按钮
+      currentSubMenu:'',
+      deleteshow: true,
+      contentInfo: "",
+      iconColor: "#57c5f7", // 图表颜色
+      _install: {}, // 父类实列
+      columnsindex:0//导出数据过滤使用的index
+    };
+  },
+  watch:{
+    //实时监控 当前右键 对象实体
+    contextMenuObj:{
+      handler(n,o){
+          if(!!n){
+            // 设置右键菜单实体对象
+            this.setCurrentPgaeContextMenu(n)
+          }
+      },
+      deep:true
+    },
+    currentSelectedTopMenu(newVal, oldVal) {
+        this.getCurrentSubSelectedMenu()
+        let isExistOrNot = this.checkSubMenuExistOrNot(this.currentSelectedTopMenu)
+        this.disabled_btnWhenLoadding = !isExistOrNot
+    },
+    currentSubMenuList:{
+        handler(n,o){
+           this.getCurrentSubSelectedMenu(n)
+        },
+        deep:true
+      }
+  },
+  mounted() {
+    // 父类实列 初始化
+    this._install = this.$parent.$parent.$parent.$parent.$parent;
+    this.getCurrentSubSelectedMenu()
+  },
+  methods: {
+    // 检查右键功能菜单是否正常使用中
+    checkContextMenuWorkingOrNot(){
+      let _self = this
+     if(!!!this.contextMenuObj){
+       _self.$nextTick(()=>{
+            // 重新加载右键菜单实体
+          setTimeout(()=>{
+              _self._install.loadContextMenu()
+          },500)
+       })
+     }
+    },
+    // 显示右键菜单
+    contextMenuShow(show){
+      this.contextMenuVisible = show
+      // 重置已经点击按钮
+       this.contextMenuHasClick = false
+    },
+    // 点击菜单后,设置属性,隐藏当前右键菜单
+    setConfigAfterClick(){
+      this.contextMenuHasClick =true
+    },
+    // 设置当前页面右键菜单对象,对象 Element
+    setCurrentPgaeContextMenu(menuObj){
+        this.contextMenuTarget = menuObj 
+    },
+    // 当前页面数据加载完毕
+    pageLoaddingDone(page){
+      this.checkContextMenuWorkingOrNot()
+      this.disabled_btnWhenLoadding = false
+    },
+    // 获取当前选择的菜单,操作其它逻辑
+    getCurrentSubSelectedMenu(){
+      this.disabled_btnWhenLoadding = false
+      if(this.currentMenuConfig.isNew){
+         this.disabled_btnWhenLoadding = true
+      }
+      let currentItem=null
+      switch (this.currentSelectedTopMenu) {
+        // case 'Stock':
+        //  currentItem = this.currentSubMenuList['Stock'].filter(item=>{
+        //     return item.isActive==true
+        //   })
+        //   break;
+        // case 'Account':
+        //  currentItem = this.currentSubMenuList['Account'].filter(item=>{
+        //     return item.isActive==true
+        //   })
+        //   break;  
+
+        default:
+          let curTomMenu = this.currentSelectedTopMenu
+          if(curTomMenu=='sale'){
+            curTomMenu='Sale'
+          }
+          if(this.currentSubMenuList[curTomMenu] && this.currentSubMenuList[curTomMenu].length>0){
+             currentItem = this.currentSubMenuList[curTomMenu].filter(item=>{
+              return item.isActive==true
+            })
+          }
+         
+          break;
+      }
+      if(currentItem && currentItem.length>0){
+         this.currentSubMenu = currentItem[0].uniqueKey //stock-boxDeli
+      }else{
+         this.currentSubMenu = ''
+      }
+  
+    },
+    // 检查当前子菜单是否已经缓存中
+    checkSubMenuExistOrNot(menuName=''){
+        if(menuName=='sale'){
+          menuName='Sale'
+        }
+      //判断是否已经存在
+      let isExist = false
+      let currentOperateMenu = this.currentSubMenuList[menuName];
+      if(currentOperateMenu){
+         if (this.currentSubMenuList && currentOperateMenu.length > 0) {
+        currentOperateMenu.forEach(item => {
+          if (item.uniqueKey == this.currentSubMenu) {
+            isExist = true
+          }
+        })
+       }
+      }
+      return isExist
+    },
+    // 自定义菜单功能
+    customerAction(type,func) {
+       this.setConfigAfterClick()
+      this._install.customerAction(type, func);
+    },
+    //  获取当前选择行ROW ID
+    getCurrentRowId() {
+      // debugger
+      // 获取父类 方法
+      let selectionId = this._install.getMasterSelectId();
+      if (!selectionId) {
+        return false;
+      } else {
+        return selectionId;
+      }
+    },
+    // 增加
+    showEditWindow() {
+      this.setConfigAfterClick()
+      this._install.detailDisabled = false;
+      this.$emit("isLoaddingDone", true); // 弹框按钮 状态
+      this._install.action = "add";
+      this._install.showEditWindow = true;
+    },
+    // 修改
+    editAction() {
+       this.setConfigAfterClick()
+      if (this.checkRowStatus("editAction")) {
+        return;
+      }
+      this._install.detailDisabled = false;
+      this.$emit("isLoaddingDone", false); // 弹框按钮 状态
+      let selectionId = this.getCurrentRowId();
+      if (!selectionId) {
+        return;
+      }
+      // 编辑窗口展示
+      this._install.showEditWindow = true;
+      this._install.action = "update";
+      this.loaddingDetail();
+    },
+    loaddingDetail() {
+      // debugger
+      // 加载详情数据
+      let selectionId = this.getCurrentRowId();
+      if (!selectionId) {
+        return;
+      }
+      let url = `${this.requestBaseUrl}/detail?${this.uniqueId}=${selectionId}`;
+      request
+        .post(url)
+        .then(res => {
+          this._install.formDetailData = this.resNumToStr(res);
+          this.$emit("isLoaddingDone", true);
+        })
+        .catch(err => {
+          this.$emit("isLoaddingDone", true);
+        });
+    },
+    // 统一修改返回数字为字符串,方便绑定0-1值 如:CHECKBOX.. Number.isInteger
+    resNumToStr(res) {
+      if (res) {
+        if (res.master != null) {
+          res.master = this.changeNumToStrItem(res.master);
+        } else {
+          res = this.changeNumToStrItem(res);
+        }
+        return res;
+      }
+    },
+    // 将所有数字转换字符串,避免验证数据时,提示
+    changeNumToStrItem(res) {
+      let keyArr = Object.keys(res);
+      keyArr.forEach(item => {
+        if (Number.isFinite(res[item])) {
+          res[item] = res[item] + "";
+        }
+      });
+      return res;
+    },
+    // 主从表结构时,数字转字符串,
+    whenMasterSlave(res) {
+      return this.changeNumToStrItem(res.master);
+    },
+    // 删除
+    deleteAction() {
+       this.setConfigAfterClick()
+      if (this.checkRowStatus("deleteAction")) {
+        return;
+      }
+      // 自定义 当前行是否可以删除 canIDeleteRowItem 当前页面方法,子类可以重写,默认可以删除
+      if (!this._install.canIDeleteRowItem()) {
+        return;
+      }
+      // 获取父类 方法
+      let selectionId = this.getCurrentRowId();
+      if (!selectionId) {
+        return;
+      }
+      this.$Modal.confirm({
+        title: "删除确认",
+        content: `确定要删除当前选中[${this.currrentRowItem.rowName}]数据吗？`,
+        onOk: () => {
+          let url = `${this.requestBaseUrl}/delete?${this.uniqueId}=${selectionId}`;
+          let _self = this;
+          request.post(url).then(res => {
+            this.showTipInfo();
+            this._install.cleanSelectedItem();
+          });
+        }
+      });
+    },
+    // 校验当前选择行 是否可以操作  当前操作actionType
+    checkRowStatus(actionType) {
+      // auditAction :审核 antiAuditAction:反审核 disabledAction:禁用 deleteAction:删除 editAction:修改
+      let flag = false;
+      let message = "";
+      // let isExclude=false // 是否排除
+      const rowItem = this._install.masterRowSelection;
+
+      //审核状态
+      if (rowItem.iisAudit === 1 && actionType !== 'antiAuditAction') {
+        message = '当前数据已审核,不可操作'
+        flag = true
+      }
+      // 反审核时,必须是已经审核状态 且非 禁用
+      if (rowItem.iisAudit === 0 && actionType === 'antiAuditAction') {
+        message = '当前数据未审核,不可操作'
+        flag = true
+      }
+      // 禁用状态 级别最高
+      if (rowItem.status === 0 && actionType !== "disabledAction") {
+        message = "当前数据已禁用,不可操作";
+        flag = true;
+      }
+      if (flag) {
+        this.$Message.warning(message);
+      }
+      return flag;
+    },
+    // 审核
+    auditAction() {
+       this.setConfigAfterClick()
+      if (this.checkRowStatus("auditAction")) {
+        return;
+      }
+      // 获取父类 方法
+      let selectionId = this.getCurrentRowId();
+      if (!selectionId) {
+        return;
+      }
+      this.$Modal.confirm({
+        title: "审核确认",
+        content: `确定要审核当前选中[${this.currrentRowItem.rowName}]数据吗？`,
+        onOk: () => {
+          let url = `${this.requestBaseUrl}/audit?${this.uniqueId}=${selectionId}`;
+          let _self = this;
+          request.post(url).then(res => {
+            this.showTipInfo();
+          });
+        }
+      });
+    },
+    // 反审核
+    antiAuditAction() {
+       this.setConfigAfterClick()
+      if (this.checkRowStatus("antiAuditAction")) {
+        return;
+      }
+      // 获取父类 方法
+      let selectionId = this.getCurrentRowId();
+      if (!selectionId) {
+        return;
+      }
+      this.$Modal.confirm({
+        title: "反审核确认",
+        content: `确定要反审核当前选中[${this.currrentRowItem.rowName}]数据吗？`,
+        onOk: () => {
+          let url = `${this.requestBaseUrl}/antiAudit?${this.uniqueId}=${selectionId}`;
+          let _self = this;
+          request.post(url).then(res => {
+            this.showTipInfo();
+          });
+        }
+      });
+    },
+    // 禁用
+    disabledAction() {
+       this.setConfigAfterClick()
+      // if (this.checkRowStatus("disabledAction")) {
+      //   return;
+      // }
+      // 获取父类 方法
+      let selectionId = this.getCurrentRowId();
+      if (!selectionId) {
+        return;
+      }
+      this.$Modal.confirm({
+        title: "禁用确认",
+        content: `确定要禁用当前选中[${this.currrentRowItem.rowName}]数据吗？`,
+        onOk: () => {
+          let url = `${this.requestBaseUrl}/disabled?${this.uniqueId}=${selectionId}`;
+          let _self = this;
+          request.post(url).then(res => {
+            this.showTipInfo();
+          });
+        }
+      });
+    },
+    // 导入
+    importAction() {
+       this.setConfigAfterClick()
+    },
+    // 多表选择弹出框
+    showChoiceModal(){
+      // debugger  
+      // this.tableDataList=[]
+      if (this._install.tableDataList) {
+        this.tableDataList = this._install.tableDataList
+        this.showModal=true
+        return
+      }else{
+        if (this._install.$refs.tableFieldRef) {
+          this.tableDataList = [
+            {ref:"master_list_table",title:this._install.$refs.master_list_table.$attrs.tabletitle},
+            {ref:"tableFieldRef",title:this._install.$refs.tableFieldRef.$attrs.tabletitle},
+            // {ref:"tableFieldRef2",title:this._install.$refs.tableFieldRef.$attrs.tabletitle}
+          ]
+          this.showModal=true
+        }else{
+         this.exportAction(true)
+        }
+      }
+    },
+    // 导出
+    exportAction(condition) {
+      // this.showChoiceModal
+      this.columnsindex=0
+      let refsData;
+      if (condition) {
+        refsData = "master_list_table"
+      }else{
+        let title = this.animal
+        this.tableDataList.forEach((v,l,k)=>{
+          // debugger
+          if(v.title === title){
+            refsData = k[l].ref
+          }
+        })
+      }
+      let columns = this.getcolumns(this._install.$refs[refsData].columnsComputed)
+      let data = this.getdata(this._install.$refs[refsData].tableDataItems)
+      let parmrs = {
+        filename:"The original data",
+        columns:columns.slice(1),
+        data:data,
+        // data:this._install.$refs[refsData].tableDataItems,
+        // separator:'.'
+      }
+      this._install.$refs[refsData].exportCsv(parmrs)
+
+    },
+    // 格式化val,去除所有val中的,
+    getdata(data){
+      for (let index = 0; index < data.length; index++) {
+        let dataArray =  Object.values(data[index])
+        let datakeyArray =  Object.keys(data[index])
+        for (let arryindex = 0; arryindex < dataArray.length; arryindex++) {
+          // const element = array[index];
+        if (typeof dataArray[arryindex] === 'string') {
+            // dataArray[arryindex].replace(",","")
+            data[index][datakeyArray[arryindex]] = dataArray[arryindex].split(',').join('')
+            // data[index][datakeyArray[arryindex]] = dataArray[arryindex].replace(/,/g, ".");
+          }
+        }
+      }
+      return data
+    },
+    // 格式化打印的列头
+    getcolumns(data){
+      let indexList = [];
+      let dataList = [...data]
+      //循环遍历导出多级数据,插入表单
+      for (let index = 0; index < data.length; index++) {
+        if (data[index].children) {
+          // debugger
+          let i = index+this.columnsindex
+          data[index].children.forEach((v,l,k)=>{
+            v.title = data[index].title+v.title
+            // debugger
+            dataList.splice(i+1,0,v)
+            if(l==k.length-1){
+              this.columnsindex += k.length
+              indexList.push(i)
+            }
+          })
+        }
+      }
+      // 删除第一层头部重复数据
+      for (let e = indexList.length-1; e>=0; e--) {
+          dataList.splice(indexList[e],1)    
+      }
+      return dataList
+    },
+    // 打印
+    printAction() {
+      this.setConfigAfterClick()
+      this.showTipInfo();
+    },
+    // 刷新
+    refreshAction() {
+      this.setConfigAfterClick()
+      // debugger
+      this._install.search();
+    },
+    showTipInfo() {
+      this.$Message.success("操作成功");
+      this._install.search();
+      // this.$store.commit('setUpdateFlag', true)
+    },
+    // 详情
+    detailAction() {
+       this.setConfigAfterClick()
+      this.$emit("isLoaddingDone", false); // 弹框按钮 状态
+      let selectionId = this.getCurrentRowId();
+      if (!selectionId) {
+        return;
+      }
+      const rowItem = this._install.masterRowSelection;
+      // 编辑窗口展示
+      this._install.showEditWindow = true;
+      this._install.detailDisabled = true;
+      this._install.action = "detail";
+      this._install.detailConvertUpdate =
+        rowItem.status != 0 && rowItem.iisAudit != 1;
+      this.loaddingDetail();
+    }
+  }
+};
+</script>
+<style>
+/* .butn-MenuDiv > .ivu-icon-md-add-circle:before
+{
+  color: red;
+} */
+.butn-menuText {
+  font-weight: bold;
+  vertical-align: top;
+}
+
+.butn-MenuDiv {
+  cursor: pointer;
+  margin-bottom: 5px;
+  margin-left: 5px;
+  /* border: 1px solid red; */
+}
+
+.cl-button-list {
+  text-align: left;
+  /* border: 1px solid red; */
+}
+.cl-button-list div {
+  display: inline;
+}
+
+.oper-btn-container {
+  overflow: hidden;
+  height: 24px;
+  position: relative;
+}
+.oper-more {
+  padding-left: 10px;
+  line-height: 24px;
+  color: #2b85e4;
+  text-align: center;
+}
+</style>

@@ -1,0 +1,262 @@
+/**
+ * @name mixin
+ * @description 所有.vue 公共方法
+ * @action .vue 中 添加mixin:[name]
+ *
+ */
+let _ = require('lodash')
+import { Message } from 'view-design';
+import request from "@/libs/request";
+import * as type from "@/enum"; //菜单枚举
+import config from "@/config";
+let  IsLoaddingMenu = false// 是否加载数据中.(不可放在 data 中,因为多页面不共享数据,否则重复加载多次)
+let appSubMenuList = [] //当前二级菜单列表 (不可放在 data 中,因为多页面不共享数据,否则重复加载多次)
+export default {
+  name: "mixin-base",
+  data() {
+    return {
+      btnFuncList: [],
+    };
+  },
+  computed: {
+    // 二级菜单资源缓存
+    subMenuResource() {
+      return this.$store.state.app.appSubMenuResource;
+    },
+    // 默认 选中菜单
+    currentSelected() {
+      return this.$store.state.app.currentTopMenu;
+    },
+    // 顶部选中子菜单
+    currentSelectedSubMenu() {
+      return this.$store.state.app.currentSubMenu;
+    },
+    // 当前页面--放在MIXIN
+    currentCurrentPage() {
+      return this.$store.state.app.currentPage;
+    }
+  },
+  watch:{
+    currentSelected(n,o){
+      //console.log('=======currentSelected========='+n)
+      if(!!n){
+        this.getSubMenu()
+      }
+    }
+  },
+  methods: {
+    // 判断缓存中是否存在,否则重新加载二级菜单
+    getSubMenu() {
+      this.getAppSubMenuList(this.currentSelected);
+      if (appSubMenuList.length > 0) {
+        return;
+      }
+      let topMenuResourceId = this.$store.state.app.topMenuResourceId;
+      if(!!topMenuResourceId){
+        this.loadSubMenuResource()
+      }
+    },
+    // 加载二级菜单资源列表(通过一级菜单资源ID)
+    loadSubMenuResource(){
+      if(IsLoaddingMenu){
+        return
+      }
+      IsLoaddingMenu =true 
+      let topMenuResourceId = this.$store.state.app.topMenuResourceId;
+      let _url = `/sys/resource/sub-resource?resourceId=${topMenuResourceId}`;
+      request.get(_url, {}).then(res => {
+        IsLoaddingMenu =false
+        appSubMenuList = res;
+        this.setAppSubMenuList(this.currentSelected);
+      }).catch(err=>{
+        IsLoaddingMenu =false
+      });
+    },
+    //切换菜单 查询子菜单
+    getAppSubMenuList(key) {
+      switch (key.toLowerCase()) {
+        case type.topMenu_Account:
+          //'  财务管理'
+          appSubMenuList = this.subMenuResource.Account;
+          break;
+        case type.topMenu_Bas:
+          //  '基础数据'
+          appSubMenuList = this.subMenuResource.Bas;
+          break;
+        case type.topMenu_Mrp:
+          //   '生产管理'
+          appSubMenuList = this.subMenuResource.Mrp;
+          break;
+        case type.topMenu_Purchase:
+          //   '采购管理'
+          appSubMenuList = this.subMenuResource.Purchase;
+          break;
+        case type.topMenu_report:
+          //   '报表中心'
+          appSubMenuList = this.subMenuResource.Report;
+          break;
+        case type.topMenu_sale:
+          //   '销售管理'
+          appSubMenuList = this.subMenuResource.Sale;
+          break;
+        case type.topMenu_Stock:
+          //   '储运管理'
+          appSubMenuList = this.subMenuResource.Stock;
+          break;
+        case type.topMenu_Sys:
+          //    '系统设置'
+          appSubMenuList = this.subMenuResource.Sys;
+          break;
+        default:
+          //  默认 '销售管理'
+          appSubMenuList = this.subMenuResource.Account;
+          break;
+      }
+    },
+    //切换菜单 设置子菜单
+    setAppSubMenuList(key) {
+      let menuResource = Object.assign({},this.subMenuResource)
+      switch (key.toLowerCase()) {
+        case type.topMenu_Account:
+          //'  财务管理'
+          menuResource.Account = appSubMenuList
+          break;
+        case type.topMenu_Bas:
+          //  '基础数据'
+          menuResource.Bas = appSubMenuList
+          break;
+        case type.topMenu_Mrp:
+          //   '生产管理'
+          menuResource.Mrp = appSubMenuList
+          break;
+        case type.topMenu_Purchase:
+          //   '采购管理'
+          menuResource.Purchase = appSubMenuList
+          break;
+        case type.topMenu_report:
+          //   '报表中心'
+          menuResource.Report = appSubMenuList
+          break;
+        case type.topMenu_sale:
+          //   '销售管理'
+          menuResource.Sale = appSubMenuList
+          break;
+        case type.topMenu_Stock:
+          //   '储运管理'
+          menuResource.Stock = appSubMenuList
+          break;
+        case type.topMenu_Sys:
+          //    '系统设置'
+          menuResource.Sys = appSubMenuList
+          break;
+        default:
+          //  默认 '销售管理'
+          menuResource.Account = appSubMenuList
+          break;
+      }
+      this.$store.commit("setSubMenuResource", menuResource);
+    },
+    // 是否有权限访问此模块
+    canAccessThisModule(functionName){
+       let flag = true
+       let moduleItem = appSubMenuList.filter(item=>{
+         return item.routerUrl === functionName
+       })
+       if(moduleItem && Array.isArray(moduleItem) && moduleItem.length>0 && !moduleItem[0].disabled){
+          flag = false
+           // 缓存二级菜单资源ID
+           this.$store.commit('setSubMenuResourceId',moduleItem[0].id)
+           let moduleItemId = moduleItem[0].id
+           if(!!moduleItemId){
+            this.loadBtnListAccessResource(moduleItemId)
+           }
+          
+       }
+      return flag
+    },
+    // 加载小模块按钮 对应的添加/修改/删除等权限列表
+    loadBtnListAccessResource(moduleItemId){
+      let _url = `/sys/resource/button-resource?resourceId=${moduleItemId}`;
+      request.get(_url, {}).then(res => {
+        let params = {
+          id:moduleItemId,
+          data:res
+        }
+        this.$store.commit('setBtnAccessList',params)
+      })
+    },
+    // 跳转到首页
+    turnToHome(uniqueKey) {
+      if (uniqueKey == "" || uniqueKey == 0) {
+        this.setGoHome();
+      }
+    },
+    // 设置顶部菜单缓存
+    setGoHome() {
+      this.$store.commit("setCurrentPage", "home");
+      this.$router.push({ name: "_home" });
+      this.$store.commit("setCurrentTopMenu", "");
+    },
+    // 跳转到指定的页面,并且权限检查 缓存TAB菜单
+    handleMenuBaseEvent(menuObj) {
+     let flag = this.canAccessThisModule(menuObj.page)
+     if(!!flag){
+      Message.warning("暂无权限,请与管理员联系!");
+      return
+     }
+      let params = {
+        type: menuObj.menuName,
+        page: menuObj.page, //显示控件页面
+        uniqueKey: menuObj.uniqueKey,
+        lable: menuObj.lable,
+        isActive: true
+      };
+      //判断是否已经存在,不要重复添加菜单
+      let isExist = false;
+      let currentOperateMenu = this.currentSelectedSubMenu[menuObj.menuName];
+      if (this.currentSelectedSubMenu && currentOperateMenu.length > 0) {
+        currentOperateMenu.forEach(item => {
+          item.isActive = false; //重置其它菜单为 未选中
+          if (item.uniqueKey == params.uniqueKey) {
+            isExist = true;
+            item.isActive = true; // 当前的设置为 TRUE
+          }
+        });
+      }
+
+      // 不存在则添加 子页面
+      if (!isExist) {
+        currentOperateMenu = Object.assign(
+          currentOperateMenu,
+          currentOperateMenu.push(params)
+        );
+      }
+      let menuConfig = {
+        isNew: !isExist,
+        topMenu: params.type,
+        subMenu: params.uniqueKey
+      };
+      this.$store.commit("setOperationConfig", menuConfig);
+      this.$store.commit("setCurrentSubMenu", this.currentSelectedSubMenu);
+      //打开指定页面
+      this.$emit("openSubMenu", params);
+    },
+     // 循环菜单列表 赋值 是否可用权限
+     forEachBtnList(){
+      let btnListArr = Object.keys(this.btnFuncList)
+      if(btnListArr && Array.isArray(btnListArr) && btnListArr.length>0){
+        btnListArr.forEach(item=>{
+         let hasRight = this.canAccessThisModule(item)
+         this.btnFuncList[item] = hasRight
+        })
+      }
+    }
+  },
+  created() {
+    this.getSubMenu();
+    this.$Message.config({
+      top: 100,
+      duration: 3
+    });
+  }
+};

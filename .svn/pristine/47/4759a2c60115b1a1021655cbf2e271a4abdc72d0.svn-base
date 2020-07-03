@@ -1,0 +1,216 @@
+/**
+ * @name mixin
+ * @description 所有.vue 公共方法
+ * @action .vue 中 添加mixin:[name]
+ *
+ */
+import { Message } from 'view-design';
+import request from "@/libs/request";
+import * as type from "@/enum"; //菜单枚举
+import config from "@/config";
+export default {
+  name: "mixin-base",
+  data() {
+    return {
+      appSubMenuList: []
+    };
+  },
+  computed: {
+    // 二级菜单资源缓存
+    subMenuResource() {
+      return this.$store.state.app.appSubMenuResource;
+    },
+    // 默认 选中菜单
+    currentSelected() {
+      return this.$store.state.app.currentTopMenu;
+    },
+    // 顶部选中子菜单
+    currentSelectedSubMenu() {
+      return this.$store.state.app.currentSubMenu;
+    },
+    // 当前页面--放在MIXIN
+    currentCurrentPage() {
+      return this.$store.state.app.currentPage;
+    }
+  },
+  watch:{
+    currentSelected(n,o){
+      //console.log('=======currentSelected========='+n)
+      if(!!n){
+        this.getSubMenu()
+      }
+    }
+  },
+  methods: {
+    getSubMenu() {
+     // debugger
+      this.getAppSubMenuList(this.currentSelected);
+      if (this.appSubMenuList.length > 0) {
+        return;
+      }
+      let topMenuResourceId = this.$store.state.app.topMenuResourceId;
+      let _url = `/sys/resource/sub-resource?resourceId=${topMenuResourceId}`;
+      if(!!topMenuResourceId){
+        request.get(_url, {}).then(res => {
+          this.appSubMenuList = res;
+          this.setAppSubMenuList(this.currentSelected);
+        });
+      }
+    },
+    //切换菜单 查询子菜单
+    getAppSubMenuList(key) {
+      switch (key.toLowerCase()) {
+        case type.topMenu_Account:
+          //'  财务管理'
+          this.appSubMenuList = this.subMenuResource.Account;
+          break;
+        case type.topMenu_Bas:
+          //  '基础数据'
+          this.appSubMenuList = this.subMenuResource.Bas;
+          break;
+        case type.topMenu_Mrp:
+          //   '生产管理'
+          this.appSubMenuList = this.subMenuResource.Mrp;
+          break;
+        case type.topMenu_Purchase:
+          //   '采购管理'
+          this.appSubMenuList = this.subMenuResource.Purchase;
+          break;
+        case type.topMenu_report:
+          //   '报表中心'
+          this.appSubMenuList = this.subMenuResource.Report;
+          break;
+        case type.topMenu_sale:
+          //   '销售管理'
+          this.appSubMenuList = this.subMenuResource.Sale;
+          break;
+        case type.topMenu_Stock:
+          //   '储运管理'
+          this.appSubMenuList = this.subMenuResource.Stock;
+          break;
+        case type.topMenu_Sys:
+          //    '系统设置'
+          this.appSubMenuList = this.subMenuResource.Sys;
+          break;
+        default:
+          //  默认 '销售管理'
+          this.appSubMenuList = this.subMenuResource.Account;
+          break;
+      }
+    },
+    //切换菜单 设置子菜单
+    setAppSubMenuList(key) {
+      let menuResource = Object.assign({},this.subMenuResource)
+      switch (key.toLowerCase()) {
+        case type.topMenu_Account:
+          //'  财务管理'
+          menuResource.Account = this.appSubMenuList
+          break;
+        case type.topMenu_Bas:
+          //  '基础数据'
+          menuResource.Bas = this.appSubMenuList
+          break;
+        case type.topMenu_Mrp:
+          //   '生产管理'
+          menuResource.Mrp = this.appSubMenuList
+          break;
+        case type.topMenu_Purchase:
+          //   '采购管理'
+          menuResource.Purchase = this.appSubMenuList
+          break;
+        case type.topMenu_report:
+          //   '报表中心'
+          menuResource.Report = this.appSubMenuList
+          break;
+        case type.topMenu_sale:
+          //   '销售管理'
+          menuResource.Sale = this.appSubMenuList
+          break;
+        case type.topMenu_Stock:
+          //   '储运管理'
+          menuResource.Stock = this.appSubMenuList
+          break;
+        case type.topMenu_Sys:
+          //    '系统设置'
+          menuResource.Sys = this.appSubMenuList
+          break;
+        default:
+          //  默认 '销售管理'
+          menuResource.Account = this.appSubMenuList
+          break;
+      }
+      this.$store.commit("setSubMenuResource", menuResource);
+    },
+    // 是否有权限访问此模块
+    canAccessThisModule(functionName){
+       let flag = true
+       let moduleItem = this.appSubMenuList.filter(item=>{
+         return item.routerUrl === functionName
+       })
+       if(moduleItem && Array.isArray(moduleItem) && moduleItem.length>0 && !moduleItem[0].disabled){
+          flag = false
+       }
+      return flag
+    },
+    turnToHome(uniqueKey) {
+      if (uniqueKey == "" || uniqueKey == 0) {
+        this.setGoHome();
+      }
+    },
+    setGoHome() {
+      this.$store.commit("setCurrentPage", "home");
+      this.$router.push({ name: "_home" });
+      this.$store.commit("setCurrentTopMenu", "");
+    },
+    handleMenuBaseEvent(menuObj) {
+     let flag = this.canAccessThisModule(menuObj.page)
+     if(!!flag){
+      Message.warning("暂无权限,请与管理员联系!");
+      return
+     }
+      let params = {
+        type: menuObj.menuName,
+        page: menuObj.page, //显示控件页面
+        uniqueKey: menuObj.uniqueKey,
+        lable: menuObj.lable,
+        isActive: true
+      };
+      //判断是否已经存在,不要重复添加菜单
+      let isExist = false;
+      let currentOperateMenu = this.currentSelectedSubMenu[menuObj.menuName];
+      if (this.currentSelectedSubMenu && currentOperateMenu.length > 0) {
+        currentOperateMenu.forEach(item => {
+          item.isActive = false; //重置其它菜单为 未选中
+          if (item.uniqueKey == params.uniqueKey) {
+            isExist = true;
+            item.isActive = true; // 当前的设置为 TRUE
+          }
+        });
+      }
+
+      // 不存在则添加 子页面
+      if (!isExist) {
+        currentOperateMenu = Object.assign(
+          currentOperateMenu,
+          currentOperateMenu.push(params)
+        );
+      }
+      let menuConfig = {
+        isNew: !isExist,
+        topMenu: params.type,
+        subMenu: params.uniqueKey
+      };
+      this.$store.commit("setOperationConfig", menuConfig);
+      this.$store.commit("setCurrentSubMenu", this.currentSelectedSubMenu);
+      //打开指定页面
+      this.$emit("openSubMenu", params);
+    }
+  },
+  created() {
+    this.getSubMenu();
+    this.$Message.config({
+      top: 100,
+      duration: 3
+    });
+  }
+};

@@ -1,0 +1,130 @@
+<template>
+  <div>
+    <editWindow
+      :title="actionLableName+' '+actionSubtitle"
+      v-model="showEditWindow"
+      :fullscreen="false"
+      width="50%"
+      :loading="false"
+      @on-ok="formDataSubmit()"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-message="true"
+        :model="formDataInfo"
+        :label-width="120"
+      >
+        <FormItem label="模板路径" prop="bankCode">
+           <Input
+            v-model="formDataInfo.templatePath"
+            :disabled="true"
+            maxlength="100"
+            placeholder="模板路径"
+          ></Input>
+        </FormItem>
+        <FormItem label="模板名称" prop="templateName">
+          <Input
+            v-model="formDataInfo.templateName"
+             :disabled="false"
+            maxlength="20"
+            placeholder="模板名称"
+          ></Input>
+        </FormItem>
+        <FormItem label="报表绑定资源" prop="bindingResource">
+        <popup 
+          v-model="formDataInfo.bindingResource"
+          field-name="bindingResource"
+          popup-name="ResourceSingleBox"
+          :fill-model.sync="formDataInfo"
+          render-fields="bindingResource,resourceName"
+          from-fields="id,resourceName"
+          :suffix="true"
+          :suffix-model="formDataInfo.resourceName"
+          />
+        </FormItem>
+          <FormItem label="报表变量" prop="params">
+          <Input
+            v-model="formDataInfo.params"
+             :disabled="false"
+            maxlength="20"
+            placeholder="报表变量"
+          ></Input>
+        </FormItem>
+          <FormItem label="是否公用" prop="params">
+            <Checkbox
+            transfer
+            v-model="formDataInfo.iisPublic"
+          >
+          </Checkbox>
+        </FormItem>
+        <FormItem label="备注" prop="remark">
+          <Input
+            v-model="formDataInfo.remark"
+            type="textarea"
+            :disabled="false"
+            maxlength="100"
+            :autosize="{ minRows: 2, maxRows: 5 }"
+            placeholder="备注..."
+          ></Input>
+        </FormItem>
+      </Form>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-report 报表编辑 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 baseMixin,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2020/06/23
+ */
+ import popup from "@/components/popup/popup";
+import editWindow from "@/components/edit-window/edit-window";
+import baseMixin from "../mixins/editBase";
+import { customValidator,uniqueValidator } from "@/libs/validator"
+const default_formDataInfo ={
+        bindingResource: "",
+        resourceName:'',
+        params: "",
+        remark: "",
+        iisPublic:false,
+        templateName: "",
+        templatePath: ""
+      }
+export default {
+  name: "edit-report",
+  mixins: [baseMixin],
+  components:{
+    editWindow,popup
+  },
+  data() {
+    return {
+      actionSubtitle:"报表",// 当前页面 副标题
+      functionParams: { // 清酒基础路径
+        requestBaseUrl: '/report/template',
+        uniqueIdName: 'templateId',
+      },
+      formDataInfo:Object.assign({},default_formDataInfo),// 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: { }
+    };
+  },
+  watch:{
+  },
+  methods: {
+    whenWindowClosingAction(){
+      this.formDataInfo = Object.assign({},default_formDataInfo)// 防止添加和更新数据提交发生冲突
+    }
+  }
+};
+</script>
+
+<style></style>

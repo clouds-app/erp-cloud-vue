@@ -1,0 +1,113 @@
+<template>
+  <Form ref="loginForm" :model="form" :rules="rules" @keydown.enter.native="handleSubmit">
+    <FormItem prop="companyCode">
+      <Input v-model="form.companyCode" :placeholder="$t('login.companyCodeLabelTips')" @on-blur="getCompany">
+        <span slot="prepend">
+          <Icon :size="16" type="md-home"></Icon>
+        </span>
+        <span slot="append">{{companyName}}</span>
+      </Input>
+    </FormItem>
+
+    <FormItem prop="userName">
+      <Input v-model="form.userName" :placeholder="$t('login.userCodeLabelTips')">
+        <span slot="prepend">
+          <Icon :size="16" type="ios-person"></Icon>
+        </span>
+      </Input>
+    </FormItem>
+    <FormItem prop="password">
+      <Input type="password" v-model="form.password" :placeholder="$t('login.passwordLabelTips')">
+        <span slot="prepend">
+          <Icon :size="14" type="md-lock"></Icon>
+        </span>
+      </Input>
+    </FormItem>
+    <FormItem>
+      <Button @click="handleSubmit" type="primary" long>登录</Button>
+    </FormItem>
+  </Form>
+</template>
+<script>
+import { mapActions } from 'vuex'
+export default {
+  name: 'LoginForm',
+  props: {
+    companyCodeRules: {
+      type: Array,
+      default: () => {
+        return [
+          { required: true, message: '单位编码不能为空', trigger: 'blur' }
+        ]
+      }
+    },
+    userNameRules: {
+      type: Array,
+      default: () => {
+        return [
+          { required: true, message: '账号不能为空', trigger: 'blur' }
+        ]
+      }
+    },
+    passwordRules: {
+      type: Array,
+      default: () => {
+        return [
+          { required: true, message: '密码不能为空', trigger: 'blur' }
+        ]
+      }
+    }
+  },
+  data () {
+    return {
+      companyName:'',
+      form: {
+        companyCode:'',
+        companyId:'',
+        userName: '',
+        password: ''
+      }
+    }
+  },
+  computed: {
+    rules () {
+      return {
+        companyCode:this.companyCodeRules,
+        userName: this.userNameRules,
+        password: this.passwordRules
+      }
+    }
+  },
+  mounted(){
+    this.form.companyCode = ''
+    this.$refs.loginForm.resetFields()
+  },
+  methods: {
+    ...mapActions([
+      'userCompanyByCodeAction'
+    ]),
+    handleSubmit () {
+      this.$refs.loginForm.validate((valid) => {
+        if (valid) {
+          this.$store.commit('setCurrentPage','home')
+          this.$store.commit('setCurrentTopMenu','')
+          this.$emit('on-success-valid', {
+            userCode: this.form.userName,
+            password: this.form.password,
+            companyId:this.form.companyId
+          })
+        }
+      })
+    },
+    getCompany(){
+      this.userCompanyByCodeAction(this.form).then(res => {
+        // 拉取用户信息，通过用户权限和跳转的页面的name来判断是否有权限访问;access必须是一个数组，如：['super_admin'] ['super_admin', 'admin']
+        this.companyName = res.companyName;
+        this.form.companyId = res.id;
+      }).catch(res=>{
+        this.$Messasge.error(res.data.msg);
+      })
+    }
+  }
+}
+</script>

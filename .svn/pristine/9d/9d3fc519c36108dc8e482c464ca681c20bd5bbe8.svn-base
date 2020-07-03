@@ -1,0 +1,69 @@
+<style lang="less">
+@import "./login.less";
+</style>
+
+<template>
+  <div class="login">
+    <div class="login-con">
+      <Card icon="log-in" title="欢迎登录" :bordered="false">
+        <div class="form-con">
+          <login-form @on-success-valid="handleSubmit"></login-form>
+          <p class="login-tip">
+            SZCLSOFT.COM AllRights Reserved
+            版权所有</p>
+          <p class="login-tip">
+            联系方式：0755-27091958 QQ：2355353626
+          </p>
+        </div>
+        <Spin size="large" fix v-if="loadding"></Spin>
+      </Card>
+    </div>
+  </div>
+</template>
+
+<script>
+import LoginForm from "_c/login-form";
+import request from '@/libs/request';
+import { mapActions } from "vuex";
+import {_eventBus} from '@/libs/event-bus';
+import {setlocalStorage}  from '@/libs/util'
+export default {
+  data() {
+    return {
+      loadding: false
+    };
+  },
+  components: {
+    LoginForm
+  },
+  methods: {
+    ...mapActions(["loginAction"]),
+    handleSubmit({ companyId, password, userCode }) {
+      let _self = this;
+      this.loadding = true;
+      this.loginAction({ companyId, password, userCode })
+        .then(res => {
+          this.loadding = false;
+          /* request.post('/common/sys/param').then(res=>{
+                  //Vue.prototype.$params = res;
+                  localStorage.setItem("sysParam",JSON.stringify(res));
+          }) */
+          _eventBus.$emit('login-success');
+          _self.$router.push({ path: "/" });
+          setlocalStorage("userCode", JSON.stringify(userCode));
+          setlocalStorage("companyId", JSON.stringify(companyId));
+          setlocalStorage("password", JSON.stringify(password));
+        }).catch(err => {
+          this.loadding = false;
+          this.$Message.error(err.message);
+        });
+    }
+  }
+};
+</script>
+
+<style>
+.login .ivu-card-body {
+  padding: 1rem !important;
+}
+</style>
