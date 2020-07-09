@@ -1,6 +1,6 @@
 <template>
   <div class="home-split">
-    <Card>
+    <!-- <Card > -->
       <div class="cl-tabs">
         <clTabs @on-click="handlechange"
         @input="getCrrentActiveTab"
@@ -28,7 +28,7 @@
           <!--其它内容 全部关闭 -->
           <template  slot="extra">
             <div v-show="hasSelectedSubMenu.length > 1"> 
-                 <Button size="small" icon='md-close' type="success" ghost @click="showMoal"  >全部关闭</Button>
+                 <Button size="small" icon='md-close' type="success" ghost @click="showMoal"  >全部关闭1</Button>
             </div>
           </template>
          
@@ -36,7 +36,7 @@
       <clModal ref="clModal"  @on-ok="ok"
         @on-cancel="cancel"></clModal>
       </div>
-    </Card>
+    <!-- </Card> -->
   </div>
 </template>
 <script>

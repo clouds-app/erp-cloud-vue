@@ -1,0 +1,109 @@
+<style lang="less">
+@import "./login.less";
+</style>
+
+<template>
+  <div class="login">
+    <div class="login-con">
+      <Card icon="log-in" title="欢迎登录" :bordered="false">
+        <div class="form-con">
+          <login-form @on-success-valid="handleSubmit"></login-form>
+          <p class="login-tip">
+            SZCLSOFT.COM AllRights Reserved
+            版权所有</p>
+          <p class="login-tip">
+            联系方式：0755-27091958 QQ：2355353626
+          </p>
+        </div>
+        <Spin size="large" fix v-if="loadding"></Spin>
+      </Card>
+    </div>
+  </div>
+</template>
+
+<script>
+import LoginForm from "_c/login-form";
+import request from '@/libs/request';
+import { mapActions } from "vuex";
+import {setToken,getToken} from '@/libs/util'
+import {_eventBus} from '@/libs/event-bus';
+import {setlocalStorage}  from '@/libs/util'
+export default {
+  data() {
+    return {
+      loadding: false
+    };
+  },
+  components: {
+    LoginForm
+  },
+  beforeRouteEnter:(to,from,next)=>{
+    if(!!to){
+      let supertoken = to.query.supertoken
+      let token = to.query.token
+      if(!!supertoken && !!token){
+        let params ={
+          token,
+          supertoken
+        }
+
+      next(vm => {
+        //debugger
+        //因为当钩子执行前，组件实例还没被创建
+        // vm 就是当前组件的实例相当于上面的 this，所以在 next 方法里你就可以把 vm 当 this 来用了。
+         // console.log(vm);//当前组件的实例
+          vm.loginBySuperToken(params)
+       });
+      }else{
+        next()
+      }
+    }      
+  },
+  methods: {
+    ...mapActions(["loginAction"]),
+    handleSubmit({ companyId, password, userCode }) {
+      this.loginSubmit({ companyId, password, userCode })
+    },
+    loginSubmit(params){
+      this.loadding = true;
+       let _self = this;
+        this.loginAction(params)
+        .then(res => {
+          this.loadding = false;
+          _self.$store.commit('setuserCode',params.userCode)
+          _eventBus.$emit('login-success');
+          _self.$router.push({ path: "/" });
+          setlocalStorage("information", JSON.stringify({'userCode':params.userCode,'companyId':params.companyId,'password':params.password}));
+        }).catch(err => {
+          this.loadding = false;
+          this.$Message.error(err.message);
+        });
+    },
+    loginBySuperToken(params){
+      let _self = this;
+      this.loadding = true;
+      let url=`/sys/user/companyLogin?token=${params.token}`
+      let data ={
+        supertoken:params.supertoken
+      }
+       request.post(url, data).then(res => {
+           this.loadding = false;
+           setToken(res.token)
+          _self.$store.commit('setuserCode',res.userCode)
+          _eventBus.$emit('login-success');
+          _self.$router.push({ path: "/" });
+          setlocalStorage("information", JSON.stringify({'userCode':res.userCode,'companyId':res.companyId,'password':''}));
+       }).catch(err => {
+         this.loadding = false;
+         this.$Message.error(err.message);
+       })
+    }
+  }
+};
+</script>
+
+<style>
+.login .ivu-card-body {
+  padding: 1rem !important;
+}
+</style>

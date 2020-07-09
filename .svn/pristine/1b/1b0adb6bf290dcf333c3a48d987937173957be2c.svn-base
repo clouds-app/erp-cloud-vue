@@ -1,0 +1,104 @@
+<template>
+   <div id="upload">
+     <Upload
+       :show-upload-list ="false"
+        :max-size="2048"
+        type="drag"
+         ref="upload"
+        :before-upload="handleUpload"
+        :on-success="uploadSuccess"
+        :on-progress="onProgress"
+        :data="{
+            moduleName:moduleName,
+            token:token
+        }"
+        :action="`/file/upload`">
+        <div>
+            <Icon v-if="imgUrl===''" type="ios-cloud-upload" size="52" style="color: #3399ff"></Icon>
+            <img v-if="imgUrl!==''" style="height:180px" :src="`${imgUrl}?token=${token}`">
+            <p>{{tipInfo}}</p>
+            <br v-if="imgUrl===''"/>
+            <p v-if="imgUrl===''">文件必须是 jpg 或 png 格式的图片</p>
+            <p v-if="imgUrl===''">文件大小不超过 2M</p>
+            <Progress v-show="uploadPercent < 100 && uploadPercent >0" :percent="uploadPercent" :stroke-width="10" text-inside />
+        </div>
+    </Upload>
+   </div>
+</template>
+
+<script>
+//http://192.168.0.5:8080/local\bas\png\2020\7\3\3c8aa0f006c74e378a40226fd26bbe95.png?token=NzhjNTgxMzUxZWNmYTRhMWJhNzcyZTk3ZDc0ZWQ4M2M=
+import {setToken,getToken} from '@/libs/util'
+import request from "@/libs/request";
+export default {
+     props:{
+         moduleName:{
+             type:String,
+             default:''
+         },
+         tipInfo:{
+             type:String,
+             default:'选择图片'
+         },
+         imgUrl:{
+             type:String,
+             default:''
+         }
+     },
+      data() 
+        {
+        return{
+            token:getToken(),// 当前登陆的凭证 let token = getToken()
+            uploadPercent:0, // 进度
+                  file: [], // 总文件List
+            uploadFile: [], // 需要上传的文件List
+            }
+          
+        },
+     mounted(){
+         //this.getImgUrl()
+     },
+     methods: {
+            // 上传进度
+            onProgress(response, file, fileList){
+              this.uploadPercent=response.percent
+            },
+            handleUpload (file) { // 保存需要上传的文件
+            // debugger
+                let keyID = Math.random().toString().substr(2);
+                file['keyID'] = keyID;
+                this.file.push(file);
+                this.uploadFile.push(file)
+                this.upload()
+                return false;
+            },
+            delectFile (keyID) { // 删除文件
+                this.file = this.file.filter(item => {
+                    return item.keyID != keyID
+                })
+                this.uploadFile = this.uploadFile.filter(item => {
+                    return item.keyID != keyID
+                })
+            },
+            upload() { // 上传文件
+                if(this.uploadFile.length === 0 ) {
+                    this.$Message.error('未选择上传文件') 
+                    return false
+                } 
+               // debugger
+                for (let i = 0; i < this.uploadFile.length; i++) {
+                    let item = this.file[i]
+                    this.$refs.upload.post(item);
+                }
+            },
+            uploadSuccess (response, file, fileList) { // 文件上传回调 上传成功后删除待上传文件
+                 this.$emit('uploadSuccess',response)
+                    this.file=[] // 总文件List
+                    this.uploadFile=[] // 需要上传的文件List
+                // console.log(response) // 后端返回数据
+                // console.log(file)   // 当前上传文件
+                // console.log(fileList) // 整个input file 里的文件数组
+            },
+        },
+}
+</script>

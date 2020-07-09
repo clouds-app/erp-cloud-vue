@@ -1,0 +1,167 @@
+<template>
+    <div class="masterContainer">
+        <div class="masterContainer header">
+            <div class="info">
+                 <div class="header info leftItem">
+                    <div class="bg-left-repeat"></div>
+                    <div class="bg-left-corner"></div>
+                </div>
+                <div  class="header info centerItem">
+                    <div class="bg-center-left-corner"></div>
+                    <div class="bg-center-repeat"></div>
+                    <div class="bg-center-right-corner"></div>
+                </div>
+                <div class="header info rightItem">
+                    <div class="bg-right-corner"></div>
+                    <div class="bg-right-repeat"></div>
+                </div>
+            </div>
+            <div class="menu">
+                   <div class="header menu">首页</div>
+            </div>
+        </div>
+         <div class="masterContainer body">
+         body
+        </div>
+         <div class="masterContainer footer">
+         footer
+        </div>
+    </div>
+</template>
+<script>
+// 新的主页
+export default {
+    name:'master',
+    mixins:[],
+    components:{},
+    data(){
+        return {
+
+        }
+    },
+    computed:{
+
+    },
+    watch:{
+
+    },
+    created(){
+
+    },
+    mounted(){
+
+    },
+    methods:{
+
+    }
+}
+</script>
+<style lang="scss">
+   $master-background-color: #230e74;
+   .masterContainer {
+        height:100%;
+        background-color: #2c0f86;
+        .header{
+            display: -webkit-flex; /* Safari */
+            display: flex;
+            flex-direction: row;
+           // position:relative;
+           // height: 152px;
+           // width: 100%;
+            border: 1px #ccc solid;
+            &.info{
+                 height: 52px;
+                 // 共用数据
+                 &.leftItem{
+                    position:absolute;
+                    top: 0px;
+                    left: 0px;
+                    display:flex;
+                    width: 35%;  
+                    z-index: 3;
+                    .bg-left-repeat{
+                        background-image: url('../../assets/images/page-design/master-page/header-repeat-bg.png');
+                        background-repeat: repeat-x;
+                        background-size:auto 44px;
+                        width: 93%; // 必须添加宽度
+                    }
+                    .bg-left-corner{
+                        background-image: url('../../assets/images/page-design/master-page/header-left-bg-corner.png');
+                        background-repeat: no-repeat;
+                        background-size:auto 44px;
+                        width: 7%; // 必须添加宽度
+                     
+                    }
+                     
+                 }
+                 &.centerItem{
+                    position:absolute;
+                    top: 0px;
+                    left: 33.33%;
+                     z-index:1;
+                     display:flex;
+                     width: 33.33%; 
+                    .bg-center-left-corner{
+                        background-image: url('../../assets/images/page-design/master-page/bg-center-left-corner.png');
+                        background-repeat: no-repeat;
+                        background-size:auto 50px;
+                        width: 33%; // 必须添加宽度
+                    }
+                     .bg-center-repeat{
+                        background-image: url('../../assets/images/page-design/master-page/logo.png'),url('../../assets/images/page-design/master-page/bg-center-repeat.png');
+                        background-position: center, left top;
+                        background-repeat: no-repeat,repeat-x;
+                        background-size:auto 40px,auto 50px;
+                        width: 38%; // 必须添加宽度
+                    }
+                   
+                    .bg-center-right-corner{
+                        background-image: url('../../assets/images/page-design/master-page/bg-center-right-corner.png');
+                        background-repeat: no-repeat;
+                         background-size:auto 50px;
+                        width: 35%; // 必须添加宽度
+                    }
+                }
+                 &.rightItem{
+                    position:absolute;
+                    top: 0px;
+                    right: 0px;
+                    display:flex;
+                    width: 34.6%; 
+                     z-index: 3;
+                    .bg-right-corner{
+                        background-image: url('../../assets/images/page-design/master-page/header-right-bg-corner.png');
+                        background-repeat: no-repeat;
+                         background-size:auto 44px;
+                        width: 5.5%; // 必须添加宽度
+                        
+                    }
+                     .bg-right-repeat{
+                        background-image: url('../../assets/images/page-design/master-page/header-repeat-bg.png');
+                        background-repeat: repeat-x;
+                        background-size:auto 44px;
+                         width: 94.5%; // 必须添加宽度
+                    }
+                }
+            }
+            .menu{
+                width: 33px;
+                height: 67px;
+                background-image: url('../../assets/images/page-design/master-page/bg-menu.png');
+                background-repeat: no-repeat;
+                background-size:auto 67px;
+                margin-top: 22px;
+            }
+
+        }
+        .body{
+           border: 1px red solid;
+           height: calc(100% - 100px);
+        }
+        .footer{
+            border: 1px yellow solid;
+            height: 50px;
+        }
+   }
+ 
+</style>

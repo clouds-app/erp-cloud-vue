@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="purchaseContent">
        <Row>
       <Col span="1">&nbsp;</Col>
     
@@ -70,3 +70,10 @@
 </script>
 
 <style>
+.purchaseContent{
+  min-height: 600px;
+  width: 100%;
+  background:rgba(33,46,129,1);
+  border:1px solid rgba(0,222,255,1);
+}
+</style>

@@ -200,7 +200,7 @@ export default {
     setGoHome() {
       this.$store.commit("setCurrentPage", "home");
       this.$router.push({ name: "_home" });
-      this.$store.commit("setCurrentTopMenu", "");
+      this.$store.commit("setCurrentTopMenu", "Home");
     },
     // 跳转到指定的页面,并且权限检查 缓存TAB菜单
     handleMenuBaseEvent(menuObj) {

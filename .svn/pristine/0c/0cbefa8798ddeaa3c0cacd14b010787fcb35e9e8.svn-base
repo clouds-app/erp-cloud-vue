@@ -1,0 +1,74 @@
+<template>
+
+<div style="padding: 50px;">
+  <Row>
+    <Col span="5">
+      <Button @click="showBoxExpression = true" size='default' type="primary">盒式公式</Button>
+    </Col>
+    <Col span="5">
+      <Button @click="showPreferential = true" size='default' type="primary" >优惠方式</Button>
+    </Col>
+    <Col span="5">
+      <a target="_blank" :href="'/erp/doc.html?token='+token">
+        <Button size='default' type="primary">API文档</Button>
+      </a>
+    </Col>
+    <Col span="5">
+      <a target="_blank" :href="'/logout?token='+token">
+        <Button size='default' type="primary">退出</Button>
+      </a>
+    </Col>
+  </Row>
+  <boxExpression v-model="showBoxExpression" @expression-ok="expressionOk"></boxExpression>
+  <preferential v-model="showPreferential" @preferential-ok="preferentialOk" :render-json-str="preferentialJsonStr"></preferential>
+</div>
+
+
+</template>
+
+<script>
+    import popup from '@/components/popup/popup'
+    import boxExpression from '@/components/box-expression/boxExpression'
+    import preferential from '@/components/preferential/preferential'
+    import {setToken,getToken} from '@/libs/util'
+    export default{
+      components:{popup,boxExpression,preferential},
+      data(){
+        return {
+          showBoxExpression:false,
+          showPreferential:false,
+          editFormItem:{
+            main:{
+              piRemark:'',
+              piNo:''
+            }
+          },
+          preferentialJsonStr:'{"priceUnit":0,"priceMode":1,"items":[{"min":1,"max":1000,"oper":"0","price":1,"unit":0},{"min":1000,"max":5000,"oper":"1","price":1,"unit":0}]}'
+        }
+      },
+      computed:{
+        token(){
+          return getToken();
+        }
+      },
+      methods:{
+        formDesign(){
+          this.$router.push({
+            name:'formDesign'
+          })
+        },expressionOk(text,value,json){
+          this.$Message.info(text);
+          console.log(text);
+          console.log(value);
+          console.log(json);
+        },preferentialOk(text,value){
+          this.$Message.info(`text=${text}`);
+          this.$Message.info('value值看console');
+          console.log(value);
+        }
+      }
+    }
+</script>
+
+<style>
+</style>

@@ -1,6 +1,7 @@
 <template>
-  <div style=" ">
-    <Row>
+  <div class="saleContent">
+    <!-- <div>
+     <Row>
         <Col span="1">&nbsp;</Col>
       <Col span="6" offset="1">
         <Card>
@@ -52,7 +53,71 @@
           </p>
         </Card>
       </Col>
-    </Row>
+    </Row> 
+    </div> -->
+    <div class="saleContentItem leftItem">
+        <div class="leftFlexBoxItem leftFlexBoxItemleft">
+              <div class="prizeItem areaPrize">
+                <div class="areaPrizeTitle">纸箱面积报价</div> 
+                </div>
+              <div class="prizeItem productPrize">
+                 <div class="productPrizeTitle">纸箱产品报价</div> </div>
+            </div>
+             <div class="leftFlexBoxItem leftFlexBoxItemCenter">
+                <div class="centerBoxItem centerBoxItemLeft">
+                   <div class="centerBoxItem-ArrowItem"></div>
+                   <div class="centerBoxItem-ArrowItem arrowMargin"></div>
+                </div>
+                <div class="centerBoxItem centerBoxItemCenter">
+                   <div class="centerBoxItemCenterBox">
+                        <div class="centerFlexBoxItem itemUp">
+                          <div class="itemUpTitle">订单管理</div>
+                        </div>
+                        <div class="centerFlexBoxItem itemDown">
+                            <div class="downItem oneOrder">
+                              <div class="oneOrderBgIcon">
+                                  <div class="oneOrderTitle">云纸箱平台订单</div>
+                              </div>
+                            </div>
+                            <div class="downItem twoOrder">
+                                <div class="twoOrderBgIcon">
+                                   <div class="towOrderTitle">工厂团订单</div>
+                                </div>
+                              
+                            </div>
+                            <div class="downItem threeOrder">
+                              <div class="threeOrderBgIcon">
+                                   <div class="threeOrderTitle">线下订单</div>
+                              </div>
+                            
+                            </div>
+                        </div>
+                   </div>
+                </div>
+                <div class="centerBoxItem centerBoxItemRight">
+                    <div class="centerBoxItem-ArrowItem"></div>
+                   <div class="centerBoxItem-ArrowItem arrowMargin"></div>
+                </div>
+             </div>
+             <div class="leftFlexBoxItem leftFlexBoxItemRight">
+                <div class="leftFlexBoxItemRightSubItem-border">
+                   <div class="leftFlexBoxItemRightSubItem-bg iconFp">
+
+                   </div>
+                </div>
+                <div class="leftFlexBoxItemRightSubItem-border SubItem-bgMargin">
+                  <div class="leftFlexBoxItemRightSubItem-bg iconStock">
+                     
+                   </div>
+                </div>
+                 <div class="leftFlexBoxItemRightSubItem-border">
+                    <div class="leftFlexBoxItemRightSubItem-bg iconPaper">
+                     
+                   </div>
+                 </div>
+             </div>
+    </div>
+    <div class="saleContentItem rightItem"></div>
   </div>
 </template>
 
@@ -103,5 +168,231 @@ export default {
 };
 </script>
 
-<style>
+<style lang="scss">
+.saleContent{
+  color:white;
+  display: flex;
+  display: -webkit-flex; /* Safari */
+  min-height: 600px;
+  background:#212E81;
+  border:1px solid rgba(0,222,255,1);
+  border-radius:5px;
+  .saleContentItem{
+    border: 1px solid red;
+    &.leftItem{
+       width: 80%;
+        display: flex;
+        display: -webkit-flex; /* Safari */
+      .leftFlexBoxItem{
+           border:1px solid orange;
+           &.leftFlexBoxItemleft{
+             display: flex;
+             display: -webkit-flex; /* Safari */
+             flex-direction: column;
+             justify-content: center;
+             align-content:center;
+             width: 25%;
+             .prizeItem{
+               height: 114px; // 背景图高度必填
+               border:1px solid greenyellow;
+                &.areaPrize{
+                    background-image:url('../../../../assets/images/page-design/master-page/area-prize-bg-icon.png'), url('../../../../assets/images/page-design/master-page/area-prize-bg.png');
+                    background-position:30% bottom, center top; // 控制图片对齐方式
+                    background-repeat: no-repeat, no-repeat;
+                    background-size:70px 70px,auto 114px;// 与背景图高度相同
+                    .areaPrizeTitle{
+                      padding-left: 60px;
+                      padding-top:15px
+                    }
+                }
+                &.productPrize{
+                   margin-top:100px;
+                    background-image: url('../../../../assets/images/page-design/master-page/product-prize-bg-icon.png'),url('../../../../assets/images/page-design/master-page/product-prize-bg.png');
+                    background-position:30% bottom, center top; // 控制图片对齐方式
+                    background-repeat: no-repeat, no-repeat;
+                    background-size:70px 70px,auto 114px;// 与背景图高度相同
+                    .productPrizeTitle{
+                       padding-left: 60px;
+                      padding-top:15px
+                    }
+                }
+             }
+           }
+           &.leftFlexBoxItemCenter{
+                width: 50%;
+                display: flex;
+                display: -webkit-flex; /* Safari */
+              .centerBoxItem{
+                 border:1px solid orange;
+                // width: 33.33%;
+                &.centerBoxItemLeft{
+                  width: 10%;
+                  display: flex;
+                  display: -webkit-flex;
+                  flex-direction:column;
+                  justify-content: center;
+                  .centerBoxItem-ArrowItem{
+                     height: 16px;
+                    background-image: url('../../../../assets/images/page-design/master-page/sale-arrow-icon.png');
+                    background-position: left top;
+                    background-repeat:  no-repeat;
+                    background-size:auto 16px;
+                     &.arrowMargin{
+                       margin-top:200px;
+                     }
+                  }
+                }
+                &.centerBoxItemCenter{
+                  width: 80%;
+                   display: flex;
+                   display: -webkit-flex; /* Safari */
+                   flex-direction: column;
+                   justify-content: center;
+                   .centerBoxItemCenterBox{
+                      width: 100%;
+                      height:330px;
+                      background-image: url('../../../../assets/images/page-design/master-page/sale-order-manage-bg.png');
+                      background-position: left top;
+                      background-repeat:  repeat;
+                     // background-size:auto 16px;
+                      display: flex;
+                      display: -webkit-flex; /* Safari */
+                      flex-direction: column;
+                      .centerFlexBoxItem{
+                      
+                        &.itemUp{
+                          height: 20%;
+                          text-align: center;
+                          line-height: 200px;
+                        }
+                         &.itemDown{
+                          height: 80%;  
+                          display: flex;
+                          display: -webkit-flex; /* Safari */
+                          flex-direction: row;
+                          justify-content:space-around;
+                          align-items:center;
+                          .downItem{
+                            width:110px;
+                            height:110px;
+                            border-radius:50%;
+                            &.oneOrder{
+                               background:linear-gradient(90deg,rgba(254,122,59,1),rgba(255,173,133,1));
+border:2px solid rgba(224, 91, 27, 0.38);
+                              .oneOrderBgIcon{
+                                // 云纸箱平台订单 icon
+                                  background-image: url('../../../../assets/images/page-design/master-page/orderIcon-performace.png');
+                                  background-position: center 35%;
+                                  background-repeat:  no-repeat;
+                                  background-size:auto 50px;
+                              }
+                            }
+                             &.twoOrder{
+                               background:linear-gradient(90deg,rgba(17,78,253,1),rgba(125,159,255,1));
+border:2px solid rgba(5, 66, 243, 0.38);
+                               .twoOrderBgIcon{
+                                // 工厂团订单 icon
+                                  background-image: url('../../../../assets/images/page-design/master-page/orderIcon-factory.png');
+                                  background-position: center 35%;
+                                  background-repeat:  no-repeat;
+                                  background-size:auto 50px;
+                              }
+                                
+                            }
+                             &.threeOrder{
+                               background:linear-gradient(90deg,rgba(132,62,246,1),rgba(153,134,250,1));
+border:2px solid rgba(99, 30, 218, 0.38);
+                                 .threeOrderBgIcon{
+                                // 线下订单 icon
+                                  background-image: url('../../../../assets/images/page-design/master-page/orderIcon-offLine.png');
+                                  background-position: center 35%;
+                                  background-repeat:  no-repeat;
+                                  background-size:auto 50px;
+                              }
+                            }
+                            // 文字偏移
+                            .oneOrderTitle{
+                              padding-top: 110px;
+                              padding-left:5px;
+                            }
+                             .towOrderTitle{
+                              padding-top: 110px;
+                              padding-left:18px;
+                            }
+                             .threeOrderTitle{
+                              padding-top: 110px;
+                              padding-left:25px;
+                            }
+                          }
+                        }
+                      }
+                   }
+                }
+                &.centerBoxItemRight{
+                  width: 10%;
+                    display: flex;
+                  display: -webkit-flex;
+                  flex-direction:column;
+                  justify-content: center;
+                  .centerBoxItem-ArrowItem{
+                     height: 16px;
+                    background-image: url('../../../../assets/images/page-design/master-page/sale-arrow-icon.png');
+                    background-position: left top;
+                    background-repeat:  no-repeat;
+                    background-size:auto 16px;
+                 
+                     &.arrowMargin{
+                       margin-top:200px;
+                     }
+                  }
+                }
+              }
+           }
+           &.leftFlexBoxItemRight{
+             width: 25%;
+             display: flex;
+             display: -webkit-flex;
+             flex-direction:column;
+             justify-content: center;//x轴排列
+              align-items: center;//y轴排列
+             .leftFlexBoxItemRightSubItem-border{
+                  width:105px;
+                  height:105px;
+                  border-radius:10px;
+                  border:5px solid #3E3692;
+                  .leftFlexBoxItemRightSubItem-bg{
+                    width:100px;
+                    height:100px;
+                    &.iconFp{
+                        background-image:url('../../../../assets/images/page-design/master-page/other-bg-icon-fapiao.png'), url('../../../../assets/images/page-design/master-page/other-bg.png');
+                        background-position: center center,left top;
+                        background-repeat:  no-repeat,no-repeat;
+                        background-size:50px 50px,95px 95px;
+                    }
+                     &.iconStock{
+                         background-image:url('../../../../assets/images/page-design/master-page/other-bg-icon-stock.png'), url('../../../../assets/images/page-design/master-page/other-bg.png');
+                        background-position: center center,left top;
+                        background-repeat:  no-repeat,no-repeat;
+                        background-size:50px 50px,95px 95px;
+                    }
+                     &.iconPaper{
+                         background-image:url('../../../../assets/images/page-design/master-page/other-bg-icon-paper.png'), url('../../../../assets/images/page-design/master-page/other-bg.png');
+                        background-position: center center,left top;
+                        background-repeat:  no-repeat,no-repeat;
+                        background-size:50px 50px,95px 95px;
+                    }
+                  }
+                  &.SubItem-bgMargin{
+                    margin-top: 10px;
+                  }
+                 
+             }
+           }
+        }
+    }
+    &.rightItem{
+      width: 20%;
+    }
+  }
+}
 </style>

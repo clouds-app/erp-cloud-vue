@@ -1,105 +1,93 @@
 <template>
-
-<!-- <div style="padding: 50px;">
-<br/>
-  <Button type="primary" @click="formDesign">表单设计</Button>
-  <Button type="primary" @click="formDesign">表单设计</Button>
-<br/>
-<Divider>弹出框示例</Divider>
-   <Row :gutter="20">
-     <Col span="4">
-       <popup v-model="editFormItem.main.piRemark"
-       					   field-name="piRemark"
-                    :disabled="false"
-       					   popup-name="dicPopup"
-       					   :fill-model.sync="editFormItem.main"
-       					   render-fields="piRemark,piNo"
-       		         from-fields="dicLabel,dicValue"
-       		         :suffix="true"
-       		         :suffix-model="editFormItem.main.piNo"
-       					   :query-params="{}">
-       	</popup>
-     </Col>
-
-     <Col span="4">
-       <popup v-model="editFormItem.main.piRemark"
-       					   field-name="piRemark"
-                    :disabled="false"
-       					   popup-name="dicPopup"
-       					   :fill-model.sync="editFormItem.main"
-       					   render-fields="piRemark,piNo"
-       		         from-fields="dicLabel,dicValue"
-       					   :query-params="{}">
-         	</popup>
-     </Col>
-   </Row>
-</div> -->
-<div style="padding: 50px;">
-  <Row>
-    <Col span="5">
-      <Button @click="showBoxExpression = true" size='default' type="primary">盒式公式</Button>
-    </Col>
-    <Col span="5">
-      <Button @click="showPreferential = true" size='default' type="primary" >优惠方式</Button>
-    </Col>
-    <Col span="5">
-      <a target="_blank" :href="'/erp/doc.html?token='+token">
-        <Button size='default' type="primary">API文档</Button>
-      </a>
-    </Col>
-    <Col span="5">
-      <a target="_blank" :href="'/logout?token='+token">
-        <Button size='default' type="primary">退出</Button>
-      </a>
-    </Col>
-  </Row>
-  <boxExpression v-model="showBoxExpression" @expression-ok="expressionOk"></boxExpression>
-  <preferential v-model="showPreferential" @preferential-ok="preferentialOk" :render-json-str="preferentialJsonStr"></preferential>
-</div>
-
-
+     <div class="masterContainer bodyContent">
+            <div class="orderCardInfoBox">
+                <div class="orderCardItem orderCardInfo">
+                    <div class="cardFlexBox">
+                        <div class="cardFlexItem cardLeft">
+                            <div class="cardTitle">今天接单</div>
+                             <img class="cardIcon" :src="cardOrderIcon">
+                        </div>
+                        <div class="cardFlexItem cardRight">
+                            <div class="cardMoney">23,800,00 元</div>
+                            <div class="cardArea">13398 M</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="orderCardItem saleCardInfo">
+                     <div class="cardFlexBox">
+                        <div class="cardFlexItem cardLeft">
+                            <div class="cardTitle">今天销售</div>
+                             <img class="cardIcon" :src="cardSaleIcon">
+                        </div>
+                        <div class="cardFlexItem cardRight">
+                            <div class="cardMoney">23,800,00 元</div>
+                            <div class="cardArea">13398 M</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="orderCardItem purchaseCardInfo">
+                     <div class="cardFlexBox">
+                        <div class="cardFlexItem cardLeft">
+                            <div class="cardTitle">今天采购</div>
+                             <img class="cardIcon" :src="cardPurchaseIcon">
+                        </div>
+                        <div class="cardFlexItem cardRight">
+                            <div class="cardMoney">23,800,00 元</div>
+                            <div class="cardArea">13398 M</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="orderCardItem stockCardInfo">
+                     <div class="cardFlexBox">
+                        <div class="cardFlexItem cardLeft">
+                            <div class="cardTitle">今天入库</div>
+                             <img class="cardIcon" :src="cardStockIcon">
+                        </div>
+                        <div class="cardFlexItem cardRight">
+                            <div class="cardMoney">23,800,00 元</div>
+                            <div class="cardArea">13398 M</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="echartInfoBox">
+                <div class="echartItem leftEchartIcon">
+                </div>
+                 <div class="echartItem compassIconConfig">
+                     <div class=compassTitle>经营罗盘</div>
+                     <img class="compassIcon" :src="compassIcon">
+                </div>
+                 <div class="echartItem rightEchartIcon">
+                </div>
+            </div>
+            <div class="echartOtherInfoBox">
+                 <div class="echartOtherItem">
+                </div>
+                 <div class="echartOtherItem echartOtherConfig">
+                </div>
+                 <div class="echartOtherItem echartOtherConfig">
+                </div>
+                  <div class="echartOtherItem echartOtherConfig">
+                </div>
+            </div>
+        </div>
 </template>
 
 <script>
-    import popup from '@/components/popup/popup'
-    import boxExpression from '@/components/box-expression/boxExpression'
-    import preferential from '@/components/preferential/preferential'
-    import {setToken,getToken} from '@/libs/util'
-    export default{
-      components:{popup,boxExpression,preferential},
+// 新的主页
+import cardOrderIcon from '@/assets/images/page-design/master-page/card-order-icon.png'
+import cardPurchaseIcon from '@/assets/images/page-design/master-page/card-purchase-icon.png'
+import cardSaleIcon from '@/assets/images/page-design/master-page/card-sale-icon.png'
+import cardStockIcon from '@/assets/images/page-design/master-page/card-stock-icon.png'
+import compassIcon from '@/assets/images/page-design/master-page/compassIcon.png'
+export default {
       data(){
         return {
-          showBoxExpression:false,
-          showPreferential:false,
-          editFormItem:{
-            main:{
-              piRemark:'',
-              piNo:''
-            }
-          },
-          preferentialJsonStr:'{"priceUnit":0,"priceMode":1,"items":[{"min":1,"max":1000,"oper":"0","price":1,"unit":0},{"min":1000,"max":5000,"oper":"1","price":1,"unit":0}]}'
-        }
-      },
-      computed:{
-        token(){
-          return getToken();
+           cardOrderIcon,cardPurchaseIcon,cardSaleIcon,cardStockIcon,compassIcon//图片路径
         }
       },
       methods:{
-        formDesign(){
-          this.$router.push({
-            name:'formDesign'
-          })
-        },expressionOk(text,value,json){
-          this.$Message.info(text);
-          console.log(text);
-          console.log(value);
-          console.log(json);
-        },preferentialOk(text,value){
-          this.$Message.info(`text=${text}`);
-          this.$Message.info('value值看console');
-          console.log(value);
-        }
+    
       }
     }
 </script>

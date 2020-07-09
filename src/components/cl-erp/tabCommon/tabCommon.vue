@@ -1,6 +1,6 @@
 <template>
-  <div class="home-split">
-    <Card>
+  <div class="tabContent">
+    <Card :bordered="false">
       <div class="cl-tabs">
         <clTabs @on-click="handlechange"
         @input="getCrrentActiveTab"
@@ -292,6 +292,8 @@ deactivated() {
 }
 .cl-tabs > .ivu-tabs.ivu-tabs-card>.ivu-tabs-bar .ivu-tabs-tab-active {
     height: 27px !important;
+    /* background:#293CBF !important;
+    color:white; */
     /* padding-bottom: 5px;
     background: #fff;
     transform: translateZ(0);
