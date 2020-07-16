@@ -1,0 +1,262 @@
+<template>
+  <div class="home-split">
+    <!-- <Card > -->
+      <div class="cl-tabs">
+        <clTabs @on-click="handlechange"
+        @input="getCrrentActiveTab"
+          :animated="false"
+          type="card"
+          v-model="currentOpenedTab"
+          closable
+          @on-tab-remove="handleTabRemove"
+        >
+           <!-- 固定菜单 跳转到首页-->
+          <clTabPane
+            :isFirstOne="true"
+            uniqueKey='homeTab'
+            :name="currentTopMenulable"
+            :label="currentTopMenulable"
+            icon="logo-windows"
+          >
+            <paneContents @openSubMenu="openSubMenu" ref="paneContents" :contentType="contentType" />
+          </clTabPane>
+           <!-- 动态菜单 -->
+            <clTabPane icon="ios-create-outline" v-for="(item) in hasSelectedSubMenu" :uniqueKey='item.lable' :name="item.lable" :label="item.lable" :key="item.lable">
+              <dynamicPaneContents :contentType="contentType" :uniqueKey='item.lable'></dynamicPaneContents>
+              <!-- <sysTable></sysTable> -->
+            </clTabPane>
+          <!--其它内容 全部关闭 -->
+          <template  slot="extra">
+            <div v-show="hasSelectedSubMenu.length > 1"> 
+                 <Button size="small" icon='md-close' type="success" ghost @click="showMoal"  >全部关闭1</Button>
+            </div>
+          </template>
+         
+        </clTabs>
+      <clModal ref="clModal"  @on-ok="ok"
+        @on-cancel="cancel"></clModal>
+      </div>
+    <!-- </Card> -->
+  </div>
+</template>
+<script>
+import clModal from "@/components/cl-erp/alertMsg/Modal";
+import clTabs from "@/components/cl-erp/tabs";
+import clTabPane from "@/components/cl-erp/tabs/pane";
+import paneContents from "@/components/cl-erp/tabPaneContents/tabPaneContents";
+import dynamicPaneContents from "@/components/cl-erp/tabPaneContentsDynamic/tabPaneContentsDynamic";
+// import sysTable from "@/view/sys/table/table";
+
+import baseMixin from '@/mixins'
+import * as type from "@/enum"; //菜单枚举
+export default {
+  components: {
+    clTabs,
+    clTabPane,
+    paneContents,
+    dynamicPaneContents,
+	// sysTable,
+    clModal
+  },
+  mixins:[baseMixin],
+  data() {
+    return {
+      //isShowModal:false,// 是否显示确认关闭窗口
+      currentOpenedTab:'', //默认打开状态的TABL 默认:销售管理
+      contentType:'', //默认内容 sale
+      currentTopMenulable: "", // TAB 名称 默认:销售管理
+       hasSelectedSubMenu:[], //勾选过的子菜单
+    };
+  },
+  mounted() {
+    //console.log('===get parmas='+this.$route.params.menuType)
+    let type =this.$route.params.menuType
+    if(type!=null){
+      this.switchTopMenuHanle(type)
+    }else{
+        this.turnToHome('')
+    }
+  },
+  computed: {
+    // 缓存  顶部选中===主===菜单
+     cacheSelectedTopMenu() {
+      return this.$store.state.app.currentTopMenu;
+    },
+     // 缓存 顶部选中===子===菜单
+     cacheSelectedSubMenu() {
+        return this.$store.state.app.currentSubMenu;
+
+     }
+  },
+  watch: {
+    // 监控 主菜单 切换 出发查询 子菜单数据
+    cacheSelectedTopMenu(newVal, oldVal) {
+       if(newVal!=null &&newVal!="" && newVal!=oldVal){
+           this.switchTopMenuHanle(newVal)
+       }
+      
+    }
+  },
+  methods: {
+    showMoal(){
+       this.$refs.clModal.isShowModal =true
+    },
+    //确认关闭=确认窗口
+    ok(){
+     // this.isShowModal =false
+     this.$refs.clModal.isShowModal =false
+      this.closeAllTabs()
+    },
+    //确认取消=确认窗口
+    cancel(){
+      this.$refs.clModal.isShowModal =false
+      // this.isShowModal =false
+    },
+    // 关闭当前所有子标签
+    closeAllTabs(){
+       if(this.cacheSelectedSubMenu &&  this.cacheSelectedSubMenu[this.contentType].length>0){
+                this.cacheSelectedSubMenu[this.contentType]=[]
+                this.switchTopMenuHanle(this.contentType)
+                this.$store.commit('setCurrentSubMenu', this.cacheSelectedSubMenu)
+          }
+       
+    },
+    // 回调事件 - 当前选中TAB 标签
+    getCrrentActiveTab(uniqueKey){
+      //debugger
+       this.turnToHome(uniqueKey)
+       this.resetCurrentActiveTab(uniqueKey)
+    },
+    // 回调事件 -开打指定页面
+    openSubMenu(params){
+      // 更新 hasSelectedSubMenu 数据
+       this.switchTopMenuHanle(this.contentType)
+       //选中指定TAB页面
+       this.currentOpenedTab = params.lable
+    },
+    // 回调事件 -点击tab 事件
+    handlechange(params){
+
+        this.resetCurrentActiveTab(params.uniqueKey)
+    },
+    // 回调事件 -删除指定TAB标签
+    handleTabRemove(params) {
+      this.turnToHome(params.uniqueKey)
+      // debugger
+      const deleteItemIndex= this.hasSelectedSubMenu.findIndex(item=>{
+        return item.uniqueKey===params.uniqueKey
+      })
+      if(deleteItemIndex!=-1){
+        this.hasSelectedSubMenu.splice(deleteItemIndex,1)
+        this.cacheSelectedSubMenu[this.contentType] = this.hasSelectedSubMenu
+        this.$store.commit('setCurrentSubMenu',this.cacheSelectedSubMenu)
+      }
+
+
+    },
+    //切换菜单 查询子菜单
+    switchTopMenuHanle(key) {
+      //debugger
+      switch (key+"") {
+        case type.topMenu_Account:
+           this.currentTopMenulable ='财务管理'
+           this.hasSelectedSubMenu = this.cacheSelectedSubMenu.Account
+          break;
+        case type.topMenu_Bas:
+             this.currentTopMenulable ='基础数据'
+               this.hasSelectedSubMenu = this.cacheSelectedSubMenu.Bas
+          break;
+        case type.topMenu_Mrp:
+             this.currentTopMenulable ='生产管理'
+               this.hasSelectedSubMenu = this.cacheSelectedSubMenu.Mrp
+          break;
+        case type.topMenu_Purchase:
+             this.currentTopMenulable ='采购管理'
+              this.hasSelectedSubMenu = this.cacheSelectedSubMenu.Purchase
+          break;
+        case type.topMenu_report:
+             this.currentTopMenulable ='报表中心'
+               this.hasSelectedSubMenu = this.cacheSelectedSubMenu.report
+          break;
+        case type.topMenu_sale:
+             this.currentTopMenulable ='销售管理'
+              this.hasSelectedSubMenu = this.cacheSelectedSubMenu.sale
+          break;
+        case type.topMenu_Stock:
+             this.currentTopMenulable ='储运管理'
+               this.hasSelectedSubMenu = this.cacheSelectedSubMenu.Stock
+          break;
+         case type.topMenu_Sys:
+              this.currentTopMenulable ='系统设置'
+              this.hasSelectedSubMenu = this.cacheSelectedSubMenu.Sys
+          break;
+        default:
+               this.currentTopMenulable ='销售管理'
+               this.hasSelectedSubMenu = this.cacheSelectedSubMenu.sale
+          break;
+      }
+       this.contentType = key;
+       this.getCurrentOpenedTab()
+    },
+    resetCurrentActiveTab(uniqueKey){
+      // 重置选择的标签
+         if(this.cacheSelectedSubMenu &&  this.cacheSelectedSubMenu[this.contentType].length>0){
+                 this.cacheSelectedSubMenu[this.contentType].forEach((item,index,arr)=>{
+                    item.isActive =false //重置其它菜单为 未选中
+                    if(item.uniqueKey == uniqueKey){
+                        arr[index].isActive =true
+                    }
+                })
+          }
+          this.$store.commit('setCurrentSubMenu', this.cacheSelectedSubMenu)
+    },
+    // 获取当前打开页面 当 切换主标签时
+    getCurrentOpenedTab(){
+      //debugger
+       if(this.cacheSelectedSubMenu &&  this.cacheSelectedSubMenu[this.contentType].length>0){
+                let flag=false
+                 this.cacheSelectedSubMenu[this.contentType].forEach((item,index,arr)=>{
+                   // debugger
+                    if(item.isActive === true){
+                       flag =true
+                       this.currentOpenedTab = arr[index].uniqueKey
+                    }else{
+                       if(!flag){
+                              // 默认打开 首页
+                       this.currentOpenedTab = this.currentTopMenulable
+                       }
+
+                    }
+                })
+          }else{
+               // 默认打开 首页
+              this.currentOpenedTab = this.currentTopMenulable
+          }
+    },
+    
+
+
+  }
+};
+</script>
+<style >
+/* 样式重置 */
+
+.cl-tabs > .ivu-tabs.ivu-tabs-card > .ivu-tabs-bar .ivu-tabs-nav-container{
+  height: 27px !important;
+}
+.cl-tabs > .ivu-tabs.ivu-tabs-card > .ivu-tabs-bar .ivu-tabs-tab {
+   height: 26px !important;
+   margin-right: 2px !important;
+   padding: 3px 6px 3px !important;
+}
+.cl-tabs > .ivu-tabs.ivu-tabs-card>.ivu-tabs-bar .ivu-tabs-tab-active {
+    height: 27px !important;
+    /* padding-bottom: 5px;
+    background: #fff;
+    transform: translateZ(0);
+    border-color: #dcdee2;
+    color: #2d8cf0; */
+}
+
+</style>

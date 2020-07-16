@@ -1,0 +1,447 @@
+<template>
+  <div class="saleContent">
+    <!-- <div>
+     <Row>
+        <Col span="1">&nbsp;</Col>
+      <Col span="6" offset="1">
+        <Card>
+          <p slot="title">订单管理</p>
+          <br />
+          <p style="padding: 10px;">
+            <Button
+              @click="handleSubMenuEvent('boxAreaPrice','sale-boxAreaPrice','纸箱面积报价')"
+              type="info"
+           >纸箱面积报价</Button>
+          </p>
+          <br />
+          <p style="padding: 10px;">
+            <Button
+              @click="handleSubMenuEvent('boxProductPrice','sale-boxProductPrice','纸箱产品报价')"
+              type="info"
+            >纸箱产品报价</Button>
+          </p>
+          <br />
+          <p style="padding: 10px;">
+            <Button
+              @click="handleSubMenuEvent('boxSalesOrder','sale-boxSalesOrder','纸箱销售订单')"
+              type="info"
+            >纸箱销售订单</Button>
+          </p>
+        </Card>
+      </Col>
+      <Col span="6">
+        <Card>
+          <p slot="title">模块数据</p>
+          <br />
+          <p style="padding: 10px;">
+            <Button
+              @click="handleSubMenuEvent('customerInfo','sale-customerInfo','客户资料')"
+              type="info"
+            >客户资料</Button>
+          </p>
+        </Card>
+      </Col>
+      <Col span="6">
+        <Card>
+          <p slot="title">查询</p>
+          <br />
+          <p style="padding: 10px;">
+            <Button
+              @click="handleSubMenuEvent('analyzerNew','sale-analyzerNew','纸箱销售订单汇总')"
+              type="info"
+            >纸箱销售订单汇总</Button>
+          </p>
+        </Card>
+      </Col>
+    </Row> 
+    </div> -->
+    <div class="saleContentItem leftItem">
+      <div class="leftFlexBoxItem leftFlexBoxItemleft">
+        <!-- 是否有权限访问 添加样式 diabledOrAccess -->
+        <div  @click="handleSubMenuEvent('boxAreaPrice','sale-boxAreaPrice','纸箱面积报价')" class="prizeItem areaPrize cursorPointer">
+          <div class="areaPrizeTitle">纸箱面积报价</div>
+        </div>
+        <div @click="handleSubMenuEvent('boxProductPrice','sale-boxProductPrice','纸箱产品报价')" class="prizeItem productPrize cursorPointer">
+          <div class="productPrizeTitle">纸箱产品报价</div>
+        </div>
+      </div>
+      <div class="leftFlexBoxItem leftFlexBoxItemCenter">
+        <div class="centerBoxItem centerBoxItemLeft">
+          <div class="centerBoxItem-ArrowItem"></div>
+          <div class="centerBoxItem-ArrowItem arrowMargin"></div>
+        </div>
+        <div class="centerBoxItem centerBoxItemCenter">
+          <div class="centerBoxItemCenterBox">
+            <div class="centerFlexBoxItem itemUp">
+              <div class="itemUpTitle">订单管理</div>
+            </div>
+             <!-- 是否有权限访问 添加样式 diabledOrAccess -->
+            <div class="centerFlexBoxItem itemDown">
+              <div class="downItem oneOrder diabledOrAccess">
+                <div class="oneOrderBgIcon ">
+                  <div class="oneOrderTitle">云纸箱平台订单</div>
+                </div>
+              </div>
+              <div class="downItem twoOrder diabledOrAccess">
+                <div class="twoOrderBgIcon">
+                  <div class="towOrderTitle">工厂团订单</div>
+                </div>
+              </div>
+              <div @click="handleSubMenuEvent('boxSalesOrder','sale-boxSalesOrder','纸箱销售订单')" class="downItem threeOrder cursorPointer">
+                <div class="threeOrderBgIcon">
+                  <div class="threeOrderTitle">线下订单</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="centerBoxItem centerBoxItemRight">
+          <div class="centerBoxItem-ArrowItem"></div>
+          <div class="centerBoxItem-ArrowItem arrowMargin"></div>
+        </div>
+      </div>
+       <!-- 是否有权限访问 添加样式 diabledOrAccess -->
+      <div class="leftFlexBoxItem leftFlexBoxItemRight">
+        <div class="leftFlexBoxItemRightSubItem-border">
+          <div class="leftFlexBoxItemRightSubItem-bg iconFp diabledOrAccess">
+            <div class="iconFpTitle">发票</div>
+          </div>
+        </div>
+        <div class="leftFlexBoxItemRightSubItem-border SubItem-bgMargin">
+          <div class="leftFlexBoxItemRightSubItem-bg iconStock diabledOrAccess">
+            <div class="iconStockTitle">纸箱出库</div>
+          </div>
+        </div>
+        <div class="leftFlexBoxItemRightSubItem-border">
+          <div class="leftFlexBoxItemRightSubItem-bg iconPaper diabledOrAccess">
+            <div class="iconPaperTitle">纸箱退货</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="saleContentItem rightItem">
+        <div class="rightItemModule">
+          <Button
+              @click="handleSubMenuEvent('customerInfo','sale-customerInfo','客户资料')"
+              type="info"
+            >客户资料</Button>
+        </div>
+         <div class="rightItemModule">
+            <Button
+              @click="handleSubMenuEvent('analyzerNew','sale-analyzerNew','纸箱销售订单汇总')"
+              type="info"
+            >纸箱销售订单汇总</Button>
+        </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import globleMixin from "@/mixins";
+const default_btnFuncList = {
+  boxAreaPrice: true, // 纸箱面积报价 是否有权限,默认没有
+  boxProductPrice: true, // 纸箱产品报价
+  boxSalesOrder: true, // 纸箱销售订单
+  customerInfo: true, // 客户资料
+  analyzerNew: true // 纸箱销售订单汇总
+};
+export default {
+  mixins: [globleMixin],
+  data() {
+    return {};
+  },
+  activated() {
+    console.log("---------sale---- activated---------");
+    this.btnFuncList = Object.assign({}, default_btnFuncList);
+    // this.getSubMenu()
+  },
+  mounted() {
+    this.$nextTick(() => {
+      console.log("---------sale----- mounted---------");
+      this.btnFuncList = Object.assign({}, default_btnFuncList);
+      // this.getSubMenu()
+    });
+  },
+  methods: {
+    // 子页面 参数: 页面.vue,唯一区别ID,TAB 标签显示名称
+    handleSubMenuEvent(currentPage, uniqueKey, tabName) {
+      let params = {
+        menuName: "Sale",
+        page: currentPage, //显示控件页面
+        uniqueKey: uniqueKey,
+        lable: tabName,
+        isActive: true
+      };
+      this.handleMenuBaseEvent(params); // 调用MIXIN 共用方法
+    }
+  }
+};
+</script>
+
+<style lang="scss">
+.saleContent {
+  color: white;
+  display: flex;
+  display: -webkit-flex; /* Safari */
+  min-height: 600px;
+  background: #212e81;
+  border: 1px solid rgba(0, 222, 255, 1);
+  border-radius: 5px;
+  .saleContentItem {
+   // border: 1px solid red;
+    &.leftItem {
+      width: 80%;
+      display: flex;
+      display: -webkit-flex; /* Safari */
+      .leftFlexBoxItem {
+        //border: 1px solid orange;
+        &.leftFlexBoxItemleft {
+          display: flex;
+          display: -webkit-flex; /* Safari */
+          flex-direction: column;
+          justify-content: center;
+          align-content: center;
+          width: 25%;
+          .prizeItem {
+            height: 114px; // 背景图高度必填
+            //border: 1px solid greenyellow;
+            &.areaPrize {
+              background-image: url("../../../../assets/images/page-design/master-page/area-prize-bg-icon.png"),
+                url("../../../../assets/images/page-design/master-page/area-prize-bg.png");
+              background-position: 30% bottom, center top; // 控制图片对齐方式
+              background-repeat: no-repeat, no-repeat;
+              background-size: 70px 70px, auto 114px; // 与背景图高度相同
+              .areaPrizeTitle {
+                padding-left: 60px;
+                padding-top: 15px;
+              }
+            }
+            &.productPrize {
+              margin-top: 100px;
+              background-image: url("../../../../assets/images/page-design/master-page/product-prize-bg-icon.png"),
+                url("../../../../assets/images/page-design/master-page/product-prize-bg.png");
+              background-position: 30% bottom, center top; // 控制图片对齐方式
+              background-repeat: no-repeat, no-repeat;
+              background-size: 70px 70px, auto 114px; // 与背景图高度相同
+              .productPrizeTitle {
+                padding-left: 60px;
+                padding-top: 15px;
+              }
+            }
+          }
+        }
+        &.leftFlexBoxItemCenter {
+          width: 50%;
+          display: flex;
+          display: -webkit-flex; /* Safari */
+          .centerBoxItem {
+           // border: 1px solid orange;
+            // width: 33.33%;
+            &.centerBoxItemLeft {
+              width: 10%;
+              display: flex;
+              display: -webkit-flex;
+              flex-direction: column;
+              justify-content: center;
+              .centerBoxItem-ArrowItem {
+                height: 16px;
+                background-image: url("../../../../assets/images/page-design/master-page/sale-arrow-icon.png");
+                background-position: left top;
+                background-repeat: no-repeat;
+                background-size: auto 16px;
+                &.arrowMargin {
+                  margin-top: 200px;
+                }
+              }
+            }
+            &.centerBoxItemCenter {
+              width: 80%;
+              display: flex;
+              display: -webkit-flex; /* Safari */
+              flex-direction: column;
+              justify-content: center;
+              .centerBoxItemCenterBox {
+                width: 100%;
+                height: 330px;
+                border: 1px solid #3e3692;
+                border-radius: 10px;
+                background-image: url("../../../../assets/images/page-design/master-page/sale-order-manage-bg.png");
+                background-position: left top;
+                background-repeat: repeat;
+                // background-size:auto 16px;
+                display: flex;
+                display: -webkit-flex; /* Safari */
+                flex-direction: column;
+                .centerFlexBoxItem {
+                  &.itemUp {
+                    height: 10%;
+                    text-align: center;
+                    line-height: 150px;
+                  }
+                  &.itemDown {
+                    height: 90%;
+                    display: flex;
+                    display: -webkit-flex; /* Safari */
+                    flex-direction: row;
+                    justify-content: space-around;
+                    align-items: center;
+                    .downItem {
+                      width: 110px;
+                      height: 110px;
+                      border-radius: 50%;
+                      &.oneOrder {
+                        background: linear-gradient(
+                          90deg,
+                          rgba(254, 122, 59, 1),
+                          rgba(255, 173, 133, 1)
+                        );
+                        border: 2px solid rgba(224, 91, 27, 0.38);
+                        .oneOrderBgIcon {
+                          // 云纸箱平台订单 icon
+                          background-image: url("../../../../assets/images/page-design/master-page/orderIcon-performace.png");
+                          background-position: center 35%;
+                          background-repeat: no-repeat;
+                          background-size: auto 50px;
+                        }
+                      }
+                      &.twoOrder {
+                        background: linear-gradient(
+                          90deg,
+                          rgba(17, 78, 253, 1),
+                          rgba(125, 159, 255, 1)
+                        );
+                        border: 2px solid rgba(5, 66, 243, 0.38);
+                        .twoOrderBgIcon {
+                          // 工厂团订单 icon
+                          background-image: url("../../../../assets/images/page-design/master-page/orderIcon-factory.png");
+                          background-position: center 35%;
+                          background-repeat: no-repeat;
+                          background-size: auto 50px;
+                        }
+                      }
+                      &.threeOrder {
+                        background: linear-gradient(
+                          90deg,
+                          rgba(132, 62, 246, 1),
+                          rgba(153, 134, 250, 1)
+                        );
+                        border: 2px solid rgba(99, 30, 218, 0.38);
+                        .threeOrderBgIcon {
+                          // 线下订单 icon
+                          background-image: url("../../../../assets/images/page-design/master-page/orderIcon-offLine.png");
+                          background-position: center 35%;
+                          background-repeat: no-repeat;
+                          background-size: auto 50px;
+                        }
+                      }
+                      // 文字偏移
+                      .oneOrderTitle {
+                        padding-top: 110px;
+                        padding-left: 5px;
+                      }
+                      .towOrderTitle {
+                        padding-top: 110px;
+                        padding-left: 18px;
+                      }
+                      .threeOrderTitle {
+                        padding-top: 110px;
+                        padding-left: 25px;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            &.centerBoxItemRight {
+              width: 10%;
+              display: flex;
+              display: -webkit-flex;
+              flex-direction: column;
+               justify-content: center; //x轴排列
+              // align-items: center; //y轴排列
+              //border: 1px red solid;
+              .centerBoxItem-ArrowItem {
+                height: 16px;
+                background-image: url("../../../../assets/images/page-design/master-page/sale-arrow-icon.png");
+                background-position: right top;
+                background-repeat: no-repeat;
+                background-size: auto 16px;
+
+                &.arrowMargin {
+                  margin-top: 200px;
+                }
+              }
+            }
+          }
+        }
+        &.leftFlexBoxItemRight {
+          width: 25%;
+          display: flex;
+          display: -webkit-flex;
+          flex-direction: column;
+          justify-content: center; //x轴排列
+          align-items: center; //y轴排列
+          .leftFlexBoxItemRightSubItem-border {
+            width: 105px;
+            height: 105px;
+            border-radius: 10px;
+            border: 5px solid #3e3692;
+            .leftFlexBoxItemRightSubItem-bg {
+              width: 100px;
+              height: 100px;
+              &.iconFp {
+                background-image: url("../../../../assets/images/page-design/master-page/other-bg-icon-fapiao.png"),
+                  url("../../../../assets/images/page-design/master-page/other-bg.png");
+                background-position: center center, left top;
+                background-repeat: no-repeat, no-repeat;
+                background-size: 50px 50px, 95px 95px;
+                .iconFpTitle {
+                  padding: 70px 35px;
+                }
+              }
+              &.iconStock {
+                background-image: url("../../../../assets/images/page-design/master-page/other-bg-icon-stock.png"),
+                  url("../../../../assets/images/page-design/master-page/other-bg.png");
+                background-position: center center, left top;
+                background-repeat: no-repeat, no-repeat;
+                background-size: 50px 50px, 95px 95px;
+                .iconStockTitle {
+                  padding: 70px 22px;
+                }
+              }
+              &.iconPaper {
+                background-image: url("../../../../assets/images/page-design/master-page/other-bg-icon-paper.png"),
+                  url("../../../../assets/images/page-design/master-page/other-bg.png");
+                background-position: center center, left top;
+                background-repeat: no-repeat, no-repeat;
+                background-size: 50px 50px, 95px 95px;
+                .iconPaperTitle {
+                  padding: 70px 22px;
+                }
+              }
+            }
+            &.SubItem-bgMargin {
+              margin-top: 10px;
+            }
+          }
+        }
+      }
+    }
+    &.rightItem {
+      width: 20%;
+    }
+    // 禁用 获取功能未实现 灰色 按钮
+    .diabledOrAccess{
+        -webkit-filter: grayscale(100%);
+        -moz-filter: grayscale(100%);
+        -ms-filter:grayscale(100%);
+        -o-filter: grayscale(100%);
+        filter: grayscale(100%);
+        filter:gray;
+    }
+    .cursorPointer{
+      cursor: pointer;
+    }
+  }
+}
+</style>

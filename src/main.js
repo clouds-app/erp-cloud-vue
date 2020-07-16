@@ -71,9 +71,9 @@ Vue.config.productionTip = false
 Vue.prototype.$config = config
 Vue.prototype._ = _
 
-// request.post('/common/sys/param').then(res=>{
-//         Vue.prototype.$params = res;
-// })
+request.post('/common/sys/param').then(res=>{
+        Vue.prototype.$params = res;
+})
 /**
  * 注册指令
  */

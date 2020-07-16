@@ -1,0 +1,96 @@
+<template>
+     <div class="masterContainer bodyContent">
+            <div class="orderCardInfoBox">
+                <div class="orderCardItem orderCardInfo">
+                    <div class="cardFlexBox">
+                        <div class="cardFlexItem cardLeft">
+                            <div class="cardTitle">今天接单</div>
+                             <img class="cardIcon" :src="cardOrderIcon">
+                        </div>
+                        <div class="cardFlexItem cardRight">
+                            <div class="cardMoney">23,800,00 元</div>
+                            <div class="cardArea">13398 M</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="orderCardItem saleCardInfo">
+                     <div class="cardFlexBox">
+                        <div class="cardFlexItem cardLeft">
+                            <div class="cardTitle">今天销售</div>
+                             <img class="cardIcon" :src="cardSaleIcon">
+                        </div>
+                        <div class="cardFlexItem cardRight">
+                            <div class="cardMoney">23,800,00 元</div>
+                            <div class="cardArea">13398 M</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="orderCardItem purchaseCardInfo">
+                     <div class="cardFlexBox">
+                        <div class="cardFlexItem cardLeft">
+                            <div class="cardTitle">今天采购</div>
+                             <img class="cardIcon" :src="cardPurchaseIcon">
+                        </div>
+                        <div class="cardFlexItem cardRight">
+                            <div class="cardMoney">23,800,00 元</div>
+                            <div class="cardArea">13398 M</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="orderCardItem stockCardInfo">
+                     <div class="cardFlexBox">
+                        <div class="cardFlexItem cardLeft">
+                            <div class="cardTitle">今天入库</div>
+                             <img class="cardIcon" :src="cardStockIcon">
+                        </div>
+                        <div class="cardFlexItem cardRight">
+                            <div class="cardMoney">23,800,00 元</div>
+                            <div class="cardArea">13398 M</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="echartInfoBox">
+                <div class="echartItem leftEchartIcon">
+                </div>
+                 <div class="echartItem compassIconConfig">
+                     <div class=compassTitle>经营罗盘</div>
+                     <img class="compassIcon" :src="compassIcon">
+                </div>
+                 <div class="echartItem rightEchartIcon">
+                </div>
+            </div>
+            <div class="echartOtherInfoBox">
+                 <div class="echartOtherItem echartOtherConfig-one">
+                </div>
+                 <div class="echartOtherItem echartOtherConfig-two">
+                </div>
+                 <div class="echartOtherItem echartOtherConfig-three">
+                </div>
+                  <div class="echartOtherItem echartOtherConfig-four">
+                </div>
+            </div>
+        </div>
+</template>
+
+<script>
+// 新的主页
+import cardOrderIcon from '@/assets/images/page-design/master-page/card-order-icon.png'
+import cardPurchaseIcon from '@/assets/images/page-design/master-page/card-purchase-icon.png'
+import cardSaleIcon from '@/assets/images/page-design/master-page/card-sale-icon.png'
+import cardStockIcon from '@/assets/images/page-design/master-page/card-stock-icon.png'
+import compassIcon from '@/assets/images/page-design/master-page/compassIcon.png'
+export default {
+      data(){
+        return {
+           cardOrderIcon,cardPurchaseIcon,cardSaleIcon,cardStockIcon,compassIcon//图片路径
+        }
+      },
+      methods:{
+    
+      }
+    }
+</script>
+
+<style>
+</style>
