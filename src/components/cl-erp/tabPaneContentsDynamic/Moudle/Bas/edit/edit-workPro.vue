@@ -18,15 +18,20 @@
         :label-width="80"
       >
         <Row :gutter="18">
-          <Col span="12">
+          <Col span="8">
             <FormItem label="编号" prop="wpNo">
-              <referenceField v-model="formDataInfo.master.wpNo" :disabled="detailDisabled" maxlength="20" placeholder="请输入编号"   :form-name="formmastername"
+              <referenceField  ref='firstFocusInput' v-model="formDataInfo.master.wpNo" :disabled="detailDisabled" maxlength="20" placeholder="请输入编号"   :form-name="formmastername"
             :id="formDataInfo.master.id"></referenceField>
             </FormItem>
           </Col>
-          <Col span="12">
+          <Col span="8">
             <FormItem label="名称" prop="wpName">
               <Input v-model="formDataInfo.master.wpName" :disabled="detailDisabled" maxlength="80" placeholder="请输入名称"></Input>
+            </FormItem>
+          </Col>
+          <Col span="8">
+            <FormItem label="公用" prop="iisPublic">
+              <Checkbox v-model="formDataInfo.master.iisPublic" :disabled="detailDisabled"></Checkbox>
             </FormItem>
           </Col>
           <Col span="12">
@@ -36,19 +41,17 @@
                 :defaultItem.sync="formDataInfo.master.wpType"
                 :loaddingDataWhen="showWindow"
                 :disabled="detailDisabled"
-                formKey="wpType"
+                formKey="wpTypeText"
                 query="wpType"
               />
-            </FormItem>               
+            </FormItem>
           </Col>
           <Col span="12">
             <FormItem label="备注" prop="remark">
               <Input
                 v-model="formDataInfo.master.remark"
-                type="textarea"
                 :disabled="detailDisabled"
                 maxlength="100"
-                :autosize="{ minRows: 2, maxRows: 5 }"
                 placeholder="请输入备注..."
               ></Input>
             </FormItem>
@@ -83,7 +86,7 @@
                     <span class="">工序名称</span>
                   </div>
                 </th>
-               
+
                 <th class="ivu-table-column-center" width="250">
                   <div class="ivu-table-cell">
                     <span class="">工序要求</span>
@@ -172,40 +175,35 @@
  * @created 2019/11/20 17:07:54
  */
 import referenceField from '@/components/referenceField/referenceField'
-import optionSearch from "../../components/optionSearch";
-import editWindow from "@/components/edit-window/edit-window";
+import optionSearch from '../../components/optionSearch'
+import editWindow from '@/components/edit-window/edit-window'
 // import Form from '@/components/form/form'
-import eTable from "@/components/e-table/e-table";
-import request from "@/libs/request";
-import editBaseMixins from "../../mixins/edit";
-import { customValidator ,uniqueValidator} from "@/libs/validator";
+import eTable from '@/components/e-table/e-table'
+import request from '@/libs/request'
+import editBaseMixins from '../../mixins/edit'
+import { deepCopy } from 'view-design/src/utils/assist'
+import { customValidator, uniqueValidator } from '@/libs/validator'
 
 const default_formDataInfo = {
-   master:{
-    wpNo: "",
-    wpType: "",
-    wpTypeText:"",
-    wpName: "",
-    remark: ""
+  master: {
+    wpNo: '',
+    wpType: '',
+    wpTypeText: '',
+    wpName: '',
+    remark: '',
+    iisPublic: false
   },
-  //子表 box 根据实际接口更改，其他不变
+  // 子表 box 根据实际接口更改，其他不变
   basWorkProcItemSlaves: {
     addList: [], // 添加列
-    defaultList: [{
-				remark: "",
-				wpId: 0,
-				wpiAsknote: "",
-				wpiName: "",
-				wpiNo: '',
-				wpiNum: 0
-    }], // 默认列
+    defaultList: [], // 默认列
     deleteList: [], // 删除列
     updateList: [] // 更新列
   }
-};
+}
 export default {
 
-  name: "edit-workPro",
+  name: 'edit-workPro',
   mixins: [editBaseMixins],
   components: {
     editWindow,
@@ -214,77 +212,73 @@ export default {
     referenceField
   },
 
-  data() {
+  data () {
     return {
-      formmastername:'workProcFm',
-      actionSubtitle:'工序资料', // 当前操作副标题
-      formName:'workProcFm',//主表的formName名称
-      requestBaseUrl: "/bas/workPro", // 请求 查询 操作的基础路径
+      formmastername: 'workProcFm',
+      actionSubtitle: '工序资料', // 当前操作副标题
+      formName: 'workProcFm', // 主表的formName名称
+      requestBaseUrl: '/bas/workPro', // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
         wpNo: [
-          { required: true, message: "编号不能为空", trigger: "blur" },
-               {validator:customValidator,
-                            trigger:"blur",
-                            customRule:["identifier"],
-                            fieldDesc:"编号"},
-           {
-                validator:uniqueValidator,
-                trigger: "blur",
-                fieldDesc: "编号",
-                params:{
-                  fieldName:'wpNo',
-                  formName:'workProcFm',
-                  id:()=>{
-                    return this.formDataInfo.master.id;
-                  }
-                }
+          { required: true, message: '编号不能为空', trigger: 'blur' },
+          { validator: customValidator,
+            trigger: 'blur',
+            customRule: ['identifier'],
+            fieldDesc: '编号' },
+          {
+            validator: uniqueValidator,
+            trigger: 'blur',
+            fieldDesc: '编号',
+            params: {
+              fieldName: 'wpNo',
+              formName: 'workProcFm',
+              id: () => {
+                return this.formDataInfo.master.id
               }
-              ],
+            }
+          }
+        ],
 
-        
         wpName: [
-          { required: true, message: "名称不能为空", trigger: "blur" },
-               {validator:customValidator,
-                    trigger:"blur",
-                    customRule:["toCDB","spaceStr"],
-                    fieldDesc:"工序名称"}
+          { required: true, message: '名称不能为空', trigger: 'blur' },
+          { validator: customValidator,
+            trigger: 'blur',
+            customRule: ['toCDB', 'spaceStr'],
+            fieldDesc: '工序名称' }
         ]
-      
+
       },
       tableFieldsValidator: {
-        wpiNo:[
-           { required: true, message: "工序编号不能为空", trigger: "blur" },
+        wpiNo: [
+          { required: true, message: '工序编号不能为空', trigger: 'blur' }
         ]
       }
-    };
+    }
   },
 
   methods: {
-
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo() {
-      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    HandleFormDataInfo () {
+      this.formDataInfo = deepCopy(default_formDataInfo)
     },
-   
-
     // 重写父类,修改提交数据
-    resetformDataInfo(_data) {
-      let tableData = this.$refs["tableFields"].getCategorizeData();
+    resetformDataInfo (_data) {
+      let tableData = this.$refs['tableFields'].getCategorizeData()
       // debugger
-      this.formDataInfo.basWorkProcItemSlaves = tableData;
-      return this.formDataInfo;
+      this.formDataInfo.basWorkProcItemSlaves = tableData
+      return this.formDataInfo
     }
   }
-};
+}
 </script>
 
 <style>
-.cl-edit-workPro .ivu-form-item {
+/* .cl-edit-workPro .ivu-form-item {
   margin-bottom: 12px !important;
 }
 .cl-edit-workPro .ivu-table-cell {
   text-align: center;
-}
+} */
 </style>

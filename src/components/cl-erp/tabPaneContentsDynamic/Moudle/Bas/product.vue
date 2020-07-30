@@ -8,7 +8,7 @@
       :queryParamsDefault="queryParamsDefault"
       ref="htmlTemplate"
     ></htmlTemplate>
-    <div class="demo-split" :style="{ height:tableHeight  + 'px' }">
+    <div ref="contextMenuTarget" class="demo-split" :style="{ height:tableHeight  + 'px' }">
       <Split :v-model="splitModel" mode="vertical">
         <div slot="top" class="demo-split-pane">
           <vTable
@@ -69,115 +69,115 @@
   </div>
 </template>
 <script>
-import vTable from "@/components/tables/vTable";
-import htmlTemplate from "../components/htmlTemplate";
-//import editForm from "./edit/edit-warehouse";
-import listBaseMixins from "../mixins/list";
-import request from "@/libs/request";
+import vTable from '@/components/tables/vTable'
+import htmlTemplate from '../components/htmlTemplate'
+// import editForm from "./edit/edit-warehouse";
+import listBaseMixins from '../mixins/list'
+import request from '@/libs/request'
 
 export default {
   mixins: [listBaseMixins],
   components: {
-    editForm: function(resolve) {
-      //组件的异步加载
-      require(["./edit/edit-product"], resolve);
+    editForm: function (resolve) {
+      // 组件的异步加载
+      require(['./edit/edit-product'], resolve)
     },
     htmlTemplate,
     vTable
   },
-  data() {
+  data () {
     return {
-      tableDataList:[
-        {ref:'master_list_table',title:'产品资料主表'},
-        {ref:'tableFieldRef',title:'纸板规格'},
-        {ref:'tableFieldRef2',title:'生产工序'}
+      tableDataList: [
+        { ref: 'master_list_table', title: '产品资料主表' },
+        { ref: 'tableFieldRef', title: '纸板规格' },
+        { ref: 'tableFieldRef2', title: '生产工序' }
       ],
       // splitModel2:0.6,
       // who:'editForm', // 动态指定编辑控件
-      tableFieldData: [], //纸板规格
-      tableFieldData2: [], //产品生产工序
-      currentTabName: "ProductMData", //当前TABL名称
+      tableFieldData: [], // 纸板规格
+      tableFieldData2: [], // 产品生产工序
+      currentTabName: 'ProductMData', // 当前TABL名称
       functionParams: {
-        requestBaseUrl: "/bas/product",
-        uniqueId: "productId"
+        requestBaseUrl: '/bas/product',
+        uniqueId: 'productId'
       },
       // 查询参数 ,注意格式
       queryParamsDefault: [
         {
-          title: "产品编号",
-          code: "bpNo",
-          bpNo: ""
+          title: '产品编号',
+          code: 'bpNo',
+          bpNo: ''
         },
         {
-          title: "产品名称",
-          name: "bpName$like",
-          bpName$like: ""
+          title: '产品名称',
+          name: 'bpName$like',
+          bpName$like: ''
         }
       ]
-    };
+    }
   },
   methods: {
     // tab 点击切换事件
-    TabsClickEvent(name) {
+    TabsClickEvent (name) {
       // debugger
-      this.currentTabName = name;
+      this.currentTabName = name
       if (
         this.masterRowSelection &&
         this.masterRowSelection.id != null &&
-        this.masterRowSelection.id != ""
+        this.masterRowSelection.id != ''
       ) {
-        if (name === "ProductWorkProc") {
-          this.getProductWorkProc();
+        if (name === 'ProductWorkProc') {
+          this.getProductWorkProc()
         } else {
-          this.getProductMData();
+          this.getProductMData()
         }
       }
     },
-    tableRowClick(rowData, rowIndex) {
-      this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
-      this.masterRowSelection = rowData;
+    tableRowClick (rowData, rowIndex) {
+      this.formDetailData = {} // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData
       if (rowData != null) {
-        //debugger
+        // debugger
         // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
-        this.currrentRowItem.rowName = rowData.bpNo + " " + rowData.bpName;
+        this.currrentRowItem.rowName = rowData.bpNo + ' ' + rowData.bpName
       }
       if (this.masterRowSelection) {
-        this.TabsClickEvent(this.currentTabName);
+        this.TabsClickEvent(this.currentTabName)
       }
     },
 
     // 获取查询产品纸板规格列表信息
-    getProductMData() {
+    getProductMData () {
       // debugger
-      let url = `/bas/product/productMData/list`;
+      let url = `/bas/product/productMData/list`
       let data = {
         productId: this.masterRowSelection.id
-      };
-      let _self = this;
+      }
+      let _self = this
       request.post(url, data).then(res => {
-        //debugger
-        _self.tableFieldData = res;
-      });
+        // debugger
+        _self.tableFieldData = res
+      })
     },
     // 获取查询产品生产工序列表信息
-    getProductWorkProc(item) {
-      //debugger
-      let url = `/bas/product/productWorkProc/list`;
+    getProductWorkProc (item) {
+      // debugger
+      let url = `/bas/product/productWorkProc/list`
       let data = {
         productId: this.masterRowSelection.id
-      };
-      let _self = this;
+      }
+      let _self = this
       request.post(url, data).then(res => {
-        //debugger
-        _self.tableFieldData2 = res;
-      });
+        // debugger
+        _self.tableFieldData2 = res
+      })
     },
-    //重写父类方法, 更新操作
-    handleUpdateEvent() {
+    // 重写父类方法, 更新操作
+    handleUpdateEvent () {
       // debugger
-      this.TabsClickEvent(this.currentTabName);
+      this.TabsClickEvent(this.currentTabName)
     },
-    getShowColumns(columns) {
+    getShowColumns (columns) {
       if (Array.isArray(columns) && columns.length > 0) {
         let hiddenColumns = {
           bmSize: 0,
@@ -189,20 +189,20 @@ export default {
           bmDoubleCut: 0,
           bmQty: 0,
           bmAdjBorder: 0
-        };
+        }
         for (let i = columns.length - 1; i >= 0; i--) {
           if (
             hiddenColumns[columns[i].key] != undefined &&
-            this.$params.isCalPaperWidth == "0"
+            this.$params.isCalPaperWidth == '0'
           ) {
-            columns.splice(i, 1);
+            columns.splice(i, 1)
           }
         }
       }
-      return columns;
+      return columns
     }
   }
-};
+}
 </script>
 
 <style></style>

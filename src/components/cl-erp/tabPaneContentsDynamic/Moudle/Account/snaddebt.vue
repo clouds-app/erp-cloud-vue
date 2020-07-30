@@ -8,11 +8,11 @@
       :queryParamsDefault="queryParamsDefault"
     >
     </htmlTemplate>
-    <div class="content-container" :style="{ height: tableHeight + 'px' }">
+    <div ref="contextMenuTarget" class="content-container" :style="{ height: tableHeight + 'px' }">
       <vTable
         :height="tableHeight"
         ref="master_list_table"
-       :columns-url="functionParams.requestColBaseUrl + '/accountSbadDebtFm '"  
+       :columns-url="functionParams.requestColBaseUrl + '/accountSbadDebtFm '"
         url="/account/snaddebt/page"
         :pagination="true"
         @row-click="tableRowClick"
@@ -32,10 +32,10 @@
   </div>
 </template>
 <script>
-import vTable from "@/components/tables/vTable";
-import htmlTemplate from "../components/htmlTemplate";
-import editForm from "./edit/edit-snaddebt";
-import listBaseMixins from "../mixins/list";
+import vTable from '@/components/tables/vTable'
+import htmlTemplate from '../components/htmlTemplate'
+import editForm from './edit/edit-snaddebt'
+import listBaseMixins from '../mixins/list'
 export default {
   mixins: [listBaseMixins],
   components: {
@@ -43,55 +43,55 @@ export default {
     htmlTemplate,
     vTable
   },
-  data() {
+  data () {
     return {
       functionParams: {
-        requestBaseUrl: "/account/snaddebt",
-        uniqueId: "sbadDebtId"
+        requestBaseUrl: '/account/snaddebt',
+        uniqueId: 'sbadDebtId'
       },
       // 查询参数 ,注意格式
       queryParamsDefault: [
         {
-          title: "呆账单号",
-          code: "bdNo",
-          bdNo: ""
+          title: '呆账单号',
+          code: 'bdNo',
+          bdNo: ''
         },
         {
-          title: "客户名称",
-          name: "custName$like",
-          custName$like: ""
+          title: '客户名称',
+          name: 'custName$like',
+          custName$like: ''
         }
       ]
-     
-    };
+
+    }
   },
   methods: {
-     canIDeleteRowItem(){
+    canIDeleteRowItem () {
       let canDelete = true
-      if(!!this.masterRowSelection){
+      if (this.masterRowSelection) {
         // 已开票金额
-        let itemHasAmt = Number(this.masterRowSelection['bdIvAmt']) 
-        if(itemHasAmt>0){
+        let itemHasAmt = Number(this.masterRowSelection['bdIvAmt'])
+        if (itemHasAmt > 0) {
           canDelete = false
         }
       }
-      if(!canDelete){
-           let  message = "当前数据(已开票金额不为0),不可操作";
-           this.$Message.warning(message);
-           return false
+      if (!canDelete) {
+        let message = '当前数据(已开票金额不为0),不可操作'
+        this.$Message.warning(message)
+        return false
       }
       return true
     },
-    tableRowClick(rowData, rowIndex) {
-      this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
-      this.masterRowSelection = rowData;
+    tableRowClick (rowData, rowIndex) {
+      this.formDetailData = {} // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData
       if (rowData != null) {
         // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
-        this.currrentRowItem.rowName = rowData.bdNo + " " + rowData.custName;
+        this.currrentRowItem.rowName = rowData.bdNo + ' ' + rowData.custName
       }
     }
   }
-};
+}
 </script>
 
 <style></style>

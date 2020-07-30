@@ -1,0 +1,125 @@
+<template>
+    <div>
+      <keep-alive>
+         <component  v-bind:is="who"></component>
+      </keep-alive>
+    </div>
+</template>
+<script>
+
+import * as type from "@/enum"; //菜单枚举
+
+import Account from '@/view/home/moudle/Account.vue'
+import Bas from '@/view/home/moudle/Bas.vue'
+import Mrp from '@/view/home/moudle/Mrp.vue'
+import Purchase from '@/view/home/moudle/Purchase.vue'
+import Report from '@/view/home/moudle/Report.vue'
+import Sale from '@/view/home/moudle/Sale.vue'
+import Stock from '@/view/home/moudle/Stock.vue'
+import Sys from '@/view/home/moudle/Sys.vue'
+import SetPlatform from '@/view/home/moudle/SetPlatform.vue'
+export default {
+    components:{
+            'Account':Account,
+            'Bas':Bas,
+            'Mrp':Mrp,
+            'Purchase':Purchase,
+            'Report':Report,
+            'Sale':Sale,
+            'Stock':Stock,
+            'Sys':Sys,
+            'SetPlatform':SetPlatform,
+     },
+    data(){
+        return {
+           who:'',
+           currentOperateMenu:[],//当前操作菜单数据
+        }
+    },
+    computed: {
+        // 缓存  顶部选中===主===菜单
+     cacheSelectedTopMenu() {
+      return this.$store.state.app.currentTopMenu;
+    }
+     
+    },
+    watch: {
+      // 监控 主菜单 切换 出发查询 子菜单数据
+    cacheSelectedTopMenu(newVal, oldVal) {
+       if(newVal!=null &&newVal!="" && newVal!=oldVal){
+           this.switchTopMenuHanle(newVal)
+       }
+      
+     }
+    },
+  mounted(){
+   let type =this.$route.params.menuType
+    if(type!=null){
+      this.who=type
+    }
+   
+    // console.log('main===get parmas='+this.$route.params.menuType)
+    // console.log('main=====mounted====')
+  }, 
+  methods:{
+     // 切换菜单 查询子菜单 固定菜单 事件处理
+    switchTopMenuHanle(key) {
+      // debugger
+      switch (key.toLowerCase()+"") {
+        //财务管理
+        case type.topMenu_Account:
+            //this.currentOperateMenu = this.currentSelectedSubMenu.Account
+            this.who='Account'
+          break;
+          //基础数据
+        case type.topMenu_Bas:
+            // this.currentOperateMenu = this.currentSelectedSubMenu.Bas
+           this.who='Bas'
+          break;
+          //生产管理
+        case type.topMenu_Mrp:
+           //  this.currentOperateMenu = this.currentSelectedSubMenu.Mrp
+            this.who='Mrp'
+          break;
+          //采购管理
+        case type.topMenu_Purchase:
+             // this.currentOperateMenu = this.currentSelectedSubMenu.Purchase
+         this.who='Purchase'
+          break;
+          //报表中心
+        case type.topMenu_report:
+            // this.currentOperateMenu = this.currentSelectedSubMenu.report
+        this.who='Report'
+          break;
+          //销售管理
+        case type.topMenu_sale:
+           // this.currentOperateMenu = this.currentSelectedSubMenu.sale
+        this.who='Sale'
+          break;
+          //储运管理
+        case type.topMenu_Stock:
+             // this.currentOperateMenu = this.currentSelectedSubMenu.Stock
+          this.who='Stock'
+          break;
+          //系统设置
+         case type.topMenu_Sys:
+             // this.currentOperateMenu = this.currentSelectedSubMenu.Sys
+           this.who='Sys'
+          break;
+          //平台设置
+         case type.topMenu_SetPlatform:
+             // this.currentOperateMenu = this.currentSelectedSubMenu.Sys
+           this.who='SetPlatform'
+          break;
+          //默认
+        default:
+            // this.currentOperateMenu = this.currentSelectedSubMenu.sale
+             this.who=''
+          break;
+      }
+    }
+  }
+
+}
+</script>
+

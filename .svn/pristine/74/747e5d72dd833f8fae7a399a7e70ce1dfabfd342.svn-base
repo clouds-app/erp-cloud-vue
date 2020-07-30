@@ -1,0 +1,170 @@
+<template>
+  <div>
+    <editWindow
+     class="cl-edit-color"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="50%"
+      :loading="!isLoaddingDone"
+      @on-ok="formDataSubmit()"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-message="true"
+        :model="formDataInfo"
+        :rules="ruleValidate"
+        :label-width="100"
+      >
+        <FormItem label="颜色编号" prop="colorCode"> 
+           <Input  v-model="formDataInfo.colorCode"
+           :disabled="detailDisabled"
+            ref='firstFocusInput'
+                maxlength="20"
+                placeholder="请输入颜色编号">
+                <ColorPicker slot="prepend" style="minWidth: 40px" v-model="formDataInfo.colorCode" recommend  maxlength="20" />
+          </Input>
+
+           
+           
+        
+        </FormItem>
+        <FormItem label="颜色名称" prop="colorName">
+          <Input
+            v-model="formDataInfo.colorName"
+            :disabled="detailDisabled"
+            maxlength="20"
+            placeholder="请输入颜色名称"
+          ></Input>
+        </FormItem>
+
+        <FormItem label="值" prop="colorValue">
+          <InputNumber
+          :disabled="detailDisabled"
+            v-model="formDataInfo.colorValue"
+            :formatter="value => ` ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
+            :parser="value => value.replace(/\$\s?|(,*)/g, '')"
+            style="width:100%"
+            maxlength="20"
+            placeholder="请输入值"
+          ></InputNumber>
+        </FormItem>
+
+        <FormItem label="配方" prop="colorBurden">
+          <Input
+            v-model="formDataInfo.colorBurden"
+            :disabled="detailDisabled"
+            maxlength="20"
+            placeholder="请输入配方"
+          ></Input>
+        </FormItem>
+
+        <FormItem label="类型" prop="colorType">
+          <optionSearch @onChange="optionOnChange" :disabled="detailDisabled" :defaultItem="formDataInfo.colorType" :loaddingDataWhen="showWindow" formKey="colorType" query="colorType"/>
+           <!-- <Select
+                 v-model="formDataInfo.colorType"
+                 placeholder="请选择"
+                  >
+                 <Option value="0">
+                    0、水墨
+                 </Option>
+                 <Option value="1"> 
+                    1、油墨
+                 </Option>
+                 
+                 </Select> -->
+        </FormItem>
+
+        <FormItem label="备注" prop="remark">
+          <Input
+            v-model="formDataInfo.remark"
+            :disabled="detailDisabled"
+            type="textarea"
+            maxlength="100"
+            :autosize="{ minRows: 2, maxRows: 5 }"
+            placeholder="请输入备注..."
+          ></Input>
+        </FormItem>
+      </Form>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:07:54
+ */
+import optionSearch from '../../components/optionSearch'
+import referenceField from '@/components/referenceField/referenceField'
+import editBaseMixins from "../../mixins/edit";
+import { customValidator } from "@/libs/validator";
+const default_formDataInfo ={
+        colorCode: "",
+        colorName: "",
+        colorValue:0,
+        colorBurden:"",
+        colorType:0,
+        remark: ""
+      }
+export default {
+  name: "edit-color",
+  mixins: [editBaseMixins],
+  components:{optionSearch,referenceField},
+  data() {
+    return {
+      frommastername:'colorFm',
+      actionSubtitle:'颜色信息', // 当前操作副标题
+      requestBaseUrl: "/bas/color", // 请求 查询 操作的基础路径
+      formDataInfo:Object.assign({},default_formDataInfo),// 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {
+        colorCode: [
+          { required: true, message: "颜色编号不能为空", trigger: "blur" },
+                    {validator:customValidator,
+                     trigger:"change",
+                      customRule:["identifier"],
+                      fieldDesc:"颜色编号"}
+
+                    ],
+        colorName: [{ required: true, message: "颜色名称不能为空", trigger: "blur" },
+                    {validator:customValidator,
+                      trigger:"blur",
+                      customRule:["toCDB"],
+                      fieldDesc:"颜色名称"},
+                      {
+                        pattern: /[^,]/g,
+                        trigger: "blur",
+                        message: "不能输入特殊字符"
+                      }
+                    ],
+        colorValue: [
+                      {validator:customValidator,
+                      trigger:"blur",
+                      customRule:["mustDouble"],
+                      fieldDesc:"值 "} 
+                    ],
+         
+      }
+    };
+  },
+
+  methods: {
+      // 重写父类,添加时候,清空数据
+    HandleFormDataInfo(){
+     this.formDataInfo=Object.assign({},default_formDataInfo)
+    },
+  }
+};
+</script>
+
+<style></style>

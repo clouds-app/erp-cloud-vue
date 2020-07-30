@@ -1,0 +1,486 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-boxLibInit"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="95%"
+      :loading="!isLoaddingDone"
+      :spinLoaddingText="spinLoaddingText"
+      @on-ok="formTableDataSubmit()"
+      v-if="initData.columns"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-message="true"
+        :model="formDataInfo.master"
+        :rules="ruleValidate"
+        :label-width="100"
+      >
+        <Row>
+          <Col span="12">
+            <Row>
+              <Col span="12">
+                <FormItem label="初始入库单号" prop="biNo">
+                  <Input disabled v-model="formDataInfo.master.biNo" maxlength="20" placeholder></Input>
+                </FormItem>
+              </Col>
+              <Col span="12">
+                <FormItem label="入库日期">
+                  <DatePicker
+                    :disabled="detailDisabled"
+                    type="date"
+                    format="yyyy-MM-dd"
+                    v-model="formDataInfo.master.biDate"
+                  ></DatePicker>
+                </FormItem>
+              </Col>
+            </Row>
+          </Col>
+          <Col span="12">
+            <Row>
+              <Col span="12">
+                <FormItem label="仓位" prop="stationCode">
+                  <div>
+                    <!-- @on-fill="Initializationdata" -->
+                    <popup
+                      v-model="formDataInfo.master.stationCode"
+                      field-name="stationCode"
+                      :disabled="detailDisabled||action=='update'"
+                      popup-name="WareHouseSingleBox"
+                      :fill-model.sync="formDataInfo.master"
+                      render-fields="stationId,stationCode,stationName"
+                      from-fields="wareHouseItId,wsCode,wsName"
+                      :suffix="true"
+                      :suffix-model="formDataInfo.master.stationName"
+                      suffixModelName="stationName"
+                      :query-params="{whType:2}"
+                    />
+                  </div>
+                </FormItem>
+              </Col>
+              <Col span="12">
+                <FormItem label="入库数量" prop="inQty">
+                  <Input disabled v-model="formDataInfo.master.inQty" maxlength="20" placeholder></Input>
+                </FormItem>
+              </Col>
+            </Row>
+          </Col>
+
+          <Col span="24">
+            <FormItem label="备注">
+              <Input
+                :disabled="detailDisabled"
+                v-model="formDataInfo.master.remark"
+                maxlength="100"
+                :autosize="{ minRows: 1, maxRows: 2 }"
+                placeholder="请输入备注..."
+              ></Input>
+            </FormItem>
+          </Col>
+        </Row>
+      </Form>
+
+      <Tabs>
+        <!--  注意:eTable formDataInfo.artLengs.defaultList  ===artLengs=== 需要根据实际接口修改,其它不变-->
+        <TabPane label="纸箱初始入库明细表" name="name1">
+          <eTable
+            ref="tableFields"
+            unqiue-mark="id"
+            :index-menu="true"
+            :col-start="0"
+            :width="200"
+            :height="400"
+            :insertDirection="insertDirection"
+            :row-init-data="initData.initData.stockboxlibinititemFm"
+            :data.sync="formDataInfo.boxLibInitItems.defaultList"
+            :rules="tableFieldsValidator"
+            :showContextMenu="!detailDisabled"
+            @row-delete="tableFieldsDelete"
+            v-if="showWindow"
+            @tableColTiggerEventCall="tableColTiggerEventCall" 
+          >
+            <!-- @tableColTiggerEventCall="tableColTiggerEventCall" -->
+            <template slot="head">
+              <tr
+                v-for="(columnGroup,index) in initData.columns.stockboxlibinititemFm.editGroups"
+                :key="index"
+              >
+                <th
+                  class="ivu-table-column-left"
+                  v-for="(column,index2) in columnGroup"
+                  :key="index2"
+                  :width="column.editWidth"
+                  :colspan="column.colSpan"
+                  :rowspan="column.rowSpan"
+                  style="text-align:center;"
+                >
+                  <div class="ivu-table-cell">
+                    <span class>{{column.title}}</span>
+                  </div>
+                </th>
+              </tr>
+            </template>
+
+            <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
+              <td
+                class="ivu-table-column-left"
+                v-for="(column,columnIndex) in initData.columns.stockboxlibinititemFm.editColumns"
+                :key="columnIndex"
+                :width="column.editWidth"
+              >
+                <!--控件特殊处理 产品编号  -->
+                <popup
+                  :popupClickValidator="clickValuedate"
+                  v-if="column.key == 'bpNo'"
+                  v-model="row[column.key]"
+                  field-name="bpNo"
+                  :disabled="detailDisabled"
+                  popup-name="ProductBoxLibInitMultiBox"
+                  :fill-model.sync="formDataInfo.boxLibInitItems.defaultList"
+                  render-fields="bpNo,bpName,cusCode,cusName,bpCArtId,bpCArtCode,bpCBoxId,bpCBoxName,bpCBoxCode,bpCSizeL,bpCSizeW,bpCSizeH,remark,bpCustProdNo,bpCustProdName,bpBatchNo,bpPArtId,bpPArtCode,bpPBoxId,bpPBoxCode,bpPBoxName,bpPSizeL,bpPSizeW,bpPSizeH,coinId"
+                  from-fields="bpNo,bpName,cusCode,cusName,bpCArtId,bpCArtCode,bpCBoxId,bpCBoxName,bpCBoxCode,bpCSizeL,bpCSizeW,bpCSizeH,remark,bpCustProdNo,bpCustProdName,bpBatchNo,bpPArtId,bpPArtCode,bpPBoxId,bpPBoxCode,bpPBoxName,bpPSizeL,bpPSizeW,bpPSizeH,coinId"
+                  :index="index"
+                  :init-data="initData.initData.stockboxlibinititemFm"
+                  :excludeParams="{}"
+                  :query-params="{'bpNo$notIn':popUpExcludeParamsList}"
+                  @input="
+                          value => {
+                            valueChangeAssign(value, index, row, 'workerCode');
+                          }
+                        "
+                ></popup>
+                <!--控件特殊处理 入库数量  -->
+                <Input
+                  v-else-if="column.key == 'biQty'"
+                  v-model="row[column.key]"
+                  :disabled="detailDisabled"
+                  number
+                  @on-blur="biInQtyChange(index)"
+                  @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'biQty');
+                      }
+                    "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+                <!--控件特殊处理 库存单价  -->
+                <Input
+                  v-else-if="column.key == 'bpRealPrice'"
+                  v-model="row[column.key]"
+                  :disabled="detailDisabled"
+                  number
+                  @on-blur="countMoney(index)"
+                  @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'bpRealPrice');
+                      }
+                    "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+                <formControl
+                  v-else
+                  :control-type="column.controlType"
+                  v-model="row[column.key]"
+                  :disabled="detailDisabled||column.readOnly"
+                  @input="value => {valueChangeAssign(value, index, row,column.key)}"
+                ></formControl>
+              </td>
+            </template>
+          </eTable>
+        </TabPane>
+      </Tabs>
+    </editWindow>
+    <!-- <boxLibInitSlave
+      ref="mychild"
+      :isLoaddingDone="salveWindow.isLoaddingDone"
+      :formDetailData="salveWindow.formDetailData"
+      :action="salveWindow.action"
+      v-model="salveWindow.showEditWindow"
+      :List="List"
+      :WorkOrderNumber="WorkOrderNumber"
+      @closeMain="closeMain"
+    />-->
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:07:54
+ */
+import referenceField from "@/components/referenceField/referenceField";
+import popup from "@/components/popup/popup";
+import editWindow from "@/components/edit-window/edit-window";
+import eTable from "@/components/e-table/e-table";
+import request from "@/libs/request";
+import editBaseMixins from "../../mixins/edit";
+import optionSearch from "../../components/optionSearch";
+import dayjs from "dayjs";
+import Sys from "@/api/sys";
+import formControl from "@/components/form-control/form-control";
+import { deepCopy } from "view-design/src/utils/assist";
+const default_formDataInfo = {
+  // 主表 更改字段
+  master: {
+    inQty: "",
+    stationCode: "",
+    stationId: "",
+    stationName: "",
+    biNo: "",
+    biDate: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+    remark: ""
+  },
+  // 子表 artLengs 根据实际接口更改,其它不变
+  boxLibInitItems: {
+    addList: [], // 添加列
+    defaultList: [], // 默认列
+    deleteList: [], // 删除列
+    updateList: [] // 更新列
+  }
+};
+export default {
+  name: "edit-paperPrice",
+  mixins: [editBaseMixins],
+  components: {
+    editWindow,
+    optionSearch,
+    eTable,
+    popup,
+    formControl,
+    referenceField
+    // rightMenu
+    // Form,
+  },
+
+  data() {
+    return {
+      insertDirection: "down", //表单插入方向
+      salveWindow: {
+        // Tips:"提示：此窗口只显示有供应商纸质/纸板进价的工单！",
+        isLoaddingDone: false, // 窗口是否加载完成
+        showEditWindow: false, // 是否显示edit-boxSalesOrderSlave 编辑窗口
+        action: null, // 当前操作功能 添加/编辑
+        formDetailData: {} // 当前表单的详细信息
+      },
+      pliLostTypeList: [], //报损类型
+      showContextMenu: true,
+      showEditMenu: false,
+      actionSubtitle: "纸箱初始入库", // 当前操作副标题
+      id: 0,
+      formName: "stockboxlibinititemFm",
+      formmasterName: "stockboxlibinFm",
+      requestBaseUrl: "/stock/boxLibInit", // 请求 查询 操作的基础路径
+      formDataInfo: deepCopy( default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {
+        stationCode: [
+          {
+            required: true,
+            message: "仓位不能为空",
+            trigger: "blur"
+          }
+        ]
+      },
+      tableFieldsValidator: {
+        biQty: [
+          {
+            required: true,
+            message: "入库数量不能为空",
+            trigger: "blur",
+            type: "number"
+          },
+          {
+            pattern: /^[1-9]\d*$/,
+            trigger: "blur",
+            message: "入库数量必须是正整数"
+          }
+        ],
+        bpRealPrice: [
+          {
+            required: true,
+            message: "单价不能为空",
+            trigger: "blur",
+            type: "number"
+          }
+        ],
+        bpNo: [
+          {
+            required: true,
+            message: "产品编号不能为空",
+            trigger: "blur",
+            type: "number"
+          }
+        ],
+      },
+      subBoxClickIndex: -1,
+      getbppClassId: 0,
+      List: "null", //传给用料批次号的参数
+      WorkOrderNumber: "null",
+      index1: 0 //工单号里面用
+    };
+  },
+  created() {
+    // this.getpliLostTypeList()//报损类型
+  },
+  computed: {
+    //  popUpExcludeParamsList() {
+    //    debugger
+    //   // eslint-disable-next-line no-tabs
+    //   // 获取产品编号	列表，转换为 "",""格式，用于弹出框排除数据
+    //   // 事件冲突,暂时屏蔽
+    //   let temp = [];
+    //   if (this.$refs["tableFields"] != undefined) {
+    //     let tableData = this.$refs["tableFields"].get();
+    //     tableData.forEach((item, index) => {
+    //     // debugger
+    //     if (item && item.bpNo != null) {
+    //       // 注意:
+    //       temp.push(item.bpNo); // 注意:
+    //     }
+    //   });
+    //   // console.log(popUpExcludeParamsList)
+    //   return temp.toString();
+    //   }
+    // },
+    popUpExcludeParamsList() {
+      // debugger
+      // eslint-disable-next-line no-tabs
+      // 获取产品编号	列表，转换为 "",""格式，用于弹出框排除数据
+      // 事件冲突,暂时屏蔽
+      let temp = [];
+      this.formDataInfo.boxLibInitItems.defaultList.forEach((item, index) => {
+        // debugger
+        if (item && item.bpNo != null) {
+          // 注意:
+          temp.push(item.bpNo); // 注意:
+        }
+      });
+      // console.log(popUpExcludeParamsList)
+      return temp.toString();
+    }
+  },
+  methods: {
+    // 单元格修改触发事件  当前从表行row.index add by andy
+    tableColTiggerEventCall(row, column, index, event, config){
+    },
+    //table表单删除回调事件
+    tableFieldsDelete(data){
+      this.biInQtyChange(data)
+    },
+    //计算金额
+    countMoney(index) {
+      if (index != undefined) {
+        let tableData = this.$refs["tableFields"].get();
+        if (index<tableData.length) {
+          let stockqty = Number(tableData[index].biQty);
+          let bpRealPrice = Number(tableData[index].bpRealPrice);
+          tableData[index].bpRealMoney = (stockqty * bpRealPrice).toFixed(2);
+        }
+      }
+    },
+    //计算入库数量
+    biInQtyChange(index) {
+      //  debugger
+      let masterstockqty = 0;
+      let tableData = this.$refs["tableFields"].get();
+      for (let index2 = 0; index2 < tableData.length; index2++) {
+        let stockqty = Number(tableData[index2].biQty);
+        masterstockqty += stockqty;
+      }
+      this.formDataInfo.master.inQty = masterstockqty;
+      this.countMoney(index)
+    },
+    //判断数据是新增还是修改
+    formDetailDataCall() {
+      // debugger;
+      if (this.action != "add") {
+        //debugger
+        this.getteamCode = this.formDataInfo.master.teamCode;
+        this.id = this.formDataInfo.master.id;
+      }
+    },
+    //当主表弹框改变时促发初始化子表数据
+    Initializationdata(data) {
+      //debugger
+      let tableData = this.$refs["tableFields"].getCategorizeData();
+      if (this.formDataInfo.master.stationId) {
+        if (this.formDataInfo.master.stationId != this.getbppClassId) {
+          this.formDataInfo.boxLibInitItems.defaultList = [];
+          tableData.deleteList = tableData.updateList;
+        }
+        this.getbppClassId = this.formDataInfo.master.stationId;
+      }
+    },
+    // 重写父类 关闭窗口时 触发事件
+    closeActionTigger() {
+      // debugger
+      // fix 清除上次的错误提示 formDataInfo 为表单ref名称
+      this.$refs["formDataInfo"].resetFields();
+      this.formDataInfo = deepCopy(default_formDataInfo)
+    },
+    //主表弹框判空
+    clickValuedate() {
+      //debugger;
+      if (
+        !this.formDataInfo.master.stationId ||
+        this.formDataInfo.master.stationId == ""
+      ) {
+        this.$Message.error("仓位不能为空");
+        return false;
+      }
+      return true;
+    },
+    // 重写父类,添加时候,清空数据
+    // HandleFormDataInfo() {
+    //   // debugger
+    //   this.formDataInfo = Object.assign({}, default_formDataInfo);
+    // },
+    // 重写父类,修改提交数据
+    resetformDataInfo(_data) {
+      // debugger;
+      let tableData = this.$refs["tableFields"].getCategorizeData();
+      // debugger
+      // if (this.action=='add') {
+      //   this.formDataInfo.boxLibInitItems.defaultList = tableData;
+      // }else{
+      //   this.formDataInfo.boxLibInitItems.updateList = tableData;
+      // }
+      this.formDataInfo.boxLibInitItems = tableData;
+      if (!!_data.master.biDate) {
+        _data.master.biDate = dayjs(_data.master.biDate).format(
+          "YYYY-MM-DD HH:mm:ss"
+        );
+      }
+      return this.formDataInfo;
+    }
+  }
+};
+</script>
+
+<style>
+.cl-edit-paperPrice .ivu-form-item {
+  margin-bottom: 5px !important;
+}
+.cl-edit-paperPrice .ivu-select-item {
+  display: block;
+}
+/* .cl-edit-paperPrice .ivu-input-type-text{
+  width: 200px
+}*/
+.cl-edit-paperPrice .right-text {
+  width: 160%;
+}
+</style>

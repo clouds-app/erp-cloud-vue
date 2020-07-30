@@ -1,0 +1,671 @@
+<template>
+  <div class="fromtable">
+    <Row>
+      <Col span="5">
+        <Card dis-hover>
+          <p slot="title" id="menu">系统资源</p>
+          <Tree :data="resourceTreeData" @on-select-change="treeSelectEvent"></Tree>
+          <Spin size="large" fix v-if="treeLoading"></Spin>
+        </Card>
+      </Col>
+      <Col span="19">
+        <!-- 资源表格开始 -->
+        <Row>
+          <Col span="24">
+            <Row>
+              <Col span="24">
+                <div>
+                  <Button class="resource-btn" type="primary" @click="addAction()">新增</Button>
+                  <Button class="resource-btn" type="info" @click="editAction">修改</Button>
+                  <Button class="resource-btn" type="error" @click="deleteResource">删除</Button>
+                </div>
+              </Col>
+            </Row>
+            <Row>
+              <Col span="24">
+                <vTable
+                  :upDownMove="false"
+                  name="platform-resource"
+                  @row-click="rowClick"
+                  :height="getTableHeight"
+                  :table-data="tableData"
+                  :columns="resourceClumns"
+                  :pagination="false"
+                ></vTable>
+              </Col>
+            </Row>
+          </Col>
+        </Row>
+        <!-- 资源表格结束 -->
+        <Row>
+          <!-- 拓展资源表格开始 -->
+          <Col span="12">
+            <Row>
+              <Col span="24">
+                <div>
+                  <Button class="resource-btn" type="primary" @click="expandAddAction()">新增</Button>
+                  <Button class="resource-btn" type="info" @click="expandEditAction">修改</Button>
+                  <Button class="resource-btn" type="error" @click="expandDelete">删除</Button>
+                </div>
+              </Col>
+            </Row>
+            <Row>
+              <Col span="24">
+                <vTable
+                  :upDownMove="false"
+                  name="expand-resource"
+                  @row-click="expandRowClick"
+                  :height="getTableHeight"
+                  :table-data="expandTableList"
+                  :columns="expandCloumns"
+                  :pagination="false"
+                ></vTable>
+              </Col>
+            </Row>
+          </Col>
+          <!-- 拓展资源表格结束 -->
+          <!-- 报表表格开始 -->
+          <Col  span="12">
+          <Row>
+              <Col span="24">
+                <div style="padding:6px;">
+                  资源所属报表列表
+                </div>
+              </Col>
+            </Row>
+          <vTable
+                  :upDownMove="false"
+                  name="report-resource"
+                  :height="getTableHeight"
+                  :table-data="reportTableList"
+                  :columns="reportColumns"
+                  :pagination="false"
+                ></vTable>
+
+          </Col>
+          <!-- 报表表格结束 -->
+        </Row>
+      </Col>
+    </Row>
+    <editWindow v-model="editWindowShow" :width="500" :fullscreen="false" @on-ok="resourceSubmit">
+      <Form :label-colon="true" :label-width="90" :model="formModel" ref="editFormItem">
+        <FormItem label="上级资源">{{selectNode.title}}</FormItem>
+        <FormItem
+          label="资源名称"
+          prop="resourceName"
+          :rules="{required: true, message: '资源名称不能为空', trigger: 'blur' }"
+        >
+          <Input placeholder="请输入资源名称" size="small" v-model="formModel.resourceName"></Input>
+        </FormItem>
+
+        <FormItem
+          label="资源类型"
+          prop="resourceType"
+          :rules="{required: true,type:'number',message: '资源类型不能为空', trigger: 'change' }"
+        >
+          <Select v-model="formModel.resourceType" size="small">
+            <Option :value="0">菜单</Option>
+            <Option :value="1">按钮</Option>
+            <Option :value="2">功能</Option>
+          </Select>
+        </FormItem>
+
+        <FormItem label="表单绑定" prop="bindingFormName" v-if="formModel.resourceType === 0">
+          <Select
+            v-model="formModel.bindingFormName"
+            size="small"
+            filterable
+            clearable
+            @on-change="bindingFormNameChangeEvent"
+          >
+            <Option
+              :value="item.formName"
+              v-for="(item,index) in somFormList"
+              :key="index"
+            >{{item.tableDesc}}</Option>
+          </Select>
+        </FormItem>
+
+        <div>
+          <FormItem label="资源标识" prop="resourceFlag">
+            <Select
+              v-model="formModel.resourceFlag"
+              size="small"
+              v-if="formModel.resourceType === 2"
+            >
+              <Option
+                :value="item.value"
+                v-for="(item,index) in resourceFlagItems"
+                :key="index"
+              >{{item.text}}</Option>
+            </Select>
+            <Input v-else placeholder="请输入资源标识" size="small" v-model="formModel.resourceFlag"></Input>
+          </FormItem>
+        </div>
+
+        <FormItem label="后端URL" prop="resourceLink">
+          <Input placeholder="请输入资源后台访问链接URL" size="small" v-model="formModel.resourceLink"></Input>
+        </FormItem>
+
+        <FormItem label="前端路由" prop="routerUrl">
+          <Input placeholder="请输入资源前端路由地址" size="small" v-model="formModel.routerUrl"></Input>
+        </FormItem>
+
+        <FormItem label="资源顺序" prop="resourceSort">
+          <InputNumber placeholder="请输入资源顺序" size="small" v-model="formModel.resourceSort"></InputNumber>
+        </FormItem>
+        <FormItem label="资源图标" prop="resourceIcon">
+          <Input placeholder="请输入资源图标" size="small" v-model="formModel.resourceIcon"></Input>
+        </FormItem>
+        <FormItem label="资源I18N" prop="resourceI18n">
+          <Input placeholder="请输入资源I18N" size="small" v-model="formModel.resourceI18n"></Input>
+        </FormItem>
+
+        <FormItem label="资源属性" prop="iisPublic">
+          <i-Switch v-model="formModel.iisPublic" size="large">
+            <span slot="open">公有</span>
+            <span slot="close">私有</span>
+          </i-Switch>
+        </FormItem>
+
+        <FormItem label="状态" prop="status">
+          <i-Switch v-model="formModel.status" size="large">
+            <span slot="open">启用</span>
+            <span slot="close">禁用</span>
+          </i-Switch>
+        </FormItem>
+      </Form>
+    </editWindow>
+
+    <editWindow v-model="expandModalShow" :width="500" :fullscreen="false" @on-ok="expandSubmit">
+      <Form :label-colon="true" :label-width="90" :model="expandFormModel" ref="expandForm">
+        <FormItem
+          label="拓展名称"
+          prop="expandName"
+          :rules="{required: true, message: '拓展名称不能为空', trigger: 'blur' }"
+        >
+          <Input placeholder="请输入拓展名称" size="small" v-model="expandFormModel.expandName"></Input>
+        </FormItem>
+
+        <FormItem label="后端URL" 
+        prop="expandUrl"
+         :rules="{required: true, message: '后端URL不能为空', trigger: 'blur' }"
+        >
+          <Input placeholder="请输入拓展资源后台访问链接URL" size="small" v-model="expandFormModel.expandUrl"></Input>
+        </FormItem>
+
+        <FormItem label="前端路由" prop="routerUrl">
+          <Input placeholder="请输入拓展资源前端路由地址" size="small" v-model="expandFormModel.routerUrl"></Input>
+        </FormItem>
+
+        <FormItem label="状态" prop="status">
+          <i-Switch v-model="expandFormModel.status" size="large">
+            <span slot="open">启用</span>
+            <span slot="close">禁用</span>
+          </i-Switch>
+        </FormItem>
+      </Form>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+import request from "@/libs/request";
+import vTable from "@/components/tables/vTable";
+import editWindow from "@/components/edit-window/edit-window";
+// 资源显示列配置
+const resourceClumns = [
+  {
+    title: "状态",
+    key: "status",
+    align: "center",
+    width: 40,
+    render: (h, params) => {
+      return h("Checkbox", {
+        props: {
+          disabled: true,
+          size: "small",
+          value: params.row.status
+        }
+      });
+    }
+  },
+  {
+    title: "资源名称",
+    key: "resourceName",
+    align: "left",
+    titleAlign: "center",
+    width: 200
+  },
+  {
+    title: "资源类型",
+    key: "resourceType",
+    align: "center",
+    titleAlign: "center",
+    width: 100,
+    render: (h, params) => {
+      //资源类型0菜单1按钮2功能
+      let text;
+      switch (params.row.resourceType) {
+        case 0:
+          text = "菜单";
+          break;
+        case 1:
+          text = "按钮";
+          break;
+        case 2:
+          text = "功能";
+          break;
+        case 3:
+          text = "拓展功能";
+          break;
+      }
+
+      return h("span", text);
+    }
+  },
+  {
+    title: "资源属性",
+    key: "iisPublic",
+    align: "center",
+    titleAlign: "center",
+    width: 80,
+    render: (h, params) => {
+      return h("span", params.row.iisPublic ? "公有" : "私有");
+    }
+  },
+  {
+    title: "后端URL",
+    key: "resourceLink",
+    align: "left",
+    titleAlign: "center"
+  },
+  {
+    title: "前端路由",
+    key: "routerUrl",
+    align: "left",
+    titleAlign: "center"
+  },
+  {
+    title: "资源顺序",
+    key: "resourceSort",
+    align: "center",
+    titleAlign: "center"
+  }
+];
+//拓展功能列配置
+const expandCloumns = [
+  {
+    title: "状态",
+    key: "status",
+    align: "center",
+    width: 40,
+    render: (h, params) => {
+      return h("Checkbox", {
+        props: {
+          disabled: true,
+          size: "small",
+          value: params.row.status
+        }
+      });
+    }
+  },
+  {
+    title: "拓展名称",
+    key: "expandName",
+    align: "center",
+    titleAlign: "center"
+  },
+  {
+    title: "后端URL",
+    key: "expandUrl",
+    align: "center",
+    titleAlign: "center"
+  },
+  {
+    title: "前端路由",
+    key: "routerUrl",
+    align: "center",
+    titleAlign: "center"
+  }
+];
+
+const reportColumns = [{
+    title: "报表名称",
+    key: "templateName",
+    align: "center",
+    titleAlign: "center"
+  },{
+    title:"报表类型",
+    key:'iisPublic',
+    align:'center',
+    titleAlign: "center",
+    width: 80,
+    render: (h, params) => {
+      return h("span", params.row.iisPublic ? "公有" : "私有");
+    }
+  }]
+export default {
+  components: {
+    vTable,
+    editWindow
+  },
+  data() {
+    return {
+      editWindowShow: false,
+      resourceTreeData: [],
+      treeLoading: false,
+      resourceFlagItems: [
+        {
+          text: "添加",
+          value: "iisAdd"
+        },
+        {
+          text: "编辑",
+          value: "iisEdit"
+        },
+        {
+          text: "删除",
+          value: "iisDel"
+        },
+        {
+          text: "禁用",
+          value: "iisDisabled"
+        },
+        {
+          text: "打印",
+          value: "iisPrint"
+        },
+        {
+          text: "审核",
+          value: "iisAudit"
+        },
+        {
+          text: "反审",
+          value: "iisNotAudit"
+        },
+        {
+          text: "导出",
+          value: "iisExport"
+        },
+        {
+          text: "导入",
+          value: "iisImport"
+        }
+      ],
+      initDataModel: {
+        parentId: "",
+        iisPublic: true,
+        resourceName: "",
+        resourceType: 0,
+        resourceLink: "",
+        resourceSort: 0,
+        resourceIcon: "",
+        resourceI18n: "",
+        parentPath: "",
+        status: true,
+        resourceFlag: "",
+        bindingFormName: "",
+        routerUrl: ""
+      },
+      formModel: {
+        parentId: "",
+        iisPublic: true,
+        resourceName: "",
+        resourceType: 0,
+        resourceLink: "",
+        resourceSort: 0,
+        resourceIcon: "",
+        resourceI18n: "",
+        parentPath: "",
+        status: true,
+        resourceFlag: "",
+        bindingFormName: "",
+        routerUrl: ""
+      },
+      expandFormModel: {
+        resourceId: null,
+        expandName: "",
+        expandUrl: "",
+        routerUrl: "",
+        status: true
+      },
+      expandInitFormModel: {
+        resourceId: null,
+        expandName: "",
+        expandUrl: "",
+        routerUrl: "",
+        status: true
+      },
+      resourceClumns: resourceClumns,
+      expandCloumns: expandCloumns,
+      reportColumns:reportColumns,
+      selectNode: {},
+      rowSelectData: {},
+      // 存放表单信息
+      somFormList: [],
+      // 拓展table数据
+      expandTableList: [],
+      // 拓展编辑窗口显示
+      expandModalShow: false,
+      // 拓展选中的行数据
+      expandRowSelectData: null,
+      // 资源所属报表列表
+      reportTableList:[]
+    };
+  },
+  computed: {
+    tableData() {
+      let data = [];
+      if (Object.keys(this.selectNode).length == 0) {
+        return data;
+      }
+      this.selectNode.children.forEach((item, index) => {
+        data.push(item.data);
+      });
+      return data;
+    },
+    getTableHeight() {
+      return window.innerHeight / 2 - 75;
+    }
+  },
+  methods: {
+    addAction() {
+      //this.$refs.editFormItem.resetFields();
+      this.formModel = JSON.parse(JSON.stringify(this.initDataModel));
+      this.editWindowShow = true;
+    },
+    editAction() {
+      if (Object.keys(this.rowSelectData).length == 0) {
+        this.$Message.warning("请选择需要操作的数据");
+        return;
+      }
+      this.formModel = JSON.parse(JSON.stringify(this.rowSelectData));
+      this.editWindowShow = true;
+    },
+    expandAddAction() {
+      debugger
+      //this.$refs.editFormItem.resetFields();
+      if(Object.keys(this.selectNode).length === 0 || this.selectNode.id === '0'){
+        this.$Message.warning("请选择左侧需要添加拓展功能的资源");
+        return
+      }
+      this.expandFormModel = JSON.parse(
+        JSON.stringify(this.expandInitFormModel)
+      );
+      this.expandModalShow = true;
+    },
+    expandEditAction() {
+      if (this.expandRowSelectData === null) {
+        this.$Message.warning("请选择需要操作的数据");
+        return;
+      }
+      debugger
+      this.expandFormModel = JSON.parse(
+        JSON.stringify(this.expandRowSelectData)
+      );
+      this.expandModalShow = true;
+    },
+
+    treeSelectEvent(a, b) {
+      this.selectNode = b;
+      this.rowSelectData = {};
+      this.expandRowSelectData = null
+      this.getExpandResurceList(b.id);
+      this.getResourceReport(b.id)
+    },
+    loaddingTree() {
+      request.get("/sys/resource/platform/tree").then(res => {
+        let node = {
+          id: "0",
+          parentId: "0",
+          children: res,
+          expand: true,
+          title: "顶级资源",
+          data: {
+            id: "0",
+            parentPath: ""
+          }
+        };
+        this.resourceTreeData = [node];
+        if (Object.keys(this.selectNode).length == 0) {
+          this.selectNode = node;
+        } else {
+          this.setResourceSelectNode(node);
+        }
+      });
+    },
+    setResourceSelectNode(res) {
+      let _self = this;
+      res.children.forEach((item, index) => {
+        if (_self.selectNode.data.id == item.data.id) {
+          _self.selectNode = item;
+          return;
+        } else {
+          this.setResourceSelectNode(item);
+        }
+      });
+    },
+    resourceSubmit() {
+      let _self = this;
+      this.$refs.editFormItem.validate(valid => {
+        if (!valid) {
+          //主表校验
+          return;
+        }
+        let url = "/sys/resource/saveOrUpdate";
+        _self.formModel.parentId = _self.selectNode.data.id;
+        if (_self.selectNode.data.id == "0") {
+          _self.formModel.parentPath = `${_self.selectNode.data.id}`;
+        } else {
+          _self.formModel.parentPath = `${_self.selectNode.data.parentPath},${_self.selectNode.data.id}`;
+        }
+
+        request.post(url, _self.formModel).then(res => {
+          _self.$Message.success("操作成功");
+          _self.loaddingTree();
+          this.editWindowShow = false;
+        });
+      });
+    },
+    deleteResource() {
+      if (Object.keys(this.rowSelectData).length == 0) {
+        this.$Message.warning("请选择需要操作的数据");
+        return;
+      }
+      this.$Modal.confirm({
+        title: "删除确认",
+        content: "确定要删除当前选中数据吗？",
+        onOk: () => {
+          let url = `/sys/resource/delete`;
+          let _self = this;
+          request.post(url, { id: this.rowSelectData.id }).then(res => {
+            this.loaddingTree();
+          });
+        }
+      });
+    },
+    expandDelete() {
+      if (this.expandRowSelectData === null) {
+        this.$Message.warning("请选择需要操作的数据");
+        return;
+      }
+      this.$Modal.confirm({
+        title: "删除确认",
+        content: "确定要删除当前选中数据吗？",
+        onOk: () => {
+          let url = `/sys/resource/exp/delete/${this.expandRowSelectData.id}`;
+          let _self = this;
+          request.get(url).then(res => {
+            this.getExpandResurceList(this.selectNode.id);
+          });
+        }
+      });
+    },
+    rowClick(rowData, rowIndex) {
+      this.rowSelectData = rowData;
+    },
+    expandRowClick(rowData, rowIndex) {
+      this.expandRowSelectData = rowData;
+    },
+    getSingleOrMasterForm() {
+      // 获取单表或主表类型的表单
+      request.get("/sys/table/som").then(res => {
+        this.somFormList = res;
+      });
+    },
+    bindingFormNameChangeEvent(value) {
+      let flag = this.formModel.resourceFlag;
+      if (flag === undefined || flag === null || flag === "") {
+        this.formModel.resourceFlag = value;
+      }
+    },
+    //获取拓展资源列表
+    getExpandResurceList(resourceId) {
+      request.get(`/sys/resource/exp/list/${resourceId}`).then(res => {
+        this.expandTableList = res;
+      });
+    },
+    expandSubmit() {
+      const _self = this
+      this.$refs.expandForm.validate(valid => {
+        if (!valid) {
+          //主表校验
+          return;
+        }
+        let reqeustUrl = '/sys/resource/exp/save'
+        if(_self.expandFormModel.id){
+          reqeustUrl = '/sys/resource/exp/update'
+        }else{
+          let resourceId = _self.selectNode.id
+          _self.expandFormModel['resourceId'] = resourceId
+        }
+        request.post(reqeustUrl, _self.expandFormModel).then(res => {
+          _self.$Message.success("操作成功");
+          _self.getExpandResurceList(_self.expandFormModel.resourceId);
+          _self.expandModalShow = false;
+        });
+      });
+    },
+    // 获取resource下面的报表
+    getResourceReport(resourceId){
+      request.get(`/sys/report/resource/${resourceId}`).then(res=>{
+        this.reportTableList = res
+      })
+    }
+  },
+  created() {
+    this.loaddingTree();
+    this.getSingleOrMasterForm();
+  }
+};
+</script>
+
+<style>
+.resource-btn {
+  margin: 0.25rem;
+}
+.fromtable {
+  background-color: #ffffff !important;
+}
+</style>

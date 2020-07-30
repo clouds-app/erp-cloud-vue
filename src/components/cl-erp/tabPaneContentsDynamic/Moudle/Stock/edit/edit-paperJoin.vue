@@ -11,7 +11,7 @@
       @on-ok="formTableDataSubmit()"
       v-if="initData.columns"
     >
-    <div @contextmenu.prevent ref="masterHeight" class="masterHeightClass" :style="{ height: getMasterheight() + '%' }" >  
+    <div @contextmenu.prevent ref="masterHeight" class="masterHeightClass" :style="{ height: getMasterheight() + '%' }" >
       <Form
         ref="formDataInfo"
         :show-message="true"
@@ -81,20 +81,10 @@
           <Col span="6">
             <FormItem label="数量" prop="qty">
               <Input v-model="formDataInfo.master.qty" maxlength="20" placeholder disabled></Input>
-              <!-- <InputNumber
-                disabled
-                v-model="formDataInfo.master.qty"
-                :formatter="value => ` ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
-                :parser="value => value.replace(/\$\s?|(,*)/g, '')"
-                style="width:100%"
-                maxlength="20"
-                placeholder
-              ></InputNumber> -->
             </FormItem>
           </Col>
           <Col span="6">
             <FormItem label="金额" prop="money">
-              <!-- <Input v-model="formDataInfo.master.money" maxlength="20" placeholder disabled></Input> -->
               <InputNumber
                 disabled
                 v-model="formDataInfo.master.money"
@@ -121,7 +111,7 @@
                 <FormItem label="月结" prop="iisAcc">
                   <Checkbox
                     disabled
-                    v-model="formDataInfo.master.iisAcc"                  
+                    v-model="formDataInfo.master.iisAcc"
                     maxlength="20"
                     placeholder
                   ></Checkbox>
@@ -137,7 +127,6 @@
           </Col>
           <Col span="6">
             <FormItem label="车牌" prop="carNo">
-              <!-- <Input v-model="formDataInfo.master.carNo" maxlength="20" placeholder></Input> -->
               <div>
                 <popup
                   :disabled="detailDisabled"
@@ -152,29 +141,6 @@
               </div>
             </FormItem>
           </Col>
-
-          <!-- <Col span="8">
-            <FormItem label="币别" prop="curyId">
-              <Input v-model="formDataInfo.master.curyId" maxlength="20" placeholder disabled></Input>
-            </FormItem>
-          </Col>
-          <Col span="8">
-            <FormItem label="汇率" prop="rate">
-              <Input v-model="formDataInfo.master.rate" maxlength="20" placeholder disabled></Input>
-            </FormItem>
-          </Col>
-
-          <Col span="7">
-            <FormItem label="税率" prop="taxRat">
-              <Input v-model="formDataInfo.master.taxRat" maxlength="20" placeholder disabled></Input>
-            </FormItem>
-          </Col>
-          <Col span="8">
-            <FormItem label="税别" prop="taxTp">
-              <Input v-model="formDataInfo.master.taxTp" maxlength="20" placeholder disabled></Input>
-            </FormItem>
-          </Col>-->
-
           <Col span="12">
             <FormItem label="备注">
               <Input
@@ -200,7 +166,7 @@
             :index-menu="true"
             :col-start="0"
             :width="200"
-            :height="300"
+            :height="350"
             :insertDirection="insertDirection"
             :row-init-data="initData.initData.stockPurPaperJoinItemFm"
             :data.sync="formDataInfo.paperJoinItemSlave.defaultList"
@@ -218,7 +184,7 @@
                   class="ivu-table-column-left"
                   v-for="(column,index2) in columnGroup"
                   :key="index2"
-                  :width="column.width"
+                  :width="column.editWidth"
                   :colspan="column.colSpan"
                   :rowspan="column.rowSpan"
                   style="text-align:center;"
@@ -235,20 +201,13 @@
                 class="ivu-table-column-left"
                 v-for="(column,columnIndex) in initData.columns.stockPurPaperJoinItemFm.editColumns"
                 :key="columnIndex"
-                :width="column.width"
+                :width="column.editWidth"
               >
-                <!-- 控件特殊处理 报损类型-->
-                <!-- <Select :disabled="detailDisabled" v-if="column.key == 'pliLostType'" v-model="row[column.key]" transfer>
-                     <Option  v-for="(item,index) in pliLostTypeList" :key="index" :value="item.dicValue">{{item.dicLabel}}</Option>
-                </Select>-->
-                <!--控件特殊处理 工单号  -->
-                <Input
+                 <Input
                   v-if="column.key == 'workNo'"
                   v-model="row[column.key]"
-                  :disabled="detailDisabled||masterDisabled"
+                  :disabled="!!(row['id'])"
                   @on-blur="onFill(index)"
-                  icon="md-add"
-                  @on-click="Slave_list_table_editRowModify(index)"
                   @input="
                       value => {
                         valueChangeAssign(value, index, row, 'workNo');
@@ -256,26 +215,38 @@
                     "
                   size="small"
                   :maxlength="20"
-                />
+                >
+                  <Icon @click="Slave_list_table_editRowModify(index)" slot="suffix" type="md-add" v-show="!(row['id'])" />
+                </Input>
                 <!--控件特殊处理 本次入库数 -->
-                <Input
+                <inputNumber
                   v-else-if="column.key == 'qty'"
                   v-model="row[column.key]"
                   :disabled="detailDisabled"
-                  @input="changeBoiQty(value, index, row, 'qty')"
+                  @on-change="getMasterqty()"
+                  :min=1
+                  @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'qty');
+                      }
+                    "
                   size="small"
                   :maxlength="20"
                 />
                 <!--控件特殊处理 单价 -->
-                <Input
+                <inputNumber
                   v-else-if="column.key == 'price'"
                   v-model="row[column.key]"
                   :disabled="detailDisabled"
-                  @input="changePriceQty(value, index, row, 'price')"
+                  @on-blur="changePriceQty(value, index, row, 'price')"
+                  @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'price');
+                      }
+                    "
                   size="small"
                   :maxlength="20"
                 />
-
                 <formControl
                   v-else
                   :control-type="column.controlType"
@@ -316,39 +287,40 @@
  * @created 2019/11/20 17:07:54
  */
 // import preferential from "@/components/preferential/preferential";
-import popup from "@/components/popup/popup";
-import editWindow from "@/components/edit-window/edit-window";
-import eTable from "@/components/e-table/e-table";
-import request from "@/libs/request";
-import editBaseMixins from "../../mixins/edit";
-import optionSearch from "../../components/optionSearch";
-import dayjs from "dayjs";
-import Sys from "@/api/sys";
-import formControl from "@/components/form-control/form-control";
-import paperJoinSlave from "./edit-paperJoinSlave";
-import { deepCopy } from "view-design/src/utils/assist";
+import popup from '@/components/popup/popup'
+import inputNumber from '@/components/input-number'
+import editWindow from '@/components/edit-window/edit-window'
+import eTable from '@/components/e-table/e-table'
+import request from '@/libs/request'
+import editBaseMixins from '../../mixins/edit'
+import optionSearch from '../../components/optionSearch'
+import dayjs from 'dayjs'
+import Sys from '@/api/sys'
+import formControl from '@/components/form-control/form-control'
+import paperJoinSlave from './edit-paperJoinSlave'
+import { deepCopy } from 'view-design/src/utils/assist'
 const default_formDataInfo = {
   // 主表 更改字段
   master: {
     iisAcc: false,
-    carNo: "",
-    pjDate: dayjs().format("YYYY-MM-DD HH:mm:ss"),
-    accDate: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+    carNo: '',
+    pjDate: dayjs().format('YYYY-MM-DD HH:mm:ss'),
+    accDate: dayjs().format('YYYY-MM-DD HH:mm:ss'),
     iisAudit: 0,
     money: 0,
     ppoRQty: 0,
-    pjNumber: "",
+    pjNumber: '',
     qty: 0,
     rate: 0,
-    remark: "",
-    shNumber: "",
+    remark: '',
+    shNumber: '',
     status: 1,
     supplierId: 0,
-    supplierCode: "",
-    supplierName: "",
+    supplierCode: '',
+    supplierName: '',
     taxRat: 0,
-    taxTp: "",
-    updateUsername: ""
+    taxTp: '',
+    updateUsername: ''
   },
   // 子表 artLengs 根据实际接口更改,其它不变
   paperJoinItemSlave: {
@@ -357,9 +329,9 @@ const default_formDataInfo = {
     deleteList: [], // 删除列
     updateList: []
   }
-};
+}
 export default {
-  name: "edit-paperJoin",
+  name: 'edit-paperJoin',
   mixins: [editBaseMixins],
   components: {
     editWindow,
@@ -367,40 +339,53 @@ export default {
     eTable,
     popup,
     paperJoinSlave,
-    formControl
+    formControl,
+    inputNumber
     // Form,
   },
-  data() {
+  data () {
     return {
-      insertDirection: "down", //表单插入方向
-      actionSubtitle: "纸板入库", // 当前操作副标题
+      insertDirection: 'down', // 表单插入方向
+      actionSubtitle: '纸板入库', // 当前操作副标题
       salveWindow: {
-        flag: null, //隐藏完结字段
-        Tips: "提示：此窗口只显示有供应商纸质/纸板进价的工单！",
+        flag: null, // 隐藏完结字段
+        Tips: '提示：此窗口只显示有供应商纸质/纸板进价的工单！',
         isLoaddingDone: false, // 窗口是否加载完成
         showEditWindow: false, // 是否显示edit-boxSalesOrderSlave 编辑窗口
-        action: "add", // 当前操作功能 添加/编辑
+        action: 'add', // 当前操作功能 添加/编辑
         formDetailData: {} // 当前表单的详细信息
       },
       showContextMenu: true,
       showEditMenu: false,
       id: 0,
-      formName: "stockPurPaperJoinItemFm",
-      requestBaseUrl: "/stock/paperJoin", // 请求 查询 操作的基础路径
-      formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      formName: 'stockPurPaperJoinItemFm',
+      requestBaseUrl: '/stock/paperJoin', // 请求 查询 操作的基础路径
+      formDataInfo: deepCopy(default_formDataInfo), // 防止添加和更新数据提交发生冲突
 
       itemInitData: {},
       // 需要验证的数据
       ruleValidate: {
         supplierCode: [
-          { required: true, message: "供应商不能为空", trigger: "blur" }
+          { required: true, message: '供应商不能为空', trigger: 'blur' }
         ],
         wareHouseItCode: [
-          { required: true, message: "仓位不能为空", trigger: "blur" }
+          { required: true, message: '仓位不能为空', trigger: 'blur' }
         ]
       },
-       tableFieldsValidator: {
-        
+      tableFieldsValidator: {
+        qty: [/// ^[0-9]+(\.\d+)?$/;
+          {
+            required: true,
+            message: '本次入库数不能为空',
+            trigger: 'blur',
+            type: 'number'
+          },
+          {
+            pattern: /^[1-9]\d*$/,
+            trigger: 'blur',
+            message: '本次入库数必须是正整数'
+          }
+        ]
       },
       getworkerId: 0,
       cliclleng: null,
@@ -408,333 +393,211 @@ export default {
       // List: "",
       // WorkOrderNumber: null,
       getppoNoOrder: [false],
-      index1: 0, //工单号里面用
-      disppoGroupNo: true, //工单号禁用字段
-      inWsId: null,//传给用料批次号的参数
-      biBatchNoList: "",//过滤用的字符串传给工单
-      ppoGroupNoList: "",
-      masterDisabled:false, //主表字段禁用
-    };
+      index1: 0, // 工单号里面用
+      disppoGroupNo: true, // 工单号禁用字段
+      inWsId: null, // 传给用料批次号的参数
+      biBatchNoList: '', // 过滤用的字符串传给工单
+      ppoGroupNoList: '',
+      masterDisabled: false // 主表字段禁用
+    }
   },
   methods: {
-     sum(arg) {
-      //debugger
-      var total = 0;
-      for (var i = 0; i < arg.length; i++) {
-        var cur = Number(arg[i].boiQty); //转化成了数类型(整数,小数,NaN)
-        isNaN(cur) ? null : (total += cur);
-      }
-      return total;
-    },
-    //计算总数量
-    getboQtySum() {
-      //debugger
-      let masterstockqty = 0;
-      let tableData = this.$refs["tableFields"].get();
-        for (let i = 0; i < tableData.length; i++) {
-          let stockqty = Number(tableData[i].boiQty);
-          if (!!stockqty) {
-            masterstockqty += stockqty;           
-          }
+    //  sum(arg) {
+    //   //debugger
+    //   var total = 0;
+    //   for (var i = 0; i < arg.length; i++) {
+    //     var cur = Number(arg[i].boiQty); //转化成了数类型(整数,小数,NaN)
+    //     isNaN(cur) ? null : (total += cur);
+    //   }
+    //   return total;
+    // },
+    // 计算总数量
+    getboQtySum () {
+      let masterstockqty = 0
+      let tableData = this.$refs['tableFields'].get()
+      for (let i = 0; i < tableData.length; i++) {
+        let stockqty = Number(tableData[i].boiQty)
+        if (stockqty) {
+          masterstockqty += stockqty
         }
-      this.formDataInfo.master.boQty = masterstockqty;     
+      }
+      this.formDataInfo.master.boQty = masterstockqty
     },
-     //本次入库数改变 主表数量改变
-    changeBoiQty(value, index, row, name){
-      //debugger
-      let isNumber = this.myIsNaN(Number(row.qty))
-      if(!isNumber){
-         this.$Message.error("请输入正数")
-         return
-      }
-      if(Number(row.qty) <= 0){
-        this.$Message.error("请输入大于零的数")
-        return
-      }
-      if(row.qty<=(row.stockQty-row.inQty+Number(row.ppoRQty?row.ppoRQty:0))){
-        row.money = Number(row.qty) *Number(row.price)
-        row.ppoArea = Number(row.qty) *Number(row.sArea)
-        this.getppoMoney();
-        this.getqty();       
-      }else{
-        this.$Message.error("本次入库数不能大于采购数量-已入库数")
-        this.formDataInfo.master.qty = 0
-        this.formDataInfo.master.money = 0
-        row.qty = 0
-      }    
+    // 本次入库数改变 主表数量改变
+    getMasterqty () {
+      let masterqty = 0
+      this.$refs['tableFields'].get().filter(item => {
+        masterqty += Number(item.qty)
+      })
+      this.formDataInfo.master.qty = masterqty
     },
-     //单价改变 主表数量改变
-    changePriceQty(value, index, row, name){
-      //debugger
-      let isNumber = this.myIsNaN(Number(row.price))
-      if(!isNumber){
-          row.price = 0
-         this.$Message.error("请输入正数")
-         return
-      }
-      if(Number(row.price) <= 0){
-        row.price = 0
-        this.$Message.error("请输入大于零的数")
-        return
-      }
-      row.money = Number(row.qty) *Number(row.price).toFixed(2)
-      this.getppoMoney();
+    // 单价改变 主表数量改变
+    changePriceQty (value, index, row, name) {
+      let prices = row.price.toFixed(2)
+      this.$refs['tableFields'].set({ price: prices }, index)
+      let money = (Number(row.qty) * Number(row.price)).toFixed(2)
+      this.$refs['tableFields'].set({ money: money }, index)
+      this.getMasterqty()
+      this.getMastermoney()
     },
-    transformation(selectedValue) {
-      //debugger
-       let transData = JSON.parse(
+    getMastermoney () {
+      let masterMoney = 0
+      this.$refs['tableFields'].get().filter(item => {
+        masterMoney += Number(item.money)
+      })
+      this.formDataInfo.master.money = masterMoney
+    },
+    transformation (selectedValue) {
+      // debugger
+      let transData = JSON.parse(
         JSON.stringify(this.initData.initData.stockPurPaperJoinItemFm)
-      );
+      )
       // transData.artCode = selectedValue.psArt; //  纸质
-        transData.workNo = selectedValue.ppoGroupNo; //工单号
-        transData.pppmId = selectedValue.id  //纸板采购明细id 
-        transData.ppoNO = selectedValue.ppoNO  //采购单号
-        transData.prodNo = selectedValue.prodNo  //产品编号
-        transData.ctDesc = selectedValue.ctDesc  //客户名称
-        transData.custId = selectedValue.custId  //客户ID
-        transData.lbCode = selectedValue.ppoLB             //楞别
-        transData.partNumer = selectedValue.ppoPartNumer  //产品编号
-        transData.artCode = selectedValue.ppoCorpartCode; //本厂纸质
-        transData.artId = selectedValue.ppoCorpartId; //本厂纸质Id  ppoCorpartId
-        transData.supplierArtName = selectedValue.supplierArtName; //供应商纸质
-        transData.supplierArtId = selectedValue.supplierArtId; //供应商纸质ID
-        transData.lengId = selectedValue.lengId;
-        transData.sizeW = selectedValue.ppoSizeW; //纸宽
-        transData.sizeL = selectedValue.ppoSizeL; //纸长
-        transData.sizeLine = selectedValue.ppoSizeLine; //压线
-        transData.stockQty = selectedValue.ppoStockQty; //采购数量
-        transData.inQty = selectedValue.ppoInQty; //已入库数
-        // transData.rQty = selectedValue.ppoRQty; //退货数
-        transData.ppoRQty = selectedValue.ppoRQty //退货数 用来计算的
-        transData.rQty = 0; //退货数
-        transData.quotePrice = selectedValue.ppoArtPrice; //报价
-        transData.price = selectedValue.ppoPrice; //单价
-        transData.sArea = selectedValue.ppoSArea; //单面积
-        transData.ppoArea = selectedValue.ppoSArea; //面积
-        transData.partNumber = selectedValue.ppoPartNumber; //料号
-        transData.partName = selectedValue.ppoPartName; //产品名称
-        transData.remark = selectedValue.remark; //备注
-        transData.money = selectedValue.ppoMoney; //金额
-        transData.prepQty = selectedValue.ppoPrepQty; //备品数
-        transData.qty = selectedValue.ppoQty; //本次入库数
-        transData.mateWorkNo = selectedValue.mateWorkNo; //用料单号
-        transData.artId = selectedValue.ppoCorpartId//本厂纸质Id
-
-        transData.iisAcc = selectedValue.iisAcc; //月结
-      return transData;
+      transData.workNo = selectedValue.ppoGroupNo // 工单号
+      transData.pppmId = selectedValue.id // 纸板采购明细id
+      transData.ppoNO = selectedValue.ppoNO // 采购单号
+      transData.prodNo = selectedValue.prodNo // 产品编号
+      transData.ctDesc = selectedValue.ctDesc // 客户名称
+      transData.custId = selectedValue.custId // 客户ID
+      transData.lbCode = selectedValue.ppoLB // 楞别
+      transData.partNumer = selectedValue.ppoPartNumer // 产品编号
+      transData.artCode = selectedValue.ppoCorpartCode // 本厂纸质
+      transData.artId = selectedValue.ppoCorpartId // 本厂纸质Id  ppoCorpartId
+      transData.supplierArtName = selectedValue.supplierArtName // 供应商纸质
+      transData.supplierArtId = selectedValue.supplierArtId // 供应商纸质ID
+      transData.lengId = selectedValue.lengId
+      transData.sizeW = selectedValue.ppoSizeW // 纸宽
+      transData.sizeL = selectedValue.ppoSizeL // 纸长
+      transData.sizeLine = selectedValue.ppoSizeLine // 压线
+      transData.stockQty = selectedValue.ppoStockQty // 采购数量
+      transData.inQty = selectedValue.ppoInQty // 已入库数
+      // transData.rQty = selectedValue.ppoRQty; //退货数
+      transData.ppoRQty = selectedValue.ppoRQty // 退货数 用来计算的
+      transData.rQty = 0 // 退货数
+      transData.quotePrice = selectedValue.ppoArtPrice // 报价
+      transData.price = selectedValue.ppoPrice // 单价
+      transData.sArea = selectedValue.ppoSArea // 单面积
+      transData.ppoArea = selectedValue.ppoSArea // 面积
+      transData.partNumber = selectedValue.ppoPartNumber // 料号
+      transData.partName = selectedValue.ppoPartName // 产品名称
+      transData.remark = selectedValue.remark // 备注
+      transData.money = selectedValue.ppoMoney // 金额
+      transData.prepQty = selectedValue.ppoPrepQty // 备品数
+      transData.qty = selectedValue.ppoQty // 本次入库数
+      transData.mateWorkNo = selectedValue.mateWorkNo // 用料单号
+      transData.artId = selectedValue.ppoCorpartId// 本厂纸质Id
+      transData.iisAcc = selectedValue.iisAcc // 月结
+      return transData
     },
-    //工单号失去焦点带出参数事件
-    onFill(index) {   //workNo
-      //debugger
-      let ppoGroupNoList = "";
-      let tabData = this.$refs["tableFields"].cloneData;
-      if (tabData.length == 1) {
-        if (tabData[0].ppoNO == "") {
-          ppoGroupNoList = "";
-        } else {
-          ppoGroupNoList = tabData[0].ppoNO;
-        }
-      } else {
-        for (let i = 0; i < tabData.length; i++) {
-          if (i === tabData.length - 1) {
-            if (tabData[i].ppoNO=='') {
-              ppoGroupNoList = ppoGroupNoList.substr(0,ppoGroupNoList.length-1)
-            }
+    // 获取工单号过滤字段
+    getppoGroupNoList (index) {
+      let ppoGroupNoList = ''
+      let tabData = this.$refs['tableFields'].get()
+      tabData.filter((item, itemindex) => {
+        if (itemindex !== index) {
+          if (item.ppoNO === '') {
+            return
+          }
+          if (itemindex === 0) {
+            ppoGroupNoList += item.ppoNO + '#' + item.mateWorkNo
           } else {
-            ppoGroupNoList += tabData[i].ppoNO + ",";
+            ppoGroupNoList += ',' + item.ppoNO + '#' + item.mateWorkNo
           }
         }
-      }
-      //获取供应商id
-      let inProvider = this.formDataInfo.master.supplierId;
-      //获取供应商
-      let supplierCode = this.formDataInfo.master.supplierCode;
-      //获仓位
-      let wareHouseItCode = this.formDataInfo.master.wareHouseItCode;
-      //获取工单号
+      })
+      return ppoGroupNoList
+    },
+    // 工单号失去焦点带出参数事件
+    onFill (index) { // workNo
+      let tabData = this.$refs['tableFields'].get()
+      let ppoGroupNoList = this.getppoGroupNoList(index)
+      // 获取供应商id
+      let inProvider = this.formDataInfo.master.supplierId
+      // 获取供应商
+      let supplierCode = this.formDataInfo.master.supplierCode
+      // 获仓位
+      let wareHouseItCode = this.formDataInfo.master.wareHouseItCode
+      // 获取工单号
       let ppoGroupNo = this.formDataInfo.paperJoinItemSlave.defaultList[
         index
-      ].workNo;
-      //获取当前子表数据
-      let two = this.formDataInfo.paperJoinItemSlave.defaultList[index];
-      let one = this.$refs["tableFields"].cloneData[index];
-      //获取子表初始化时的数据
-      let defulit = this.initData.initData.stockPurPaperJoinItemFm;
-      if (supplierCode === undefined) {
-        this.$Message.error("供应商不能为空");
-        return;
+      ].workNo
+      // 获取当前子表数据
+      let two = this.formDataInfo.paperJoinItemSlave.defaultList[index]
+      let one = this.$refs['tableFields'].cloneData[index]
+      // 获取子表初始化时的数据
+      let defulit = this.initData.initData.stockPurPaperJoinItemFm
+      if (!supplierCode) {
+        this.$Message.error('供应商不能为空')
+        return
       }
-      if(wareHouseItCode == undefined){
-        this.$Message.error("仓位不能为空")
+      if (!wareHouseItCode) {
+        this.$Message.error('仓位不能为空')
         return
       }
       let _this = this
       if (ppoGroupNo) {
         this.ppoGroupNoList = ppoGroupNoList
+        let nowData = JSON.parse(JSON.stringify(_this.initData.initData.stockPurPaperJoinItemFm))
         request
           .post(`/stock/paperJoin/getSpPaperPOToPaperJoin`, {
-            ppoGroupNo:ppoGroupNo,
-            flag:"1",
+            ppoGroupNo: ppoGroupNo,
+            flag: '1',
             inProvider: inProvider,
             ppoGroupNoList
-          })
-          .then(res => {
-            //debugger
-            let data = res[0];
+          }).then(res => {
+            let data = res[0]
             if (data === [] || data === undefined || data === null) {
-              _this.$Message.error("工单号错误");
-              //$set(要修改的对象,属性,属性的值是啥)
-              _this.$set(
-                _this.formDataInfo.paperJoinItemSlave.defaultList,
-                index,
-                _this.initData.initData.stockPurPaperJoinItemFm
-              );
-              return;
+              _this.$Message.error('工单号错误')
+              // $set(要修改的对象,属性,属性的值是啥)
+              _this.$refs['tableFields'].set(nowData, index)
+              return
             }
-           
-            // data.bpOutStore = data.bpStoreQty
-            // let demo = _this.$refs["tableFields"].cloneData[index];
-            // _this.transformation(demo, data);
-            // _this.getboQtySum()
-             
-            
-            res.forEach(selectedValue =>{
-              let transData = _this.transformation(selectedValue)
-              pushData.push(transData)
-            })
-
-            //
-            for(let m=0;m<tabData.length;m++){
-              for(let n=0;n<pushData.length;n++){
-                //debugger
-                if(pushData[n].boxUseBatchNo === tabData[m].boxUseBatchNo){
-                  pushData.splice(n, 1);
-                  n = n-1
-                }
-              }
-            }
-           
-           
-            // this.$refs["tableFields"].set(pushData, index);
-            _this.$refs["tableFields"].set(pushData, index);
-            _this.getppoMoney()
+            let dataList = _this.transformation(res[0])
+            _this.$refs['tableFields'].set(dataList, index)
+            _this.getMasterqty()
             _this.getqty()
-              
-            // _this.$refs["tableFields"].set(pushData,index)
-           
-            //判断用料批次号是否存在
-            // for (let index2 = 0; index2 < tabData.length; index2++) {
-            //   if (index != index2) {
-            //     if (data.BoxUseBatchOn === tabData[index2].boxUseBatchNo) {
-            //       _this.$Message.error("该用料批次号已经存在");
-            //       tabData[index] = JSON.parse(
-            //         JSON.stringify(_this.initData.initData.stockPurPaperJoinItemFm)
-            //       );
-            //       return;
-            //     }
-            //   }
-            // }
-
-          });
+            _this.getMastermoney()
+          })
       }
-      this.getppoMoney();
-      this.getqty();
+      this.getMasterqty()
+      this.getqty()
+      this.getMastermoney()
     },
-    //无单采购点击事件
-    // ppoNoOrderclick(index) {
-    //   if (this.$refs["tableFields"].cloneData[index].ppoNoOrder === true) {
-    //     (this.getppoNoOrder[index] = false), (this.disppoGroupNo = true);
-    //     // this.getppoNoOrder[index]=false,
-    //   } else
-    //     (this.getppoNoOrder[index] = true),
-    //       // this.getppoNoOrder[index]=true,
-    //       (this.disppoGroupNo = false);
-    // },
-    //打开编辑页面判断完结是否显示
-    // resetTitle() {
-    //   if (this.action === "add") {
-    //     this.flag = false;
-    //   } else {
-    //     this.flag = true;
-    //   }
-    // },
-    //接受工单号传回来的数据
-    closeMain(selectedValues) {
-      //debugger
-      let pushData = [];
-      //获取子表数据
-      let sundata = this.$refs["tableFields"].get();
+    // 接受工单号传回来的数据
+    closeMain (selectedValues) {
+      let pushData = []
+      // 获取子表数据
+      let sundata = this.$refs['tableFields'].get()
       selectedValues.forEach(selectedValue => {
-        let transData = this.transformation(selectedValue);
-        pushData.push(transData);
-      });
-      //子表数据[{id:1,name:'xxx'},{id:2,name:'xxxx'}]  --> arrayA= {id:[]}
-      //要比较的数据[{id,name}] forEach(item,index)  if(arrayA[id] == undefined){}
-      //[{1},{2},{3},{4}] [{2},{3},{4}] --> [{1},{2},{3},{4}] --> [{1},{2},{3}]
-      //用料批次号唯一校验
-      // let hiddensundata = {};
-      // for (let index = 0; index < sundata.length; index++) {
-      //   if (sundata[index].boxUseBatchNo != "") {
-      //     let key = JSON.stringify(sundata[index].boxUseBatchNo);
-      //     let value = index;
-      //     hiddensundata[key] = value;
-      //   }
-      // }
-      // for (let i = pushData.length - 1; i >= 0; i--) {
-      //   if (
-      //     hiddensundata[JSON.stringify(pushData[i].boxUseBatchNo)] != undefined
-      //   ) {
-      //     this.$Message.error(
-      //       pushData[i].boxUseBatchNo + "该用料批次号已经存在"
-      //     );
-      //     pushData.splice(i, 1);
-      //   }
-      // }
+        let transData = this.transformation(selectedValue)
+        pushData.push(transData)
+      })
       let index2 = this.index1
       for (let a = 0; a < pushData.length; a++) {
-        this.$refs["tableFields"].set(pushData[a],index2) 
-        index2++;
+        this.$refs['tableFields'].set(pushData[a], index2)
+        index2++
       }
       // this.$refs["tableFields"].set(pushData,this.index1);
-      this.getppoMoney();
-      this.getqty();
-      this.$forceUpdate();
-      
+      this.getMasterqty()
+      this.getqty()
+      this.getMastermoney()
     },
-    //工单号点击事件
-    Slave_list_table_editRowModify(index) {
-      //debugger
-       let ppoGroupNoList = "";
-      let tabData = this.$refs["tableFields"].cloneData;
-      if (tabData.length == 1) {
-        if (tabData[0].ppoNO == "") {
-          ppoGroupNoList = "";
-        } else {
-          ppoGroupNoList = tabData[0].ppoNO;
-        }
-      } else {
-        for (let i = 0; i < tabData.length; i++) {
-          if (i === tabData.length - 1) {
-            if (tabData[i].ppoNO=='') {
-              ppoGroupNoList = ppoGroupNoList.substr(0,ppoGroupNoList.length-1)
-            }
-          } else {
-            ppoGroupNoList += tabData[i].ppoNO + ",";
-          }
-        }
-      }
-      this.salveWindow.showEditWindow = true;
-      this.index1 = index;
+    // 工单号点击事件
+    Slave_list_table_editRowModify (index) {
+      let ppoGroupNoList = this.getppoGroupNoList()
+      let tabData = this.$refs['tableFields'].cloneData
+      this.salveWindow.showEditWindow = true
+      this.index1 = index
       if (
         this.formDataInfo.master.supplierCode &&
         this.formDataInfo.master.wareHouseItCode
       ) {
         // this.List = this.formDataInfo.master.workerCode;
-        let ppuer = this.salveWindow.showEditWindow;
-          this.salveWindow.isLoaddingDone = true;
-          this.salveWindow.action = "add";
-          this.ppoGroupNoList = ppoGroupNoList
-          var _this = this;
+        let ppuer = this.salveWindow.showEditWindow
+        this.salveWindow.isLoaddingDone = true
+        this.salveWindow.action = 'add'
+        this.ppoGroupNoList = ppoGroupNoList
+        var _this = this
         request
           .post(`/stock/paperJoin/getSpPaperPOToPaperJoin`, {
             inProvider: this.getsupplierId,
@@ -742,175 +605,110 @@ export default {
             // inProvider: this.getsupplierCode
           })
           .then(res => {
-            //debugger
-            if(res){
-                for(let i=0;i<res.length;i++){
-                  // res[i].ppoDate = dayjs().format("YYYY-MM-DD HH:mm:ss")//ppoDate
-                  if(res[i].ppoDate)
-                  res[i].ppoDate = res[i].ppoDate.replace("T",' ').replace('.000+0000',"")
-                  if(res[i].ppoDueDate)
-                  res[i].ppoDueDate = res[i].ppoDueDate.replace("T",' ').replace('.000+0000',"")
-                  // res[i].ppoDueDate = dayjs().format("YYYY-MM-DD HH:mm:ss")//ppoDueDate
-                }
+            // debugger
+            if (res) {
+              for (let i = 0; i < res.length; i++) {
+                // res[i].ppoDate = dayjs().format("YYYY-MM-DD HH:mm:ss")//ppoDate
+                if (res[i].ppoDate) { res[i].ppoDate = res[i].ppoDate.replace('T', ' ').replace('.000+0000', '') }
+                if (res[i].ppoDueDate) { res[i].ppoDueDate = res[i].ppoDueDate.replace('T', ' ').replace('.000+0000', '') }
+                // res[i].ppoDueDate = dayjs().format("YYYY-MM-DD HH:mm:ss")//ppoDueDate
               }
-            _this.$refs.mychild.getFormInitDataObj(res);
-          });
+            }
+            _this.$refs.mychild.getFormInitDataObj(res)
+          })
       } else {
-        this.salveWindow.showEditWindow = false;
-        if (!this.formDataInfo.master.supplierCode){
-          this.$Message.error("供应商不能为空");
+        this.salveWindow.showEditWindow = false
+        if (!this.formDataInfo.master.supplierCode) {
+          this.$Message.error('供应商不能为空')
           return
         }
-          
-        if (!this.formDataInfo.master.wareHouseItCode){
-          this.$Message.error("仓位不能为空");
-          return
-        }         
+        if (!this.formDataInfo.master.wareHouseItCode) {
+          this.$Message.error('仓位不能为空')
+        }
       }
       // } else {
       //   this.salveWindow.showEditWindow = false;
       // }
     },
 
-    //判断数据是新增还是修改
-    formDetailDataCall() {
-      //debugger
-      if (this.action != "add") {
-        //debugger
-        this.getworkerId = this.formDataInfo.master.workerId;
-        this.getsupplierId = this.formDataInfo.master.supplierId;
-        this.masterDisabled = true   //主表字段弹框禁用
+    // 判断数据是新增还是修改
+    formDetailDataCall () {
+      // debugger
+      if (this.action != 'add') {
+        // debugger
+        this.getworkerId = this.formDataInfo.master.workerId
+        this.getsupplierId = this.formDataInfo.master.supplierId
+        this.masterDisabled = true // 主表字段弹框禁用
         // this.id = this.formDataInfo.master.id;
       }
     },
-    //当主表客户弹框改变时促发初始化子表数据
-    Initializationdata() {
-      let tableData = this.$refs["tableFields"].getCategorizeData();
-      //debugger
+    // 当主表客户弹框改变时促发初始化子表数据
+    Initializationdata () {
+      let tableData = this.$refs['tableFields'].getCategorizeData()
+      // debugger
       if (this.formDataInfo.master.workerId) {
         if (this.formDataInfo.master.workerId != this.getworkerId) {
-          this.formDataInfo.paperJoinItemSlave.defaultList = [];
-          tableData.deleteList = tableData.updateList;
+          this.formDataInfo.paperJoinItemSlave.defaultList = []
+          tableData.deleteList = tableData.updateList
         }
-        this.getworkerId = this.formDataInfo.master.workerId;
+        this.getworkerId = this.formDataInfo.master.workerId
       }
       if (this.formDataInfo.master.supplierId) {
         if (this.formDataInfo.master.supplierId != this.getsupplierId) {
-          this.formDataInfo.paperJoinItemSlave.defaultList = [];
-          tableData.deleteList = tableData.updateList;
+          this.formDataInfo.paperJoinItemSlave.defaultList = []
+          tableData.deleteList = tableData.updateList
         }
-        this.getsupplierId = this.formDataInfo.master.supplierId;
+        this.getsupplierId = this.formDataInfo.master.supplierId
       }
     },
-    //获取子表金额 master/money金额
-    getppoMoney() {
-      let masterppoMoney = 0;
-      //debugger
-      let tableData = this.$refs["tableFields"].getCategorizeData();
-      if (this.action == "add") {
-        for (let i = 0; i < tableData.addList.length; i++) {
-          let ppoMoney = Number(tableData.addList[i].money);
-          if (!!tableData.addList[i].money) {
-            masterppoMoney += ppoMoney;
-          }
+
+    // 获取子表金额  money金额
+    countPrice () {
+      let mastermoney = 0
+      let tableData = this.$refs['tableFields'].get()
+      for (let i = 0; i < tableData.length; i++) {
+        let price = Number(tableData[i].price)
+        let qty = Number(tableData[i].qty)
+        if (price) {
+          mastermoney = price * qty
+          this.formDataInfo.paperJoinItemSlave.defaultList[i].money = mastermoney
         }
-        this.formDataInfo.master.money = masterppoMoney;
       }
-      if (this.action == "update") {
-        tableData = this.formDataInfo.paperJoinItemSlave.defaultList
-        for (let j = 0; j < tableData.length; j++) {
-          let ppoMoney2 = Number(tableData[j].money);
-          if (!!tableData[j].money) {
-            masterppoMoney += ppoMoney2;
-          }
-        }
-        this.formDataInfo.master.money = masterppoMoney.toFixed(2);
-      }
+      this.getMasterqty()
     },
-    //获取子表金额  money金额
-    countPrice() {
-      let mastermoney = 0;
-      //debugger
-      let tableData = this.$refs["tableFields"].getCategorizeData();
-      if(this.action == "add"){
-        for (let i = 0; i < tableData.addList.length; i++) {
-        let price = Number(tableData.addList[i].price);
-        let qty = Number(tableData.addList[i].qty);
-        if (!!price) {
-          mastermoney = price * qty;
-          this.formDataInfo.paperJoinItemSlave.defaultList[i].money = mastermoney;
-          }
+    // 获取子表本次入库数总数  qty本次入库数
+    getqty () {
+      let masterstockqty = 0
+      let tableData = this.$refs['tableFields'].get()
+      for (let i = 0; i < tableData.length; i++) {
+        let stockqty = Number(tableData[i].qty)
+        if (stockqty) {
+          masterstockqty += stockqty
+          let area = Number(
+            this.formDataInfo.paperJoinItemSlave.defaultList[i].ppoArea
+          )
+          let sArea = Number(tableData[i].sArea)
+          area = stockqty * sArea
+          this.formDataInfo.paperJoinItemSlave.defaultList[i].ppoArea = area
+          this.countPrice()
         }
       }
-      if(this.action == "update"){
-        tableData = this.formDataInfo.paperJoinItemSlave.defaultList
-         for (let k = 0; k < tableData.length; k++) {
-        let price2 = Number(tableData[k].price);
-        let qty2 = Number(tableData[k].qty);
-        if (!!price2) {
-          mastermoney = price2 * qty2;
-          this.formDataInfo.paperJoinItemSlave.defaultList[k].money = mastermoney;
-          }
-        }
-      }
-      this.getppoMoney();
+      // this.formDataInfo.master.qty = masterstockqty;
     },
-    //获取子表本次入库数总数  qty本次入库数
-    getqty() {
-      //debugger
-      let masterstockqty = 0;
-      let tableData = this.$refs["tableFields"].getCategorizeData();
-      if (this.action == "add") {
-        for (let i = 0; i < tableData.addList.length; i++) {
-          let stockqty = Number(tableData.addList[i].qty);
-          if (!!stockqty) {
-            masterstockqty += stockqty;
-            let area = Number(
-              this.formDataInfo.paperJoinItemSlave.defaultList[i].ppoArea
-            );
-            let sArea = Number(tableData.addList[i].sArea);
-            area = stockqty * sArea;
-            this.formDataInfo.paperJoinItemSlave.defaultList[i].ppoArea = area;
-            this.countPrice();
-          }
-        }
-      }
-      if (this.action == "update") {
-        tableData = this.formDataInfo.paperJoinItemSlave.defaultList
-        for (let j = 0; j < tableData.length; j++) {
-          let stockqty2 = Number(tableData[j].qty);
-          if (!!stockqty2) {
-            masterstockqty += stockqty2;
-            let area2 = Number(
-              this.formDataInfo.paperJoinItemSlave.defaultList[j].ppoArea
-            );
-            let sArea2 = Number(tableData[j].sArea);
-            area2 = stockqty2 * sArea2;
-            this.formDataInfo.paperJoinItemSlave.defaultList[j].ppoArea = area2;
-            this.countPrice();
-          }
-          // let ppoMoney = Number(tableData[j].money);
-          // if (!!tableData[j].money) {
-          //   masterppoMoney += ppoMoney;
-          // }
-        }
-      }
-      this.formDataInfo.master.qty = masterstockqty;
-    },
-    //判断主表供应商弹框不能为空
-    clickValuedate() {
-      //debugger
+    // 判断主表供应商弹框不能为空
+    clickValuedate () {
+      // debugger
       if (
         !this.formDataInfo.master.supplierCode ||
-        this.formDataInfo.master.supplierCode == ""
+        this.formDataInfo.master.supplierCode == ''
       ) {
-        this.$Message.error("供应商编号不能为空");
-        return false;
+        this.$Message.error('供应商编号不能为空')
+        return false
       }
-      console.log(this.$refs["tableFields"].data);
-      return true;
+      console.log(this.$refs['tableFields'].data)
+      return true
     },
-    //判断子表供应商弹框不能为空
+    // 判断子表供应商弹框不能为空
     // clickValueleng(){
     //   for (let i = 0; i < this.$refs['tableFields'].cloneData.length; i++) {
     //     //debugger
@@ -926,56 +724,52 @@ export default {
 
     // },
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo() {
-      //debugger
-      this.formDataInfo = Object.assign({}, default_formDataInfo);
-      this.masterDisabled = false   //主表字段弹框
-      this.formDataInfo.master.supplierName = ""
-      this.formDataInfo.master.wareHouseItName = ""
+    HandleFormDataInfo () {
+      // debugger
+      // this.formDataInfo = Object.assign({}, default_formDataInfo);
+      // this.masterDisabled = false   //主表字段弹框
+      // this.formDataInfo.master.supplierName = ""
+      // this.formDataInfo.master.wareHouseItName = ""
+      this.formDataInfo = deepCopy(default_formDataInfo)
     },
     // 重写父类,修改提交数据
-    resetformDataInfo(_data) {
-      let tableData = this.$refs["tableFields"].getCategorizeData();
-      //debugger
+    resetformDataInfo (_data) {
+      let tableData = this.$refs['tableFields'].getCategorizeData()
+      // debugger
       if (!!_data.master.accDate || !!_data.master.pjDate) {
         _data.master.accDate = dayjs(_data.master.accDate).format(
-          "YYYY-MM-DD HH:mm:ss"
-        );
+          'YYYY-MM-DD HH:mm:ss'
+        )
         _data.master.pjDate = dayjs(_data.master.pjDate).format(
-          "YYYY-MM-DD HH:mm:ss"
-        );
+          'YYYY-MM-DD HH:mm:ss'
+        )
       }
       // if(this.action == "update") {
       //   tableData.updateList = _data.paperJoinItemSlave.defaultList
       // }
-      this.formDataInfo.paperJoinItemSlave = tableData;
-      return this.formDataInfo;
+      this.formDataInfo.paperJoinItemSlave = tableData
+      return this.formDataInfo
     },
     // 重写父类 关闭窗口时 触发事件
-    closeActionTigger () {
-      //debugger
-      // fix 清除上次的错误提示 formDataInfo 为表单ref名称
-      if(this.$refs["formDataInfo"])
-      this.$refs["formDataInfo"].resetFields();
-      this.$refs["tableFields"].reset();
-      this.formDataInfo.paperJoinItemSlave.defaultList = this.initData.initData.stockPurPaperJoinItemFm
-      this.formDataInfo = deepCopy(default_formDataInfo)
-    },
-    //判断一个值是数字
-    myIsNaN(value){
-      return typeof value === 'number' && !isNaN(value)
-    },
-   
-    slave_list_table_edit_Delete(index){
-        // (重新计算体积/面积/金额等)
-        //debugger
-          this.getppoMoney();
-          this.getqty();
-    },
-     
+    // closeActionTigger () {
+    //   debugger
+    //   // fix 清除上次的错误提示 formDataInfo 为表单ref名称
+    //   if(this.$refs["formDataInfo"])
+    //   this.$refs["formDataInfo"].resetFields();
+    //   this.$refs["tableFields"].reset();
+    //   this.formDataInfo.paperJoinItemSlave.defaultList = this.initData.initData.stockPurPaperJoinItemFm
+    //   this.formDataInfo = deepCopy(default_formDataInfo)
+    // },
+    slave_list_table_edit_Delete (index) {
+      // (重新计算体积/面积/金额等)
+      // debugger
+      this.getMasterqty()
+      this.getqty()
+    }
+
   }
- 
-};
+
+}
 </script>
 
 <style>

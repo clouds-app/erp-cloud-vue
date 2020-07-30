@@ -2,14 +2,14 @@
   <!-- <div>
        <Row>
       <Col span="1">&nbsp;</Col>
-    
+
       <Col span="6" offset="1">
         <Card>
           <p slot="title">
           纸板
           </p>
          <br/>
-       
+
         <p style="padding: 10px;">
           <Button @click="handleSubMenuEvent('paperJoin','stock-paperJoin','纸板入库')" type="info">纸板入库</Button>
         </p>
@@ -25,12 +25,11 @@
         <p style="padding: 10px;">
           <Button @click="handleSubMenuEvent('boxUseAdjust','stock-boxUseAdjust','纸板用料盘点')" type="info">纸板用料盘点</Button>
         </p>
-        
+
         <p style="padding: 10px;">
           <Button @click="handleSubMenuEvent('boxUseRe','stock-boxUseRe','纸板退货')" type="info">纸板退货</Button>
         </p>
 
-     
        </Card>
       </Col>
         <Col span="6">
@@ -67,7 +66,7 @@
           <p slot="title">
           查询
           </p>
-         <br/>     
+         <br/>
         <p style="padding: 10px;">
           <Button @click="handleSubMenuEvent('selectStoreTotal','stock-selectStoreTotal','纸箱库存查询')" type="info">纸箱库存查询</Button>
         </p>
@@ -83,13 +82,13 @@
       <div class="leftRowItem">
         <div class="columnItem contentWidth20Box">
           <div class="columnModuleItem">
-                <div @click="handleSubMenuEvent('paperJoin','stock-paperJoin','纸板入库')"  class="buttonItem PaperStockIn cursorPointer">
-                  <div class="PaperStockInTitle">纸版采购入库</div>
+                <div @click="handleSubMenuEvent('paperJoin','stock-paperJoin','纸板入库',secondenum.paperJoin.val.disabled)" :class="[secondenum.paperJoin.val.disabled?'diabledOrAccess':'']"  class="buttonItem PaperStockIn cursorPointer">
+                  <div class="PaperStockInTitle">纸板采购入库</div>
                 </div>
           </div>
           <div class="columnModuleItem marginTop20">
-                 <div @click="handleSubMenuEvent('boxUseRe','stock-boxUseRe','纸板退货')" class="buttonItem PaperReturn cursorPointer">
-                  <div class="PaperReturnTitle">纸版退货</div>
+                 <div @click="handleSubMenuEvent('boxUseRe','stock-boxUseRe','纸板退货',secondenum.boxUseRe.val.disabled)" :class="[secondenum.boxUseRe.val.disabled?'diabledOrAccess':'']"  class="buttonItem PaperReturn cursorPointer">
+                  <div class="PaperReturnTitle">纸板退货</div>
                 </div>
           </div>
         </div>
@@ -100,14 +99,14 @@
         <div class="columnItem contentWidth30Box">
           <div class="columnItemBg">
             <div class="buttonItem CartonStock diabledOrAccess">
-              <div class="CartonStockTitle">纸箱库存</div>
+              <div class="CartonStockTitle">用料库存</div>
             </div>
             <div class="buttonItem CardboardMaterialWarehouse">
               <div class="CardboardMaterialWarehouseTitle">纸板材料仓</div>
             </div>
             <div class="buttonItem buttonItemBoxConfig">
               <div class="buttonItemBox">
-                <div @click="handleSubMenuEvent('boxUseAdjust','stock-boxUseAdjust','纸板用料盘点')" class="buttonBelowSubItem MaterialInventory cursorPointer">
+                <div @click="handleSubMenuEvent('boxUseAdjust','stock-boxUseAdjust','纸板用料盘点',secondenum.boxUseAdjust.val.disabled)" :class="[secondenum.boxUseAdjust.val.disabled?'diabledOrAccess':'']" class="buttonBelowSubItem MaterialInventory cursorPointer">
                   <div class="MaterialInventoryTitle">用料盘点</div>
                 </div>
                 <div class="buttonBelowSubItem MaterialAllocation diabledOrAccess">
@@ -123,19 +122,19 @@
         </div>
         <div class="columnItem contentWidthLastBox">
           <div class="lastBoxItem upItem">
-            <div @click="handleSubMenuEvent('boxUseOut','stock-boxUseOut','用料出库')" class="upItemButton MaterialDelivery cursorPointer">
+            <div @click="handleSubMenuEvent('boxUseOut','stock-boxUseOut','用料出库' ,secondenum.boxUseOut.val.disabled)" :class="[secondenum.boxUseOut.val.disabled?'diabledOrAccess':'']" class="upItemButton MaterialDelivery cursorPointer">
               <div class="MaterialDeliveryTitle">
                 用料出库
               </div>
             </div>
-            <div @click="handleSubMenuEvent('boxUseLost','stock-boxUseLost','用料报损')" class="upItemButton MaterialLossReport cursorPointer">
+            <div @click="handleSubMenuEvent('boxUseLost','stock-boxUseLost','用料报损',secondenum.boxUseLost.val.disabled)" :class="[secondenum.boxUseLost.val.disabled?'diabledOrAccess':'']" class="upItemButton MaterialLossReport cursorPointer">
               <div class="MaterialLossReportTitle">
                 用料报损
               </div>
             </div>
           </div>
           <div class="lastBoxItem downItem">
-            <div  @click="handleSubMenuEvent('boxUseBack','stock-boxUseBack','用料退仓')" class="downItemButton cursorPointer">
+            <div  @click="handleSubMenuEvent('boxUseBack','stock-boxUseBack','用料退仓',secondenum.boxUseBack.val.disabled)" :class="[secondenum.boxUseBack.val.disabled?'diabledOrAccess':'']" class="downItemButton cursorPointer">
               <div class="MaterialWithdrawalTitle">用料退仓</div>
             </div>
           </div>
@@ -144,10 +143,10 @@
       <div class="leftRowItem">
         <div class="columnItem contentWidth20Box">
           <div class="columnItemBg">
-            <div @click="handleSubMenuEvent('boxLibInit','stock-boxLibInit','纸箱初始入库')" class="buttonItem PaperStockIn cursorPointer">
+            <div @click="handleSubMenuEvent('boxLibInit','stock-boxLibInit','纸箱初始入库',secondenum.boxLibInit.val.disabled)" :class="[secondenum.boxLibInit.val.disabled?'diabledOrAccess':'']" class="buttonItem PaperStockIn cursorPointer">
               <div class="PaperStockInTitle">纸箱初始入库</div>
             </div>
-            <div @click="handleSubMenuEvent('boxLibIn','stock-boxLibIn','纸箱成品入库')"  class="buttonItem Cartonwarehousing cursorPointer">
+            <div @click="handleSubMenuEvent('boxLibIn','stock-boxLibIn','纸箱成品入库',secondenum.boxLibIn.val.disabled)" :class="[secondenum.boxLibIn.val.disabled?'diabledOrAccess':'']"  class="buttonItem Cartonwarehousing cursorPointer">
               <div class="CartonwarehousingTitle">纸箱入库</div>
             </div>
           </div>
@@ -159,18 +158,18 @@
         <div class="columnItem contentWidth30Box">
           <div class="columnItemBg">
             <div class="buttonItem CartonStock diabledOrAccess">
-              <div class="CartonStockTitle">用料库存</div>
+              <div class="CartonStockTitle">纸箱库存</div>
             </div>
             <div class="buttonItem CardboardMaterialWarehouse">
               <div class="CardboardMaterialWarehouseTitle">纸箱成品仓</div>
             </div>
             <div class="buttonItem buttonItemBoxConfig">
               <div class="buttonItemBox">
-                <div @click="handleSubMenuEvent('boxLibCheck','stock-boxLibCheck','纸箱库存盘点')" class="buttonBelowSubItem MaterialInventory cursorPointer">
-                  <div class="MaterialInventoryTitle">用料盘点</div>
+                <div @click="handleSubMenuEvent('boxLibCheck','stock-boxLibCheck','纸箱库存盘点',secondenum.boxLibCheck.val.disabled)" :class="[secondenum.boxLibCheck.val.disabled?'diabledOrAccess':'']" class="buttonBelowSubItem MaterialInventory cursorPointer">
+                  <div class="MaterialInventoryTitle">纸箱盘点</div>
                 </div>
-                <div @click="handleSubMenuEvent('boxLibMove','stock-boxLibMove','纸箱库存调拨')" class="buttonBelowSubItem MaterialAllocation cursorPointer">
-                  <div class="MaterialAllocationTitle">用料调拨</div>
+                <div @click="handleSubMenuEvent('boxLibMove','stock-boxLibMove','纸箱库存调拨',secondenum.boxLibMove.val.disabled)" :class="[secondenum.boxLibMove.val.disabled?'diabledOrAccess':'']" class="buttonBelowSubItem MaterialAllocation cursorPointer">
+                  <div class="MaterialAllocationTitle">纸箱调拨</div>
                 </div>
               </div>
             </div>
@@ -182,19 +181,19 @@
         </div>
         <div class="columnItem contentWidthLastBox">
           <div class="lastBoxItem upItem">
-            <div @click="handleSubMenuEvent('boxDeli','stock-boxDeli','纸箱出货')" class="upItemButton MaterialDelivery cursorPointer">
+            <div @click="handleSubMenuEvent('boxDeli','stock-boxDeli','纸箱出货',secondenum.boxDeli.val.disabled)" :class="[secondenum.boxDeli.val.disabled?'diabledOrAccess':'']" class="upItemButton MaterialDelivery cursorPointer">
               <div class="MaterialDeliveryTitle">
                 纸箱出库
               </div>
             </div>
-            <div @click="handleSubMenuEvent('boxLibLost','stock-boxLibLost','纸箱成品报损')" class="upItemButton MaterialLossReport cursorPointer">
+            <div @click="handleSubMenuEvent('boxLibLost','stock-boxLibLost','纸箱成品报损',secondenum.boxLibLost.val.disabled)" :class="[secondenum.boxLibLost.val.disabled?'diabledOrAccess':'']" class="upItemButton MaterialLossReport cursorPointer">
               <div class="MaterialLossReportTitle">
                 纸箱报损
               </div>
             </div>
           </div>
           <div class="lastBoxItem downItem">
-            <div @click="handleSubMenuEvent('boxRe','stock-boxRe','纸箱退货')" class="downItemButtonTwo cursorPointer">
+            <div @click="handleSubMenuEvent('boxRe','stock-boxRe','纸箱退货',secondenum.boxRe.val.disabled)" :class="[secondenum.boxRe.val.disabled?'diabledOrAccess':'']" class="downItemButtonTwo cursorPointer">
               <div class="CartonReturnTitle">纸箱退货</div>
             </div>
           </div>
@@ -215,10 +214,12 @@
         <div class="reportTitleBg">
           <div class="reportTitle">报表</div>
           <div class="reportDataListBox cursorPointer">
-            <!-- <div @click="handleSubMenuEvent('purPaperPoAnalyz','purchase-purPaperPoAnalyz','纸板采购情况分析')" class="reportDataItem">纸板采购情况分析</div>
-                    -->
-                     <div @click="handleSubMenuEvent('selectStoreTotal','stock-selectStoreTotal','纸箱库存查询')" class="reportDataItem">纸箱库存查询</div>
-                     <div @click="handleSubMenuEvent('selectAnalyzer','stock-selectAnalyzer','纸箱出货汇总查询')" class="reportDataItem">纸箱出货汇总查询</div>
+              <div @click="handleSubMenuEvent('selectStoreTotal','stock-selectStoreTotal','纸箱库存查询',secondenum.selectStoreTotal.val.disabled)" :class="[secondenum.selectStoreTotal.val.disabled?'disabledColor':'']" class="reportDataItem">纸箱库存查询</div>
+              <div @click="handleSubMenuEvent('selectAnalyzer','stock-selectAnalyzer','纸箱出货汇总查询',secondenum.selectAnalyzer.val.disabled)" :class="[secondenum.selectAnalyzer.val.disabled?'disabledColor':'']" class="reportDataItem">纸箱出货汇总查询</div>
+                <div class="reportDataItem" style="color: #bdb7b7;"	>纸箱用料库存</div>
+                <div class="reportDataItem" style="color: #bdb7b7;"	>纸板库存查询</div>
+                <div class="reportDataItem" style="color: #bdb7b7;"	>纸板出货汇总查询</div>
+                <div class="reportDataItem" style="color: #bdb7b7;"	>纸箱用料库存</div>
           </div>
         </div>
       </div>
@@ -227,29 +228,42 @@
 </template>
 
 <script>
-import globleMixin from "@/mixins";
+import globleMixin from '@/mixins'
 export default {
   mixins: [globleMixin],
-  data() {
-    return {};
+  data () {
+    return {}
+  },
+  computed: {
+    secondenum () {
+      let dataList = this.$store.state.app.Secondaryauthority.Stock
+      return dataList
+    }
   },
   methods: {
     // 子页面 参数: 页面.vue,唯一区别ID,TAB 标签显示名称
-    handleSubMenuEvent(currentPage, uniqueKey, tabName) {
+    handleSubMenuEvent (currentPage, uniqueKey, tabName, flag) {
+      if (flag) {
+        this.$Message.warning('暂无权限,请与管理员联系!')
+        return
+      }
       let params = {
-        menuName: "Stock",
-        page: currentPage, //显示控件页面
+        menuName: 'Stock',
+        page: currentPage, // 显示控件页面
         uniqueKey: uniqueKey,
         lable: tabName,
         isActive: true
-      };
-      this.handleMenuBaseEvent(params); // 调用MIXIN 共用方法
+      }
+      this.handleMenuBaseEvent(params) // 调用MIXIN 共用方法
     }
   }
-};
+}
 </script>
 
 <style lang="scss">
+.disabledColor{
+  color: #bdb7b7;
+}
 .stockContent {
   color: white;
   min-height: 600px;
@@ -459,9 +473,11 @@ export default {
                 &.CardboardMaterialWarehouse {
                   margin-top: 20px;
                   .CardboardMaterialWarehouseTitle {
-                    color: #666;
+                    font-size: 16px;
+                    font-weight: bold;
+                    color: #6b6868;
                     padding-top: 10px;
-                    padding-left: 12px;
+                    padding-left: 10px;
                   }
                 }
                 &.buttonItemBoxConfig {
@@ -651,7 +667,7 @@ export default {
             flex-direction: column;
             margin-top:5px;
             .reportDataItem {
-              
+
               margin-left: 35px;
               height: 20px;
               // border-bottom:1px solid green;

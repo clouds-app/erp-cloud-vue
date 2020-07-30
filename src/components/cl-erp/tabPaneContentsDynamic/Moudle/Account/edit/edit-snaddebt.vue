@@ -121,7 +121,7 @@
                     @on-blur="onFill()"
                     placeholder="关联单号"
                   >
-                    <Icon @click="Slave_list_table_editRowModify()" slot="suffix" type="md-add" />
+                    <Icon @click="Slave_list_table_editRowModify()" slot="suffix" type="md-add" v-show="!detailDisabled"/>
                   </Input>
                   <!--@on-blur="onFill()"-->
                 </FormItem>
@@ -175,38 +175,38 @@
  *
  * @created 2019/11/20 17:07:54
  */
-import referenceField from "@/components/referenceField/referenceField";
-import editBaseMixins from "../../mixins/edit";
-import popup from "@/components/popup/popup";
-import optionSearch from "../../components/optionSearch";
-import request from "@/libs/request";
-import dayjs from "dayjs";
-import { customValidator, uniqueValidator } from "@/libs/validator";
-import snaddebtSlave from "./edit-snaddebtSlave";
-import { deepCopy } from "view-design/src/utils/assist";
+import referenceField from '@/components/referenceField/referenceField'
+import editBaseMixins from '../../mixins/edit'
+import popup from '@/components/popup/popup'
+import optionSearch from '../../components/optionSearch'
+import request from '@/libs/request'
+import dayjs from 'dayjs'
+import { customValidator, uniqueValidator } from '@/libs/validator'
+import snaddebtSlave from './edit-snaddebtSlave'
+import { deepCopy } from 'view-design/src/utils/assist'
 const default_formDataInfo = {
-  bdDate: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+  bdDate: dayjs().format('YYYY-MM-DD HH:mm:ss'),
   bdIvAmt: 0,
-  bdNo: "",
+  bdNo: '',
   bdNoIvAmt: 0,
-  bdReason: "",
-  bdYm: new Date(dayjs().format("YYYY-MM")), // 会计月份
+  bdReason: '',
+  bdYm: new Date(dayjs().format('YYYY-MM')), // 会计月份
   bdZqAmt: 0,
-  coinCode: "",
-  coinName: "",
+  coinCode: '',
+  coinName: '',
   curyId: 0,
-  custCode: "",
-  custId: "",
-  custName: "",
+  custCode: '',
+  custId: '',
+  custName: '',
   rate: 0,
-  relationNo: "",
+  relationNo: '',
   taxRat: 0,
-  taxTp: "0",
-  taxTpText: "",
-  workName: ""
-};
+  taxTp: '0',
+  taxTpText: '',
+  workName: ''
+}
 export default {
-  name: "edit-snaddebt",
+  name: 'edit-snaddebt',
   mixins: [editBaseMixins],
   components: {
     optionSearch,
@@ -215,31 +215,31 @@ export default {
     snaddebtSlave
   },
 
-  data() {
+  data () {
     return {
-      disabledSubmitBtn:false,//编辑宽确认按钮是否禁用
+      disabledSubmitBtn: false, // 编辑框确认按钮是否禁用
       CustId: null,
-      frommastername: "accountCustInitFm",
-      actionSubtitle: "应收呆账", // 当前操作副标题
-      requestBaseUrl: "/account/snaddebt", // 请求 查询 操作的基础路径
+      frommastername: 'accountCustInitFm',
+      actionSubtitle: '应收呆账', // 当前操作副标题
+      requestBaseUrl: '/account/snaddebt', // 请求 查询 操作的基础路径
       formDataInfo: deepCopy(default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
         custCode: [
-          { required: true, message: "客户不能为空", trigger: "blur" }
+          { required: true, message: '客户不能为空', trigger: 'blur' }
         ],
         coinCode: [
-          { required: true, message: "货币不能为空", trigger: "blur" }
+          { required: true, message: '货币不能为空', trigger: 'blur' }
         ],
         relationNo: [
-          { required: true, message: "关联单号不能为空", trigger: "blur" }
+          { required: true, message: '关联单号不能为空', trigger: 'blur' }
         ],
         bdYm: [
           {
             required: true,
-            type: "date",
-            message: "会计月份不能为空",
-            trigger: "blur"
+            type: 'date',
+            message: '会计月份不能为空',
+            trigger: 'blur'
           }
         ]
       },
@@ -252,74 +252,74 @@ export default {
         action: null, // 当前操作功能 添加/编辑
         formDetailData: {} // 当前表单的详细信息
       }
-    };
+    }
   },
-  props:{
-    rowData:{
-      type:Object,
-      default:''
+  props: {
+    rowData: {
+      type: Object,
+      default: ''
     }
   },
   watch: {
-    showWindow: function(n, o) {
+    showWindow: function (n, o) {
       if (n) {
-        let _self = this;
+        let _self = this
         this.$nextTick(() => {
           // 延迟赋值,不然数据还没有正确返回的情况下,无法绑定默认值
           setTimeout(() => {
-            this.setDefaultData();
-          }, 1000);
-        });
+            this.setDefaultData()
+          }, 1000)
+        })
       }
     }
   },
   methods: {
     // 货币弹框回调事件
-    coinCodevaldate(){
-      this.$refs['formDataInfo'].validateField('coinCode',err=>{
+    coinCodevaldate () {
+      this.$refs['formDataInfo'].validateField('coinCode', err => {
       })
     },
     // 客户弹框回调事件  curyId,coinCode,coinName
-    valdate(data){
-        let vladata = data[0].data
-        let orignData = data[0].orignData
-        if(vladata.custId != null){
-          this.formDataInfo.curyId = orignData.coinId
-          this.formDataInfo.coinName = orignData.coinName
-          this.formDataInfo.coinCode = orignData.coinCode
-          this.coinCodevaldate()
-        }
-      this.$refs['formDataInfo'].validateField('custCode',err=>{
+    valdate (data) {
+      let vladata = data[0].data
+      let orignData = data[0].orignData
+      if (vladata.custId != null) {
+        this.formDataInfo.curyId = orignData.coinId
+        this.formDataInfo.coinName = orignData.coinName
+        this.formDataInfo.coinCode = orignData.coinCode
+        this.coinCodevaldate()
+      }
+      this.$refs['formDataInfo'].validateField('custCode', err => {
       })
     },
     // 未开票金额变化
-    getbdNoIvAmt(){
-      this.formDataInfo.bdNoIvAmt =  this.formDataInfo.bdZqAmt
+    getbdNoIvAmt () {
+      this.formDataInfo.bdNoIvAmt = this.formDataInfo.bdZqAmt
     },
-    setDefaultData() {
+    setDefaultData () {
       this.chacksetDefaultData()
-      if (this.formDataInfo.bdYm == "" || this.formDataInfo.bdYm == null) {
-        this.formDataInfo.bdYm = new Date(dayjs().format("YYYY-MM"));
+      if (this.formDataInfo.bdYm == '' || this.formDataInfo.bdYm == null) {
+        this.formDataInfo.bdYm = new Date(dayjs().format('YYYY-MM'))
       } else {
         this.formDataInfo.bdYm = new Date(
-          dayjs(this.formDataInfo.bdYm).format("YYYY-MM")
-        );
+          dayjs(this.formDataInfo.bdYm).format('YYYY-MM')
+        )
       }
     },
-    //会计月份 变动日期
-    onChange_omYm(item) {
+    // 会计月份 变动日期
+    onChange_omYm (item) {
       if (!_.isEmpty(item)) {
-        this.formDataInfo.bdYm = new Date(dayjs(item).format("YYYY-MM"));
+        this.formDataInfo.bdYm = new Date(dayjs(item).format('YYYY-MM'))
       }
     },
-    onFill() {
-      this.CustId = this.formDataInfo.custId;
-      if (this.CustId == "") {
-        this.$Message.error("请先选择客户");
-        this.formDataInfo.relationNo = JSON.parse(JSON.stringify(""));
-        return;
+    onFill () {
+      this.CustId = this.formDataInfo.custId
+      if (this.CustId == '') {
+        this.$Message.error('请先选择客户')
+        this.formDataInfo.relationNo = JSON.parse(JSON.stringify(''))
+        return
       }
-      let inSrelatioNo = this.formDataInfo.relationNo;
+      let inSrelatioNo = this.formDataInfo.relationNo
       request
         .post(`/account/snaddebt/getSrelationNo`, {
           inCustId: this.CustId,
@@ -327,73 +327,73 @@ export default {
           isFlag: 1
         })
         .then(res => {
-          if (res.length==0 || res==undefined) {
-            this.$Message.error("关联单号错误");
-            this.formDataInfo.relationNo = JSON.parse(JSON.stringify(""));
+          if (res.length == 0 || res == undefined) {
+            this.$Message.error('关联单号错误')
+            this.formDataInfo.relationNo = JSON.parse(JSON.stringify(''))
           }
-        });
+        })
     },
-    closeMain(vlu) {
-      this.formDataInfo.relationNo = vlu;
+    closeMain (vlu) {
+      this.formDataInfo.relationNo = vlu
     },
-    Slave_list_table_editRowModify() {
+    Slave_list_table_editRowModify () {
       // debugger
-      this.CustId = this.formDataInfo.custId;
-      if (this.CustId == "") {
-        this.$Message.error("请先选择客户");
-        return;
+      this.CustId = this.formDataInfo.custId
+      if (this.CustId == '') {
+        this.$Message.error('请先选择客户')
+        return
       }
-      this.salveWindow.showEditWindow = true;
-      let ppuer = this.salveWindow.showEditWindow;
-      this.salveWindow.action = "add";
-      this.salveWindow.isLoaddingDone = true;
+      this.salveWindow.showEditWindow = true
+      let ppuer = this.salveWindow.showEditWindow
+      this.salveWindow.action = 'add'
+      this.salveWindow.isLoaddingDone = true
       request
         .post(`/account/snaddebt/getSrelationNo`, {
           inCustId: this.CustId,
-          inSrelationType: "2"
+          inSrelationType: '2'
         })
         .then(res => {
-          this.$refs.mychild.getFormInitDataObj(res);
-        });
+          this.$refs.mychild.getFormInitDataObj(res)
+        })
     },
     // 继承中修改,更新数据时,重置修改一些提交的数据
-    resetformDataInfo(_data) {
-      _data.bdDate = dayjs(_data.bdDate).format("YYYY-MM-DD HH:mm:ss");
-      _data.bdYm = dayjs(_data.bdYm).format("YYYYMM");
-      return _data;
+    resetformDataInfo (_data) {
+      _data.bdDate = dayjs(_data.bdDate).format('YYYY-MM-DD HH:mm:ss')
+      _data.bdYm = dayjs(_data.bdYm).format('YYYYMM')
+      return _data
     },
     // 继承中修改,添加数据时,重置修改一些提交的数据
-    resetAddformDataInfo(_data) {
-      _data.bdDate = dayjs(_data.bdDate).format("YYYY-MM-DD HH:mm:ss");
-      _data.bdYm = dayjs(_data.bdYm).format("YYYYMM");
-      return _data;
+    resetAddformDataInfo (_data) {
+      _data.bdDate = dayjs(_data.bdDate).format('YYYY-MM-DD HH:mm:ss')
+      _data.bdYm = dayjs(_data.bdYm).format('YYYYMM')
+      return _data
     },
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo() {
+    HandleFormDataInfo () {
       // debugger
-      this.formDataInfo = Object.assign({}, default_formDataInfo);
-      this.formDataInfo = deepCopy(default_formDataInfo);
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
+      this.formDataInfo = deepCopy(default_formDataInfo)
     },
     // //关闭窗口触发
     // closeActionTigger() {
     //   this.formDataInfo = deepCopy(default_formDataInfo);
     // },
-    //打开窗口触发
-    openActionTigger() {
+    // 打开窗口触发
+    openActionTigger () {
       this.setDefaultData()
     },
     // 编辑框确认按钮
-    setDefaultData(){
+    setDefaultData () {
       if (this.action != 'add') {
-        if (this.rowData.bdIvAmt>0) {
+        if (this.rowData.bdIvAmt > 0) {
           this.disabledSubmitBtn = true
           return
         }
       }
       this.disabledSubmitBtn = false
-    },
+    }
   }
-};
+}
 </script>
 
 <style>

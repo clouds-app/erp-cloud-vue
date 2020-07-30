@@ -22,7 +22,7 @@
                 <Row :gutter="18">
                      <Col span="12">
                   <FormItem label="印版编号" prop="tpNo">
-                    <referenceField v-model="formDataInfo.tpNo" :disabled="detailDisabled" maxlength="20" placeholder="请输入印版编号" :form-name="formmastername"
+                    <referenceField  ref='firstFocusInput' v-model="formDataInfo.tpNo" :disabled="detailDisabled" maxlength="20" placeholder="请输入印版编号" :form-name="formmastername"
             :id="formDataInfo.id"></referenceField>
                   </FormItem>
                 </Col>
@@ -36,12 +36,12 @@
                       formKey="tpVerType"
                       query="tpVerType"
                     />
-                    
+
                   </FormItem>
-                </Col>    
+                </Col>
                 </Row>
               </Col>
-               
+
                 <Col span="12">
                   <FormItem label="客户" prop="custId">
                     <popup
@@ -57,7 +57,6 @@
                       :query-params="{}"
                     />
 
-                
                   </FormItem>
                 </Col>
                 <Col span="12">
@@ -75,7 +74,7 @@
                       :suffix-model="formDataInfo.bpName"
                       :query-params="{custId:formDataInfo.custId}"
                     />
-                
+
                   </FormItem>
                 </Col>
                 <Col span="12">
@@ -117,7 +116,7 @@
                     ></InputNumber>
                   </FormItem>
                 </Col>
-               
+
                 <Col span="12">
                   <FormItem label="公用" prop="iisPublicCompany">
                             <Checkbox v-model="formDataInfo.iisPublicCompany" :disabled="detailDisabled" maxlength="20" placeholder></Checkbox>
@@ -149,7 +148,7 @@
                 />
               </div>
           </Col>
-                
+
         </Row>
       </Form>
     </editWindow>
@@ -170,104 +169,104 @@
  *
  * @created 2019/11/20 17:07:54
  */
-import inputNumber from "@/components/input-number";
-import optionSearch from "../../components/optionSearch";
-import editBaseMixins from "../../mixins/edit";
+import inputNumber from '@/components/input-number'
+import optionSearch from '../../components/optionSearch'
+import editBaseMixins from '../../mixins/edit'
 import referenceField from '@/components/referenceField/referenceField'
-import popup from "@/components/popup/popup";
-import uploadImg from "@/components/cl-erp/uploadImg";
-import { customValidator,uniqueValidator } from "@/libs/validator";
+import popup from '@/components/popup/popup'
+import uploadImg from '@/components/cl-erp/uploadImg'
+import { customValidator, uniqueValidator } from '@/libs/validator'
 const default_formDataInfo = {
-  tpNo: "",
-  tpVerType: "0",
-  tpImg: "",
+  tpNo: '',
+  tpVerType: '0',
+  tpImg: '',
   tpPly: 0,
   tpItemL: 0,
-  tpItemW: "0",
-  custId: "",
-  productId: "",
-  remark: ""
-};
+  tpItemW: '0',
+  custId: '',
+  productId: '',
+  remark: ''
+}
 export default {
-  name: "edit-print",
+  name: 'edit-print',
   mixins: [editBaseMixins],
-  components: { optionSearch, popup, uploadImg ,referenceField,inputNumber},
-  data() {
+  components: { optionSearch, popup, uploadImg, referenceField, inputNumber },
+  data () {
     return {
-      formmastername:'printFm',
-      actionSubtitle:'印版', // 当前操作副标题
-      requestBaseUrl: "/bas/print", // 请求 查询 操作的基础路径
+      formmastername: 'printFm',
+      actionSubtitle: '印版', // 当前操作副标题
+      requestBaseUrl: '/bas/print', // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
-        tpItemL:[{
-          validator:customValidator,
-            trigger: "blur",
-            customRule:["mustDouble"],
-            fieldDesc:"印版规格(mm)长"
+        tpItemL: [{
+          validator: customValidator,
+          trigger: 'blur',
+          customRule: ['mustDouble'],
+          fieldDesc: '印版规格(mm)长'
         }],
-        tpPly:[{
-          validator:customValidator,
-            trigger: "blur",
-            customRule:["mustDouble"],
-            fieldDesc:"厚度(mm)"
+        tpPly: [{
+          validator: customValidator,
+          trigger: 'blur',
+          customRule: ['mustDouble'],
+          fieldDesc: '厚度(mm)'
         }],
-        tpItemW:[{
-          validator:customValidator,
-            trigger: "blur",
-            customRule:["mustDouble"],
-            fieldDesc:"印版规格(mm)宽"
+        tpItemW: [{
+          validator: customValidator,
+          trigger: 'blur',
+          customRule: ['mustDouble'],
+          fieldDesc: '印版规格(mm)宽'
         }],
         tpNo: [
-          { required: true, message: "印版编码不能为空", trigger: "blur" },
-          {validator:customValidator,
-                    trigger:"blur",
-                    customRule:["identifier"],
-                    fieldDesc:"印版编号"},
+          { required: true, message: '印版编码不能为空', trigger: 'blur' },
+          { validator: customValidator,
+            trigger: 'blur',
+            customRule: ['identifier'],
+            fieldDesc: '印版编号' },
           {
-          validator:uniqueValidator,
-          trigger: "blur",
-          fieldDesc: "印版编号",
-          params:{
-            fieldName:'tpNo',
-            formName:'printFm',
-            id:()=>{
-              return this.formDataInfo.id;
+            validator: uniqueValidator,
+            trigger: 'blur',
+            fieldDesc: '印版编号',
+            params: {
+              fieldName: 'tpNo',
+              formName: 'printFm',
+              id: () => {
+                return this.formDataInfo.id
+              }
             }
           }
-        }
-        ],
-        
+        ]
+
       }
-    };
+    }
   },
 
   methods: {
-    uploadSuccessHeads(res) {
+    uploadSuccessHeads (res) {
       if (!res.success) {
-        this.$Message.error(res.message);
-        return;
+        this.$Message.error(res.message)
+        return
       }
-      let picUrl = res.result;
-      if (!!picUrl) {
-        this.formDataInfo.tpImg = picUrl;
+      let picUrl = res.result
+      if (picUrl) {
+        this.formDataInfo.tpImg = picUrl
       }
     },
-    //判断主表客户弹框不能为空
-    clickValuedate() {
-      debugger;
-      if (!this.formDataInfo.cusName || this.formDataInfo.cusName == "") {
-        this.$Message.error("客户不能为空");
-        return false;
+    // 判断主表客户弹框不能为空
+    clickValuedate () {
+      debugger
+      if (!this.formDataInfo.cusName || this.formDataInfo.cusName == '') {
+        this.$Message.error('客户不能为空')
+        return false
       }
-      return true;
+      return true
     },
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo() {
-      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    HandleFormDataInfo () {
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
     }
   }
-};
+}
 </script>
 
 <style></style>

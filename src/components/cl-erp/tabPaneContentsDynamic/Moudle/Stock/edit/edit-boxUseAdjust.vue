@@ -7,7 +7,7 @@
       :fullscreen="false"
       width="95%"
       :loading="!isLoaddingDone"
-      :disabledSubmitBtn="action=='detail'? true : false"
+      :disabledSubmitBtn="action!=='add'"
       :spinLoaddingText="spinLoaddingText"
       @on-ok="formTableDataSubmit()"
       v-if="initData.columns"
@@ -74,6 +74,7 @@
                       render-fields="paStationId,paStationCode,paStationName"
                       from-fields="id,whCode,whName"
                       :suffix="true"
+                      :suffix-model="formDataInfo.master.paStationName"
                        suffixModelName="paStationName"
                       :query-params="{whType:3}"
                     />
@@ -92,7 +93,6 @@
               <Input
                 :disabled="detailDisabled"
                 v-model="formDataInfo.master.remark"
-                type="textarea"
                 maxlength="100"
                 :autosize="{ minRows: 1, maxRows: 2 }"
                 placeholder="请输入备注..."
@@ -161,13 +161,14 @@
                   size="small"
                   :maxlength="20"
                 >
-                  <Icon @click="Slave_list_table_editRowModify(index)" slot="suffix" type="md-add" />
+                  <Icon @click="Slave_list_table_editRowModify(index)" slot="suffix" type="md-add" v-show="!detailDisabled"/>
                 </Input>
                 <!--控件特殊处理 盘点数量  -->
-                <Input
+                <inputNumber
                   v-else-if="column.key == 'qty'"
                   v-model="row[column.key]"
                   :disabled="detailDisabled"
+                  :min=1
                   @on-blur="biInQtyChange(index)"
                   @input="
                       value => {
@@ -176,7 +177,7 @@
                     "
                   size="small"
                   :maxlength="20"
-                ></Input>
+                ></inputNumber>
                 <formControl
                   v-else
                   :control-type="column.controlType"
@@ -217,31 +218,32 @@
  *
  * @created 2019/11/20 17:07:54
  */
-import referenceField from "@/components/referenceField/referenceField";
-import popup from "@/components/popup/popup";
-import editWindow from "@/components/edit-window/edit-window";
-import eTable from "@/components/e-table/e-table";
-import request from "@/libs/request";
-import editBaseMixins from "../../mixins/edit";
-import optionSearch from "../../components/optionSearch";
-import dayjs from "dayjs";
-import Sys from "@/api/sys";
-import formControl from "@/components/form-control/form-control";
+import referenceField from '@/components/referenceField/referenceField'
+import popup from '@/components/popup/popup'
+import editWindow from '@/components/edit-window/edit-window'
+import eTable from '@/components/e-table/e-table'
+import request from '@/libs/request'
+import editBaseMixins from '../../mixins/edit'
+import optionSearch from '../../components/optionSearch'
+import dayjs from 'dayjs'
+import Sys from '@/api/sys'
+import formControl from '@/components/form-control/form-control'
 import boxUseAdjustSlave from './edit-boxUseAdjustSlave'
-import { deepCopy } from "view-design/src/utils/assist";
+import { deepCopy } from 'view-design/src/utils/assist'
+import inputNumber from '@/components/input-number'
 const default_formDataInfo = {
   // 主表 更改字段
   master: {
-    paQty:"",
-    paStationCode: "",
-    paStationId: "",
-    paStationCode: "",
-    paAdujstorCode: "",
-    paAdujstorId: "",
-    paAdujstorName: "",
-    paNo: "",
-    paAdjustDate:dayjs().format("YYYY-MM-DD HH:mm:ss"),
-    remark: "",
+    paQty: '',
+    paStationCode: '',
+    paStationId: '',
+    paStationCode: '',
+    paAdujstorCode: '',
+    paAdujstorId: '',
+    paAdujstorName: '',
+    paNo: '',
+    paAdjustDate: dayjs().format('YYYY-MM-DD HH:mm:ss'),
+    remark: ''
   },
   // 子表 artLengs 根据实际接口更改,其它不变
   boxUseAdjustItemSlave: {
@@ -250,9 +252,9 @@ const default_formDataInfo = {
     deleteList: [], // 删除列
     updateList: [] // 更新列
   }
-};
+}
 export default {
-  name: "edit-paperPrice",
+  name: 'edit-paperPrice',
   mixins: [editBaseMixins],
   components: {
     editWindow,
@@ -261,13 +263,14 @@ export default {
     eTable,
     popup,
     formControl,
-    referenceField
+    referenceField,
+    inputNumber
     // rightMenu
     // Form,
   },
-  data() {
+  data () {
     return {
-      insertDirection: "down",//表单插入方向
+      insertDirection: 'down', // 表单插入方向
       salveWindow: {
         // Tips:"提示：此窗口只显示有供应商纸质/纸板进价的工单！",
         isLoaddingDone: false, // 窗口是否加载完成
@@ -275,29 +278,29 @@ export default {
         action: null, // 当前操作功能 添加/编辑
         formDetailData: {} // 当前表单的详细信息
       },
-      pliLostTypeList:[],//报损类型
+      pliLostTypeList: [], // 报损类型
       showContextMenu: true,
       showEditMenu: false,
-      actionSubtitle: "用料库存盘点", // 当前操作副标题
+      actionSubtitle: '用料库存盘点', // 当前操作副标题
       id: 0,
-      formName: "stockBoxUseAdjustitemFm",
-      formmasterName: "stockboxlibinFm",
-      requestBaseUrl: "/stock/boxUseAdjust", // 请求 查询 操作的基础路径
+      formName: 'stockBoxUseAdjustitemFm',
+      formmasterName: 'stockboxlibinFm',
+      requestBaseUrl: '/stock/boxUseAdjust', // 请求 查询 操作的基础路径
       formDataInfo: deepCopy(default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
         paAdujstorCode: [
           {
             required: true,
-            message: "盘点人不能为空",
-            trigger: "blur"
+            message: '盘点人不能为空',
+            trigger: 'blur'
           }
         ],
         paStationCode: [
           {
             required: true,
-            message: "仓位不能为空",
-            trigger: "blur"
+            message: '仓库不能为空',
+            trigger: 'blur'
           }
         ]
       },
@@ -305,91 +308,102 @@ export default {
         workNo: [
           {
             required: true,
-            message: "工单号不能为空",
-            trigger: "blur"
+            message: '工单号不能为空',
+            trigger: 'blur'
           }
         ],
+        qty: [/// ^[0-9]+(\.\d+)?$/;
+          {
+            required: true,
+            message: '入库数量不能为空',
+            trigger: 'blur',
+            type: 'number'
+          },
+          {
+            pattern: /^[1-9]\d*$/,
+            trigger: 'blur',
+            message: '入库数量必须是正整数'
+          }
+        ]
       },
       subBoxClickIndex: -1,
       getbppClassId: 0,
-      whId: "null",//传给用料批次号的参数
-      index1: 0, //工单号里面用
-      inBatchOnList:""
-    };
+      whId: 'null', // 传给用料批次号的参数
+      index1: 0, // 工单号里面用
+      inBatchOnList: ''
+    }
   },
-  created(){
+  created () {
     // this.getpliLostTypeList()//报损类型
-    // console.log(this.action) 
+    // console.log(this.action)
   },
- methods: {
-    //关闭窗口触发
-    closeActionTigger() {
-      
+  methods: {
+    // 关闭窗口触发
+    closeActionTigger () {
+
     },
-    //打开窗口触发
-    openActionTigger() {
+    // 打开窗口触发
+    openActionTigger () {
     //    if (this.action == "detail") {
     //    this.$parent.detailDisabled = false
     //  }
     },
-   //计算盘点数量  qty
-    biInQtyChange(){
-      //  debugger
-      let masterstockqty = 0;
-      let tableData = this.$refs["tableFields"].get();
+    // 计算盘点数量  qty
+    biInQtyChange () {
+      let masterstockqty = 0
+      let tableData = this.$refs['tableFields'].get()
       for (let index = 0; index < tableData.length; index++) {
-        let qty =Number(tableData[index].qty) 
-        let paiStoreQty =Number(tableData[index].paiStoreQty) 
+        let qty = Number(tableData[index].qty)
+        let paiStoreQty = Number(tableData[index].paiStoreQty)
         masterstockqty += qty
-        //盘点类型判断
-        if (qty>paiStoreQty) {
+        // 盘点类型判断
+        if (qty > paiStoreQty) {
           tableData[index].flagText = JSON.parse(JSON.stringify('盘盈'))
-        }else if (qty<paiStoreQty) {
+        } else if (qty < paiStoreQty) {
           tableData[index].flagText = JSON.parse(JSON.stringify('盘亏'))
-        }else{
+        } else {
           tableData[index].flagText = JSON.parse(JSON.stringify('调拨'))
         }
-          tableData[index].paiFlag = tableData[index].flagText
+        tableData[index].paiFlag = tableData[index].flagText
       }
-      // this.formDataInfo.master.paQty =Number(masterstockqty) 
-
+      this.formDataInfo.master.paQty = Number(masterstockqty)
     },
-    //数据传递
-    transformation(selectedValue){
+    // 数据传递
+    transformation (selectedValue) {
       // debugger
-      let transData = JSON.parse(JSON.stringify(this.initData.initData.stockBoxUseAdjustitemFm));
-      transData.boxUseBatchOn=selectedValue.boxUseBatchOn, //批次号
-      transData.mateWorkNo=selectedValue.mateWorkNo, //用料号单
-      transData.workNo=selectedValue.workNo, //工单号
-      transData.bpName=selectedValue.bpName, //产品名称
-      transData.stationLinkId=selectedValue.stationLinkId, //仓位id
-      transData.stationLinkName=selectedValue.stationLinkName, //仓位名称
-      transData.paiOrderQty=selectedValue.paiOrderQty, //工单数
-      transData.paiStoreQty=selectedValue.paiStoreQty, //库存数
-      transData.artId=selectedValue.artId, //纸质id
-      transData.artCode=selectedValue.artCode, //纸质
-      transData.lbCode=selectedValue.lbCode, //楞别
-      transData.sizeLeng=selectedValue.sizeLeng, //纸长
-      transData.sizeWidth=selectedValue.sizeWidth //纸宽
+      let transData = JSON.parse(JSON.stringify(this.initData.initData.stockBoxUseAdjustitemFm))
+      transData.boxUseBatchOn = selectedValue.boxUseBatchOn, // 批次号
+      transData.mateWorkNo = selectedValue.mateWorkNo, // 用料号单
+      transData.workNo = selectedValue.workNo, // 工单号
+      transData.bpName = selectedValue.bpName, // 产品名称
+      transData.stationLinkId = selectedValue.stationLinkId, // 仓位id
+      transData.stationLinkName = selectedValue.stationLinkName, // 仓位名称
+      transData.paiOrderQty = selectedValue.paiOrderQty, // 工单数
+      transData.paiStoreQty = selectedValue.paiStoreQty, // 库存数
+      transData.artId = selectedValue.artId, // 纸质id
+      transData.artCode = selectedValue.artCode, // 纸质
+      transData.lbCode = selectedValue.lbCode, // 楞别
+      transData.sizeLeng = selectedValue.sizeLeng, // 纸长
+      transData.sizeWidth = selectedValue.sizeWidth // 纸宽
       return transData
     },
-    //接受工单号传回来的数据
-    closeMain(selectedValues) {
-        // debugger
+    // 接受工单号传回来的数据
+    closeMain (selectedValues) {
+      // debugger
       let pushData = []
-      selectedValues.forEach((selectedValue) =>{
+      selectedValues.forEach((selectedValue) => {
         let transData = this.transformation(selectedValue)
         pushData.push(transData)
       })
       // let 子表数据 = this.$refs["tableFields"].get()
-      let sundata = this.$refs["tableFields"].get()
-      //工单号唯一校验
-      let hiddensundata = {};
-       for (let index = 0; index < sundata.length; index++) {
-        if (sundata[index].workNo != "") {
-          let key = JSON.stringify(sundata[index].workNo);
-          let value = index;
-          hiddensundata[key] = value;
+      let sundata = this.$refs['tableFields'].get()
+      // 工单号唯一校验
+      let hiddensundata = {}
+      for (let index = 0; index < sundata.length; index++) {
+        if (sundata[index].workNo != '') {
+          let key = JSON.stringify(sundata[index].workNo)
+          let value = index
+          hiddensundata[key] = value
         }
       }
       for (let i = pushData.length - 1; i >= 0; i--) {
@@ -397,61 +411,60 @@ export default {
           hiddensundata[JSON.stringify(pushData[i].workNo)] != undefined
         ) {
           this.$Message.error(
-            pushData[i].workNo + "该工单号已经存在"
-          );
-          pushData.splice(i, 1);
+            pushData[i].workNo + '该工单号已经存在'
+          )
+          pushData.splice(i, 1)
         }
       }
-        // this.$refs["tableFields"].set(pushData,this.index) 
+      // this.$refs["tableFields"].set(pushData,this.index)
 
       let index2 = this.index1
       for (let a = 0; a < pushData.length; a++) {
-        this.$refs["tableFields"].set(pushData[a],index2) 
+        this.$refs['tableFields'].set(pushData[a], index2)
         index2++
       }
       this.biInQtyChange(this.index1)
-
     },
-     //工单号失去焦点带出参数事件
-    onFill(index) {
-      let pushData = [];
-      //获取仓位id
-      let paStationId = this.formDataInfo.master.paStationId;
-      //获取用料批次号
-      let boxUseBatchOn = this.formDataInfo.boxUseAdjustItemSlave.defaultList[index].boxUseBatchOn;
-      //获取当前子表数据
+    // 工单号失去焦点带出参数事件
+    onFill (index) {
+      let pushData = []
+      // 获取仓位id
+      let paStationId = this.formDataInfo.master.paStationId
+      // 获取用料批次号
+      let boxUseBatchOn = this.formDataInfo.boxUseAdjustItemSlave.defaultList[index].boxUseBatchOn
+      // 获取当前子表数据
       // let two = this.formDataInfo.boxUseAdjustItemSlave.defaultList[index];
-      let tabData = this.$refs["tableFields"].cloneData;
-      //获取子表初始化时的数据
-      let defulit = this.initData.initData.stockBoxUseAdjustitemFm;
-      if (paStationId === "") {
+      let tabData = this.$refs['tableFields'].cloneData
+      // 获取子表初始化时的数据
+      let defulit = this.initData.initData.stockBoxUseAdjustitemFm
+      if (paStationId === '') {
         this.$Message.error('仓位不能为空')
         return
       }
       if (boxUseBatchOn) {
-          request
-            .post(`/stock/boxUseAdjust/getWorkInStore`, {whId:this.formDataInfo.master.paStationId,flag:1,inBatchOn:boxUseBatchOn})
-            .then(res => {
-            let data = res[0];
-            if (data === [] || data === undefined || data.length==0) {
-              this.$Message.error("工单号错误");
-              //$set(要修改的对象,索引,属性的值是啥)
+        request
+          .post(`/stock/boxUseAdjust/getWorkInStore`, { whId: this.formDataInfo.master.paStationId, flag: 1, inBatchOn: boxUseBatchOn })
+          .then(res => {
+            let data = res[0]
+            if (data === [] || data === undefined || data.length == 0) {
+              this.$Message.error('工单号错误')
+              // $set(要修改的对象,索引,属性的值是啥)
               // this.$set(
               //   this.formDataInfo.boxUseAdjustItemSlave.defaultList,
               //   index,
               //   this.initData.initData.stockBoxUseAdjustitemFm
               // );
               let ddat = JSON.parse(JSON.stringify(this.initData.initData.stockBoxUseAdjustitemFm))
-              this.$refs["tableFields"].set(ddat,index) 
-              return;
+              this.$refs['tableFields'].set(ddat, index)
+              return
             }
-            res.forEach((selectedValue) =>{
+            res.forEach((selectedValue) => {
               let transData = this.transformation(selectedValue)
               pushData.push(transData)
             })
-            this.$refs["tableFields"].set(pushData,index)   
+            this.$refs['tableFields'].set(pushData, index)
             // let demo = this.$refs["tableFields"].cloneData[index];
-            //判断用料批次号是否存在
+            // 判断用料批次号是否存在
             // for (let index2 = 0; index2 < tabData.length; index2++) {
             //   if (index != index2) {
             //     if (data.workNo === tabData[index2].workNo) {
@@ -466,124 +479,122 @@ export default {
             // this.transformation(demo, data);
             this.biInQtyChange(index)
             this.OnlyWorkNo(index)
-          });
+          })
       }
     },
-    //工单号唯一校验
-    OnlyWorkNo(index){
-        // debugger;
-      //获取当前行工单号
-      let boxUseBatchOn = this.formDataInfo.boxUseAdjustItemSlave.defaultList[index].boxUseBatchOn;
-      //过去明细表全部数据
-      let two = this.formDataInfo.boxUseAdjustItemSlave.defaultList;
-      let one = this.$refs["tableFields"].cloneData;
+    // 工单号唯一校验
+    OnlyWorkNo (index) {
+      // debugger;
+      // 获取当前行工单号
+      let boxUseBatchOn = this.formDataInfo.boxUseAdjustItemSlave.defaultList[index].boxUseBatchOn
+      // 过去明细表全部数据
+      let two = this.formDataInfo.boxUseAdjustItemSlave.defaultList
+      let one = this.$refs['tableFields'].cloneData
       for (let index1 = 0; index1 < one.length; index1++) {
         if (index1 !== index) {
-          if (one[index1].boxUseBatchOn===boxUseBatchOn) {
-            //若当前列表工单号已经存在，清空当前列表数据，提示工单号已经存在 BC200300033-2
+          if (one[index1].boxUseBatchOn === boxUseBatchOn) {
+            // 若当前列表工单号已经存在，清空当前列表数据，提示工单号已经存在 BC200300033-2
             // this.$set(
-            this.$refs["tableFields"].set(this.initData.initData.stockBoxUseAdjustitemFm,index1)
+            this.$refs['tableFields'].set(this.initData.initData.stockBoxUseAdjustitemFm, index1)
             //   index,
             //   this.initData.initData.stockBoxUseAdjustitemFm
             // )
             this.$Message.error('此批次号已经存在')
             this.biInQtyChange(index)
-          }        
+          }
         }
       }
     },
-    //工单号点击事件
-    Slave_list_table_editRowModify(index) {
+    // 工单号点击事件
+    Slave_list_table_editRowModify (index) {
       // debugger
-      let inBatchOnList = "";
-      let tabData = this.$refs["tableFields"].cloneData;
+      let inBatchOnList = ''
+      let tabData = this.$refs['tableFields'].cloneData
       if (tabData.length == 1) {
-        if (tabData[0].boxUseBatchOn  == "") {
-          inBatchOnList = "";
+        if (tabData[0].boxUseBatchOn == '') {
+          inBatchOnList = ''
         } else {
-          inBatchOnList = tabData[0].boxUseBatchOn;
+          inBatchOnList = tabData[0].boxUseBatchOn
         }
       } else {
         for (let i = 0; i < tabData.length; i++) {
           if (i === tabData.length - 1) {
-            if (tabData[i].boxUseBatchOn  == "") {
-              inBatchOnList = inBatchOnList.substr(0, inBatchOnList.length - 1);
-            }else{
+            if (tabData[i].boxUseBatchOn == '') {
+              inBatchOnList = inBatchOnList.substr(0, inBatchOnList.length - 1)
+            } else {
               inBatchOnList += tabData[i].boxUseBatchOn
             }
           } else {
-            inBatchOnList += tabData[i].boxUseBatchOn  + ",";
+            inBatchOnList += tabData[i].boxUseBatchOn + ','
           }
         }
       }
       if (this.formDataInfo.master.paAdujstorId) {
         if (this.formDataInfo.master.paStationId) {
           this.whId = this.formDataInfo.master.paStationId
-          this.salveWindow.showEditWindow = true;
-          this.index1 = index;
-          let ppuer = this.salveWindow.showEditWindow;
-          this.salveWindow.action = "add";
-          this.salveWindow.isLoaddingDone = true;
-          this.inBatchOnList = inBatchOnList;
+          this.salveWindow.showEditWindow = true
+          this.index1 = index
+          let ppuer = this.salveWindow.showEditWindow
+          this.salveWindow.action = 'add'
+          this.salveWindow.isLoaddingDone = true
+          this.inBatchOnList = inBatchOnList
           // issInput(1输入0查询)
           request
-              .post(`/stock/boxUseAdjust/getWorkInStore`, {whId:this.formDataInfo.master.paStationId,inBatchOnList})
-              .then(res => {
-                this.WorkOrderNumber1 = res;
-                this.$refs.mychild.getFormInitDataObj(res);
-          });
-          
-        }else{
-          this.salveWindow.showEditWindow = false;
-          this.$Message.error("仓库不能为空");
+            .post(`/stock/boxUseAdjust/getWorkInStore`, { whId: this.formDataInfo.master.paStationId, inBatchOnList })
+            .then(res => {
+              this.WorkOrderNumber1 = res
+              this.$refs.mychild.getFormInitDataObj(res)
+            })
+        } else {
+          this.salveWindow.showEditWindow = false
+          this.$Message.error('仓库不能为空')
         }
-      }else{
-        this.salveWindow.showEditWindow = false;
-        this.$Message.error("盘点人不能为空");
-      }
-        
-     },
-    //判断数据是新增还是修改
-    formDetailDataCall() {
-      // debugger;
-      if (this.action != "add") {
-        //debugger
-        this.getteamCode = this.formDataInfo.master.paAdujstorCode;
-        this.id = this.formDataInfo.master.id;
+      } else {
+        this.salveWindow.showEditWindow = false
+        this.$Message.error('盘点人不能为空')
       }
     },
-    //当主表弹框改变时促发初始化子表数据
-    Initializationdata(data) {
-      //debugger
-      let tableData = this.$refs["tableFields"].getCategorizeData();
+    // 判断数据是新增还是修改
+    formDetailDataCall () {
+      // debugger;
+      if (this.action != 'add') {
+        // debugger
+        this.getteamCode = this.formDataInfo.master.paAdujstorCode
+        this.id = this.formDataInfo.master.id
+      }
+    },
+    // 当主表弹框改变时促发初始化子表数据
+    Initializationdata (data) {
+      // debugger
+      let tableData = this.$refs['tableFields'].getCategorizeData()
       if (this.formDataInfo.master.paAdujstorId) {
         if (this.formDataInfo.master.paAdujstorId != this.getbppClassId) {
-          this.formDataInfo.boxUseAdjustItemSlave.defaultList = [];
-          tableData.deleteList = tableData.updateList;
+          this.formDataInfo.boxUseAdjustItemSlave.defaultList = []
+          tableData.deleteList = tableData.updateList
         }
-        this.getbppClassId = this.formDataInfo.master.paAdujstorId;
+        this.getbppClassId = this.formDataInfo.master.paAdujstorId
       }
     },
     // 重写父类 关闭窗口时 触发事件
-    closeActionTigger() {
+    closeActionTigger () {
       // debugger
       // fix 清除上次的错误提示 formDataInfo 为表单ref名称
-      this.$refs["formDataInfo"].resetFields();
+      this.$refs['formDataInfo'].resetFields()
       // this.$refs["tableFields"].reset();
       this.formDataInfo = deepCopy(default_formDataInfo)
       // this.formDataInfo.boxUseAdjustItemSlave.defaultList=[this.initData.initData.stockBoxUseAdjustitemFm]
     },
-    //主表弹框判空
-    clickValuedate() {
-      //debugger;
+    // 主表弹框判空
+    clickValuedate () {
+      // debugger;
       if (
         !this.formDataInfo.master.paStationCode ||
-        this.formDataInfo.master.paStationCode == ""
+        this.formDataInfo.master.paStationCode == ''
       ) {
-        this.$Message.error("仓库不能为空");
-        return false;
+        this.$Message.error('仓库不能为空')
+        return false
       }
-      return true;
+      return true
     },
     // 重写父类,添加时候,清空数据
     // HandleFormDataInfo() {
@@ -591,19 +602,19 @@ export default {
     //   this.formDataInfo = Object.assign({}, default_formDataInfo);
     // },
     // 重写父类,修改提交数据
-    resetformDataInfo() {
+    resetformDataInfo () {
       // debugger;
       let _data = this.formDataInfo
-      let tableData = this.$refs["tableFields"].getCategorizeData();
-      this.formDataInfo.boxUseAdjustItemSlave = tableData;
-      if (!!_data.master.paAdjustDate) {
+      let tableData = this.$refs['tableFields'].getCategorizeData()
+      this.formDataInfo.boxUseAdjustItemSlave = tableData
+      if (_data.master.paAdjustDate) {
         _data.master.paAdjustDate = dayjs(_data.master.paAdjustDate).format(
-          "YYYY-MM-DD HH:mm:ss"
-        );
+          'YYYY-MM-DD HH:mm:ss'
+        )
       }
-      return this.formDataInfo;
+      return this.formDataInfo
     },
-    formTableDataSubmit(){
+    formTableDataSubmit () {
       let _self = this
       this.$refs['formDataInfo'].validate(valid => {
         if (!valid) {
@@ -615,7 +626,7 @@ export default {
         }
         // _self.insertBoxUseAdjusteData()
         let submitData = _self.resetformDataInfo()
-        request.post(`/stock/boxUseAdjust/save`,submitData).then(res=>{
+        request.post(`/stock/boxUseAdjust/save`, submitData).then(res => {
           _self.showWindow = false // 关闭当前编辑页面
           _self.$Message.success('执行成功')
           _self.$emit('submit-success') // 刷新主页面数据
@@ -623,7 +634,7 @@ export default {
       })
     }
   }
-};
+}
 </script>
 
 <style>

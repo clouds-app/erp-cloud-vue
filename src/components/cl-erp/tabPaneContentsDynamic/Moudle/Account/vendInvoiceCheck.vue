@@ -9,7 +9,7 @@
     >
     </htmlTemplate>
 
-    <div class="content-container" v-if="formInitData.listView" :style="{ height: tableHeight + 'px' }">
+    <div ref="contextMenuTarget" class="content-container" v-if="formInitData.listView" :style="{ height: tableHeight + 'px' }">
       <Split :v-model="splitModel" mode="vertical">
         <div slot="top" class="demo-split-pane" ref="contextMenuTarget">
           <vTable
@@ -51,14 +51,14 @@
   </div>
 </template>
 <script>
-import vTable from "@/components/tables/vTable";
-import htmlTemplate from "../components/htmlTemplate";
-import listBaseMixins from "../mixins/list";
-import request from "@/libs/request"
-import eTable from "@/components/e-table/e-table";
-import editWindow from "@/components/edit-window/edit-window";
-import formControl from "@/components/form-control/form-control";
-import dayjs from "dayjs"
+import vTable from '@/components/tables/vTable'
+import htmlTemplate from '../components/htmlTemplate'
+import listBaseMixins from '../mixins/list'
+import request from '@/libs/request'
+import eTable from '@/components/e-table/e-table'
+import editWindow from '@/components/edit-window/edit-window'
+import formControl from '@/components/form-control/form-control'
+import dayjs from 'dayjs'
 export default {
   mixins: [listBaseMixins],
   components: {
@@ -66,85 +66,83 @@ export default {
     editWindow,
     formControl,
     dayjs,
-    'editForm':function(resolve) { //组件的异步加载
-                require(["./edit/edit-vendInvoiceCheck"], resolve);
-            },
-        
+    'editForm': function (resolve) { // 组件的异步加载
+      require(['./edit/edit-vendInvoiceCheck'], resolve)
+    },
+
     htmlTemplate,
-    vTable,
+    vTable
   },
-  data() {
+  data () {
     return {
       // 导出参数配置
-       tableDataList:[
-        {ref:'master_list_table',title:'收票'},
-        {ref:'slave_list_table',title:'收票明细'},
+      tableDataList: [
+        { ref: 'master_list_table', title: '收票' },
+        { ref: 'slave_list_table', title: '收票明细' }
       ],
-      tableContextMenu:this.$refs['contextmenu'],
-      //数据查询修改等基本参数设置
+      tableContextMenu: this.$refs['contextmenu'],
+      // 数据查询修改等基本参数设置
       functionParams: {
-        formInitPreName: 'accountvendinvoicecheck', //  查询表格列头信息 前缀 例如:accountvendinvoicecheck  Fm/itemFm 	
-        requestBaseUrl: "/account/vendInvoiceCheck",
-        uniqueId: "vicId"
+        formInitPreName: 'accountvendinvoicecheck', //  查询表格列头信息 前缀 例如:accountvendinvoicecheck  Fm/itemFm
+        requestBaseUrl: '/account/vendInvoiceCheck',
+        uniqueId: 'vicId'
       },
       // 查询参数 ,注意格式
       queryParamsDefault: [
         {
-          title: "请输收票单号",
-          code: "vicNo",
-          vicNo: ""
+          title: '请输收票单号',
+          code: 'vicNo',
+          vicNo: ''
         },
         {
-          title: "请输供应商名称",
-          name: "supplierName$like",
-          supplierName$like: ""
+          title: '请输供应商名称',
+          name: 'supplierName$like',
+          supplierName$like: ''
         }
-      ],
-    };
+      ]
+    }
   },
-   
+
   created () {
     // 查询多个表格列表头数据
     // 无需变更,配置functionParams 参数即可
     if (this.functionParams.formInitPreName) {
       this.getFormInitData(`${this.functionParams.formInitPreName}Fm`)
     }
-     
   },
   methods: {
-     // 重写父类方法,确认当前行 是否可以删除,默认true可以删除,false 返回false 不可以删除
-    canIDeleteRowitem(){
-      //debugger
+    // 重写父类方法,确认当前行 是否可以删除,默认true可以删除,false 返回false 不可以删除
+    canIDeleteRowitem () {
+      // debugger
       let canDelete = true
-      if(!!this.masterRowSelection){
+      if (this.masterRowSelection) {
         // 已收票金额
-        let itemHasAmt = Number(this.masterRowSelection['writeOffAmt']) 
-        if(itemHasAmt>0){
+        let itemHasAmt = Number(this.masterRowSelection['writeOffAmt'])
+        if (itemHasAmt > 0) {
           canDelete = false
         }
       }
-      if(!canDelete){
-           let message = "当前数据(已冲金额不为0),不可操作";
-           this.$Message.warning(message);
-           return false
+      if (!canDelete) {
+        let message = '当前数据(已冲金额不为0),不可操作'
+        this.$Message.warning(message)
+        return false
       }
       return true
     },
     // 主表点击事件,需要修改 查询参数:productPriceId 和 查询反馈内容  rowData.custCode + " " + rowData.supplierName 一般对应 queryParamsDefault 即可
     master_list_tableRowClick (rowData, rowIndex) {
-        //debugger
+      // debugger
       this.masterRowSelection = rowData
       this.currrentRowItem.rowName = rowData.vicNo + ' ' + rowData.supplierName
-      this.$refs['slave_list_table'].search({ vicId: rowData.id })//vicCheckId
+      this.$refs['slave_list_table'].search({ vicId: rowData.id })// vicCheckId
     },
     // 纸箱出货明细 行点击事件
-    slave_list_tableRowClick(rowData, rowIndex){
-        //debugger
-    },
-   
+    slave_list_tableRowClick (rowData, rowIndex) {
+      // debugger
+    }
 
   }
-};
+}
 </script>
 
 <style></style>

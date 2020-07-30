@@ -1,0 +1,204 @@
+<template>
+  <div class="cl-moudle">
+    <htmlTemplate
+      :currrentRowItem="currrentRowItem"
+      @isLoaddingDone="getLoaddingDone"
+      :requestBaseUrl="functionParams.requestBaseUrl"
+      :uniqueId="functionParams.uniqueId"
+      :queryParamsDefault="queryParamsDefault"
+    >
+    </htmlTemplate>
+    <div ref="contextMenuTarget" class="content-container" :style="{ height: tableHeight + 'px' }">
+      <Split :v-model="splitModel" mode="vertical">
+        <div slot="top" class="demo-split-pane">
+          <vTable
+            tabletitle='纸箱产品外发'
+            :height="tableHeight / 2"
+            ref="master_list_table"
+            :columns-url="functionParams.requestColBaseUrl + '/prosendoutFm'"
+            url="/mrp/proSendOut/page"
+            :pagination="true"
+            @row-click="tableRowClick"
+            name="prosendoutFm"
+          ></vTable>
+        </div>
+        <div slot="bottom" :style="{ 'padding-top': '6px' }">
+          <Tabs>
+            <TabPane label="纸箱产品外发明细表" name="name1">
+              <vTable
+                tabletitle='纸箱产品外发明细表'
+                :height="tableHeight / 2.3"
+                ref="tableFieldRef"
+                :table-data="tableFieldData"
+                :columns-url="functionParams.requestColBaseUrl + '/prosendoutitemFm'"
+                :pagination="false"
+                name="prosendoutitemFm"
+              ></vTable>
+            </TabPane>
+          </Tabs>
+        </div>
+      </Split>
+    </div>
+    <editForm
+      :isLoaddingDone="isLoaddingDone"
+      :form-detail-data="formDetailData"
+      moduleName="worker"
+      :action="action"
+      @submit-success="search()"
+      v-model="showEditWindow"
+      :detailDisabled="detailDisabled"
+      :detailConvertUpdate="details"
+      :rowData="masterRowSelection"
+    />
+    <Modal
+        v-model="prosendoutmodal1"
+        title="状态查询"
+        @on-ok="cleardata"
+        @on-cancel="cleardata">
+        <p>{{modelData}}</p>
+    </Modal>
+  </div>
+</template>
+<script>
+import vTable from "@/components/tables/vTable";
+import htmlTemplate from "../components/htmlTemplate";
+//import editForm from "./edit/edit-warehouse";
+import listBaseMixins from "../mixins/list";
+import request from '@/libs/request'
+// import axios from '@/libs/api.request'
+import axios from 'axios'
+export default {
+  mixins: [listBaseMixins],
+  components: {
+    'editForm':function(resolve) { //组件的异步加载
+                require(["./edit/edit-prosendout"], resolve);
+            },
+        
+    htmlTemplate,
+    vTable
+  },
+  data() {
+    return {
+      prosendoutmodal1:false,
+     // who:'editForm', // 动态指定编辑控件
+      functionParams: {
+        requestBaseUrl: "/mrp/proSendOut",
+        uniqueId: "soId"
+      },
+      modelData:'',//弹出层数据
+      details:true,//详情确认按钮禁用字段
+      // 查询参数 ,注意格式
+      queryParamsDefault: [
+        {
+          title: "请输入外发单号",
+          code: "soNo",
+          soNo: ""
+        },
+        {
+          title: "请输入供应商名称",
+          name: "supplierName$like",
+          supplierName$like: ""
+        }
+      ],
+      columns: [
+         
+      ],
+      // 工单明细	
+      tableFieldColuns: [
+      
+      ],
+     
+    };
+  },
+  computed:{
+    // 抢单状态
+     cellrobStatusUrl(){
+       return this.$store.state.app.robStatusUrl
+     },
+  },
+  watch:{
+    // 抢单状态
+    cellrobStatusUrl(n,o){
+      if (n!==''&& this.$store.state.app.nowTableName === "产品外发") {
+        this.getcellrobStatusData(n)
+      }
+    },
+  },
+  methods: {
+    // 获取抢单状态数据
+    getcellrobStatusData(url){
+      // debugger
+      // let _urldata = url.substr(22)
+      // mes.cartonyun.com
+      axios.get(url).then(res=>{
+        this.modelData = res.data.data.mes
+        this.prosendoutmodal1 = true
+      }).catch(err=>{
+        this.$Message.error(err)
+      })
+    },
+    // 清空vuex中抢单状态，生产状态数据
+    cleardata(){
+      this.prosendoutmodal1 = false
+      this.$store.state.app.robStatusUrl = ''
+    },
+    // 详情页禁用编辑字段
+    getdetails(){
+      if (this.masterRowSelection.sendStatusText==='已外发') {
+          this.details =  false
+          return
+      }
+          this.details =  true
+    },
+    // 扩展功能调用方法
+    customerAction(){
+      request.post(`/mrp/proSendOut/proSendOutMes?soId=${this.masterRowSelection.id}`).then(res=>{
+        this.search();
+      })
+    },
+    canIDeleteRowItem(){
+      // sendStatusText
+      if (this.masterRowSelection.sendStatusText==='已外发') {
+          let  message = "当前数据已外发,不可操作";
+          this.$Message.warning(message);
+          return false
+      }
+          return true
+    },
+    tableRowClick(rowData, rowIndex) {
+      this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData;
+      if (rowData != null) {
+        //debugger
+        // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
+        this.currrentRowItem.rowName = rowData.soNo + " " + rowData.supplierName;
+        // this.currrentRowItem.soNo = rowData.supplierName;
+      }
+      if (this.masterRowSelection) {
+        this.getItemDataById();
+      }
+      this.getdetails()
+    },
+    // 获取纸板采购报价明细
+    getItemDataById() {
+      //debugger
+      let url = `/mrp/proSendOut/item/list`;
+      let data = {
+        soId: this.masterRowSelection.id
+      };
+      let _self = this;
+      request.post(url, data).then(res => {
+        //debugger
+        _self.tableFieldData = res;
+      });
+    },
+    //重写父类方法, 更新操作
+    handleUpdateEvent() {
+      this.getItemDataById();
+    }
+  }
+};
+</script>
+
+<style></style>
+

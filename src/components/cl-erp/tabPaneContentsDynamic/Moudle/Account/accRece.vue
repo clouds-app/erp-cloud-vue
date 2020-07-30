@@ -9,6 +9,7 @@
     ></htmlTemplate>
 
     <div
+      ref="contextMenuTarget"
       class="content-container"
       v-if="formInitData.listView"
       :style="{ height: tableHeight + 'px' }"
@@ -108,7 +109,7 @@
             from-fields="id,cusCode,cusName"
             :suffix="false"
             :suffix-model="formAccPayGuide.cusName"
-            
+
           />
         </FormItem>
         <FormItem label="立账日期" prop="arDate">
@@ -320,7 +321,7 @@
                   >{{item.dicLabel}}</Option>
                 </Select>
                 <!-- 月结终止日-->
-                 <template v-else-if="column.key =='monthEnd'"> 
+                 <template v-else-if="column.key =='monthEnd'">
                     <Input v-model="row[column.key]" @input="value => {valueChangeAssign(value, index, row,column.key)}" @on-keyup="monthEndCli(value, index, row,column.key)">
                     </Input>
                  </template>
@@ -487,65 +488,65 @@
 </template>
 <script>
 // 应收对账单
-import optionSearch from "../components/optionSearch";
-import popup from "@/components/popup/popup";
-import vTable from "@/components/tables/vTable";
-import htmlTemplate from "../components/htmlTemplate";
-import listBaseMixins from "../mixins/list";
-import request from "@/libs/request";
-import eTable from "@/components/e-table/e-table";
-import editWindow from "@/components/edit-window/edit-window";
-import formControl from "@/components/form-control/form-control";
-import dayjs from "dayjs";
+import optionSearch from '../components/optionSearch'
+import popup from '@/components/popup/popup'
+import vTable from '@/components/tables/vTable'
+import htmlTemplate from '../components/htmlTemplate'
+import listBaseMixins from '../mixins/list'
+import request from '@/libs/request'
+import eTable from '@/components/e-table/e-table'
+import editWindow from '@/components/edit-window/edit-window'
+import formControl from '@/components/form-control/form-control'
+import dayjs from 'dayjs'
 const formGetBack_default = {
-  arNo: "",
+  arNo: '',
   iisAppend: false,
   mode: true,
   loading: false,
-  arMonth: dayjs().format("YYYYMM"),
-  cusName: "",
-  arDate: dayjs().format("YYYY-MM-DD HH:mm:ss"),
-  bdEndDate: "",
+  arMonth: dayjs().format('YYYYMM'),
+  cusName: '',
+  arDate: dayjs().format('YYYY-MM-DD HH:mm:ss'),
+  bdEndDate: '',
   // bdBackDate: "",
   // bdBackDateText: "", //格式化日期显示
   biIsAcc: true, // 采用月结
-  biIsAccDate: "", // 月结日期
+  biIsAccDate: '', // 月结日期
   arpType: 0,
-  arpTypeText: "",
-  discount: "",
-  custId: "",
-  cusCode: "",
-  cusName: "",
-  areaIds: "",
-  bdDeAddr: "",
-  addrDetail: "",
-  bdSaleId: "",
-  bdSaleCode: "",
-  bdSaleName: "",
-  followerId: "",
-  followerCode: "",
-  followerName: ""
-};
+  arpTypeText: '',
+  discount: '',
+  custId: '',
+  cusCode: '',
+  cusName: '',
+  areaIds: '',
+  bdDeAddr: '',
+  addrDetail: '',
+  bdSaleId: '',
+  bdSaleCode: '',
+  bdSaleName: '',
+  followerId: '',
+  followerCode: '',
+  followerName: ''
+}
 const formAccPayGuide_default = {
   iisAppend: false, // 追加到当前立账单中
-  setBycustomer: true, //采用客户数据中的设定
-  arDate: dayjs().format("YYYY-MM-DD"),
-  arMonth: dayjs().format("YYYY-MM-DD"),
-  arpType: "0",
-  mDate: "", //dayjs().format("YYYY-MM-DD"),
+  setBycustomer: true, // 采用客户数据中的设定
+  arDate: dayjs().format('YYYY-MM-DD'),
+  arMonth: dayjs().format('YYYY-MM-DD'),
+  arpType: '0',
+  mDate: '', // dayjs().format("YYYY-MM-DD"),
   coinId: 0,
   discount: null,
-  endDate: "", //结束日期 dayjs().format("YYYY-MM-DD"),
+  endDate: '', // 结束日期 dayjs().format("YYYY-MM-DD"),
   monthDays: null,
   monthEnd: 0,
-  startDate: "", // 起始日期
-  cusCode: "",
+  startDate: '', // 起始日期
+  cusCode: '',
   custId: 0,
-  cusName: "",
-  supplierType: "0",
+  cusName: '',
+  supplierType: '0',
   taxRate: null,
-  taxType: ""
-};
+  taxType: ''
+}
 export default {
   mixins: [listBaseMixins],
   components: {
@@ -555,404 +556,402 @@ export default {
     editWindow,
     formControl,
     dayjs,
-    editForm: function(resolve) {
-      //组件的异步加载
-      require(["./edit/edit-accRece"], resolve);
+    editForm: function (resolve) {
+      // 组件的异步加载
+      require(['./edit/edit-accRece'], resolve)
     },
 
     htmlTemplate,
     vTable
   },
-  data() {
+  data () {
     return {
-      tableDataList:[
-        {ref:'master_list_table',title:'应收对账单'},
-        {ref:'slave_list_table',title:'应收对账单明细'}
+      tableDataList: [
+        { ref: 'master_list_table', title: '应收对账单' },
+        { ref: 'slave_list_table', title: '应收对账单明细' }
       ],
       arpTypeList: [], // 月结类型
       pageNumber: 1, // 当前页码
       pageSize: 20, // 每页条数
-      loading_submit_accPayGuideTwo_btn: false, //完成按钮 是否 加载中
+      loading_submit_accPayGuideTwo_btn: false, // 完成按钮 是否 加载中
       tableColTitleData: [], // 应收对账单向导 表头
       accPayguideDataList: [], // 应收对账单向导 数据列表
       formAccPayGuide: Object.assign({}, formAccPayGuide_default),
       showMonthlySettlementWindow: false, // 是否显示月结向导窗口
       showMonthlySettlementListWindow: false, // 是否显示月结向导 数据列表窗口
-      showEndDataBatchWindow:false,// 批量修改月结日期 窗体 是否显示
-      isLoadingSearchBtn:false,// 回传查询按钮 加载中
-      tableColEndDateTitleData:[],//回传表头
-      tableEndDateDataList:[],//回传 数据列表
-      formEndDataInfo:Object.assign({},formGetBack_default),
-      arNo:'',//立账单号
-      //数据查询修改等基本参数设置
+      showEndDataBatchWindow: false, // 批量修改月结日期 窗体 是否显示
+      isLoadingSearchBtn: false, // 回传查询按钮 加载中
+      tableColEndDateTitleData: [], // 回传表头
+      tableEndDateDataList: [], // 回传 数据列表
+      formEndDataInfo: Object.assign({}, formGetBack_default),
+      arNo: '', // 立账单号
+      // 数据查询修改等基本参数设置
       functionParams: {
-        accPayGuideFormName: "accrececustdataFm",
-        formInitPreName: "accountaccrece", //  查询表格列头信息 前缀 例如:accountInvoiceCheck  Fm/itemFm
-        requestBaseUrl: "/account/accRece",
-        uniqueId: "arId"
+        accPayGuideFormName: 'accrececustdataFm',
+        formInitPreName: 'accountaccrece', //  查询表格列头信息 前缀 例如:accountInvoiceCheck  Fm/itemFm
+        requestBaseUrl: '/account/accRece',
+        uniqueId: 'arId'
       },
       // 查询参数 ,注意格式
       queryParamsDefault: [
         {
-          title: "请输入立账单号",
-          code: "arNo",
-          arNo: ""
+          title: '请输入立账单号',
+          code: 'arNo',
+          arNo: ''
         },
         {
-          title: "请输入客户名称",
-          name: "cusName$like",
-          cusName$like: ""
+          title: '请输入客户名称',
+          name: 'cusName$like',
+          cusName$like: ''
         }
       ]
-    };
+    }
   },
   watch: {
     // 监控 是否显示月结向导窗口
-    showMonthlySettlementWindow(n, o) {
+    showMonthlySettlementWindow (n, o) {
       if (!n) {
         // 退出时,清空预设
         if (!this.showMonthlySettlementListWindow) {
-          this.formAccPayGuide = Object.assign({}, formAccPayGuide_default);
+          this.formAccPayGuide = Object.assign({}, formAccPayGuide_default)
         }
       }
     },
-    showMonthlySettlementListWindow(n, o) {
+    showMonthlySettlementListWindow (n, o) {
       if (!n && !this.showMonthlySettlementWindow) {
         // 退出时,清空预设
-        this.formAccPayGuide = Object.assign({}, formAccPayGuide_default);
+        this.formAccPayGuide = Object.assign({}, formAccPayGuide_default)
       }
     },
     // 监控回传窗体打开
-    showEndDataBatchWindow: function(n, o) {
+    showEndDataBatchWindow: function (n, o) {
       if (n) {
-        let _self = this;
+        let _self = this
         this.$nextTick(() => {
           // 初始化日期
           _self.formEndDataInfo.arDate = dayjs()
-            .subtract(10, "day")
-            .format("YYYY-MM-DD");
-          _self.formEndDataInfo.bdEndDate = dayjs().format("YYYY-MM-DD");
-          _self.formEndDataInfo.biIsAccDate = dayjs().format("YYYY-MM-DD");
-          _self.searchEndDateDataList();
-        });
+            .subtract(10, 'day')
+            .format('YYYY-MM-DD')
+          _self.formEndDataInfo.bdEndDate = dayjs().format('YYYY-MM-DD')
+          _self.formEndDataInfo.biIsAccDate = dayjs().format('YYYY-MM-DD')
+          _self.searchEndDateDataList()
+        })
       }
-    },
+    }
   },
   computed: {
     // 是否 提交/全选 禁用
-    disabled_button() {
-      return !this.accPayguideDataList.length > 0;
+    disabled_button () {
+      return !this.accPayguideDataList.length > 0
     },
     // 是否禁用分页
-    disable_Paging() {
-      return this.accPayguideDataList.length > this.pageSize;
+    disable_Paging () {
+      return this.accPayguideDataList.length > this.pageSize
     },
-    //是否禁用回传 确定按钮
-    disabled_endData_submitBtn(){
-      //debugger
-        if(this.tableEndDateDataList && this.tableEndDateDataList.length>0){
-          return false
-        }else{
-          return true
-        }
+    // 是否禁用回传 确定按钮
+    disabled_endData_submitBtn () {
+      // debugger
+      if (this.tableEndDateDataList && this.tableEndDateDataList.length > 0) {
+        return false
+      } else {
+        return true
+      }
     }
   },
-  created() {
+  created () {
     // 查询多个表格列表头数据
     // 无需变更,配置functionParams 参数即可
     if (this.functionParams.formInitPreName) {
-      //debugger
-      this.getFormInitData(`${this.functionParams.formInitPreName}Fm`);
+      // debugger
+      this.getFormInitData(`${this.functionParams.formInitPreName}Fm`)
     }
-    this.loadColumsData();
-    this.getArpTypeList();
-    this.loadEndDateColumsData(); // 回传 列表表头
+    this.loadColumsData()
+    this.getArpTypeList()
+    this.loadEndDateColumsData() // 回传 列表表头
   },
   methods: {
     // 重写父类方法,确认当前行 是否可以删除,默认true可以删除,false 返回false 不可以删除
-    canIDeleteRowItem() {
-      //debugger
-      let canDelete = true;
-      if (!!this.masterRowSelection) {
+    canIDeleteRowItem () {
+      // debugger
+      let canDelete = true
+      if (this.masterRowSelection) {
         // 已开票金额
-        let itemHasAmt = Number(this.masterRowSelection["invoicedAmt"]);
+        let itemHasAmt = Number(this.masterRowSelection['invoicedAmt'])
         if (itemHasAmt > 0) {
-          canDelete = false;
+          canDelete = false
         }
       }
       if (!canDelete) {
-        let message = "当前数据(已开票金额不为0),不可操作";
-        this.$Message.warning(message);
-        return false;
+        let message = '当前数据(已开票金额不为0),不可操作'
+        this.$Message.warning(message)
+        return false
       }
-      return true;
+      return true
     },
-    getArpTypeList() {
-      //获取  单据类型
-      //debugger
-      this.getDataFromDictionaryBy("arpType").then(res => {
-        this.arpTypeList = res;
-      });
+    getArpTypeList () {
+      // 获取  单据类型
+      // debugger
+      this.getDataFromDictionaryBy('arpType').then(res => {
+        this.arpTypeList = res
+      })
     },
     // 追加到当前立账单中
-    onChange_checkBox_iisAppend(item) {
-      //debugger
-      let tableDataItems = this.$refs["master_list_table"].tableDataItems;
+    onChange_checkBox_iisAppend (item) {
+      // debugger
+      let tableDataItems = this.$refs['master_list_table'].tableDataItems
       if (tableDataItems.length == 0 && item) {
         // 判断当前主表是否有数据,没有数据时,当前数据列表为空,不可追加!
         this.$Modal.warning({
-          title: "提示",
+          title: '提示',
           content: `当前数据列表为空,不可追加!?`,
           onOk: () => {
-            this.formAccPayGuide.iisAppend = false;
+            this.formAccPayGuide.iisAppend = false
           }
-        });
+        })
       }
     },
     // 采用供应商资料中的设置 勾选回调事件
-    onChange_checkBox_setBycustomer(item) {
-      //debugger
+    onChange_checkBox_setBycustomer (item) {
+      // debugger
       if (!item) {
-        this.searchDataBy();
+        this.searchDataBy()
       } else {
         // 清空数据
-        this.assignValueToForm({});
+        this.assignValueToForm({})
       }
     },
     // 采用供应商资料中的设置 取消勾选后  搜索回调事件
-    searchDataByCallBack() {
-      //debugger
+    searchDataByCallBack () {
+      // debugger
       if (!this.formAccPayGuide.setBycustomer) {
-        let dataList = this.accPayguideDataList;
+        let dataList = this.accPayguideDataList
         if (dataList && dataList.length > 0) {
-          let item = dataList[0];
-          this.assignValueToForm(item);
+          let item = dataList[0]
+          this.assignValueToForm(item)
         }
       }
     },
     // 赋值或清空数据form
-    assignValueToForm(item) {
-      //debugger
-      this.formAccPayGuide.startDate = !!!item.startDate ? "" : item.startDate;
-      this.formAccPayGuide.endDate = !!!item.endDate ? "" : item.endDate;
-      this.formAccPayGuide.mDate = !!!item.mDate
-        ? ""
-        : item.mDate;
-      this.formAccPayGuide.taxRate = !!!item.taxRate ? "" : item.taxRate;
-      this.formAccPayGuide.discount = !!!item.discount ? "" : item.discount;
+    assignValueToForm (item) {
+      // debugger
+      this.formAccPayGuide.startDate = !item.startDate ? '' : item.startDate
+      this.formAccPayGuide.endDate = !item.endDate ? '' : item.endDate
+      this.formAccPayGuide.mDate = !item.mDate
+        ? ''
+        : item.mDate
+      this.formAccPayGuide.taxRate = !item.taxRate ? '' : item.taxRate
+      this.formAccPayGuide.discount = !item.discount ? '' : item.discount
     },
     // 提交==>批量生成应收对账单
-    submit_accPayGuideTwo() {
-      //debugger
-      let url = `${this.functionParams.requestBaseUrl}/batchSaveAccRece?arNo=${this.masterRowSelection.arNo}&iisAppend=${this.formAccPayGuide.iisAppend}`;
+    submit_accPayGuideTwo () {
+      // debugger
+      let url = `${this.functionParams.requestBaseUrl}/batchSaveAccRece?arNo=${this.masterRowSelection.arNo}&iisAppend=${this.formAccPayGuide.iisAppend}`
       let params = {
         accReceCustList: this.accPayguideDataList // 应收向导列表页的数据
         // arNo:this.masterRowSelection.arNo,// 对账单号// 当前选择行的 对账单号
         // iisAppend: this.formAccPayGuide.iisAppend // 追加到当前立账单中
-      };
+      }
       this.getDataByUrl(url, params)
         .then(res => {
-          //debugger
-          let hasPages = this.accPayguideDataList.length > this.pageSize;
+          // debugger
+          let hasPages = this.accPayguideDataList.length > this.pageSize
           // 是否存在分页
           if (hasPages) {
             this.$Modal.confirm({
-              title: "提示",
+              title: '提示',
               content: `执行成功,当前数据存在分页,是否继续操作?`,
               onOk: () => {
                 // do something like page next pages
                 // 继承操作,不关闭窗口
               },
               onCancel: () => {
-                this.showMonthlySettlementListWindow = true; // 是否显示月结向导 数据列表窗口
-                this.submitSuccess();
+                this.showMonthlySettlementListWindow = true // 是否显示月结向导 数据列表窗口
+                this.submitSuccess()
               }
-            });
+            })
           } else {
-            this.$Message.success("执行成功");
-            this.showMonthlySettlementListWindow = false; // 是否显示月结向导 数据列表窗口
-            this.submitSuccess();
+            this.$Message.success('执行成功')
+            this.showMonthlySettlementListWindow = false // 是否显示月结向导 数据列表窗口
+            this.submitSuccess()
           }
         })
-        .catch(err => {});
+        .catch(err => {})
     },
-    cancel_accPayGuide() {
-      this.showMonthlySettlementWindow = false; // 是否显示月结向导窗口
+    cancel_accPayGuide () {
+      this.showMonthlySettlementWindow = false // 是否显示月结向导窗口
     },
-    cancel_accPayGuideTwo() {
-      this.showMonthlySettlementListWindow = false; // 是否显示月结向导 数据列表窗口
+    cancel_accPayGuideTwo () {
+      this.showMonthlySettlementListWindow = false // 是否显示月结向导 数据列表窗口
     },
     // 向导上一步
-    preStep_accPayGuideTwo() {
-      this.showMonthlySettlementWindow = true; // 是否显示月结向导窗口
-      this.showMonthlySettlementListWindow = false; // 是否显示月结向导 数据列表窗口
+    preStep_accPayGuideTwo () {
+      this.showMonthlySettlementWindow = true // 是否显示月结向导窗口
+      this.showMonthlySettlementListWindow = false // 是否显示月结向导 数据列表窗口
     },
     // 向导下一步
-    nextStep_accPayGuide() {
-      this.showMonthlySettlementWindow = false; // 是否显示月结向导窗口
-      this.showMonthlySettlementListWindow = true; // 是否显示月结向导 数据列表窗口
-      this.searchDataBy();
+    nextStep_accPayGuide () {
+      this.showMonthlySettlementWindow = false // 是否显示月结向导窗口
+      this.showMonthlySettlementListWindow = true // 是否显示月结向导 数据列表窗口
+      this.searchDataBy()
     },
     // 加载列头数据(弹框签回表头)
-    loadColumsData() {
-      //应收对账单向导
-      //debugger
-      let formName = "accrececustdataFm";
-      let url = `/sys/form/init/${formName}`;
+    loadColumsData () {
+      // 应收对账单向导
+      // debugger
+      let formName = 'accrececustdataFm'
+      let url = `/sys/form/init/${formName}`
       request.get(url).then(res => {
         if (res != null) {
-          this.tableColTitleData = res;
+          this.tableColTitleData = res
         }
-      });
+      })
     },
     // 通过参数查询数据列表
-    searchDataBy(pageSize) {
-      //debugger
-      this.accPayguideDataList = []; // 重置数据列表
-      if (pageSize == null || pageSize == "") {
-        pageSize = this.pageSize;
+    searchDataBy (pageSize) {
+      // debugger
+      this.accPayguideDataList = [] // 重置数据列表
+      if (pageSize == null || pageSize == '') {
+        pageSize = this.pageSize
       } else {
-        this.pageSize = pageSize;
+        this.pageSize = pageSize
       }
       // 参数包括：
       let params = {
-        startDate: !!!this.formAccPayGuide.startDate
-          ? ""
-          : dayjs(this.formAccPayGuide.startDate).format("YYYY-MM-DD"), //(开始日期)
-        endDate: !!!this.formAccPayGuide.endDate
-          ? ""
-          : dayjs(this.formAccPayGuide.endDate).format("YYYY-MM-DD"), //(结束日期)
-        arDate: !!!this.formAccPayGuide.arDate
-          ? ""
-          : dayjs(this.formAccPayGuide.arDate).format("YYYY-MM-DD"), //((立账日期))
-        arMonth: !!!this.formAccPayGuide.arMonth
-          ? ""
-          : dayjs(this.formAccPayGuide.arMonth).format("YYYYMM"), //((月结月份))
-        monthEnd: this.formAccPayGuide.monthEnd, //((月结终止日))
-        mode: this.formAccPayGuide.setBycustomer ? "1" : "0", //(采用供应商资料中的设置:0,1)
+        startDate: !this.formAccPayGuide.startDate
+          ? ''
+          : dayjs(this.formAccPayGuide.startDate).format('YYYY-MM-DD'), // (开始日期)
+        endDate: !this.formAccPayGuide.endDate
+          ? ''
+          : dayjs(this.formAccPayGuide.endDate).format('YYYY-MM-DD'), // (结束日期)
+        arDate: !this.formAccPayGuide.arDate
+          ? ''
+          : dayjs(this.formAccPayGuide.arDate).format('YYYY-MM-DD'), // ((立账日期))
+        arMonth: !this.formAccPayGuide.arMonth
+          ? ''
+          : dayjs(this.formAccPayGuide.arMonth).format('YYYYMM'), // ((月结月份))
+        monthEnd: this.formAccPayGuide.monthEnd, // ((月结终止日))
+        mode: this.formAccPayGuide.setBycustomer ? '1' : '0', // (采用供应商资料中的设置:0,1)
         custCodes: this.formAccPayGuide.cusCode, // 供应商编号【多个用,隔开】
-        mDate: !!!this.formAccPayGuide.mDate
-          ? ""
-          : dayjs(this.formAccPayGuide.mDate).format("YYYY-MM-DD"), // 货款到期日
+        mDate: !this.formAccPayGuide.mDate
+          ? ''
+          : dayjs(this.formAccPayGuide.mDate).format('YYYY-MM-DD'), // 货款到期日
         discount: this.formAccPayGuide.discount, // discount
         taxRate: this.formAccPayGuide.taxRate, // 税率
         arpType: this.formAccPayGuide.arpType // 月结类型
-      };
+      }
       // 在startDate endDate 为空的情况下,mode 必须为1
-      if (!!!this.formAccPayGuide.startDate) {
-        params.mode = "1";
+      if (!this.formAccPayGuide.startDate) {
+        params.mode = '1'
       }
-      //勾选 追加到当前立账单中 数据采用 主表选择的
-      if (!!this.formAccPayGuide.iisAppend) {
+      // 勾选 追加到当前立账单中 数据采用 主表选择的
+      if (this.formAccPayGuide.iisAppend) {
         params = {}
-        params.arMonth = dayjs(this.masterRowSelection.arMonth).format("YYYYMM");
-        params.custCodes = this.masterRowSelection.cusCode;
-        params.mode = "1";
+        params.arMonth = dayjs(this.masterRowSelection.arMonth).format('YYYYMM')
+        params.custCodes = this.masterRowSelection.cusCode
+        params.mode = '1'
       }
-      this.loading_submit_accPayGuideTwo_btn = true;
+      this.loading_submit_accPayGuideTwo_btn = true
       request
         .post(
           `${this.functionParams.requestBaseUrl}/getAccReceCustData?pageNumber=${this.pageNumber}&pageSize=${this.pageSize}`,
           params
         )
         .then(res => {
-          //debugger
+          // debugger
           if (res && res.records.length > 0) {
             // 注意返回的数据的结构
-            this.accPayguideDataList = res.records;
-            if (params.mode == "1") {
+            this.accPayguideDataList = res.records
+            if (params.mode == '1') {
               // 为防止 上一步返回时,数据清空 特意只有MODE为1 采取覆盖数据
-              this.searchDataByCallBack(); // 回调绑定数据
+              this.searchDataByCallBack() // 回调绑定数据
             }
           }
-          this.loading_submit_accPayGuideTwo_btn = false;
+          this.loading_submit_accPayGuideTwo_btn = false
         })
         .catch(err => {
-          this.loading_submit_accPayGuideTwo_btn = false;
-        });
+          this.loading_submit_accPayGuideTwo_btn = false
+        })
     },
     // 排除不需要显示的字段
-    excludeFiled(type, key) {
-      let exListPrize = [];
-      let exList = [];
+    excludeFiled (type, key) {
+      let exListPrize = []
+      let exList = []
       switch (type) {
-        case "accPayItemFm":
-          break;
+        case 'accPayItemFm':
+          break
         default:
-          break;
+          break
       }
       if (exList.includes(key)) {
-        return false;
+        return false
       } else {
-        return true;
+        return true
       }
     },
     // 贷款到期日
-    onChange_mDate(date) {
-      this.formAccPayGuide.mDate = date;
+    onChange_mDate (date) {
+      this.formAccPayGuide.mDate = date
     },
     // 开始日期
-    onChange_startDate(date) {
-      this.formAccPayGuide.startDate = date;
+    onChange_startDate (date) {
+      this.formAccPayGuide.startDate = date
     },
     // 结束日期
-    onChange_endDate(date) {
-      //debugger
-      this.formAccPayGuide.endDate = date;
+    onChange_endDate (date) {
+      // debugger
+      this.formAccPayGuide.endDate = date
     },
     // 月结方式改变 回调时间
-    OnChange_arpType(item) {
-      this.formAccPayGuide.arpType = item.value;
+    OnChange_arpType (item) {
+      this.formAccPayGuide.arpType = item.value
     },
     // 供应商类型改变 回调事件
-    OnChange_supplierType(item) {
-      this.formAccPayGuide.supplierType = item.value;
+    OnChange_supplierType (item) {
+      this.formAccPayGuide.supplierType = item.value
     },
     // 主表点击事件,需要修改 查询参数:productPriceId 和 查询反馈内容  rowData.custCode + " " + rowData.custName 一般对应 queryParamsDefault 即可
-    master_list_tableRowClick(rowData, rowIndex) {
-      //debugger
-      this.masterRowSelection = rowData;
-      this.currrentRowItem.rowName = rowData.arNo + " " + rowData.cusName;
+    master_list_tableRowClick (rowData, rowIndex) {
+      // debugger
+      this.masterRowSelection = rowData
+      this.currrentRowItem.rowName = rowData.arNo + ' ' + rowData.cusName
       this.arNo = rowData.arNo
-      this.$refs["slave_list_table"].search({ arId: rowData.id });
+      this.$refs['slave_list_table'].search({ arId: rowData.id })
     },
     // 纸箱出货明细 行点击事件
-    slave_list_tableRowClick(rowData, rowIndex) {},
-    //判断一个值是数字
-    myIsNaN(value){
+    slave_list_tableRowClick (rowData, rowIndex) {},
+    // 判断一个值是数字
+    myIsNaN (value) {
       return typeof value === 'number' && !isNaN(value)
     },
-    //月结终止日为正数
-    monthEndCli(value, index, row,type){
-      //debugger
+    // 月结终止日为正数
+    monthEndCli (value, index, row, type) {
+      // debugger
       let isNumber = this.myIsNaN(Number(row.monthEnd))
-      if(!isNumber){
+      if (!isNumber) {
         row.monthEnd = ''
       }
-      if((row.monthEnd+'').indexOf('.')>-1)
-        row.monthEnd = ''    
+      if ((row.monthEnd + '').indexOf('.') > -1) { row.monthEnd = '' }
     },
-    //付款天数为正数
-    monthDaysCli(value, index, row,type){
-      //debugger
+    // 付款天数为正数
+    monthDaysCli (value, index, row, type) {
+      // debugger
       let isNumber = this.myIsNaN(Number(row.monthDays))
-      if(!isNumber){
+      if (!isNumber) {
         row.monthDays = ''
       }
-      if((row.monthDays+'').indexOf('.')>-1)
-        row.monthDays = ''    
+      if ((row.monthDays + '').indexOf('.') > -1) { row.monthDays = '' }
     },
-    //重写父类 自定义菜单功能,与functionBtnList.vue 页面绑定
-    customerAction(type, func) {
-      //type:当前菜单,func:功能名称
-      //debugger
-      if (type !== "account-accRece") {
-        return;
+    // 重写父类 自定义菜单功能,与functionBtnList.vue 页面绑定
+    customerAction (type, func) {
+      // type:当前菜单,func:功能名称
+      // debugger
+      if (type !== 'account-accRece') {
+        return
       }
       switch (func) {
-        //月结向导
-        case "monthlySettlement":
-          this.showMonthlySettlementWindow = true;
+        // 月结向导
+        case 'monthlySettlement':
+          this.showMonthlySettlementWindow = true
           // let tableDataItems = this.$refs['master_list_table'].tableDataItems
           // if(tableDataItems.length==0){
           //    // 判断当前主表是否有数据,没有数据时,不可以操作 月结向导 功能
@@ -962,144 +961,144 @@ export default {
 
           //     this.showMonthlySettlementWindow = true;
           // }
-          break;
-          case "postBack":
+          break
+        case 'postBack':
           //
-          this.showEndDataBatchWindow = true;
-          break;
+          this.showEndDataBatchWindow = true
+          break
         default:
-          break;
+          break
       }
     },
-      //获取回传列表的数据
-    searchEndDateDataList() {
-      //debugger 
-      this.formEndDataInfo.arNo = this.arNo //立账单号
-      this.tableEndDateDataList = [];
-      let url = "/account/accRece/getReturnData";
+    // 获取回传列表的数据
+    searchEndDateDataList () {
+      // debugger
+      this.formEndDataInfo.arNo = this.arNo // 立账单号
+      this.tableEndDateDataList = []
+      let url = '/account/accRece/getReturnData'
       let params = {
         // arMonth: this.formEndDataInfo.arMonth,
         // startDate: dayjs(this.formEndDataInfo.arDate).format("YYYY-MM-DD"),
         // endDate: dayjs(this.formEndDataInfo.bdEndDate).format("YYYY-MM-DD")
-        //客户编号
+        // 客户编号
         cusCode: this.formEndDataInfo.cusCode
-      };
+      }
       this.getDataByUrl(url, params).then(res => {
-        //debugger
+        // debugger
         if (res && res.length > 0) {
-          this.tableEndDateDataList = res;
+          this.tableEndDateDataList = res
         }
-      });
+      })
     },
     // 加载回传列头数据
-    loadEndDateColumsData() {
-      //debugger
-      let formName = "accrecereturnlistboxFm";
-      let url = `/sys/form/init/${formName}`;
+    loadEndDateColumsData () {
+      // debugger
+      let formName = 'accrecereturnlistboxFm'
+      let url = `/sys/form/init/${formName}`
       request.get(url).then(res => {
-        //debugger
+        // debugger
         if (res != null) {
-          this.tableColEndDateTitleData = res;
+          this.tableColEndDateTitleData = res
         }
-      });
+      })
     },
     // 回传窗体 提交 事件
-    endData_submit() {
-      //debugger
-      this.setEndDate();
+    endData_submit () {
+      // debugger
+      this.setEndDate()
     },
-     //批量回传
-    setEndDate(){
-      //debugger
-      //批量回传arNoList 立账单号集合
+    // 批量回传
+    setEndDate () {
+      // debugger
+      // 批量回传arNoList 立账单号集合
       let currentItem = this.masterRowSelection
       let url = '/account/accRece/batchReturnAccRece'
       let params = {
-            // deliList:[],
-            // dateFlag:this.formEndDataInfo.biIsAcc,
-            // monthDate:dayjs(this.formEndDataInfo.biIsAccDate).format("YYYY-MM-DD"),
-            arNoList:[]
+        // deliList:[],
+        // dateFlag:this.formEndDataInfo.biIsAcc,
+        // monthDate:dayjs(this.formEndDataInfo.biIsAccDate).format("YYYY-MM-DD"),
+        arNoList: []
       }
-      let hasNullDate=false
-        // 后去勾选后的数据
-      let choseDataList = this.tableEndDateDataList.forEach(item=>{
-          if(!!item.iisReturn){
-            // if(!this.formEndDataInfo.biIsAcc)
-            // {//不采用设定日期 
-            //   if(item.bdMonthDate=='' || item.bdMonthDate==null){
-            //       hasNullDate=true
-            //   }
-            // }
-            params.arNoList.push(item.arNo)
-          }
+      let hasNullDate = false
+      // 后去勾选后的数据
+      let choseDataList = this.tableEndDateDataList.forEach(item => {
+        if (item.iisReturn) {
+          // if(!this.formEndDataInfo.biIsAcc)
+          // {//不采用设定日期
+          //   if(item.bdMonthDate=='' || item.bdMonthDate==null){
+          //       hasNullDate=true
+          //   }
+          // }
+          params.arNoList.push(item.arNo)
+        }
       })
 
-       if(params.arNoList.length==0){
-           this.$Message.warning('请选择需要操作的数据')
-           return
-       }
+      if (params.arNoList.length == 0) {
+        this.$Message.warning('请选择需要操作的数据')
+        return
+      }
       //  if(hasNullDate){
       //     this.$Message.warning('勾选数据未填写月结日期')
       //       return
       //  }
       let _self = this
-      this.getDataByUrl(url,params).then(res=>{
+      this.getDataByUrl(url, params).then(res => {
         _self.$Message.success('执行成功')
-        _self.showEndDataBatchWindow = false          
-        _self.refresh()//刷新页面
+        _self.showEndDataBatchWindow = false
+        _self.refresh()// 刷新页面
       })
     },
-    //快速回传
-    setEndDateQuick(){
-      //debugger
-      //回传arNo 立账单号
+    // 快速回传
+    setEndDateQuick () {
+      // debugger
+      // 回传arNo 立账单号
       let currentItem = this.masterRowSelection
       let url = `/account/accRece/returnAccRece?arNo=${this.formEndDataInfo.arNo}`
       // let params = {
       //       arNo: this.formEndDataInfo.arNo
       // }
-      let hasNullDate=false
-       if(this.formEndDataInfo.arNo==""||this.formEndDataInfo.arNo==undefined){
-           this.$Message.warning('请选择需要操作的数据')
-           return
-       }
+      let hasNullDate = false
+      if (this.formEndDataInfo.arNo == '' || this.formEndDataInfo.arNo == undefined) {
+        this.$Message.warning('请选择需要操作的数据')
+        return
+      }
       let _self = this
-      this.getDataByUrl(url).then(res=>{
-        //debugger
-        let arr = _self.tableEndDateDataList //删掉回传的数据
-        for(let i=0;i<arr.length;i++){
-          if(arr[i].arNo ==_self.formEndDataInfo.arNo){
-            arr.splice(i,1)
+      this.getDataByUrl(url).then(res => {
+        // debugger
+        let arr = _self.tableEndDateDataList // 删掉回传的数据
+        for (let i = 0; i < arr.length; i++) {
+          if (arr[i].arNo == _self.formEndDataInfo.arNo) {
+            arr.splice(i, 1)
             i--
           }
         }
-        _self.formEndDataInfo.arNo = ""
+        _self.formEndDataInfo.arNo = ''
         _self.$Message.success('执行成功')
-        _self.refresh()//刷新页面
+        _self.refresh()// 刷新页面
         // this.showEndDataBatchWindow = false
       })
     },
     // 回传 取消 事件
-    endData_cancel() {
-      //debugger
-      this.showEndDataBatchWindow = false;
+    endData_cancel () {
+      // debugger
+      this.showEndDataBatchWindow = false
     },
-      // 回传 全选 事件
-    endData_selectAll(){
-      //debugger
-      let selectAllData = this.tableEndDateDataList.map(item=>{
-          if(!!!item.iisChose){
-             item.iisChose = true
-          }else{
-             item.iisChose = false
-          }
-          return item
+    // 回传 全选 事件
+    endData_selectAll () {
+      // debugger
+      let selectAllData = this.tableEndDateDataList.map(item => {
+        if (!item.iisChose) {
+          item.iisChose = true
+        } else {
+          item.iisChose = false
+        }
+        return item
       })
       this.tableEndDateDataList = selectAllData
-    },
-   
+    }
+
   }
-};
+}
 </script>
 
 <style></style>

@@ -235,7 +235,7 @@
                     <template v-if="column.key == 'iciArNo'">
                       <Input
                         v-model="row[column.key]"
-                        :disabled="!!row[column.key]"
+                        :disabled="detailDisabled||!!row[column.key]"
                         @input="
                           value => {
                             valueChangeAssign(value, index, row, column.key);
@@ -246,6 +246,7 @@
                           @click="openProductsList()"
                           slot="suffix"
                           type="md-add"
+                          v-show="!detailDisabled"
                         />
                       </Input>
                     </template>
@@ -311,36 +312,36 @@
  *
  * @created 2020/05/12
  */
-import popup from "@/components/popup/popup";
-import editWindow from "@/components/edit-window/edit-window";
-import eTable from "@/components/e-table/e-table";
-import request from "@/libs/request";
-import editBaseMixins from "../../mixins/edit";
-import optionSearch from "../../components/optionSearch";
-import InputNumber from "@/components/input-number";
-import dayjs from "dayjs";
-import Sys from "@/api/sys";
-import editForm from "./edit-invoiceCheckSlave";
-import formControl from "@/components/form-control/form-control";
-import { deepCopy } from "view-design/src/utils/assist";
+import popup from '@/components/popup/popup'
+import editWindow from '@/components/edit-window/edit-window'
+import eTable from '@/components/e-table/e-table'
+import request from '@/libs/request'
+import editBaseMixins from '../../mixins/edit'
+import optionSearch from '../../components/optionSearch'
+import InputNumber from '@/components/input-number'
+import dayjs from 'dayjs'
+import Sys from '@/api/sys'
+import editForm from './edit-invoiceCheckSlave'
+import formControl from '@/components/form-control/form-control'
+import { deepCopy } from 'view-design/src/utils/assist'
 const default_formDataInfo = {
   // 主表 更改字段
   master: {
-    custCode: "",
+    custCode: '',
     custId: 0,
-    custName: "",
-    fpDate: "",
-    icDate: new Date(dayjs().format("YYYY-MM-DD")),
-    icInvoiceNo: "",
-    icInvoiceX: "",
-    icInvoicexText: "",
+    custName: '',
+    fpDate: '',
+    icDate: new Date(dayjs().format('YYYY-MM-DD')),
+    icInvoiceNo: '',
+    icInvoiceX: '',
+    icInvoicexText: '',
     icMoney: 0,
-    icNo: "",
-    icRemark: "",
-    workName: "", // 业务员
+    icNo: '',
+    icRemark: '',
+    workName: '', // 业务员
     notwriteOffAmt: 0,
-    remark: "",
-    skDate: "",
+    remark: '',
+    skDate: '',
     writeOffAmt: 0
   },
   invoiceCheckItems: {
@@ -349,9 +350,9 @@ const default_formDataInfo = {
     deleteList: [], // 删除列
     updateList: []
   }
-};
+}
 export default {
-  name: "edit-boxDeli",
+  name: 'edit-boxDeli',
   mixins: [editBaseMixins],
   components: {
     editForm,
@@ -362,96 +363,96 @@ export default {
     popup,
     formControl
   },
-  data() {
+  data () {
     return {
       disabledSubmitBtn: false, // 是否禁用确认按钮
-      formName: "accountInvoiceCheckFm", // 重写父类 查询表单名称 stockboxreitemFm
+      formName: 'accountInvoiceCheckFm', // 重写父类 查询表单名称 stockboxreitemFm
       // 查询配置参数
       functionParams: {
-        formInitPreName: "accountInvoiceCheck", // 查询表格列头信息 前缀 例如:saleboxproductprice Fm/ItemFm/mdataFm
-        requestBaseUrl: "/account/invoiceCheck", // 查询 表格行 数据 接口前缀地址
-        uniqueId: "invoiceId" // 查询详细的唯一ID,需要顶部查询中使用
+        formInitPreName: 'accountInvoiceCheck', // 查询表格列头信息 前缀 例如:saleboxproductprice Fm/ItemFm/mdataFm
+        requestBaseUrl: '/account/invoiceCheck', // 查询 表格行 数据 接口前缀地址
+        uniqueId: 'invoiceId' // 查询详细的唯一ID,需要顶部查询中使用
       },
-      actionSubtitle: "发票登记", //重写父类 当前操作副标题
+      actionSubtitle: '发票登记', // 重写父类 当前操作副标题
       salveWindow: {
         isLoaddingDone: false, // 窗口是否加载完成
         showEditWindow: false, // 是否显示edit-invoiceCheckSlave 编辑窗口
-        action: "add" // 当前操作功能 添加/编辑
+        action: 'add' // 当前操作功能 添加/编辑
       },
       formDataInfo: deepCopy(default_formDataInfo), // Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       masterRuleValidate: {
         custCode: [
-          { required: true, message: "客户编号不能为空", trigger: "blur" }
+          { required: true, message: '客户编号不能为空', trigger: 'blur' }
         ]
       }, // 纸箱出货 需要验证的数据
       slaveTableFieldsValidator: {}, // 纸箱出货明细 需要验证的数据
-      masterHeight: 0, //表单高度
-      otherHeight: 0, //剩余高度
-      searchParams: {}, //传递查询参数
-      boxReTypeList: [], //退仓类型 列表
+      masterHeight: 0, // 表单高度
+      otherHeight: 0, // 剩余高度
+      searchParams: {}, // 传递查询参数
+      boxReTypeList: [], // 退仓类型 列表
       disabledCustCode: false // 是否禁用 客户编号
-    };
+    }
   },
   watch: {
-    showWindow: function(n, o) {
+    showWindow: function (n, o) {
       if (n) {
-        let _self = this;
+        let _self = this
         this.$nextTick(() => {
-          this.registerEvent();
-          this.pageResize();
+          this.registerEvent()
+          this.pageResize()
           // 延迟赋值,不然数据还没有正确返回的情况下,无法绑定默认值
           setTimeout(() => {
-            this.setDefaultData();
-          }, 1000);
-        });
+            this.setDefaultData()
+          }, 1000)
+        })
       }
     }
   },
-  created() {},
+  created () {},
   methods: {
     // 弹框==确认==回调事件,返回选择的数据
-    onSubmitEditForm(dataList) {
+    onSubmitEditForm (dataList) {
       if (dataList && Array.isArray(dataList) && dataList.length > 0) {
-        this.disabledCustCode = true; // 禁用客户选择
-        dataList = this.itemAdapter(dataList);
-        let defaultList = this.formDataInfo["invoiceCheckItems"].defaultList;
-        if (defaultList[0].iciArNo == "") {
-          this.formDataInfo["invoiceCheckItems"].defaultList = dataList;
+        this.disabledCustCode = true // 禁用客户选择
+        dataList = this.itemAdapter(dataList)
+        let defaultList = this.formDataInfo['invoiceCheckItems'].defaultList
+        if (defaultList[0].iciArNo == '') {
+          this.formDataInfo['invoiceCheckItems'].defaultList = dataList
         } else {
           dataList.forEach(item => {
             if (!this.checkIsExistBy(item)) {
-              defaultList.push(item);
+              defaultList.push(item)
             }
-          });
+          })
           // 删除多余的空行
           defaultList.forEach((item, index) => {
-            if (item.iciArNo == "" || item.iciArNo == null) {
-              defaultList.splice(index, 1);
+            if (item.iciArNo == '' || item.iciArNo == null) {
+              defaultList.splice(index, 1)
             }
-          });
+          })
         }
       }
-      this.sumTotalMoney();
+      this.sumTotalMoney()
     },
     // 检查列表数据是否已经存在,避免重复添加
-    checkIsExistBy(item) {
+    checkIsExistBy (item) {
       let isExistIndex = this.formDataInfo[
-        "invoiceCheckItems"
+        'invoiceCheckItems'
       ].defaultList.findIndex(subItem => {
         return (
           subItem.iciArNo == item.iciArNo &&
           subItem.iciNoTypeText == item.iciNoTypeText
-        );
-      });
+        )
+      })
       if (isExistIndex != -1) {
-        return true;
+        return true
       } else {
-        return false;
+        return false
       }
     },
-    //实体转换,获取相同Key的value,个别不同的手动修改值
-    itemAdapter(dataList) {
-      let newDataList = [];
+    // 实体转换,获取相同Key的value,个别不同的手动修改值
+    itemAdapter (dataList) {
+      let newDataList = []
       dataList.forEach(oldItem => {
         let newItem = JSON.parse(
           JSON.stringify(
@@ -459,271 +460,270 @@ export default {
               `${this.functionParams.formInitPreName}ItemFm`
             ]
           )
-        );
-        let newItemKeys = Object.keys(newItem);
+        )
+        let newItemKeys = Object.keys(newItem)
         newItemKeys.forEach(itemKey => {
-          newItem[itemKey] = null;
+          newItem[itemKey] = null
           if (oldItem[itemKey]) {
-            newItem[itemKey] = oldItem[itemKey];
+            newItem[itemKey] = oldItem[itemKey]
           }
-        });
-        //发票金额 如何为空默认设置为0
-        if (!!!oldItem.iciInvMoney) {
-          newItem.iciInvMoney = 0;
+        })
+        // 发票金额 如何为空默认设置为0
+        if (!oldItem.iciInvMoney) {
+          newItem.iciInvMoney = 0
         }
-        //实际金额 如何为空默认设置为0
-        if (!!!oldItem.iciFactMoney) {
-          newItem.iciFactMoney = 0;
+        // 实际金额 如何为空默认设置为0
+        if (!oldItem.iciFactMoney) {
+          newItem.iciFactMoney = 0
         }
-        //已开发票金额 如何为空默认设置为0
-        if (!!!oldItem.iciArMoney) {
-          newItem.iciArMoney = 0;
+        // 已开发票金额 如何为空默认设置为0
+        if (!oldItem.iciArMoney) {
+          newItem.iciArMoney = 0
         }
-        //未开发票金额 如何为空默认设置为0
-        if (!!!oldItem.iciNotArMoney) {
-          newItem.iciNotArMoney = 0;
+        // 未开发票金额 如何为空默认设置为0
+        if (!oldItem.iciNotArMoney) {
+          newItem.iciNotArMoney = 0
         }
-        //未开发票金额 = 实际金额-已开金额
+        // 未开发票金额 = 实际金额-已开金额
         if (Number(oldItem.iciNotArMoney) != 0) {
           newItem.iciInvMoney =
-            Number(newItem.iciFactMoney) - Number(newItem.iciArMoney);
+            Number(newItem.iciFactMoney) - Number(newItem.iciArMoney)
         }
-        //====== 额外需要转换的字段S=======
-        newItem.iciZk = oldItem.discount; // 折扣
-        newItem.iciMoney = oldItem.icMoney; // 单据金额
-        //====== 额外需要转换的字段E=======
-        newDataList.push(newItem);
-      });
-      return newDataList;
+        //= ===== 额外需要转换的字段S=======
+        newItem.iciZk = oldItem.discount // 折扣
+        newItem.iciMoney = oldItem.icMoney // 单据金额
+        //= ===== 额外需要转换的字段E=======
+        newDataList.push(newItem)
+      })
+      return newDataList
     },
     // 弹框==取消==回调事件
-    onCancelEditForm() {},
+    onCancelEditForm () {},
     // 订单编号 点击事件,打开选择产品列表窗口
-    openProductsList() {
-      this.selectedNoList = "";
-      this.formDataInfo["invoiceCheckItems"].defaultList.forEach(item => {
-        if (this.selectedNoList == "") {
-          this.selectedNoList = item.iciArNo; //(单据编号)
+    openProductsList () {
+      this.selectedNoList = ''
+      this.formDataInfo['invoiceCheckItems'].defaultList.forEach(item => {
+        if (this.selectedNoList == '') {
+          this.selectedNoList = item.iciArNo // (单据编号)
         } else {
-          this.selectedNoList += "," + item.iciArNo;
+          this.selectedNoList += ',' + item.iciArNo
         }
-      });
+      })
       this.searchParams = {
         custId: this.formDataInfo.master.custId, // 客户id
-        inIciArNoList: this.selectedNoList //(过滤已选的工单号集合,多个都好隔开)
-      };
+        inIciArNoList: this.selectedNoList // (过滤已选的工单号集合,多个都好隔开)
+      }
       if (this.popupClickValidator()) {
-        this.salveWindow.showEditWindow = true;
+        this.salveWindow.showEditWindow = true
       }
     },
     // 纸箱退货明细 删除数据 回调
-    slave_list_table_edit_Delete(index) {
-      this.sumTotalMoney();
+    slave_list_table_edit_Delete (index) {
+      this.sumTotalMoney()
     },
 
     // 初始值 设置
-    setDefaultData() {
-      this.disabledSubmitBtn = false;
-      let writeOffAmt = Number(this.formDataInfo.master.writeOffAmt);
+    setDefaultData () {
+      this.disabledSubmitBtn = false
+      let writeOffAmt = Number(this.formDataInfo.master.writeOffAmt)
       if (writeOffAmt > 0) {
-        this.disabledSubmitBtn = true;
+        this.disabledSubmitBtn = true
       }
-      if (!!!this.formDataInfo.master.icInvoiceX) {
-        this.formDataInfo.master.icInvoiceX = "01";
+      if (!this.formDataInfo.master.icInvoiceX) {
+        this.formDataInfo.master.icInvoiceX = '01'
       }
-      if (!!this.formDataInfo.master.icDate) {
+      if (this.formDataInfo.master.icDate) {
         this.formDataInfo.master.icDate = new Date(
-          dayjs(this.formDataInfo.master.icDate).format("YYYY-MM-DD")
-        );
+          dayjs(this.formDataInfo.master.icDate).format('YYYY-MM-DD')
+        )
       }
     },
-    onChange_icDate(item) {
+    onChange_icDate (item) {
       if (!_.isEmpty(item)) {
-        this.formDataInfo.master.icDate = new Date(item);
+        this.formDataInfo.master.icDate = new Date(item)
       }
     },
-    onChange_fpDate(item) {
+    onChange_fpDate (item) {
       if (!_.isEmpty(item)) {
-        this.formDataInfo.master.fpDate = new Date(item);
+        this.formDataInfo.master.fpDate = new Date(item)
       }
     },
-    onChange_skDate(item) {
+    onChange_skDate (item) {
       if (!_.isEmpty(item)) {
-        this.formDataInfo.master.skDate = new Date(item);
+        this.formDataInfo.master.skDate = new Date(item)
       }
     },
     // 表格列值改变 回调事件处理event：{row, column, index, event,config}
-    tableColTiggerEventCall(obj) {
+    tableColTiggerEventCall (obj) {
       switch (obj.event) {
-        case "iciInvMoneyChangeEvent":
+        case 'iciInvMoneyChangeEvent':
           // 发票金额 不能大于 未开发票金额
-          let iciInvMoney = Number(obj.row.iciInvMoney); //发票金额
-          let iciNotArMoney = Number(obj.row.iciNotArMoney); //未开发票金额
+          let iciInvMoney = Number(obj.row.iciInvMoney) // 发票金额
+          let iciNotArMoney = Number(obj.row.iciNotArMoney) // 未开发票金额
           if (iciInvMoney > iciNotArMoney) {
             // this.$Message.warning('发票金额 不能大于 未开发票金额')
             this.$Modal.warning({
-              width: "260",
-              title: "警告",
+              width: '260',
+              title: '警告',
               content: `发票金额 不能大于 未开发票金额`,
               onOk: () => {
-                this.$refs["slave_list_table_edit"].set(
+                this.$refs['slave_list_table_edit'].set(
                   { iciInvMoney: 0 },
                   obj.index
-                );
-                return;
+                )
               }
-            });
+            })
           } else {
             // 触发修改值 直接修改原始数据 无效
-            this.$refs["slave_list_table_edit"].set(
+            this.$refs['slave_list_table_edit'].set(
               { iciInvMoney: obj.row.iciInvMoney },
               obj.index
-            );
+            )
           }
-          this.sumTotalMoney();
-          break;
+          this.sumTotalMoney()
+          break
         default:
-          break;
+          break
       }
     },
     // 汇总总金额
-    sumTotalMoney() {
-      let totolMoney = 0;
-      this.formDataInfo["invoiceCheckItems"].defaultList.forEach(
+    sumTotalMoney () {
+      let totolMoney = 0
+      this.formDataInfo['invoiceCheckItems'].defaultList.forEach(
         (item, index) => {
           let currentRowMoney = Number(
             (item.iciInvMoney = null ? 0 : item.iciInvMoney)
-          );
-          totolMoney = totolMoney + currentRowMoney;
+          )
+          totolMoney = totolMoney + currentRowMoney
         }
-      );
+      )
       // 设置主表 总金额
-      this.formDataInfo.master.icMoney = totolMoney;
+      this.formDataInfo.master.icMoney = totolMoney
       // 设置主表 未冲金额
-      this.formDataInfo.master.notwriteOffAmt = totolMoney;
+      this.formDataInfo.master.notwriteOffAmt = totolMoney
     },
     // 验证产品编号选择前先选择客户
-    popupClickValidator() {
+    popupClickValidator () {
       if (
         !this.formDataInfo.master.custCode ||
-        this.formDataInfo.master.custCode == ""
+        this.formDataInfo.master.custCode == ''
       ) {
-        this.$Message.error("请先选择客户编号");
-        return false;
+        this.$Message.error('请先选择客户编号')
+        return false
       }
-      return true;
+      return true
     },
-    custCodeOnFillEvent() {
-         //单独校验客户编号
-      this.$refs["formDataInfo"].validateField("custCode", err => {});
+    custCodeOnFillEvent () {
+      // 单独校验客户编号
+      this.$refs['formDataInfo'].validateField('custCode', err => {})
       // 切换用户,清除明细信息
-      let dataList = this.formDataInfo["invoiceCheckItems"].defaultList;
+      let dataList = this.formDataInfo['invoiceCheckItems'].defaultList
       if (dataList.length > 0) {
-        if (dataList[0].iciArNo != null && dataList[0].iciArNo != "") {
-          this.$refs["slave_list_table_edit"].deleteAllData(); // 仅仅记录删除记录,
-          this.formDataInfo["invoiceCheckItems"].defaultList = [];
+        if (dataList[0].iciArNo != null && dataList[0].iciArNo != '') {
+          this.$refs['slave_list_table_edit'].deleteAllData() // 仅仅记录删除记录,
+          this.formDataInfo['invoiceCheckItems'].defaultList = []
         }
       }
     },
     // 排除不需要显示的字段
-    excludeFiled(type, key) {
-      let exListItemFm = [];
-      let exList = [];
+    excludeFiled (type, key) {
+      let exListItemFm = []
+      let exList = []
       switch (type) {
-        case "ItemFm":
-          exList = exListItemFm;
-          break;
+        case 'ItemFm':
+          exList = exListItemFm
+          break
         default:
-          exList = exListOtherfeeFm;
-          break;
+          exList = exListOtherfeeFm
+          break
       }
       if (exList.includes(key)) {
-        return false;
+        return false
       } else {
-        return true;
+        return true
       }
     },
     // 注册窗口事件
-    registerEvent() {
-      let _self = this; //赋值vue的this
+    registerEvent () {
+      let _self = this // 赋值vue的this
       window.onresize = () => {
-        //调用methods中的事件
-        _self.pageResize();
-      };
+        // 调用methods中的事件
+        _self.pageResize()
+      }
     },
     // 触发窗口大小变化事件
-    pageResize() {
+    pageResize () {
       this.$nextTick(() => {
-        this.getTabWindowHeight();
-      });
+        this.getTabWindowHeight()
+      })
     },
     // 获取当前TAB标签的实际高度
-    getTabWindowHeight() {
-      this.getMasterheight();
+    getTabWindowHeight () {
+      this.getMasterheight()
       // 因为使用V-SHOW 隐藏,实际还会占用高度,所以切换时,设置为0 或使用V-IF 可以不用那么麻烦,但性能较低
-      if (this.$refs["masterHeight"]) {
-        this.masterHeight = this.$refs["masterHeight"].offsetHeight;
-        this.otherHeight = this.$refs["otherHeight"].offsetHeight;
+      if (this.$refs['masterHeight']) {
+        this.masterHeight = this.$refs['masterHeight'].offsetHeight
+        this.otherHeight = this.$refs['otherHeight'].offsetHeight
       }
     },
-    getMasterheight() {
-      return 30;
+    getMasterheight () {
+      return 30
     },
     // 重写父类 关闭窗口时 触发事件
-    closeActionTigger() {
+    closeActionTigger () {
       // fix 清除上次的错误提示 formDataInfo 为表单ref名称
-      this.$refs["formDataInfo"].resetFields();
-      this.$refs["slave_list_table_edit"].reset();
+      this.$refs['formDataInfo'].resetFields()
+      this.$refs['slave_list_table_edit'].reset()
     },
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo() {
-      this.formDataInfo = deepCopy(default_formDataInfo);
+    HandleFormDataInfo () {
+      this.formDataInfo = deepCopy(default_formDataInfo)
     },
     // 重写父类,修改提交数据
-    resetformDataInfo() {
+    resetformDataInfo () {
       let invoiceCheckItems = this.$refs[
-        "slave_list_table_edit"
-      ].getCategorizeData();
-      this.formDataInfo["invoiceCheckItems"] = invoiceCheckItems;
-      if (!!this.formDataInfo.master.fpDate) {
+        'slave_list_table_edit'
+      ].getCategorizeData()
+      this.formDataInfo['invoiceCheckItems'] = invoiceCheckItems
+      if (this.formDataInfo.master.fpDate) {
         this.formDataInfo.master.fpDate = dayjs(
           this.formDataInfo.master.fpDate
-        ).format("YYYY-MM-DD");
+        ).format('YYYY-MM-DD')
       }
-      if (!!this.formDataInfo.master.icDate) {
+      if (this.formDataInfo.master.icDate) {
         this.formDataInfo.master.icDate = dayjs(
           this.formDataInfo.master.icDate
-        ).format("YYYY-MM-DD");
+        ).format('YYYY-MM-DD')
       }
-      if (!!this.formDataInfo.master.skDate) {
+      if (this.formDataInfo.master.skDate) {
         this.formDataInfo.master.skDate = dayjs(
           this.formDataInfo.master.skDate
-        ).format("YYYY-MM-DD");
+        ).format('YYYY-MM-DD')
       }
-      return this.formDataInfo;
+      return this.formDataInfo
     },
 
     // 提交主从表数据
-    formTableDataSubmit() {
-      this.$refs["formDataInfo"].validate(valid => {
+    formTableDataSubmit () {
+      this.$refs['formDataInfo'].validate(valid => {
         if (!valid) {
-          return;
+          return
         }
-        let submitData = this.resetformDataInfo();
+        let submitData = this.resetformDataInfo()
         request
           .post(
             `${this.functionParams.requestBaseUrl}/saveOrUpdate`,
             submitData
           )
           .then(res => {
-            this.showWindow = false; // 关闭当前编辑页面
-            this.$Message.success("执行成功");
-            this.$emit("submit-success"); // 刷新主页面数据
-          });
-      });
+            this.showWindow = false // 关闭当前编辑页面
+            this.$Message.success('执行成功')
+            this.$emit('submit-success') // 刷新主页面数据
+          })
+      })
     }
   }
-};
+}
 </script>
 
 <style>

@@ -20,7 +20,7 @@
         <p>
           <Button @click="handleSubMenuEvent('worker','bas-worker','人员')" type="success">人员</Button>
         </p>
-    
+
         <br />
         <br />
       </div>
@@ -190,55 +190,55 @@
                 <div class="contentLayout-oneBox">
                     <div class="contentLayout-one-item contentColumn">
                          <div class="columnItem oneColumn">
-                           <div @click="handleSubMenuEvent('leng','bas-leng','楞别')" class="oneColumnItem cursorPointer">
+                           <div @click="handleSubMenuEvent('leng','bas-leng','楞别',secondenum.leng.val.disabled)" class="oneColumnItem cursorPointer" :class="[secondenum.leng.val.disabled?'diabledOrAccess':'']">
                                <div class="circleBallIconTitle">楞别</div>
                            </div>
                          </div>
                          <div class="columnItem twoColumn">
                              <div class="twoColumn-item rowOneBox">
-                                    <div @click="handleSubMenuEvent('art','bas-art','纸质')" class="rowOneBoxItem paper cursorPointer">
+                                    <div @click="handleSubMenuEvent('art','bas-art','纸质',secondenum.art.val.disabled)" class="rowOneBoxItem paper cursorPointer" :class="[secondenum.art.val.disabled?'diabledOrAccess':'']">
                                        <div class="circleBallIconTitle">纸质</div>
                                     </div>
-                                    <div @click="handleSubMenuEvent('color','bas-color','颜色')" class="rowOneBoxItem colour cursorPointer">
+                                    <div @click="handleSubMenuEvent('color','bas-color','颜色',secondenum.color.val.disabled)" :class="[secondenum.color.val.disabled?'diabledOrAccess':'']" class="rowOneBoxItem colour cursorPointer">
                                        <div class="circleBallIconTitle">颜色</div>
                                     </div>
                              </div>
                              <div class="twoColumn-item rowTwoBox">
-                                 <div @click="handleSubMenuEvent('productSuite','bas-productSuite','纸箱产品套件')"  class="rowTwoBoxItem suite cursorPointer">
+                                 <div @click="handleSubMenuEvent('productSuite','bas-productSuite','纸箱产品套件',secondenum.productSuite.val.disabled)" :class="[secondenum.productSuite.val.disabled?'diabledOrAccess':'']" class="rowTwoBoxItem suite cursorPointer">
                                        <div class="circleBallIconTitle">套件</div>
                                     </div>
-                                    <div @click="handleSubMenuEvent('product','bas-product','产品资料')" class="rowTwoBoxItem products cursorPointer">
+                                    <div @click="handleSubMenuEvent('product','bas-product','产品资料',secondenum.product.val.disabled)" :class="[secondenum.product.val.disabled?'diabledOrAccess':'']" class="rowTwoBoxItem products cursorPointer">
                                        <div class="circleBallIconTitle">产品</div>
                                     </div>
                              </div>
                              <div class="twoColumn-item rowThreeBox">
-                                   <div @click="handleSubMenuEvent('dieCuttingPlate','bas-dieCuttingPlate','模切板')"  class="rowThreeBoxItem die-board cursorPointer">
+                                   <div @click="handleSubMenuEvent('dieCuttingPlate','bas-dieCuttingPlate','模切板',secondenum.dieCuttingPlate.val.disabled)" :class="[secondenum.dieCuttingPlate.val.disabled?'diabledOrAccess':'']"   class="rowThreeBoxItem die-board cursorPointer">
                                        <div class="circleBallIconTitle">模切板</div>
                                     </div>
-                                    <div @click="handleSubMenuEvent('print','bas-print','印版')" class="rowThreeBoxItem printing cursorPointer">
-                                       <div class="circleBallIconTitle">印刷</div>
+                                    <div @click="handleSubMenuEvent('print','bas-print','印版',secondenum.print.val.disabled)" :class="[secondenum.print.val.disabled?'diabledOrAccess':'']" class="rowThreeBoxItem printing cursorPointer">
+                                       <div class="circleBallIconTitle">印版</div>
                                     </div>
                              </div>
                          </div>
                          <div class="columnItem threeColumn">
-                               <div @click="handleSubMenuEvent('workPro','bas-workPro','工序资料')" class="threeColumnItem workingProcedure cursorPointer">
+                               <div @click="handleSubMenuEvent('workPro','bas-workPro','工序资料',secondenum.workPro.val.disabled)" :class="[secondenum.workPro.val.disabled?'diabledOrAccess':'']" class="threeColumnItem workingProcedure cursorPointer">
                                    <div class="circleBallIconTitle">工序</div>
                                </div>
-                                <div @click="handleSubMenuEvent('box','bas-box','盒式公式')" class="threeColumnItem boxFormula cursorPointer">
+                                <div @click="handleSubMenuEvent('box','bas-box','盒式公式',secondenum.box.val.disabled)" :class="[secondenum.box.val.disabled?'diabledOrAccess':'']" class="threeColumnItem boxFormula cursorPointer">
                                     <div class="circleBallIconTitle"> <span class="boxFormulaTitle">盒式公式</span> </div>
                                 </div>
-                                <div @click="handleSubMenuEvent('printMarks','bas-printMarks','印唛')" class="threeColumnItem marking cursorPointer">
+                                <div @click="handleSubMenuEvent('printMarks','bas-printMarks','印唛',secondenum.printMarks.val.disabled)" :class="[secondenum.printMarks.val.disabled?'diabledOrAccess':'']" class="threeColumnItem marking cursorPointer">
                                     <div class="circleBallIconTitle">印唛</div>
                                 </div>
                          </div>
                          <div class="columnItem fourColumn">
                              <div class="fourColumnItem CustomizedPricingBox">
-                               <div @click="handleSubMenuEvent('specPrice','bas-specPrice','客户化计价盒式')" class="CustomizedPricingBoxTitleBox cursorPointer">
-                                  <div class="title-one">客户化</div>
-                                  <div class="title-two">计价盒化</div>
+                               <div @click="handleSubMenuEvent('specPrice','bas-specPrice','客户化计价盒式',secondenum.specPrice.val.disabled)" :class="[secondenum.specPrice.val.disabled?'diabledOrAccess':'']" class="CustomizedPricingBoxTitleBox cursorPointer">
+                                    <div class="title-one">客户化</div>
+                                    <div class="title-two">计价盒化</div>
                                </div>
                              </div>
-                             <div @click="handleSubMenuEvent('boxSizeSet','bas-boxSizeSet','纸箱内外径设置')" class="fourColumnItem CartonOuterDiameterSetting cursorPointer">
+                             <div @click="handleSubMenuEvent('boxSizeSet','bas-boxSizeSet','纸箱内外径设置',secondenum.boxSizeSet.val.disabled)" :class="[secondenum.boxSizeSet.val.disabled?'diabledOrAccess':'']" class="fourColumnItem CartonOuterDiameterSetting cursorPointer">
                                 <div  class="CartonOuterDiameterSettingTitle">
                                   <div class="title-one">纸箱外径</div>
                                   <div class="title-two">设定</div>
@@ -253,17 +253,17 @@
                 </div>
                 <div class="flexRowBoxItem itemTitle">生产</div>
                 <div class="ContentLayout-production">
-                    <div @click="handleSubMenuEvent('machine','bas-machine','机台')"  class="productionItem production-one cursorPointer">
+                    <div @click="handleSubMenuEvent('machine','bas-machine','机台',secondenum.machine.val.disabled)" :class="[secondenum.machine.val.disabled?'diabledOrAccess':'']"  class="productionItem production-one cursorPointer">
                         <div class="production-one-title">机台</div>
                     </div>
-                    <div @click="handleSubMenuEvent('paperLimit','Bas-paperLimit','纸度')" class="productionItem production-two cursorPointer">
+                    <div @click="handleSubMenuEvent('paperLimit','Bas-paperLimit','纸度',secondenum.paperLimit.val.disabled)" :class="[secondenum.paperLimit.val.disabled?'diabledOrAccess':'']" class="productionItem production-two cursorPointer">
                        <div class="production-two-title">纸宽(宽幅)</div>
                     </div>
                 </div>
              </div>
-             
+
         </div>
-        
+
          <div class="basItem downSideBox">
             <div class="downSideItem administration flexRowBox">
                 <div class="flexRowBoxItem itemTitleIcon">
@@ -281,27 +281,27 @@
                 <!-- //行政相关 内容按钮图层 -2 -->
                  <div class="contentLayout-administration">
                        <div class="administrationRowItem department">
-                          <div @click="handleSubMenuEvent('dept','bas-department','部门')" class="departmentCircleBg cursorPointer">
+                          <div @click="handleSubMenuEvent('dept','bas-department','部门',secondenum.dept.val.disabled)" :class="[secondenum.dept.val.disabled?'diabledOrAccess':'']" class="departmentCircleBg cursorPointer" >
                               <div class="departmentIcon">
                                   <div class="administrationTitle">部门</div>
                               </div>
                           </div>
-                           
+
                        </div>
                         <div class="administrationRowItem teamGroup">
-                           <div @click="handleSubMenuEvent('team','bas-team','班别')" class="teamGroupItem team cursorPointer">
+                           <div @click="handleSubMenuEvent('team','bas-team','班别',secondenum.team.val.disabled)" :class="[secondenum.team.val.disabled?'diabledOrAccess':'']" class="teamGroupItem team cursorPointer">
                                 <div class="teamIcon">
                                    <div class="administrationTitle">班别</div>
                                 </div>
                            </div>
-                           <div @click="handleSubMenuEvent('position','bas-position','职位')" class="teamGroupItem position cursorPointer">
+                           <div @click="handleSubMenuEvent('position','bas-position','职位',secondenum.position.val.disabled)" :class="[secondenum.position.val.disabled?'diabledOrAccess':'']" class="teamGroupItem position cursorPointer">
                               <div class="positionIcon">
                                     <div class="administrationTitle">职位</div>
                                  </div>
                            </div>
                         </div>
                          <div class="administrationRowItem personnel">
-                             <div @click="handleSubMenuEvent('worker','bas-worker','人员')" class="personnelCircleBg cursorPointer">
+                             <div @click="handleSubMenuEvent('worker','bas-worker','人员',secondenum.worker.val.disabled)" :class="[secondenum.worker.val.disabled?'diabledOrAccess':'']" class="personnelCircleBg cursorPointer">
                               <div class="personnelIcon">
                                   <div class="administrationTitle">人员</div>
                               </div>
@@ -324,18 +324,18 @@
                 <!-- // 财务--内容图层 2-->
                 <div class="contentLayout-finance">
                      <div class="financeConentBox">
-                         <div @click="handleSubMenuEvent('unit','bas-unit','计量单位')"  class="financeConentItem unitOfMeasurement cursorPointer">
+                         <div @click="handleSubMenuEvent('unit','bas-unit','计量单位',secondenum.unit.val.disabled)" :class="[secondenum.unit.val.disabled?'diabledOrAccess':'']" class="financeConentItem unitOfMeasurement cursorPointer">
                             <div class="financeTitle">计量单位</div>
                          </div>
-                         <div @click="handleSubMenuEvent('bank','bas-bank','银行')" class="financeConentItem bank cursorPointer">
+                         <div @click="handleSubMenuEvent('bank','bas-bank','银行',secondenum.bank.val.disabled)" :class="[secondenum.bank.val.disabled?'diabledOrAccess':'']" class="financeConentItem bank cursorPointer">
                             <div class="financeTitle">银行</div>
                          </div>
                      </div>
                       <div class="financeConentBox">
-                         <div @click="handleSubMenuEvent('coin','bas-coin','货币')" class="financeConentItem currency cursorPointer">
+                         <div @click="handleSubMenuEvent('coin','bas-coin','货币',secondenum.coin.val.disabled)" :class="[secondenum.coin.val.disabled?'diabledOrAccess':'']" class="financeConentItem currency cursorPointer">
                             <div class="financeTitle">货币</div>
                          </div>
-                         <div @click="handleSubMenuEvent('payType','bas-payType','付款方式')" class="financeConentItem paymentMethod cursorPointer">
+                         <div @click="handleSubMenuEvent('payType','bas-payType','付款方式',secondenum.payType.val.disabled)" :class="[secondenum.payType.val.disabled?'diabledOrAccess':'']" class="financeConentItem paymentMethod cursorPointer">
                             <div class="financeTitle">付款方式 </div>
                          </div>
                       </div>
@@ -346,13 +346,13 @@
                     </div>
                     <div class="flexRowBoxItem itemTitle">储运</div>
                     <div class="contentLayout-stock">
-                         <div @click="handleSubMenuEvent('warehouse','bas-warehouse','仓库')" class="stockItem warehouse cursorPointer">
+                         <div @click="handleSubMenuEvent('warehouse','bas-warehouse','仓库',secondenum.warehouse.val.disabled)" :class="[secondenum.warehouse.val.disabled?'diabledOrAccess':'']" class="stockItem warehouse cursorPointer">
                              <div class="financeTitle">仓库</div>
-                           </div> 
+                           </div>
                          <div class="stockItem region diabledOrAccess">
                             <div class="financeTitle">地区</div>
                          </div>
-                         <div @click="handleSubMenuEvent('car','bas-car','车辆')"  class="stockItem vehicle cursorPointer">
+                         <div @click="handleSubMenuEvent('car','bas-car','车辆',secondenum.car.val.disabled)" :class="[secondenum.car.val.disabled?'diabledOrAccess':'']"  class="stockItem vehicle cursorPointer">
                             <div class="financeTitle">车辆</div>
                          </div>
                     </div>
@@ -362,46 +362,57 @@
                       </div>
                       <div class="flexRowBoxItem itemTitle">其它 </div>
                       <div class="contentLayout-other">
-                          <div @click="handleSubMenuEvent('resume','bas-resume','摘要说明')"  class="otherItem summaryDescription cursorPointer">
+                          <div @click="handleSubMenuEvent('resume','bas-resume','摘要说明',secondenum.resume.val.disabled)" :class="[secondenum.resume.val.disabled?'diabledOrAccess':'']" class="otherItem summaryDescription cursorPointer">
                             <div class="financeTitle">摘要说明</div>
                           </div>
-                          <div @click="handleSubMenuEvent('fadeReason','bas-fadeReason','退货原因')"  class="otherItem reasonForReturn cursorPointer">
+                          <div @click="handleSubMenuEvent('fadeReason','bas-fadeReason','退货原因',secondenum.fadeReason.val.disabled)" :class="[secondenum.fadeReason.val.disabled?'diabledOrAccess':'']"  class="otherItem reasonForReturn cursorPointer">
                              <div class="financeTitle">退货原因</div>
                           </div>
                       </div>
                  </div>
         </div>
      </div>
-   
+
   </div>
 </template>
 
 <script>
-import globleMixin from "@/mixins";
-//import subMenuMixin from './mixins'
+import globleMixin from '@/mixins'
+// import subMenuMixin from './mixins'
 export default {
   mixins: [globleMixin],
-  data() {
-    return {};
+  data () {
+    return {}
+  },
+  computed: {
+    secondenum () {
+      let dataList = this.$store.state.app.Secondaryauthority.Bas
+      console.log(dataList)
+      return dataList
+    }
   },
   methods: {
     // 子页面 参数: 页面.vue,唯一区别ID,TAB 标签显示名称
-    handleSubMenuEvent(currentPage, uniqueKey, tabName) {
-        let params = {
-              menuName: 'Bas',
-              page: currentPage, //显示控件页面
-              uniqueKey: uniqueKey,
-              lable: tabName,
-              isActive: true
-            };
+    handleSubMenuEvent (currentPage, uniqueKey, tabName, flag) {
+      if (flag) {
+        this.$Message.warning('暂无权限,请与管理员联系!')
+        return
+      }
+      let params = {
+        menuName: 'Bas',
+        page: currentPage, // 显示控件页面
+        uniqueKey: uniqueKey,
+        lable: tabName,
+        isActive: true
+      }
       this.handleMenuBaseEvent(params) // 调用MIXIN 共用方法
     }
   }
-};
+}
 </script>
 
 <style lang="scss">
- @mixin setFlexBox($direction:none) {  
+ @mixin setFlexBox($direction:none) {
    @if $direction==none{
         display: flex;
         display: -webkit-flex;
@@ -425,7 +436,7 @@ export default {
     display: -webkit-flex; /* Safari */
     background: rgba(33, 46, 129, 1);
     .basContentBox{
-     
+
         margin: 10px;
         width: 100%;
         border-radius: 5px;
@@ -434,17 +445,17 @@ export default {
         display: -webkit-flex;
         flex-direction: column;
         .basItem{
-         
+
          // height: 50%;
          // border:1px solid yellow;
           &.upSideBox{
-             
+
                  height: 60%;
                 display: flex;
                 display: -webkit-flex;
                 flex-direction: row;
              .upSideItem{
-              
+
                 background:#3e3692;
                 //border:1px solid yellow;
                 border-radius:10px;
@@ -465,7 +476,7 @@ export default {
                     left:0;
                     //height: 100%;
                     width: 100%;
-                    //border:10px solid pink; 
+                    //border:10px solid pink;
                     // background-image: url("../../../../assets/images/page-design/master-page/sale-arrow-icon.png");
                     // background-position: 23% 15%;
                     // background-repeat: no-repeat;
@@ -483,7 +494,7 @@ export default {
                     left:0;
                     height: 100%;
                     width: 100%;
-                   // border:1px solid pink; 
+                   // border:1px solid pink;
                     .upSideArrowBoxTwo-Box{
                        @include setFlexBox(column);
                        //border:1px solid red;
@@ -493,13 +504,13 @@ export default {
                        .arrowTowBoxItem{
                          width: 25%;
                          height: 20%;
-                         
+
                          &.rowOne{
                            height: 23%;
                             margin-top: 25px;
                             border:1px solid #ccc;
                             border-top: 0px;
-                            
+
                          }
                          &.rowTwo{
                                 height: 23px;
@@ -518,14 +529,14 @@ export default {
                               //border:1px solid blue;
                               &.rowThreeItem-one{
                                   background-image: url("../../../../assets/images/page-design/master-page/sale-arrow-icon-left-long.png");
-                                  background-position: 92% center;
+                                  background-position: 92% 78%;
                                   background-repeat: no-repeat;
                                   background-size:  130px 6px;
                               }
                               &.rowThreeItem-two{
                                 margin-left:50px;
                                   background-image: url("../../../../assets/images/page-design/master-page/sale-arrow-icon-left-long.png");
-                                  background-position: right center;
+                                  background-position: right 78%;
                                   background-repeat: no-repeat;
                                   background-size:  250px 6px; ;
                               }
@@ -549,10 +560,9 @@ export default {
                             margin-bottom: 25px;
                             border:1px solid #ccc;
                             border-bottom: 0px;
-                            
+
                          }
                        }
-                       
 
                     }
                   }
@@ -578,7 +588,7 @@ export default {
                         }
                       }
                     }
-                   
+
                   }
                   .contentLayout-oneBox{
                     z-index: 4;
@@ -646,7 +656,7 @@ export default {
 
                                     }
                                     &.products{
-                                      margin-left: 32%;
+                                      margin-left: 33%;
                                     }
                                   }
                                }
@@ -685,7 +695,7 @@ export default {
                                       font-size: 12px;
                                     }
                                     margin-top:45px;
-                                    
+
                                   }
                                   &.marking{
                                     margin-top:45px;
@@ -716,13 +726,13 @@ export default {
                                }
                              }
                              }
-                            
+
                          }
                        }
                       }
-                     
+
                     }
-                   
+
                   }
                   .ContentLayout-production{
                       z-index: 1;
@@ -758,9 +768,9 @@ export default {
                           }
                       }
                   }
-               
+
              }
-           
+
           }
           &.downSideBox{
              height: 40%;
@@ -781,7 +791,7 @@ export default {
                    position: relative;
                      margin: 0px 10px 20px 10px;
                      width: 24%;
-                  
+
                 }
                 .contentLayout-finance{
                   // 财务  内容图层
@@ -958,7 +968,7 @@ export default {
                             background-repeat: no-repeat;
                             background-size: 50px 100px;
                       }
-                     
+
                     }
                 }
                 .contentLayout-administration{
@@ -982,7 +992,7 @@ export default {
                            margin-top:25%;
                             @include circleBallSetting;
                             background:linear-gradient(90deg,rgba(11,73,251,1),rgba(101,141,255,1));
-                            border:1px solid rgba(78, 124, 255, 0.67); 
+                            border:1px solid rgba(78, 124, 255, 0.67);
                             .departmentIcon{
                                 width: 100%;
                                 height: 100%;
@@ -1077,7 +1087,7 @@ export default {
                 }
              }
           }
-         
+
         }
            // 禁用 获取功能未实现 灰色 按钮
           .diabledOrAccess {
@@ -1106,12 +1116,12 @@ export default {
               margin-left:10px;
               width:5px;
               height:15px;
-           } 
+           }
            &.itemTitle{
               margin-top:10px;
                 margin-left:5px;
                 height:20px;
-           } 
+           }
         }
          //通用 圆球 图标 标题
          .circleBallIconTitle{
@@ -1122,8 +1132,7 @@ export default {
             text-align: center;
           line-height: 40px;
         }
-    } 
-   
-  
+    }
+
  }
 </style>

@@ -8,11 +8,11 @@
       :queryParamsDefault="queryParamsDefault"
     >
     </htmlTemplate>
-    <div class="content-container" :style="{ height: tableHeight + 'px' }">
+    <div ref="contextMenuTarget" class="content-container" :style="{ height: tableHeight + 'px' }">
       <vTable
         :height="tableHeight"
         ref="master_list_table"
-       :columns-url="functionParams.requestColBaseUrl + '/unitFm'"    
+       :columns-url="functionParams.requestColBaseUrl + '/unitFm'"
         url="/bas/unit/page"
         :pagination="true"
         @row-click="tableRowClick"
@@ -31,10 +31,10 @@
   </div>
 </template>
 <script>
-import vTable from "@/components/tables/vTable";
-import htmlTemplate from "../components/htmlTemplate";
-import editForm from "./edit/edit-unit";
-import listBaseMixins from "../mixins/list";
+import vTable from '@/components/tables/vTable'
+import htmlTemplate from '../components/htmlTemplate'
+import editForm from './edit/edit-unit'
+import listBaseMixins from '../mixins/list'
 export default {
   mixins: [listBaseMixins],
   components: {
@@ -42,23 +42,23 @@ export default {
     htmlTemplate,
     vTable
   },
-  data() {
+  data () {
     return {
       functionParams: {
-        requestBaseUrl: "/bas/unit",
-        uniqueId: "unitId"
+        requestBaseUrl: '/bas/unit',
+        uniqueId: 'unitId'
       },
       // 查询参数 ,注意格式
       queryParamsDefault: [
         {
-          title: "物料编码",
-          code: "utCode",
-          bankCode: ""
+          title: '物料编码',
+          code: 'utCode',
+          bankCode: ''
         },
         {
-          title: "物料名称",
-          name: "utName$like",
-          'utName$like': ""
+          title: '物料名称',
+          name: 'utName$like',
+          'utName$like': ''
         }
       ]
       // columns: [
@@ -126,19 +126,19 @@ export default {
       //       align:'center'
       //   },
       // ],
-    };
+    }
   },
   methods: {
-    tableRowClick(rowData, rowIndex) {
-      this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
-      this.masterRowSelection = rowData;
+    tableRowClick (rowData, rowIndex) {
+      this.formDetailData = {} // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData
       if (rowData != null) {
         // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
-        this.currrentRowItem.rowName = rowData.utCode + " " + rowData.utName;
+        this.currrentRowItem.rowName = rowData.utCode + ' ' + rowData.utName
       }
     }
   }
-};
+}
 </script>
 
 <style></style>

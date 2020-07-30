@@ -38,28 +38,6 @@
                   </RadioGroup>
                 </FormItem>
               </Col>
-              <!-- <Col span="8">
-                <Row>
-                  <Col span="12" style="width: 62%;">
-                    <FormItem label="订单日期">
-                      <DatePicker
-                        type="date"
-                        format="yyyy-MM-dd"
-                        v-model="formDataInfo.master.startDate"
-                      ></DatePicker>
-                    </FormItem>
-                  </Col>
-                  <Col span="12" style="width: 38%;">
-                    <FormItem label="--" style="margin-left:-60%;">
-                      <DatePicker
-                        type="date"
-                        format="yyyy-MM-dd"
-                        v-model="formDataInfo.master.endDate"
-                      ></DatePicker>
-                    </FormItem>
-                  </Col>
-                </Row>
-              </Col> -->
               <Col span="1">
                 <FormItem label>
                   <Button type="primary" @click="clickmaster()">搜索</Button>
@@ -90,24 +68,20 @@
                   :key="index"
                 >
                   <th
-                    class="ivu-table-column-left"
+                    :class="`ivu-table-column-${column.titleAlign}`"
                     v-for="(column,index2) in columnGroup"
                     :key="index2"
                     :width="column.width"
                     :colspan="column.colSpan"
                     :rowspan="column.rowSpan"
                     style="text-align:center;"
+                    @click="searchKeyType(column.key,column.title)"
+                    :style="excludeFiled('custName',column.key)?'cursor:pointer':''"
                   >
-                    <div v-if="column.key == 'inWorkNo'" @click="purPaperPoClick('工单','inWorkNo')" class="ivu-table-cell">
+                    <!-- <div v-if="column.key == 'inWorkNo'" @click="purPaperPoClick('工单','inWorkNo')" class="ivu-table-cell">
                       <span class>工单</span>
-                    </div>
-                    <!-- <div v-else-if="column.key == 'custName'" @click="purPaperPoClick('客户名称','custName')" class="ivu-table-cell">
-                      <span class >客户名称</span>
-                    </div>
-                    <div v-else-if="column.key == 'bcCustPo'" class="ivu-table-cell">
-                      <span class @click="purPaperPoClick('客户PO号','bcCustPo')">客户PO号</span>
-                    </div>  -->
-                    <div v-else class="ivu-table-cell">
+                    </div> -->
+                    <div  class="ivu-table-cell">
                       <span class>{{column.title}}</span>
                     </div>
                   </th>
@@ -115,7 +89,7 @@
               </template>
               <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
                 <td
-                  class="ivu-table-column-left"
+                  :class="`ivu-table-column-${column.align}`"
                   v-for="(column,columnIndex) in initData.columns.paperReInWorkDtoFm.editColumns"
                   :key="columnIndex"
                   :width="column.width"
@@ -131,13 +105,6 @@
             </eTable>
           </TabPane>
         </Tabs>
-        <!-- <productSpec
-          v-model="productSpecShow"
-          ref="productSpec"
-          
-
-          :bpMoCut="formDataInfo.master.bpMoCut"
-        ></productSpec>-->
       </div>
     </editWindow>
   </div>
@@ -157,21 +124,21 @@
  *
  * @created 2020/03/23 17:07:54
  */
-import tableSelect from "@/components/table-select/table-select";
-import editWindow from "@/components/edit-window/edit-window";
+import tableSelect from '@/components/table-select/table-select'
+import editWindow from '@/components/edit-window/edit-window'
 // import Form from '@/components/form/form'
-import eTable from "@/components/e-table/e-table";
-import request from "@/libs/request";
-import popup from "@/components/popup/popup";
-import editBaseMixins from "../../mixins/edit";
-import InputNumber from "@/components/input-number";
-import formControl from "@/components/form-control/form-control";
-import { customValidator } from "@/libs/validator";
-import calc from "@/libs/calc";
-import list from "../../mixins/list";
-import dayjs from "dayjs";
+import eTable from '@/components/e-table/e-table'
+import request from '@/libs/request'
+import popup from '@/components/popup/popup'
+import editBaseMixins from '../../mixins/edit'
+import InputNumber from '@/components/input-number'
+import formControl from '@/components/form-control/form-control'
+import { customValidator } from '@/libs/validator'
+import calc from '@/libs/calc'
+import list from '../../mixins/list'
+import dayjs from 'dayjs'
 export default {
-  name: "edit-boxUseReSlave",
+  name: 'edit-boxUseReSlave',
   mixins: [editBaseMixins],
   components: {
     editWindow,
@@ -182,37 +149,37 @@ export default {
     formControl
   },
 
-  created() {
+  created () {
     // console.log(this.List)
   },
   props: {
-    batchNoList:{
-      type:String,
-      default:""
+    batchNoList: {
+      type: String,
+      default: ''
     },
     inSupplierId: {
       type: String,
-      default: ""
+      default: ''
     },
     List: {
       type: String,
-      default: ""
+      default: ''
     },
     WorkOrderNumber1: {
       type: Object,
-      defaule: "null"
+      defaule: 'null'
     }
   },
-  data() {
+  data () {
     return {
-      //actionSubtitle: "纸箱销售订单明细", // 当前操作副标
+      // actionSubtitle: "纸箱销售订单明细", // 当前操作副标
       productSpecShow: false,
       formDataInfo: {
         // 主表 更改字段
         master: {},
         productMDatas: {
-          artCode: "",
-          workNo: ""
+          artCode: '',
+          workNo: ''
         }
         // List:thsi.list
       }, // 防止添加和更新数据提交发生冲突
@@ -220,104 +187,115 @@ export default {
       ruleValidate: {},
       tableFieldsValidator: {},
       WorkOrderNumber: {
-        boxUseBatchNo: "", //用料批次号
-        artCode: "",
+        boxUseBatchNo: '', // 用料批次号
+        artCode: ''
       },
-      title: "工单",
-      formName: "paperReInWorkDtoFm",
-      propvalue: "inWorkNo", //存储子表每个对应的字段
-      productMDatasTableDataList: [], //存放处理过后的数据:[],
-      table: [], //存储子表全部对应的字段
+      title: '工单号',
+      formName: 'paperReInWorkDtoFm',
+      propvalue: 'workNo', // 存储子表每个对应的字段
+      productMDatasTableDataList: [], // 存放处理过后的数据:[],
+      table: [], // 存储子表全部对应的字段
       // bcCustPo: "",
       // custName: "",
-      bcNo: ""
-    };
+      bcNo: ''
+    }
   },
   computed: {},
   methods: {
-    purPaperPoClick(name, value) {
-      //debugger
-      this.title = name;
-      this.propvalue = value;
+    searchKeyType (keyField, keyTitle) {
+      this.formDataInfo.master.inBiWorkNo = ''
+      if (this.excludeFiled('workNo', keyField)) {
+        this.title = keyTitle
+        this.propvalue = keyField
+      }
     },
-    //搜索点击事件
-    clickmaster() {
-      //debugger
-     
-      // if (this.propvalue == "bcCustPo") {
-      //   this.bcCustPo = this.formDataInfo.master.inBiWorkNo;
-      //   this.custName = "";
-      //   this.bcNo = "";
-      // } else if (this.propvalue == "custName") {
-      //   this.custName = this.formDataInfo.master.inBiWorkNo;
-      //   this.bcCustPo = "";
-      //   this.bcNo = "";
-      // } else {
-      //   this.bcNo = this.formDataInfo.master.inBiWorkNo;
-      //   this.bcCustPo = "";
-      //   this.custName = "";
-      // }
+    // 排除不显示字段样式    bcCustPo   custName  bcNo
+    excludeFiled (type, key) {
+      let searchList = ['workNo', 'boxUseBatchOn', 'pjNumber']
+      let isExist = searchList.includes(key)
+      if (isExist) {
+        return true
+      } else {
+        return false
+      }
+    },
+    // 获取当前搜索类型的关键字
+    getCurrentKeyTypeWords (field) {
+      if (field == this.propvalue) {
+        return this.formDataInfo.master.inBiWorkNo
+      } else {
+        return ''
+      }
+    },
+    // purPaperPoClick(name, value) {
+    //   //debugger
+    //   this.title = name;
+    //   this.propvalue = value;
+    // },
+    // 搜索点击事件
+    clickmaster () {
       let params = {
-        flag:this.formDataInfo.master.flag,
-        // bcCustPo: this.bcCustPo,
-        // custName: this.custName,
+        flag: this.formDataInfo.master.flag,
+        inWorkNo: this.getCurrentKeyTypeWords('workNo'), // 工单号
+        inBatchNo: this.getCurrentKeyTypeWords('boxUseBatchOn'), // 批次号
+        inPaperJoinNo: this.getCurrentKeyTypeWords('pjNumber'), // 入库单号
         inSupplierId: this.inSupplierId,
         inWorkNo: this.formDataInfo.master.inBiWorkNo,
         issInput: 0,
-        batchNoList:this.batchNoList,
-      };
+        batchNoList: this.batchNoList
+      }
 
       request.post(`/stock/BoxUseRe/getWorkInStore`, params).then(res => {
-        this.$refs["slave_edit-boxUseRe"].cloneData = res;
-      });
+        this.$refs['slave_edit-boxUseRe'].cloneData = res
+      })
     },
 
-    //加载表单初始化数据
-    getFormInitDataObj(data) {
-      //debugger;
-      var begin = new Date();
+    // 加载表单初始化数据
+    getFormInitDataObj (data) {
+      // debugger;
+      var begin = new Date()
       let startDate = dayjs(
         new Date(begin.setMonth(new Date().getMonth() - 1))
-      ).format("YYYY-MM-DD");
-      //加载表单初始化数据
-      this.formDataInfo["master"] = {
-        inBiWorkNo: "",
-        flag: "1",
-        endDate: dayjs().format("YYYY-MM-DD"),
+      ).format('YYYY-MM-DD')
+      // 加载表单初始化数据
+      this.formDataInfo['master'] = {
+        inBiWorkNo: '',
+        flag: '1',
+        endDate: dayjs().format('YYYY-MM-DD'),
         startDate: startDate
-      };
-      if (data == "" || data == null) {
-        return;
       }
-      this.$refs["slave_edit-boxUseRe"].cloneData = data;
+      if (data == '' || data == null) {
+        return
+      }
+      this.$refs['slave_edit-boxUseRe'].cloneData = data
     },
 
-    //表单数据提交事件
-    submitFormDataEvent() {
-      //debugger;
-      //表单数据提交事件
+    // 表单数据提交事件
+    submitFormDataEvent () {
+      // debugger;
+      // 表单数据提交事件
       // true就是有问题
-      let result = this.$refs["slave_edit-boxUseRe"].validate();
+      let result = this.$refs['slave_edit-boxUseRe'].validate()
       if (result) {
-        return;
+        return
       }
-      let parms = [];
-      let submitDataObj = this.$refs["slave_edit-boxUseRe"].cloneData;
+      let parms = []
+      let submitDataObj = this.$refs['slave_edit-boxUseRe'].cloneData
       for (let index = 0; index < submitDataObj.length; index++) {
-        let Choice = this.$refs["slave_edit-boxUseRe"].cloneData[index]
-          .iisChose;
+        let Choice = this.$refs['slave_edit-boxUseRe'].cloneData[index]
+          .iisChose
         if (Choice === true) {
-          parms.push(submitDataObj[index]);
+          parms.push(submitDataObj[index])
         }
       }
-      //提交数据
+      // 提交数据
       // 向外暴露的方法:
-      this.$emit("closeMain", parms);
-      this.showWindow = false; // 关闭当前窗口
+      this.$emit('closeMain', parms)
+      this.showWindow = false // 关闭当前窗口
       // });
     }
   }
-};
+}
 </script>
 <style >
 .ivu-form-item-text2 .ivu-form-item-content {

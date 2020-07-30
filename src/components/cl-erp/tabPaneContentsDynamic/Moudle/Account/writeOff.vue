@@ -8,7 +8,7 @@
       :queryParamsDefault="queryParamsDefault"
     >
     </htmlTemplate>
-    <div class="content-container" :style="{ height: tableHeight + 'px' }">
+    <div ref="contextMenuTarget" class="content-container" :style="{ height: tableHeight + 'px' }">
       <Split :v-model="splitModel" mode="vertical">
         <div slot="top" class="demo-split-pane" ref="contextMenuTarget">
           <vTable
@@ -48,7 +48,7 @@
         </div>
       </Split>
     </div>
-    
+
     <editForm
       :isLoaddingDone="isLoaddingDone"
       :form-detail-data="formDetailData"
@@ -62,109 +62,109 @@
   </div>
 </template>
 <script>
-import vTable from "@/components/tables/vTable";
-import htmlTemplate from "../components/htmlTemplate";
-//import editForm from "./edit/edit-warehouse";
-import listBaseMixins from "../mixins/list";
+import vTable from '@/components/tables/vTable'
+import htmlTemplate from '../components/htmlTemplate'
+// import editForm from "./edit/edit-warehouse";
+import listBaseMixins from '../mixins/list'
 import request from '@/libs/request'
 export default {
   mixins: [listBaseMixins],
   components: {
-    'editForm':function(resolve) { //组件的异步加载
-                require(["./edit/edit-writeOff"], resolve);
-            },
+    'editForm': function (resolve) { // 组件的异步加载
+      require(['./edit/edit-writeOff'], resolve)
+    },
     htmlTemplate,
     vTable
   },
-  data() {
+  data () {
     return {
       // 导出参数配置
-       tableDataList:[
-        {ref:'master_list_table',title:'应付冲销'},
-        {ref:'tableFieldRef',title:'收票明细'},
-        {ref:'tableFieldRef2',title:'收款明细'},
+      tableDataList: [
+        { ref: 'master_list_table', title: '应付冲销' },
+        { ref: 'tableFieldRef', title: '收票明细' },
+        { ref: 'tableFieldRef2', title: '收款明细' }
       ],
-      tableFieldData:[], //开票明细列列表
-      tableFieldData2:[], //收款明细列表
-      currentTabName:'writeoffin',// 当前TABL名称
-     // who:'editForm', // 动态指定编辑控件
+      tableFieldData: [], // 开票明细列列表
+      tableFieldData2: [], // 收款明细列表
+      currentTabName: 'writeoffin', // 当前TABL名称
+      // who:'editForm', // 动态指定编辑控件
       functionParams: {
-        requestBaseUrl: "/account/writeOff",
-        uniqueId: "woId"
+        requestBaseUrl: '/account/writeOff',
+        uniqueId: 'woId'
       },
       // 查询参数 ,注意格式
       queryParamsDefault: [
         {
-          title: "请输入冲销单号",
-          code: "woNo",
-          woNo: ""
+          title: '请输入冲销单号',
+          code: 'woNo',
+          woNo: ''
         },
         {
-          title: "请输入客户名称",
-          name: "custName$like",
-          custName$like: ""
+          title: '请输入客户名称',
+          name: 'custName$like',
+          custName$like: ''
         }
-      ],
-    };
+      ]
+    }
   },
   methods: {
     // tab 切换事件
-    TabsClickEvent(name){
-     //debugger
+    TabsClickEvent (name) {
+      // debugger
       this.currentTabName = name
-      if(this.masterRowSelection && this.masterRowSelection.id!=null && this.masterRowSelection.id!=""){
-          if(name==='writeOffOut'){
+      if (this.masterRowSelection && this.masterRowSelection.id != null && this.masterRowSelection.id != '') {
+        if (name === 'writeOffOut') {
           this.getContactListById()
-        }else if(name==='writeoffin'){
+        } else if (name === 'writeoffin') {
           this.getWriteoffinById()
         }
       }
     },
-    tableRowClick(rowData, rowIndex) {
-      this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
-      this.masterRowSelection = rowData;
+    tableRowClick (rowData, rowIndex) {
+      this.formDetailData = {} // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData
       if (rowData != null) {
-        //debugger
+        // debugger
         // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
         this.currrentRowItem.rowName =
-          rowData.woNo + " " + rowData.custName;
+          rowData.woNo + ' ' + rowData.custName
       }
-      if(this.masterRowSelection){
-          this.TabsClickEvent(this.currentTabName)
+      if (this.masterRowSelection) {
+        this.TabsClickEvent(this.currentTabName)
       }
     },
     // 查询开票明细列表信息
-    getContactListById(){
-       //debugger
-        let url =`/account/writeOff/writeOffOut/list`;
-        let data ={
-          woId:this.masterRowSelection.id,
-        }
-        let _self = this;
-        request.post(url,data).then(res => {
-          //debugger
-          _self.tableFieldData2 = res
-        });
+    getContactListById () {
+      // debugger
+      let url = `/account/writeOff/writeOffOut/list`
+      let data = {
+        woId: this.masterRowSelection.id
+      }
+      let _self = this
+      request.post(url, data).then(res => {
+        // debugger
+        _self.tableFieldData2 = res
+      })
     },
     // 查询收款明细列表信息
-    getWriteoffinById(){
-       //debugger
-        let url = `/account/writeOff/writeOffIn/list`;
-        let data ={
-          woId:this.masterRowSelection.id,
-        }
-        let _self = this;
-        request.post(url,data).then(res => {
-          //debugger
-          _self.tableFieldData = res
-        });
+    getWriteoffinById () {
+      // debugger
+      let url = `/account/writeOff/writeOffIn/list`
+      let data = {
+        woId: this.masterRowSelection.id
+      }
+      let _self = this
+      request.post(url, data).then(res => {
+        // debugger
+        _self.tableFieldData = res
+      })
     },
-    //重写父类方法, 更新操作
-    handleUpdateEvent(){
-       this.TabsClickEvent(this.currentTabName)
-    },
+    // 重写父类方法, 更新操作
+    handleUpdateEvent () {
+      this.TabsClickEvent(this.currentTabName)
+    }
   }
-};
+}
 </script>
 
 <style></style>

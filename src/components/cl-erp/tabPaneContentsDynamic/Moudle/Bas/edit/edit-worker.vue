@@ -21,7 +21,7 @@
             <Row :gutter="18">
               <Col span="8">
                 <FormItem label="编号" prop="workCode">
-                  <referenceField v-model="formDataInfo.workCode" :disabled="detailDisabled" maxlength="20" placeholder="请输入编号"  :form-name="formmastername"
+                  <referenceField  ref='firstFocusInput' v-model="formDataInfo.workCode" :disabled="detailDisabled" maxlength="20" placeholder="请输入编号"  :form-name="formmastername"
                   :id="formDataInfo.id"></referenceField>
                 </FormItem>
               </Col>
@@ -117,7 +117,6 @@
               </Col>
                 </Row>
               </Col>
-
 
               <Col span="8">
                 <FormItem label="政治面貌">
@@ -264,9 +263,7 @@
                   <Input
                   :disabled="detailDisabled"
                     v-model="formDataInfo.homeAddress"
-                    type="textarea"
                     maxlength="80"
-                    :autosize="{ minRows: 2, maxRows: 5 }"
                     placeholder="请输入家庭住址"
                   />
                 </FormItem>
@@ -276,9 +273,7 @@
                   <Input
                   :disabled="detailDisabled"
                     v-model="formDataInfo.nowAdress"
-                    type="textarea"
                     maxlength="80"
-                    :autosize="{ minRows: 2, maxRows: 5 }"
                     placeholder="请输入现住地址"
                   />
                 </FormItem>
@@ -288,9 +283,7 @@
                   <Input
                   :disabled="detailDisabled"
                     v-model="formDataInfo.remark"
-                    type="textarea"
                     maxlength="80"
-                    :autosize="{ minRows: 2, maxRows: 5 }"
                     placeholder="请输入备注..."
                   />
                 </FormItem>
@@ -338,183 +331,182 @@
  * @created 2019/11/20 17:07:54
  */
 import referenceField from '@/components/referenceField/referenceField'
-import popup from "@/components/popup/popup";
-import optionSearch from "../../components/optionSearch";
-import uploadImg from "@/components/cl-erp/uploadImg";
-import dayjs from "dayjs";
-import editBaseMixins from "../../mixins/edit";
-import { customValidator,uniqueValidator } from "@/libs/validator";
+import popup from '@/components/popup/popup'
+import optionSearch from '../../components/optionSearch'
+import uploadImg from '@/components/cl-erp/uploadImg'
+import dayjs from 'dayjs'
+import editBaseMixins from '../../mixins/edit'
+import { customValidator, uniqueValidator } from '@/libs/validator'
 const default_formDataInfo = {
-  borthAdress: "",
-  borthDay: "",
-  workLabourPactSDate: dayjs().format("YYYY-MM-DD"),
-  workLabourPactEDate: "",
-  positionId: "1", // 职位
-  positionCode: "",
-  positionName: "",
-  degreeSchool: "大专", //文化程度
-  deptId: "0",
-  deptCode: "",
-  deptName: "",
-  borthAdress: "",
-  eys: "0",
-  height: "0",
-  homeAddress: "",
-  idNumber: "",
+  borthAdress: '',
+  borthDay: '',
+  workLabourPactSDate: dayjs().format('YYYY-MM-DD'),
+  workLabourPactEDate: '',
+  positionId: '1', // 职位
+  positionCode: '',
+  positionName: '',
+  degreeSchool: '大专', // 文化程度
+  deptId: '0',
+  deptCode: '',
+  deptName: '',
+  borthAdress: '',
+  eys: '0',
+  height: '0',
+  homeAddress: '',
+  idNumber: '',
   iisInsurance: false,
-  iisMarried: "0", //婚否：0未婚1已婚3离异
-  iisWork: "1", //是否在职0离职1在职
-  insuranceAmt: "0",
-  major: "",
-  mob: "",
-  nation: "",
-  nowAdress: "",
-  nowAdress: "",
-  homeAddress: "",
-  photo: "",
-  idPhoto: "",
-  political: "群众", //政治面貌
-  remark: "",
-  salary: "0",
-  sex: "1", //性别：0女1男
-  //status: "0",
-  teamId: "0",
-  teamCode: "",
-  nation: "",
-  teamName: "",
-  salary: "",
-  workCode: "",
-  idNumber: "",
-  height: "",
-  major: "",
-  eys: "",
-  workInDate: dayjs().format("YYYY-MM-DD HH:mm:ss"),
-  workName: "",
-  workOptType: "0" // 职别
-};
+  iisMarried: '0', // 婚否：0未婚1已婚3离异
+  iisWork: '1', // 是否在职0离职1在职
+  insuranceAmt: '0',
+  major: '',
+  mob: '',
+  nation: '',
+  nowAdress: '',
+  nowAdress: '',
+  homeAddress: '',
+  photo: '',
+  idPhoto: '',
+  political: '群众', // 政治面貌
+  remark: '',
+  salary: '0',
+  sex: '1', // 性别：0女1男
+  // status: "0",
+  teamId: '0',
+  teamCode: '',
+  nation: '',
+  teamName: '',
+  salary: '',
+  workCode: '',
+  idNumber: '',
+  height: '',
+  major: '',
+  eys: '',
+  workInDate: dayjs().format('YYYY-MM-DD HH:mm:ss'),
+  workName: '',
+  workOptType: '0' // 职别
+}
 export default {
-  actionSubtitle:'人员信息', // 当前操作副标题
-  name: "edit-position",
+  name: 'edit-position',
   mixins: [editBaseMixins],
-  components: { uploadImg, optionSearch, popup ,referenceField},
-  data() {
+  components: { uploadImg, optionSearch, popup, referenceField },
+  data () {
     return {
-      formmastername:'workerFm',
-      requestBaseUrl: "/bas/worker", // 请求 查询 操作的基础路径
+      actionSubtitle: '人员信息', // 当前操作副标题
+      formmastername: 'workerFm',
+      requestBaseUrl: '/bas/worker', // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
 
-        deptCode: [{ required: true, message: "部门不能为空", trigger: "change" }],
+        deptCode: [{ required: true, message: '部门不能为空', trigger: 'change' }],
 
-        sex: [{ required: true, message: "性别不能为空", trigger: "blur" }],
+        sex: [{ required: true, message: '性别不能为空', trigger: 'blur' }],
         workCode: [
-          { required: true, message: "编号不能为空", trigger: "blur" },
+          { required: true, message: '编号不能为空', trigger: 'blur' },
           {
             validator: customValidator,
-            trigger: "blur",
-            customRule: ["identifier"],
-            fieldDesc: "职位编码"
+            trigger: 'blur',
+            customRule: ['identifier'],
+            fieldDesc: '职位编码'
           },
           {
-                validator:uniqueValidator,
-                trigger: "blur",
-                fieldDesc: "职位编码",
-                params:{
-                  fieldName:'workCode',
-                  formName:'workerFm',
-                  id:()=>{
-                    return this.formDataInfo.id;
-                  }
-                }
+            validator: uniqueValidator,
+            trigger: 'blur',
+            fieldDesc: '职位编码',
+            params: {
+              fieldName: 'workCode',
+              formName: 'workerFm',
+              id: () => {
+                return this.formDataInfo.id
               }
-        ],
-        mob: [
-          { required: true, message: "车主电话不能为空", trigger: "blur" },
-           {
-              validator:customValidator,
-              trigger: "blur",
-              customRule:["phone","spaceStr"],
-              fieldDesc:"车主电话"
             }
-        ],
-        workName: [
-          { required: true, message: "名称不能为空", trigger: "blur" },
-          {
-            validator: customValidator,
-            trigger: "blur",
-            customRule: ["toCDB","spaceStr"],
-            fieldDesc: "职位名称"
           }
         ],
+        mob: [
+          { required: true, message: '车主电话不能为空', trigger: 'blur' },
+          {
+            validator: customValidator,
+            trigger: 'blur',
+            customRule: ['phone', 'spaceStr'],
+            fieldDesc: '车主电话'
+          }
+        ],
+        workName: [
+          { required: true, message: '名称不能为空', trigger: 'blur' },
+          {
+            validator: customValidator,
+            trigger: 'blur',
+            customRule: ['toCDB', 'spaceStr'],
+            fieldDesc: '职位名称'
+          }
+        ]
 
       }
-    };
+    }
   },
   methods: {
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo() {
-      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    HandleFormDataInfo () {
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
     },
     // 身份证===图片上传成功后 回调事件 返回图片地址
-    uploadSuccessHeads(res) {
+    uploadSuccessHeads (res) {
       if (!res.success) {
-        this.$Message.error(res.message);
-        return;
+        this.$Message.error(res.message)
+        return
       }
-      let picUrl = res.result;
-      if (!!picUrl) {
-        this.formDataInfo.idPhoto = picUrl;
+      let picUrl = res.result
+      if (picUrl) {
+        this.formDataInfo.idPhoto = picUrl
       }
     },
-    //个人===图片上传成功后 回调事件 返回图片地址
-    uploadSuccessTails(res) {
+    // 个人===图片上传成功后 回调事件 返回图片地址
+    uploadSuccessTails (res) {
       if (!res.success) {
-        this.$Message.error(res.message);
-        return;
+        this.$Message.error(res.message)
+        return
       }
-      let picUrl = res.result;
-      if (!!picUrl) {
-        this.formDataInfo.photo = picUrl;
+      let picUrl = res.result
+      if (picUrl) {
+        this.formDataInfo.photo = picUrl
       }
     },
-    //重写父类 添加时,修改一些提交的数据
-    resetAddformDataInfo(_data) {
-      return this.resetformDataInfo(_data);
+    // 重写父类 添加时,修改一些提交的数据
+    resetAddformDataInfo (_data) {
+      return this.resetformDataInfo(_data)
     },
-    //重写父类 更新时,修改一些提交的数据
-    resetformDataInfo(_data) {
-
+    // 重写父类 更新时,修改一些提交的数据
+    resetformDataInfo (_data) {
       // 时间格式化
-      if (!!_data.borthDay) {
-        _data.borthDay = dayjs(_data.borthDay).format("YYYY-MM-DD");
+      if (_data.borthDay) {
+        _data.borthDay = dayjs(_data.borthDay).format('YYYY-MM-DD')
       }
-      if (!!_data.workLabourPactSDate) {
+      if (_data.workLabourPactSDate) {
         _data.workLabourPactSDate = dayjs(_data.workLabourPactSDate).format(
-          "YYYY-MM-DD"
-        );
+          'YYYY-MM-DD'
+        )
       }
-      if (!!_data.workLabourPactEDate) {
+      if (_data.workLabourPactEDate) {
         _data.workLabourPactEDate = dayjs(_data.workLabourPactEDate).format(
-          "YYYY-MM-DD"
-        );
+          'YYYY-MM-DD'
+        )
       }
-      if (!!_data.workInDate) {
+      if (_data.workInDate) {
         _data.workInDate = dayjs(_data.workInDate).format(
-          "YYYY-MM-DD HH:mm:ss"
-        );
+          'YYYY-MM-DD HH:mm:ss'
+        )
       }
 
-      return _data;
+      return _data
     }
   }
-};
+}
 </script>
 
 <style>
-.cl-edit-worker .ivu-form-item {
+/* .cl-edit-worker .ivu-form-item {
   margin-bottom: 5px !important;
-}
+} */
 .cl-other-checkBox {
   margin-left: 25px;
   margin-top: 10px;

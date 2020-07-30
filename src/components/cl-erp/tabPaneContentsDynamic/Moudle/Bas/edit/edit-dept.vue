@@ -20,7 +20,7 @@
           <Col span="24">
             <FormItem label="部门编码" prop="deptCode">
               <referenceField v-model="formDataInfo.deptCode"
-              :disabled="detailDisabled" 
+              :disabled="detailDisabled"
                 maxlength="20"
                 placeholder="请输入部门编码"
                 :form-name="frommastername"
@@ -38,9 +38,7 @@
               <Input
                 :disabled="detailDisabled"
                 v-model="formDataInfo.remark"
-                type="textarea"
                 maxlength="100"
-                :autosize="{ minRows: 2, maxRows: 5 }"
                 placeholder="请输入备注..."
               ></Input>
             </FormItem>
@@ -65,70 +63,70 @@
  *
  * @created 2019/11/20 17:07:54
  */
-import editBaseMixins from "../../mixins/edit";
-import { customValidator,uniqueValidator} from "@/libs/validator";
+import editBaseMixins from '../../mixins/edit'
+import { customValidator, uniqueValidator } from '@/libs/validator'
 import referenceField from '@/components/referenceField/referenceField'
 const default_formDataInfo = {
-  deptCode: "",
-  deptName: "",
-  remark: ""
-};
+  deptCode: '',
+  deptName: '',
+  remark: ''
+}
 export default {
-  name: "edit-dept",
+  name: 'edit-dept',
   mixins: [editBaseMixins],
-  components:{
+  components: {
     referenceField
   },
 
-  data() {
+  data () {
     return {
-      frommastername:'deptFm',
-      actionSubtitle:'部门信息', // 当前操作副标题
-      requestBaseUrl: "/bas/dept", // 请求 查询 操作的基础路径
+      frommastername: 'deptFm',
+      actionSubtitle: '部门信息', // 当前操作副标题
+      requestBaseUrl: '/bas/dept', // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
         deptCode: [
-          { required: true, message: "部门编号不能为空", trigger: "blur" },
+          { required: true, message: '部门编号不能为空', trigger: 'blur' },
           {
             validator: customValidator,
-            trigger: "blur",
-            customRule: ["identifier"],
-            fieldDesc: "部门编号"
+            trigger: 'blur',
+            customRule: ['identifier'],
+            fieldDesc: '部门编号'
           },
           {
-            validator:uniqueValidator,
-             trigger: "blur",
-             fieldDesc: "部门编号",
-             params:{
-               fieldName:'deptCode',
-               formName:'deptFm',
-               id:()=>{
-                 return this.formDataInfo.id;
-               }
-             }
+            validator: uniqueValidator,
+            trigger: 'blur',
+            fieldDesc: '部门编号',
+            params: {
+              fieldName: 'deptCode',
+              formName: 'deptFm',
+              id: () => {
+                return this.formDataInfo.id
+              }
+            }
           }
         ],
         deptName: [
-          { required: true, message: "部门名称不能为空", trigger: "blur" },
+          { required: true, message: '部门名称不能为空', trigger: 'blur' },
           {
             validator: customValidator,
-            trigger: "blur",
-            customRule: ["toCDB","spaceStr","spaceStr"],
-            fieldDesc: "部门名称"
+            trigger: 'blur',
+            customRule: ['toCDB', 'spaceStr', 'spaceStr'],
+            fieldDesc: '部门名称'
           }
         ]
       }
-    };
+    }
   },
 
   methods: {
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo() {
-      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    HandleFormDataInfo () {
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
     }
   }
-};
+}
 </script>
 
 <style></style>

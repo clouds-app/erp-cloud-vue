@@ -1,0 +1,187 @@
+<template>
+  <div>
+    <editWindow
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="50%"
+      :loading="!isLoaddingDone"
+      @on-ok="formDataSubmit()"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-message="true"
+        :model="formDataInfo"
+        :rules="ruleValidate"
+        :label-width="100"
+      >
+        <FormItem label="银行编号" prop="bankCode">
+          <referenceField
+           ref='firstFocusInput'
+            v-model="formDataInfo.bankCode"
+            :disabled="detailDisabled"  
+            maxlength="20"
+            placeholder="请输入银行编码"
+            :form-name="frommastername"
+            :id="formDataInfo.id"
+          ></referenceField>
+        </FormItem>
+        <FormItem label="银行名称" prop="bankName">
+          <Input
+            v-model="formDataInfo.bankName"
+            :disabled="detailDisabled"
+            maxlength="20"
+            placeholder="请输入银行名称"
+          ></Input>
+        </FormItem>
+        <FormItem label="账号" prop="cardNo">
+          <Input
+            v-model="formDataInfo.cardNo"
+            :disabled="detailDisabled"
+            maxlength="20"
+            placeholder="请输入银行账号"
+          ></Input>
+        </FormItem>
+        <FormItem label="初始金额" prop="initAmt">
+          <InputNumber
+            v-model="formDataInfo.initAmt"
+            :formatter="value => ` ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
+            :parser="value => value.replace(/\$\s?|(,*)/g, '')"
+            :disabled="detailDisabled"
+            style="width:100%"
+            maxlength="20"
+            placeholder="请输入初始金额"
+          ></InputNumber>
+        </FormItem>
+
+        <FormItem label="期末金额" prop="endItAmt">
+          <InputNumber
+            v-model="formDataInfo.endItAmt"
+            style="width:100%"
+            :formatter="value => ` ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
+            :parser="value => value.replace(/\$\s?|(,*)/g, '')"
+            :disabled="detailDisabled||true"
+            maxlength="20"
+            placeholder="请输入初始金额"
+          ></InputNumber>
+        </FormItem>
+
+        <FormItem label="备注" prop="remark">
+          <Input
+            v-model="formDataInfo.remark"
+            :disabled="detailDisabled"
+            maxlength="100"
+            placeholder="请输入备注..."
+          ></Input>
+        </FormItem>
+      </Form>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:07:54
+ */
+import referenceField from '@/components/referenceField/referenceField'
+import editBaseMixins from "../../mixins/edit";
+import { customValidator,uniqueValidator } from "@/libs/validator"
+const default_formDataInfo ={
+        bankCode: "",
+        bankName: "",
+        cardNo:"",
+        initAmt:0,
+        endItAmt:0,
+        remark: ""
+      }
+export default {
+  name: "edit-bank",
+  mixins: [editBaseMixins],
+  components:{
+    referenceField
+  },
+  data() {
+    return {
+      frommastername:'backFm',
+      actionSubtitle:"银行信息",
+      requestBaseUrl: "/bas/bank", // 请求 查询 操作的基础路径
+      formDataInfo:Object.assign({},default_formDataInfo),// 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {
+         cardNo: [
+          { required: true, message: "账号不能为空", trigger: "blur" },
+          {validator:customValidator,
+          trigger:"blur",
+          customRule:["number","spaceStr"],
+          fieldDesc:"银行账号"
+          }
+        ],
+         initAmt: [
+          {
+            validator:customValidator,
+            trigger: "blur",
+            customRule:["mustDouble"],
+            fieldDesc:"初始金额"
+          }
+        ],
+         endItAmt: [
+          {
+            validator:customValidator,
+            trigger: "blur",
+            customRule:["mustDouble"],
+            fieldDesc:"期末金额"
+          }
+        ],
+        bankCode: [
+          { required: true, message: "编码不能为空", trigger: "blur" },
+           {
+              validator:customValidator,
+              trigger: "blur",
+              customRule:["identifier"],
+              fieldDesc:"编码"
+          },
+          {
+            validator:uniqueValidator,
+             trigger: "blur",
+             fieldDesc: "银行编号",
+             params:{
+               fieldName:'bankCode',
+               formName:'backFm',
+               id:()=>{
+                 return this.formDataInfo.id;
+               }
+             }
+          }
+        ],
+        bankName: [{ required: true, message: "名称不能为空", trigger: "blur" },
+         {
+              validator:customValidator,
+              trigger: "blur",
+              customRule:["toCDB","spaceStr"],
+              fieldDesc:"银行名称"
+          }
+        ]
+      }
+    };
+  },
+
+  methods: {
+      // 重写父类,添加时候,清空数据
+    HandleFormDataInfo(){
+     this.formDataInfo=Object.assign({},default_formDataInfo)
+    },
+  }
+};
+</script>
+
+<style></style>

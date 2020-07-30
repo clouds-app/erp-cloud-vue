@@ -1,0 +1,273 @@
+<template>
+  <div>
+    <editWindow
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="70%"
+      :loading="!isLoaddingDone"
+      @on-ok="formDataSubmit()"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-message="true"
+        :model="formDataInfo"
+        :rules="ruleValidate"
+        :label-width="120"
+      >
+        <Row :gutter="18">
+          <Col span="16">
+            <Row>
+              <Col span="24">
+                <Row :gutter="18">
+                     <Col span="12">
+                  <FormItem label="印版编号" prop="tpNo">
+                    <referenceField  ref='firstFocusInput' v-model="formDataInfo.tpNo" :disabled="detailDisabled" maxlength="20" placeholder="请输入印版编号" :form-name="formmastername"
+            :id="formDataInfo.id"></referenceField>
+                  </FormItem>
+                </Col>
+                <Col span="12">
+                  <FormItem label="版类" prop="tpVerType">
+                    <optionSearch
+                    :disabled="detailDisabled"
+                      @onChange="optionOnChange"
+                      :defaultItem="formDataInfo.tpVerType"
+                      :loaddingDataWhen="showWindow"
+                      formKey="tpVerType"
+                      query="tpVerType"
+                    />
+                    
+                  </FormItem>
+                </Col>    
+                </Row>
+              </Col>
+               
+                <Col span="12">
+                  <FormItem label="客户" prop="custId">
+                    <popup
+                    :disabled="detailDisabled"
+                      v-model="formDataInfo.custId"
+                      field-name="custId"
+                      popup-name="CustomerSingleBox"
+                      :fill-model.sync="formDataInfo"
+                      render-fields="custId,custCode,cusName"
+                      from-fields="id,custCode,cusName"
+                      :suffix="true"
+                      :suffix-model="formDataInfo.cusName"
+                      :query-params="{}"
+                    />
+
+                
+                  </FormItem>
+                </Col>
+                <Col span="12">
+                  <FormItem label="产品" prop="productId">
+                    <popup
+                    :popupClickValidator="clickValuedate"
+                      v-model="formDataInfo.productId"
+                      field-name="bpNo"
+                      :disabled="detailDisabled"
+                      popup-name="BasicProductSingleBox"
+                      :fill-model.sync="formDataInfo"
+                      render-fields="productId,producCode,bpName"
+                      from-fields="id,bpNo,bpName"
+                      :suffix="true"
+                      :suffix-model="formDataInfo.bpName"
+                      :query-params="{custId:formDataInfo.custId}"
+                    />
+                
+                  </FormItem>
+                </Col>
+                <Col span="12">
+                  <FormItem label="印版规格(mm)长" prop="tpItemL">
+                    <InputNumber
+                    :disabled="detailDisabled"
+                      v-model="formDataInfo.tpItemL"
+                      :formatter="value => ` ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
+                      :parser="value => value.replace(/\$\s?|(,*)/g, '')"
+                      style="width:100%"
+                      maxlength="20"
+                      placeholder="请输入印版规格(mm)长"
+                    ></InputNumber>
+                  </FormItem>
+                </Col>
+                <Col span="12">
+                  <FormItem label="印版规格(mm)宽" prop="tpItemW">
+                    <InputNumber
+                    :disabled="detailDisabled"
+                      v-model="formDataInfo.tpItemW"
+                     :formatter="value => ` ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
+                      :parser="value => value.replace(/\$\s?|(,*)/g, '')"
+                      style="width:100%"
+                      maxlength="20"
+                      placeholder="请输入印版规格(mm)宽"
+                    ></InputNumber>
+                  </FormItem>
+                </Col>
+                 <Col span="12">
+                  <FormItem label="厚度(mm)" prop="tpPly">
+                    <InputNumber
+                      :disabled="detailDisabled"
+                      v-model="formDataInfo.tpPly"
+                      :formatter="value => ` ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
+                      :parser="value => value.replace(/\$\s?|(,*)/g, '')"
+                      style="width:100%"
+                      maxlength="20"
+                      placeholder="请输入厚度(mm)"
+                    ></InputNumber>
+                  </FormItem>
+                </Col>
+               
+                <Col span="12">
+                  <FormItem label="公用" prop="iisPublicCompany">
+                            <Checkbox v-model="formDataInfo.iisPublicCompany" :disabled="detailDisabled" maxlength="20" placeholder></Checkbox>
+                  </FormItem>
+                </Col>
+                <Col span="12">
+                  <FormItem label="备注" prop="remark">
+                    <Input
+                    :disabled="detailDisabled"
+                      v-model="formDataInfo.remark"
+                      type="textarea"
+                      maxlength="100"
+                      :autosize="{ minRows: 2, maxRows: 5 }"
+                      placeholder="请输入备注..."
+                    ></Input>
+                  </FormItem>
+                </Col>
+            </Row>
+          </Col>
+          <Col span="8">
+              <div>
+                图片上传
+                <uploadImg
+                  moduleName="bas"
+                  :disabled="detailDisabled"
+                  :imgUrl="formDataInfo.tpImg"
+                  @uploadSuccess="uploadSuccessHeads"
+                  tipInfo="图片路径"
+                />
+              </div>
+          </Col>
+                
+        </Row>
+      </Form>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:07:54
+ */
+import inputNumber from "@/components/input-number";
+import optionSearch from "../../components/optionSearch";
+import editBaseMixins from "../../mixins/edit";
+import referenceField from '@/components/referenceField/referenceField'
+import popup from "@/components/popup/popup";
+import uploadImg from "@/components/cl-erp/uploadImg";
+import { customValidator,uniqueValidator } from "@/libs/validator";
+const default_formDataInfo = {
+  tpNo: "",
+  tpVerType: "0",
+  tpImg: "",
+  tpPly: 0,
+  tpItemL: 0,
+  tpItemW: "0",
+  custId: "",
+  productId: "",
+  remark: ""
+};
+export default {
+  name: "edit-print",
+  mixins: [editBaseMixins],
+  components: { optionSearch, popup, uploadImg ,referenceField,inputNumber},
+  data() {
+    return {
+      formmastername:'printFm',
+      actionSubtitle:'印版', // 当前操作副标题
+      requestBaseUrl: "/bas/print", // 请求 查询 操作的基础路径
+      formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {
+        tpItemL:[{
+          validator:customValidator,
+            trigger: "blur",
+            customRule:["mustDouble"],
+            fieldDesc:"印版规格(mm)长"
+        }],
+        tpPly:[{
+          validator:customValidator,
+            trigger: "blur",
+            customRule:["mustDouble"],
+            fieldDesc:"厚度(mm)"
+        }],
+        tpItemW:[{
+          validator:customValidator,
+            trigger: "blur",
+            customRule:["mustDouble"],
+            fieldDesc:"印版规格(mm)宽"
+        }],
+        tpNo: [
+          { required: true, message: "印版编码不能为空", trigger: "blur" },
+          {validator:customValidator,
+                    trigger:"blur",
+                    customRule:["identifier"],
+                    fieldDesc:"印版编号"},
+          {
+          validator:uniqueValidator,
+          trigger: "blur",
+          fieldDesc: "印版编号",
+          params:{
+            fieldName:'tpNo',
+            formName:'printFm',
+            id:()=>{
+              return this.formDataInfo.id;
+            }
+          }
+        }
+        ],
+        
+      }
+    };
+  },
+
+  methods: {
+    uploadSuccessHeads(res) {
+      if (!res.success) {
+        this.$Message.error(res.message);
+        return;
+      }
+      let picUrl = res.result;
+      if (!!picUrl) {
+        this.formDataInfo.tpImg = picUrl;
+      }
+    },
+    //判断主表客户弹框不能为空
+    clickValuedate() {
+      debugger;
+      if (!this.formDataInfo.cusName || this.formDataInfo.cusName == "") {
+        this.$Message.error("客户不能为空");
+        return false;
+      }
+      return true;
+    },
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo() {
+      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    }
+  }
+};
+</script>
+
+<style></style>

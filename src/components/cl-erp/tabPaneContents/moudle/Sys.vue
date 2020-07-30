@@ -65,14 +65,14 @@
         </div>
         <div class="acdountItemfont">
           <div class="top">
-            <div class="downItem userFrom" @click="handleSubMenuEvent('sysUser','sys-user','用户')">
-              <div class="oneOrderBgIcon ">
-                <div class="oneOrderTitle">用户</div>
+            <div class="downItem userFrom" @click="handleSubMenuEvent('sysUser','sys-user','用户',secondenum.sysUser.val.disabled)">
+              <div class="sysUseroneOrderBgIcon"  :class="[secondenum.sysUser.val.disabled?'diabledOrAccess':'']">
+                <div class="sysUseroneOrderTitle">用户</div>
               </div>
             </div>
             <div class="centerBoxItem-ArrowItem"></div>
-            <div class="downItem resources" @click="handleSubMenuEvent('sysResource','sys-resource','资源')">
-              <div class="oneOrderBgIcon ">
+            <div class="downItem resources" @click="handleSubMenuEvent('sysResource','sys-resource','资源',secondenum.sysResource.val.disabled)">
+              <div class="oneOrderBgIcon" :class="[secondenum.sysResource.val.disabled?'diabledOrAccess':'']">
                 <div class="oneOrderTitle">功能(资源)</div>
               </div>
             </div>
@@ -82,8 +82,8 @@
               <div class="centerBoxItem-right"></div>
           </div>
           <div class="bottomdata">
-            <div class="downItem role" @click="handleSubMenuEvent('sysRole','sys-role','角色')">
-              <div class="oneOrderBgIcon">
+            <div class="downItem role" @click="handleSubMenuEvent('sysRole','sys-role','角色',secondenum.sysRole.val.disabled)">
+              <div class="oneOrderBgIcon" :class="[secondenum.sysRole.val.disabled?'diabledOrAccess':'']">
                 <div class="oneOrderTitle">角色</div>
               </div>
             </div>
@@ -98,22 +98,22 @@
         </div>
         <div class="acdountItemfont">
           <div class="topdata">
-            <div class="downItem" @click="handleSubMenuEvent('sysCode','sys-sysCode','系统编码')">
-              <div class="oneOrderBgIcon">
+            <div class="downItem" @click="handleSubMenuEvent('sysCode','sys-sysCode','系统编码',secondenum.sysCode.val.disabled)">
+              <div class="oneOrderBgIcon" :class="[secondenum.sysCode.val.disabled?'diabledOrAccess':'']">
               </div>
               <div class="oneOrderTitle">单据标号规则</div>
             </div>
           </div>
           <div class="centerdata">
-            <div class="downItem"  @click="handleSubMenuEvent('dic','sys-dic','数字字典')">
-              <div class="oneOrderBgIcon">
+            <div class="downItem"  @click="handleSubMenuEvent('dic','sys-dic','数字字典',secondenum.dic.val.disabled)">
+              <div class="oneOrderBgIcon" :class="[secondenum.dic.val.disabled?'diabledOrAccess':'']">
               </div>
               <div class="oneOrderTitle">数据字典(静态)</div>
             </div>
           </div>
           <div class="bottomdata">
-            <div class="downItem" @click="handleSubMenuEvent('paramConfig','sys-paramConfig','参数配置')">
-              <div class="oneOrderBgIcon">
+            <div class="downItem" @click="handleSubMenuEvent('paramConfig','sys-paramConfig','参数配置',secondenum.paramConfig.val.disabled)">
+              <div class="oneOrderBgIcon" :class="[secondenum.paramConfig.val.disabled?'diabledOrAccess':'']">
               </div>
               <div class="oneOrderTitle">系统参数</div>
             </div>
@@ -126,62 +126,49 @@
 </template>
 
 <script>
-import globleMixin from "@/mixins";
-//import subMenuMixin from './mixins'
+import globleMixin from '@/mixins'
+// import subMenuMixin from './mixins'
 export default {
   mixins: [globleMixin],
-  data() {
-    return {};
+  data () {
+    return {}
+  },
+  computed: {
+    secondenum () {
+      let dataList = this.$store.state.app.Secondaryauthority.Sys
+      return dataList
+    }
   },
   methods: {
     // 子页面 参数: 页面.vue,唯一区别ID,TAB 标签显示名称
-    handleSubMenuEvent(currentPage, uniqueKey, tabName) {
+    handleSubMenuEvent (currentPage, uniqueKey, tabName, flag) {
+      if (flag) {
+        this.$Message.warning('暂无权限,请与管理员联系!')
+        return
+      }
       let params = {
-        menuName: "Sys",
-        page: currentPage, //显示控件页面
+        menuName: 'Sys',
+        page: currentPage, // 显示控件页面
         uniqueKey: uniqueKey,
         lable: tabName,
         isActive: true
-      };
-      this.handleMenuBaseEvent(params); // 调用MIXIN 共用方法
-      // //  debugger
-      // let subItem = {
-      //   uniqueKey: uniqueKey,
-      //   lable: tabName
-      // }
-      // let params = {
-      //   type: 'Sys',
-      //   page: currentPage, //显示控件页面
-      //   uniqueKey: subItem.uniqueKey,
-      //   lable: subItem.lable,
-      //   isActive: true
-      // }
-      // //判断是否已经存在,不要重复添加菜单
-      // let isExist = false;
-      // let currentOperateMenu = this.currentSelectedSubMenu.Sys // 对应模块缓存
-      // if (this.currentSelectedSubMenu && currentOperateMenu.length > 0) {
-      //   currentOperateMenu.forEach((item) => {
-      //     item.isActive = false //重置其它菜单为 未选中
-      //     if (item.uniqueKey == params.uniqueKey) {
-      //       isExist = true
-      //       item.isActive = true // 当前的设置为 TRUE
-      //     }
-      //   })
-      // }
-
-      // // 不存在则添加 子页面
-      // if (!isExist) {
-      //   currentOperateMenu = Object.assign(currentOperateMenu, currentOperateMenu.push(params))
-      // }
-      // this.$store.commit('setCurrentSubMenu', this.currentSelectedSubMenu)
-      // //打开指定页面
-      // this.$emit('openSubMenu', params)
+      }
+      this.handleMenuBaseEvent(params) // 调用MIXIN 共用方法
     }
   }
-};
+}
 </script>
 
 <style lang="scss">
+// 禁用 获取功能未实现 灰色 按钮
+.diabledOrAccess {
+  -webkit-filter: grayscale(100%);
+  -moz-filter: grayscale(100%);
+  -ms-filter: grayscale(100%);
+  -o-filter: grayscale(100%);
+  filter: grayscale(100%);
+  filter: gray;
+}
 .sysContent{
   color: white;
   min-height: 600px;
@@ -208,10 +195,10 @@ export default {
           margin: 15px;
           // border: 1px solid #000;
             .moduleDataTitleBg{
-              background-image: url("../../../../assets/images/page-design/Report/icon-keySys.png");
-              background-position: 10px top;
-              background-repeat: no-repeat;
-              background-size: auto 20px;
+               background-image: url("../../../../assets/images/page-design/Report/icon-keySys.png");
+                background-position: 10px top;
+                background-repeat: no-repeat;
+                background-size: auto 20px;
                 .moduleDataTitle {
                   color: #FFFFFF;
                   margin-left: 35px;
@@ -231,24 +218,25 @@ export default {
               display: flex;
               justify-content:center;
               align-items:center;
-              .downItem{            
+              .downItem{
                 cursor:pointer;
                 &.userFrom{
                   width: 110px;
                   height: 110px;
                   border-radius: 50%;
                   // border: 1px solid #000;
-                  .oneOrderBgIcon {
+
+                  .sysUseroneOrderBgIcon {
                     background-image: url("../../../../assets/images/page-design/Report/icon-UserSys.png");
                     background-position: center 35%;
                     background-repeat: no-repeat;
                     // background-size: auto 50px;
                     width: 100%;
                     height: 100%;
-                    .oneOrderTitle {
+                  }
+                  .sysUseroneOrderTitle {
                       padding-top: 110px;
                       padding-left: 40px;
-                    }
                   }
                 }
                 &.resources{
@@ -263,17 +251,17 @@ export default {
                     // background-size: auto 50px;
                     width: 100%;
                     height: 100%;
+                  }
                     .oneOrderTitle {
                       padding-top: 110px;
                       padding-left: 20px;
                     }
-                  }
                 }
               }
             .centerBoxItem-ArrowItem {
               // display: flex;
               height: 16px;
-              width: 30%;
+              width: 27%;
               // margin: 10px;
               background-image: url("../../../../assets/images/page-design/Report/icon-toparrow.png");
               background-position: left top;
@@ -299,7 +287,7 @@ export default {
               background-position: left top;
               background-repeat: no-repeat;
               // background-size: auto 16px;
-              
+
             }
             .centerBoxItem-right{
               height: 160px;
@@ -308,7 +296,7 @@ export default {
               background-position: right top;
               background-repeat: no-repeat;
               // background-size: auto 16px;
-             
+
             }
           }
           .bottomdata{
@@ -350,10 +338,7 @@ export default {
             margin: 15px;
             // border: 1px solid #000;
               .moduleDataTitleBg{
-                // background-image: url("../../../../assets/images/page-design/Report/icon-keySys.png");
-                // background-position: 10px top;
-                // background-repeat: no-repeat;
-                // background-size: auto 20px;
+
                   .moduleDataTitle {
                     color: #FFFFFF;
                     margin-left: 35px;
@@ -401,7 +386,6 @@ export default {
               background: #3E3692;
               border-radius: 5px;
               .downItem{
-                cursor:pointer;
                 width: 100%;
                 height: 135px;
                 border-radius: 50%;
@@ -453,5 +437,8 @@ export default {
         }
       }
     }
+}
+.clickstyle{
+  cursor:pointer;
 }
 </style>

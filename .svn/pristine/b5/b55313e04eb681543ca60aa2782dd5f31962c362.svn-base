@@ -1,0 +1,265 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-car"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="80%"
+      :loading="!isLoaddingDone"
+      @on-ok="formDataSubmit()"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-message="true"
+        :model="formDataInfo"
+        :rules="ruleValidate"
+        :label-width="100"
+      >
+        <div class="FormDivBox">
+          <div class="FormDivItem">
+            <FormItem label="车牌号" prop="carNo">
+              <referenceField
+                ref="firstFocusInput"
+                v-model="formDataInfo.carNo"
+                maxlength="20"
+                placeholder="车牌号"
+                :form-name="frommastername"
+                :id="formDataInfo.id"
+                :disabled="detailDisabled"
+              ></referenceField>
+            </FormItem>
+          </div>
+          <div class="FormDivItem">
+            <FormItem label="车主" prop="owner">
+              <Input
+                :disabled="detailDisabled"
+                v-model="formDataInfo.owner"
+                maxlength="20"
+                placeholder="车主"
+              ></Input>
+            </FormItem>
+          </div>
+          <div class="FormDivItem">
+            <FormItem label="车主电话" prop="ownerTel">
+              <Input
+                :disabled="detailDisabled"
+                v-model="formDataInfo.ownerTel"
+                maxlength="20"
+                placeholder="车主电话"
+              ></Input>
+            </FormItem>
+          </div>
+          <div class="FormDivItem">
+            <FormItem label="司机" prop="driverCode">
+              <popup
+                v-model="formDataInfo.driverCode"
+                field-name="driverCode"
+                :disabled="detailDisabled"
+                popup-name="WorkerSingleBox"
+                :fill-model.sync="formDataInfo"
+                render-fields="driverId,driverCode,driverName,driverTel"
+                from-fields="id,workCode,workName,mob"
+                :suffix="true"
+                :suffix-model="formDataInfo.driverName"
+                :query-params="{ workOptType: 6 }"
+              />
+            </FormItem>
+          </div>
+          <div class="FormDivItem subItemBox">
+            <div class="subItemBoxItem">
+              <FormItem label="面积" prop="carArea">
+                <InputNumber
+                  :disabled="detailDisabled"
+                  Number
+                  v-model="formDataInfo.carArea"
+                  :formatter="
+                    value => ` ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                  "
+                  :parser="value => value.replace(/\$\s?|(,*)/g, '')"
+                  style="width:100%"
+                  maxlength="20"
+                  placeholder="请输入面积"
+                ></InputNumber>
+              </FormItem>
+            </div>
+            <div class="subItemBoxItem">
+              <FormItem label="体积" prop="carCube">
+                <InputNumber
+                  :disabled="detailDisabled"
+                  Number
+                  v-model="formDataInfo.carCube"
+                  :formatter="
+                    value => ` ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                  "
+                  :parser="value => value.replace(/\$\s?|(,*)/g, '')"
+                  style="width:100%"
+                  maxlength="20"
+                  placeholder="请输入体积"
+                ></InputNumber>
+              </FormItem>
+            </div>
+          </div>
+          <div class="FormDivItem">
+            <FormItem label="司机电话" prop="driverTel">
+              <Input
+                :disabled="detailDisabled"
+                v-model="formDataInfo.driverTel"
+                maxlength="20"
+                placeholder="司机电话"
+              ></Input>
+            </FormItem>
+          </div>
+          <div class="FormDivItem">
+            <FormItem label="备注" prop="remark">
+              <Input
+                :disabled="detailDisabled"
+                v-model="formDataInfo.remark"
+                maxlength="100"
+                placeholder="请输入备注..."
+              ></Input>
+            </FormItem>
+          </div>
+          <div class="FormDivItem">
+            <FormItem label="外车" prop="outSide">
+              <Checkbox
+                :disabled="detailDisabled"
+                v-model="formDataInfo.outSide"
+                maxlength="20"
+                placeholder
+              ></Checkbox>
+            </FormItem>
+          </div>
+        </div>
+      </Form>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:07:54
+ */
+const default_formDataInfo = {
+  driverTel: "",
+  driverName: "",
+  driverId: "",
+  carNo: "",
+  driverCode: "",
+  driverTel: "",
+  owner: "",
+  carArea: 0,
+  carCube: 0,
+  ownerTel: "",
+  remark: "",
+  outSide: false
+};
+import popup from "@/components/popup/popup";
+import referenceField from "@/components/referenceField/referenceField";
+import editBaseMixins from "../../mixins/edit";
+import { customValidator, uniqueValidator } from "@/libs/validator";
+export default {
+  name: "edit-car",
+  mixins: [editBaseMixins],
+  components: { referenceField, popup },
+  data() {
+    return {
+      frommastername: "carFm",
+      actionSubtitle: "车辆信息", // 当前操作副标题
+      requestBaseUrl: "/bas/car", // 请求 查询 操作的基础路径
+      formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+
+      ruleValidate: {
+        carNo: [
+          { required: true, message: "车牌号不能为空", trigger: "blur" },
+          {
+            validator: uniqueValidator,
+            trigger: "blur",
+            fieldDesc: "车牌号",
+            params: {
+              fieldName: "carNo",
+              formName: "carFm",
+              id: () => {
+                return this.formDataInfo.id;
+              }
+            }
+          }
+        ],
+        carCube: [
+          {
+            validator: customValidator,
+            trigger: "blur",
+            customRule: ["mustDouble"],
+            fieldDesc: "体积"
+          }
+        ],
+        carArea: [
+          {
+            validator: customValidator,
+            trigger: "blur",
+            customRule: ["mustDouble"],
+            fieldDesc: "面积"
+          }
+        ],
+        driverTel: [
+          { required: true, message: "司机电话不能为空", trigger: "blur" }
+        ],
+        owner: [
+          { required: true, message: "车主不能为空", trigger: "blur" },
+          {
+            validator: customValidator,
+            trigger: "blur",
+            customRule: ["spaceStr"],
+            fieldDesc: "车主"
+          }
+        ],
+
+        ownerTel: [
+          { required: true, message: "车主电话不能为空", trigger: "blur" },
+          {
+            validator: customValidator,
+            trigger: "blur",
+            customRule: ["phone", "spaceStr"],
+            fieldDesc: "车主电话"
+          }
+        ]
+      }
+    };
+  },
+
+  methods: {
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo() {
+      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    }
+  }
+};
+</script>
+
+<style lang="scss">
+.FormDivBox {
+  display: flex;
+  flex-wrap: wrap;
+  .FormDivItem {
+    width: 50%;
+    &.subItemBox{
+       display: flex;
+       flex-wrap: wrap;
+       .subItemBoxItem{
+           width: 50%;
+       }
+    }
+  }
+}
+</style>

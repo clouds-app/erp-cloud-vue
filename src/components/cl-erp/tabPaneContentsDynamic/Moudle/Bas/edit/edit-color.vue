@@ -16,17 +16,15 @@
         :rules="ruleValidate"
         :label-width="100"
       >
-        <FormItem label="颜色编号" prop="colorCode"> 
+        <FormItem label="颜色编号" prop="colorCode">
            <Input  v-model="formDataInfo.colorCode"
            :disabled="detailDisabled"
+            ref='firstFocusInput'
                 maxlength="20"
                 placeholder="请输入颜色编号">
                 <ColorPicker slot="prepend" style="minWidth: 40px" v-model="formDataInfo.colorCode" recommend  maxlength="20" />
           </Input>
 
-           
-           
-        
         </FormItem>
         <FormItem label="颜色名称" prop="colorName">
           <Input
@@ -67,10 +65,10 @@
                  <Option value="0">
                     0、水墨
                  </Option>
-                 <Option value="1"> 
+                 <Option value="1">
                     1、油墨
                  </Option>
-                 
+
                  </Select> -->
         </FormItem>
 
@@ -105,65 +103,65 @@
  */
 import optionSearch from '../../components/optionSearch'
 import referenceField from '@/components/referenceField/referenceField'
-import editBaseMixins from "../../mixins/edit";
-import { customValidator } from "@/libs/validator";
-const default_formDataInfo ={
-        colorCode: "",
-        colorName: "",
-        colorValue:0,
-        colorBurden:"",
-        colorType:0,
-        remark: ""
-      }
+import editBaseMixins from '../../mixins/edit'
+import { customValidator } from '@/libs/validator'
+const default_formDataInfo = {
+  colorCode: '',
+  colorName: '',
+  colorValue: 0,
+  colorBurden: '',
+  colorType: 0,
+  remark: ''
+}
 export default {
-  name: "edit-color",
+  name: 'edit-color',
   mixins: [editBaseMixins],
-  components:{optionSearch,referenceField},
-  data() {
+  components: { optionSearch, referenceField },
+  data () {
     return {
-      frommastername:'colorFm',
-      actionSubtitle:'颜色信息', // 当前操作副标题
-      requestBaseUrl: "/bas/color", // 请求 查询 操作的基础路径
-      formDataInfo:Object.assign({},default_formDataInfo),// 防止添加和更新数据提交发生冲突
+      frommastername: 'colorFm',
+      actionSubtitle: '颜色信息', // 当前操作副标题
+      requestBaseUrl: '/bas/color', // 请求 查询 操作的基础路径
+      formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
         colorCode: [
-          { required: true, message: "颜色编号不能为空", trigger: "blur" },
-                    {validator:customValidator,
-                     trigger:"change",
-                      customRule:["identifier"],
-                      fieldDesc:"颜色编号"}
+          { required: true, message: '颜色编号不能为空', trigger: 'blur' },
+          { validator: customValidator,
+            trigger: 'change',
+            customRule: ['identifier'],
+            fieldDesc: '颜色编号' }
 
-                    ],
-        colorName: [{ required: true, message: "颜色名称不能为空", trigger: "blur" },
-                    {validator:customValidator,
-                      trigger:"blur",
-                      customRule:["toCDB"],
-                      fieldDesc:"颜色名称"},
-                      {
-                        pattern: /[^,]/g,
-                        trigger: "blur",
-                        message: "不能输入特殊字符"
-                      }
-                    ],
+        ],
+        colorName: [{ required: true, message: '颜色名称不能为空', trigger: 'blur' },
+          { validator: customValidator,
+            trigger: 'blur',
+            customRule: ['toCDB'],
+            fieldDesc: '颜色名称' },
+          {
+            pattern: /[^,]/g,
+            trigger: 'blur',
+            message: '不能输入特殊字符'
+          }
+        ],
         colorValue: [
-                      {validator:customValidator,
-                      trigger:"blur",
-                      customRule:["mustDouble"],
-                      fieldDesc:"值 "} 
-                    ],
-         
+          { validator: customValidator,
+            trigger: 'blur',
+            customRule: ['mustDouble'],
+            fieldDesc: '值 ' }
+        ]
+
       }
-    };
+    }
   },
 
   methods: {
-      // 重写父类,添加时候,清空数据
-    HandleFormDataInfo(){
-     this.formDataInfo=Object.assign({},default_formDataInfo)
-    },
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo () {
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
+    }
   }
-};
+}
 </script>
 
 <style></style>

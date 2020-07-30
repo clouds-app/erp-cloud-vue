@@ -2,38 +2,38 @@
       <div class="mrpContent">
        <!-- <Row>
       <Col span="1">&nbsp;</Col>
-    
+
       <Col span="6" offset="1">
       <Card>
         <p slot="title">
         生产
       </p>
          <br/>
-       
+
         <p style="padding: 10px;">
           <Button @click="handleSubMenuEvent('boxprodplan','mrp-boxprodplan','纸箱生产排程')" type="info">纸箱生产排程</Button>
         </p>
-     
+
       </Card>
       </Col>
     </Row> -->
          <div class="mrpItem leftItem">
-          <div @click="handleSubMenuEvent('boxprodplan','mrp-boxprodplan','纸箱生产排程')" class="circleBallItem cartonScheduling cursorPointer ">
+          <div @click="handleSubMenuEvent('boxprodplan','mrp-boxprodplan','纸箱生产排程',secondenum.boxprodplan.val.disabled)" :class="[secondenum.boxprodplan.val.disabled?'diabledOrAccess':'']" class="circleBallItem cartonScheduling cursorPointer ">
             <div class="itemIcon">
               <div class="itemIconTitle">纸箱生产排程</div>
             </div>
           </div>
-           <div  class="circleBallItem productOutsourcing diabledOrAccess">
+           <div  class="circleBallItem productOutsourcing cursorPointer" :class="[secondenum.prosendout.val.disabled?'diabledOrAccess':'']" @click="handleSubMenuEvent('prosendout','mrp-prosendout','产品外发',secondenum.prosendout.val.disabled)">
             <div class="itemIcon">
               <div class="itemIconTitle">产品外发</div>
             </div>
           </div>
-           <div  class="circleBallItem processOutsourcing diabledOrAccess">
+           <div  class="circleBallItem processOutsourcing cursorPointer" :class="[secondenum.procedureout.val.disabled?'diabledOrAccess':'']" @click="handleSubMenuEvent('procedureout','mrp-procedureout','工序外发',secondenum.prosendout.val.disabled)">
             <div class="itemIcon">
               <div class="itemIconTitle">工序外发</div>
             </div>
           </div>
-   
+
     </div>
     <div class="mrpItem rightItem">
          <div class="leftContentItem">
@@ -51,7 +51,18 @@
                 <div class="reportDataListBox cursorPointer">
                      <!-- <div @click="handleSubMenuEvent('purPaperPoAnalyz','purchase-purPaperPoAnalyz','纸板采购情况分析')" class="reportDataItem">纸板采购情况分析</div>
                     -->
-                </div>
+                    <div class="reportDataItem" style="color: #bdb7b7;"	>印唛使用查询</div>
+                    <div class="reportDataItem" style="color: #bdb7b7;"	>模切板使用查询</div>
+                    <div class="reportDataItem" style="color: #bdb7b7;"	>废品统计查询</div>
+                    <div class="reportDataItem" style="color: #bdb7b7;"	>纸箱排程明细查询</div>
+                    <div class="reportDataItem" style="color: #bdb7b7;"	>纸箱未排程分析</div>
+                    <div class="reportDataItem" style="color: #bdb7b7;"	>纸箱工序完工查询</div>
+                    <div class="reportDataItem" style="color: #bdb7b7;"	>纸箱工序排程查询</div>
+                    <div class="reportDataItem" style="color: #bdb7b7;"	>待排程及用纸分析</div>
+                    <div class="reportDataItem" style="color: #bdb7b7;"	>原纸销售查询</div>
+                    <div class="reportDataItem" style="color: #bdb7b7;"	>原纸报损查询</div>
+                    <div class="reportDataItem" style="color: #bdb7b7;"	>原纸调拨查询</div>
+              </div>
            </div>
          </div>
     </div>
@@ -59,28 +70,35 @@
 </template>
 
 <script>
-  import globleMixin from '@/mixins'
-  export default {
-    mixins: [globleMixin],
-    data() {
-      return {
+import globleMixin from '@/mixins'
+export default {
+  mixins: [globleMixin],
+  data () {
+    return {
 
+    }
+  },
+  computed: {
+    secondenum () {
+      let dataList = this.$store.state.app.Secondaryauthority.Mrp
+      console.log(dataList)
+      return dataList
+    }
+  },
+  methods: {
+    // 子页面 参数: 页面.vue,唯一区别ID,TAB 标签显示名称
+    handleSubMenuEvent (currentPage, uniqueKey, tabName) {
+      let params = {
+        menuName: 'Mrp',
+        page: currentPage, // 显示控件页面
+        uniqueKey: uniqueKey,
+        lable: tabName,
+        isActive: true
       }
-    },
-    methods: {
-      // 子页面 参数: 页面.vue,唯一区别ID,TAB 标签显示名称
-      handleSubMenuEvent(currentPage, uniqueKey, tabName) {
-         let params = {
-              menuName: 'Mrp',
-              page: currentPage, //显示控件页面
-              uniqueKey: uniqueKey,
-              lable: tabName,
-              isActive: true
-            };
       this.handleMenuBaseEvent(params) // 调用MIXIN 共用方法
-      }
     }
   }
+}
 </script>
 
 <style lang="scss">

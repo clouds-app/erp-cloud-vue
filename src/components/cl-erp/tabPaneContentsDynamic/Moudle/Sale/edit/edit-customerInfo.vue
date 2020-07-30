@@ -31,7 +31,7 @@
                     :id="formDataInfo.master.id"
                   ></referenceField>
                 </FormItem></Col>
-              
+
               <Col span="6"> <FormItem label="客户名称" prop="cusName">
                   <Input
                     @on-change="getrememberCode"
@@ -71,15 +71,15 @@
                 </FormItem>
           </Col>
             <!-- areaIdsStr -->
-          <Col span="6" > <FormItem label="所属地区" prop="areaIdsList">
+          <Col span="6" > <FormItem label="所属地区" prop="areaIds">
                   <Cascader
                     style="padding-top: 5px;"
                     :data="cityCascader"
                     :load-data="getCityCascader"
                     :disabled="detailDisabled"
-                    Array
-                    type="array"
-                    v-model="formDataInfo.master.areaIdsList"
+                    :transfer='true'
+                    @on-change="getmasterareaIds"
+                    v-model="masterareaIds"
                     maxlength="20"
                     placeholder="请输入所属地区"
                   ></Cascader>
@@ -103,7 +103,7 @@
                       ></Input>
                     </FormItem>
           </Col>
-          <Col span="24"> 
+          <Col span="24">
             <Row>
               <Col span="6"><FormItem label="业务类型" prop="ctType">
                   <optionSearch
@@ -128,7 +128,7 @@
                     </FormItem>
                   </FormItem>
               </Col>
-              <Col span="6"> 
+              <Col span="6">
                   <FormItem label="客户等级" prop="ctLevel">
                     <optionSearch
                           @onChange="optionOnChangeBy"
@@ -152,7 +152,7 @@
                 </Col>
             </Row>
           </Col>
-          <Col span="6"> 
+          <Col span="6">
             <FormItem label="开单单位" prop="bpUnit">
               <optionSearch
                 @onChange="optionOnChangeBy"
@@ -247,7 +247,7 @@
             <Row>
                 <Col span="6"><FormItem label="税别" prop="taxTP">
                   <optionSearch
-                        @onChange="optionOnChangeBy"  
+                        @onChange="optionOnChangeBy"
                         :disabled="detailDisabled"
                         :default-item="formDataInfo.master.taxTP"
                         :loaddingDataWhen="showWindow"
@@ -277,6 +277,7 @@
                     from-fields="id,payCode,payName,payDays"
                     :suffix="true"
                     :suffix-model="formDataInfo.master.payName"
+                    suffixModelName="payName"
                     :query-params="{}"
                   ></popup>
                 </FormItem></Col>
@@ -308,7 +309,7 @@
                   ></Input>
                 </FormItem>
           </Col>
-          <Col span="6"> 
+          <Col span="6">
             <FormItem label="跟单员" prop="followerCode">
                   <popup
                     v-model="formDataInfo.master.followerCode"
@@ -322,7 +323,7 @@
                     :suffix-model="formDataInfo.master.followerName"
                     :query-params="{workOptType:1}"
                   ></popup>
-                </FormItem>      
+                </FormItem>
           </Col>
           <Col span="6"> <FormItem label="业务员" prop="salerCode">
                <popup
@@ -345,7 +346,7 @@
                  <Checkbox v-model="formDataInfo.master.printWeight" :disabled="detailDisabled" maxlength="20" placeholder></Checkbox>
               </Input>
             </FormItem></Col>
-              <Col span="8">  
+              <Col span="8">
               <FormItem label="送货单分PO" prop="poGroup">
                   <Checkbox v-model="formDataInfo.master.poGroup" :disabled="detailDisabled" maxlength="20" placeholder></Checkbox>
                 </FormItem></Col>
@@ -365,7 +366,7 @@
                   </FormItem>
                </Col>
                <!-- 附件 -->
-            <Col span="8"> 
+            <Col span="8">
                 <FormItem label="附件" prop="attachment">
                     <Upload action="//jsonplaceholder.typicode.com/posts/">
                         <Button icon="ios-cloud-upload-outline" :disabled="detailDisabled">附件</Button>
@@ -374,7 +375,7 @@
               </Col>
             </Row>
           </Col>
-          <Col span="6">     
+          <Col span="6">
                 <FormItem label="接单控制" prop="orderControl">
                   <optionSearch
                       @onChange="optionOnChangeBy"
@@ -464,27 +465,12 @@
                     <span class="">备注</span>
                   </div>
                 </th>
-               
-                
-                
               </tr>
             </template>
             <template
               slot="body"
               slot-scope="{ row, index, valueChangeAssign }"
               >
-              <!-- 职位 -->
-              <!-- <td class="ivu-table-column-left" width="100">
-                  <optionSearch
-                      @onChange="item => { valueChangeAssign(item.value, index, row, 'postType')}"
-                      :disabled="detailDisabled"
-                      :defaultItem.sync="formDataInfo.contactSlaveFormDataDTO.postType"
-                      :loaddingDataWhen="showWindow"
-                      formKey="postType"
-                      query="postType"
-                      -
-                  />
-              </td> -->
                <!-- 职位 -->
               <td class="ivu-table-column-left" width="100">
                   <Select v-model="row.postType" :transfer='true'>
@@ -510,14 +496,6 @@
                   <Select v-model="row.sex" :transfer='true'>
                     <Option v-for="item in sexList" :value="item.value" :key="item.value">{{ item.name }}</Option>
                   </Select>
-               <!-- <optionSearch
-                      @onChange="item => { valueChangeAssign(item.value, index, row, 'sex')}"
-                      :defaultItem.sync="row.sex"
-                      :disabled="detailDisabled"
-                      :loaddingDataWhen="showWindow"
-                      formKey="sex"
-                      query="sex"
-                  /> -->
               </td>
               <!-- 联系电话 -->
               <td class="ivu-table-column-left" width="100">
@@ -562,7 +540,6 @@
                   :maxlength="20"
                 ></Input>
               </td>
-
               <!-- 联系qq -->
               <td class="ivu-table-column-left" width="100">
                 <Input
@@ -577,7 +554,7 @@
                   :maxlength="20"
                 ></Input>
               </td>
-                      
+
               <td class="ivu-table-column-left" width="100">
                 <Input
                   v-model="row.remark"
@@ -594,7 +571,6 @@
             </template>
           </eTable>
         </TabPane>
-          
         <TabPane label="附加地址列表" name="addrList">
             <eTable
               ref="tableFields"
@@ -605,6 +581,7 @@
               :row-init-data="initData.initData.customerAddrFm"
               :data="formDataInfo.addrSlaveFormDataDTO.defaultList"
               :rules="tableFieldsValidator"
+              @row-click="rowClick"
               :showContextMenu='!detailDisabled'
             >
             <template slot="head">
@@ -613,7 +590,7 @@
                 :key="index"
               >
                 <th
-                  class="ivu-table-column-left"
+                  :class="`ivu-table-column-${column.titleAlign}`"
                   v-for="(column,index2) in columnGroup"
                   :key="index2"
                   :width="column.editWidth"
@@ -629,23 +606,24 @@
             </template>
             <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
               <td
-                class="ivu-table-column-left"
+                :class="`ivu-table-column-${column.align}`"
                 v-for="(column,columnIndex) in initData.columns.customerAddrFm.editColumns"
                 :key="columnIndex"
                 :width="column.editWidth"
                 @contextmenu.prevent="show(index)"
               >
              <!-- 控件特殊处理 所属地区 -->
-                  <Cascader 
-                    v-if="column.key == 'areaIdsStr'"
+                  <Cascader
+                    v-if="column.key == 'areaNames'"
+                    v-model="row['areaIds']"
                     :data="cityCascader"
                     :load-data="getCityCascader"
+                    @on-change="getsubareaIds"
                     :disabled="detailDisabled"
                     :transfer='true'
-                    v-model="row.areaIdsList"
                     @input="
                       value => {
-                        valueChangeAssign(value, index, row, 'areaIdsList');
+                        valueChangeAssign(value, index, row, 'areaIds');
                       }
                     "
                     size="small"
@@ -682,104 +660,105 @@
  *
  * @created 2019/11/20 17:07:54
  */
-import formControl from "@/components/form-control/form-control";
-import editWindow from "@/components/edit-window/edit-window";
+import formControl from '@/components/form-control/form-control'
+import editWindow from '@/components/edit-window/edit-window'
 import referenceField from '@/components/referenceField/referenceField'
 // import Form from '@/components/form/form'
-import eTable from "@/components/e-table/e-table";
-import request from "@/libs/request";
-import editBaseMixins from "../../mixins/edit";
-import popup from "@/components/popup/popup";
-import optionSearch from "../../components/optionSearch";
-import dayjs from "dayjs";
+import eTable from '@/components/e-table/e-table'
+import request from '@/libs/request'
+import editBaseMixins from '../../mixins/edit'
+import popup from '@/components/popup/popup'
+import optionSearch from '../../components/optionSearch'
+import { deepCopy } from 'view-design/src/utils/assist'
+import dayjs from 'dayjs'
 const default_formDataInfo = {
-        // 主表 更改字段
-        master: {
-            addrDetail: "",
-            amtDot: 2,
-            amtType:'0',
-            amtTypeText: "",
-            areaIdsList:[],
-            areaIds: "",
-            arpType: '0',
-            attachment: "",
-            auditTime: "",
-            auditUser: "",
-            backName: "",
-            bankNo: "",
-            bpIsDiameter: false,
-            bpUnit: '0',
-            monthEnd: '31',
-            bpUnitText: "",
-            coinCode: "",
-            coinId:"" ,
-            coinName: "",
-            createTime: "",
-            createUser: "",
-            ctDot:2 ,
-            ctLevel: 'A',
-            ctLevelText: "",
-            ctType: "0",
-            ctTypeText: "",
-            cusCode: "",
-            cusName: "",
-            discount: "100",
-            enName: "",
-            factName: "",
-            followerCode: "",
-            followerId: "",
-            followerName: "",
-            iisAudit: "",
-            lastOrderDate:null,
-            monthDays:0,
-            orderControl: '0',
-            orderControlText: "",
-            payCode: "",
-            payId: "",
-            payName: "",
-            poGroup: false,
-            pointj: "",
-            pointw: "",
-            priceType: '0',
-            priceTypeText: "",
-            printPrice: true,
-            printWeight: false,
-            remark: "",
-            rememberCode: "",
-            salerCode: "",
-            salerId: "",
-            salerName: "",
-            shortName: "",
-            signBack: false,
-            status: "",
-            taxRate:0,
-            taxTP: 'I',
-            taxTPText: "",
-            trade: '0',
-            tradeText: "",
-            updateTime: "",
-            updateUser: ""
+  // 主表 更改字段
+  master: {
+    addrDetail: '',
+    amtDot: 2,
+    amtType: '0',
+    amtTypeText: '',
+    areaNames: '',
+    areaIds: '',
+    arpType: '0',
+    attachment: '',
+    auditTime: '',
+    auditUser: '',
+    backName: '',
+    bankNo: '',
+    bpIsDiameter: false,
+    bpUnit: '0',
+    monthEnd: '31',
+    bpUnitText: '',
+    coinCode: '',
+    coinId: '',
+    coinName: '',
+    createTime: '',
+    createUser: '',
+    ctDot: 2,
+    ctLevel: 'A',
+    ctLevelText: '',
+    ctType: '0',
+    ctTypeText: '',
+    cusCode: '',
+    cusName: '',
+    discount: '100',
+    enName: '',
+    factName: '',
+    followerCode: '',
+    followerId: '',
+    followerName: '',
+    iisAudit: '',
+    lastOrderDate: null,
+    monthDays: 0,
+    orderControl: '0',
+    orderControlText: '',
+    payCode: '',
+    payId: '',
+    payName: '',
+    poGroup: false,
+    pointj: '',
+    pointw: '',
+    priceType: '0',
+    priceTypeText: '',
+    printPrice: true,
+    printWeight: false,
+    remark: '',
+    rememberCode: '',
+    salerCode: '',
+    salerId: '',
+    salerName: '',
+    shortName: '',
+    signBack: false,
+    status: '',
+    taxRate: 0,
+    taxTP: 'I',
+    taxTPText: '',
+    trade: '0',
+    tradeText: '',
+    updateTime: '',
+    updateUser: ''
 
-            // updateTime: "",
-            // updateUser: ""
-        },
-        // 子表 附加地址列表
-        addrSlaveFormDataDTO: {
-          addList: [], // 添加列
-          defaultList: [], // 默认列
-          deleteList: [], // 删除列
-          updateList: [] // 更新列
-        },
-         // 子表 客户联系人列表
-        contactSlaveFormDataDTO: {
-          addList: [], // 添加列
-          defaultList: [], // 默认列
-          deleteList: [], // 删除列
-          updateList: [] // 更新列
-        },
-      }
+    // updateTime: "",
+    // updateUser: ""
+  },
+  // 子表 附加地址列表
+  addrSlaveFormDataDTO: {
+    addList: [], // 添加列
+    defaultList: [], // 默认列
+    deleteList: [], // 删除列
+    updateList: [] // 更新列
+  },
+  // 子表 客户联系人列表
+  contactSlaveFormDataDTO: {
+    addList: [], // 添加列
+    defaultList: [], // 默认列
+    deleteList: [], // 删除列
+    updateList: [] // 更新列
+  }
+}
 export default {
-  name: "edit-customerInfo",
+  name: 'edit-customerInfo',
   mixins: [editBaseMixins],
   components: {
     editWindow,
@@ -790,220 +769,250 @@ export default {
     eTable,
     referenceField
   },
-  data() {
+  data () {
     return {
-      frommastername:'customerFm',
-      actionSubtitle:'客户资料', // 当前操作副标题
-      formName:"customerFm",
-      currentSubItemlength_addr:0, // 当前子表数据个数
-      currentSubItemlength_contact:0, // 当前子表数据个数
-      requestBaseUrl: "/sale/customer", // 请求 查询 操作的基础路径
-      formDataInfo:Object.assign({},default_formDataInfo),// 防止添加和更新数据提交发生冲突
-      postTypeList: [],//职位数据列表
-      sexList:[],//性别数据列表
+      subindex: 1, // 子表点击行
+      masterareaIds: [], // 主表地区控件
+      frommastername: 'customerFm',
+      actionSubtitle: '客户资料', // 当前操作副标题
+      formName: 'customerFm',
+      currentSubItemlength_addr: 0, // 当前子表数据个数
+      currentSubItemlength_contact: 0, // 当前子表数据个数
+      requestBaseUrl: '/sale/customer', // 请求 查询 操作的基础路径
+      // formDataInfo:Object.assign({},default_formDataInfo),// 防止添加和更新数据提交发生冲突
+      formDataInfo: deepCopy(default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      postTypeList: [], // 职位数据列表
+      sexList: [], // 性别数据列表
       // 需要验证的数据
       ruleValidate: {
         cusCode: [
-          { required: true, message: "客户编号不能为空", trigger: "blur" }
+          { required: true, message: '客户编号不能为空', trigger: 'blur' }
         ],
         payName: [
-          { required: true, message: "付款方式不能为空", trigger: "blur" }
+          { required: true, message: '付款方式不能为空', trigger: 'blur' }
         ],
         cusName: [
-          { required: true, message: "客户不能为空", trigger: "blur" }
+          { required: true, message: '客户不能为空', trigger: 'blur' }
         ],
         coinCode: [
-          { required: true, message: "计算货币不能为空", trigger: "blur" }
+          { required: true, message: '计算货币不能为空', trigger: 'blur' }
         ],
         payCode: [
-          { required: true, message: "计算方式不能为空", trigger: "blur" }
+          { required: true, message: '计算方式不能为空', trigger: 'blur' }
         ],
-        areaIdsList: [
-          { required: true, message: "地区不能为空", trigger: "blur", type: "array"}
-        ],
+        areaIds: [
+          { required: true, message: '地区不能为空', trigger: 'blur,change' } //, type:'array'
+        ]
       },
       tableFieldsValidator: {
 
       },
       tableFieldsValidator_cuslist: {
-        
+
       },
-      cityCascader:[],
-      cityCascaderCount:0,
-    };
+      cityCascader: [],
+      cityCascaderCount: 0
+    }
   },
   watch: {
-        // showWindow:function(n,o){
-        //   if(n){
-        //     let _self = this
-        //     this.$nextTick(()=>{
-        //       _self.setMasterDefaultData()
-        //     })
-        //   }
-        // },
+    'formDataInfo.addrSlaveFormDataDTO.defaultList' (n, o) {
+      if (this.action !== 'add') {
+        this.switchareaIds()
+      }
+    }
   },
   methods: {
+    // 关闭窗口时触发
+    closeActionTigger () {
+      debugger
+      this.masterareaIds = []
+    },
+    // 提交转换地区控件id
+    restswitchareaIds () {
+      debugger
+      // this.formDataInfo.master.areaIds = this.formDataInfo.master.areaIds.map(val => val).join(',');
+      this.$refs['tableFields'].get().filter((item, index) => {
+        if (item.areaIds) {
+          this.$refs['tableFields'].set({ areaIds: item.areaIds.map(val => val).join(',') }, index)
+        }
+      })
+    },
+    // 转换地区控件id
+    switchareaIds () {
+      debugger
+      let subareaIds = ''
+      if (this.masterareaIds.length == 0) {
+        this.masterareaIds = this.formDataInfo.master.areaIds.split(',')
+      }
+      this.formDataInfo.addrSlaveFormDataDTO.defaultList.filter((item, index) => {
+        debugger
+        if (typeof item.areaIds === 'string' && !!item.areaIds) {
+          item.areaIds = item.areaIds.split(',')
+        }
+        // this.$refs['tableFields'].set({areaIds:item.areaIds },index)
+      })
+    },
+    // 子表所属地区回调事件
+    getsubareaIds (value, selectedData) {
+      // this.$refs['tableFields'].set({areaIds:value.map(val => val).join(',')},this.subindex)
+      this.$refs['tableFields'].set({ areaNames: selectedData.map(o => o.label).join(',') }, this.subindex)
+    },
+    rowClick (index, data) {
+      this.subindex = index
+    },
+    // 主表所属地区回调事件
+    getmasterareaIds (value, selectedData) {
+      this.masterareaIds = value
+      this.formDataInfo.master.areaIds = value.map(val => val).join(',')
+      this.formDataInfo.master.areaNames = selectedData.map(o => o.label).join(',')
+    },
     // 获取性别列表
-    getsexList(){
+    getsexList () {
       let resData
-      this.getDataFromDictionaryBy('sex').then(res=>{
-          resData=res.map(item=>{
-						let formatData = {
-							value:item.dicValue,
-							name:item.dicLabel
-						}
-						return formatData
-          })
+      this.getDataFromDictionaryBy('sex').then(res => {
+        resData = res.map(item => {
+          let formatData = {
+            value: item.dicValue,
+            name: item.dicLabel
+          }
+          return formatData
+        })
         this.sexList = resData
       })
     },
-    // 获取职位数据列表 
-    getpostTypeList(){
+    // 获取职位数据列表
+    getpostTypeList () {
       let resData
-      this.getDataFromDictionaryBy('postType').then(res=>{
-          resData=res.map(item=>{
-						let formatData = {
-							value:item.dicValue,
-							name:item.dicLabel
-						}
-						return formatData
-          })
+      this.getDataFromDictionaryBy('postType').then(res => {
+        resData = res.map(item => {
+          let formatData = {
+            value: item.dicValue,
+            name: item.dicLabel
+          }
+          return formatData
+        })
         this.postTypeList = resData
       })
     },
-    getrememberCode(data){
-      //debugger
-      request.post('/sale/customer/rememberCode',{str:this.formDataInfo.master.cusName}).then(res=>{
-        
-        this.formDataInfo.master.rememberCode = res.replace('STR','');
+    getrememberCode (data) {
+      // debugger
+      request.post('/sale/customer/rememberCode', { str: this.formDataInfo.master.cusName }).then(res => {
+        this.formDataInfo.master.rememberCode = res.replace('STR', '')
       })
     },
-    getCityCascader(item,callback){
-      item.loading = true;
-      request.post('/bas/area/list',{pid:item.value,name:item.label},{pid:item.value,name:item.label}).then(res=>{
+    getCityCascader (item, callback) {
+      item.loading = true
+      request.post('/bas/area/list', { pid: item.value, name: item.label }, { pid: item.value, name: item.label }).then(res => {
         // this.cityCascaderCount++;
         // console.log(this.cityCascaderCount)
-        if(res != null){
-           //////debugger;
-              res.forEach(item=>{
-                    item['children'] = [];
-              })
-            delete item.loading;
-           item.children = res;
-         }
-         item.loading = false;
-        callback();
+        if (res != null) {
+          /// ///debugger;
+          res.forEach(item => {
+            item['children'] = []
+          })
+          delete item.loading
+          item.children = res
+        }
+        item.loading = false
+        callback()
       })
     },
-     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo(){
-    //debugger
-     this.formDataInfo=Object.assign({},default_formDataInfo)
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo () {
+    // debugger
+      this.formDataInfo = deepCopy(default_formDataInfo)
     },
     // 判断 客户联系人列表 是否添加了数据
-    getCurrentSubItemlength_addr(){
-      let tableData = this.$refs["tableFields"].getCategorizeData();
-      this.currentSubItemlength_addr=0
+    getCurrentSubItemlength_addr () {
+      let tableData = this.$refs['tableFields'].getCategorizeData()
+      this.currentSubItemlength_addr = 0
       // 判断当前字表 添加/更新的 数据个数
-      if(this.action==='add'){
-        if(tableData.addList.length>0){
-           this.currentSubItemlength_addr= Object.keys(tableData.addList[0]).length
+      if (this.action === 'add') {
+        if (tableData.addList.length > 0) {
+          this.currentSubItemlength_addr = Object.keys(tableData.addList[0]).length
         }
-      }else{
-        if(tableData.updateList.length>0){
-           this.currentSubItemlength_addr= Object.keys(tableData.updateList[0]).length
+      } else {
+        if (tableData.updateList.length > 0) {
+          this.currentSubItemlength_addr = Object.keys(tableData.updateList[0]).length
         }
-        if(tableData.addList.length>0){
-           this.currentSubItemlength_addr= Object.keys(tableData.addList[0]).length
+        if (tableData.addList.length > 0) {
+          this.currentSubItemlength_addr = Object.keys(tableData.addList[0]).length
         }
-       
       }
       return this.currentSubItemlength_addr
     },
-     // 判断 附加地址列表 是否添加了数据
-    getCurrentSubItemlength_contact(){
-      let tableData2 = this.$refs["tableFields2"].getCategorizeData();
-      this.currentSubItemlength_contact=0
+    // 判断 附加地址列表 是否添加了数据
+    getCurrentSubItemlength_contact () {
+      let tableData2 = this.$refs['tableFields2'].getCategorizeData()
+      this.currentSubItemlength_contact = 0
       // 判断当前字表 添加/更新的 数据个数
-      if(this.action==='add'){  
-        if(tableData2.addList.length>0){
-            this.currentSubItemlength_contact= Object.keys(tableData2.addList[0]).length
+      if (this.action === 'add') {
+        if (tableData2.addList.length > 0) {
+          this.currentSubItemlength_contact = Object.keys(tableData2.addList[0]).length
         }
-      
-      }else{
-         if(tableData2.updateList.length>0){
-            this.currentSubItemlength_contact= Object.keys(tableData2.updateList[0]).length
-         }
-        if(tableData2.addList.length>0){
-            this.currentSubItemlength_contact= Object.keys(tableData2.addList[0]).length
+      } else {
+        if (tableData2.updateList.length > 0) {
+          this.currentSubItemlength_contact = Object.keys(tableData2.updateList[0]).length
+        }
+        if (tableData2.addList.length > 0) {
+          this.currentSubItemlength_contact = Object.keys(tableData2.addList[0]).length
         }
       }
-       return this.currentSubItemlength_contact
+      return this.currentSubItemlength_contact
     },
     // 重写父类,提交数据前 验证数据 ,默认TRUE
-    validateBeforePost() {
+    validateBeforePost () {
       // debugger
       this.getCurrentSubItemlength_addr()
       this.getCurrentSubItemlength_contact()
-      let flag =false
-      if(this.currentSubItemlength_addr>0){
-          // 子表有数据后才验证是否必填数据
-           let subValidate = this.$refs['tableFields'].validate();
-            if(subValidate===true){
-              flag= true;
-            }
+      let flag = false
+      if (this.currentSubItemlength_addr > 0) {
+        // 子表有数据后才验证是否必填数据
+        let subValidate = this.$refs['tableFields'].validate()
+        if (subValidate === true) {
+          flag = true
+        }
       }
       return flag
     },
-    // setTimeout(() => {
-      
-    // }, 1000);
-    // openActionTigger(){
-    //   debugger
-    //   this.formDataInfo.contactSlaveFormDataDTO.defaultList[0].postType = 0
-    // },
     // 重写父类,修改提交数据
-    resetformDataInfo(_data) {
+    resetformDataInfo (_data) {
       // 添加了数据才去获取数据
       // debugger
-      if(this.currentSubItemlength_addr>0){
-           let tableData = this.$refs["tableFields"].getCategorizeData();
-           this.formDataInfo.addrSlaveFormDataDTO = tableData;
+      this.restswitchareaIds()
+      if (this.currentSubItemlength_addr > 0) {
+        let tableData = this.$refs['tableFields'].getCategorizeData()
+        this.formDataInfo.addrSlaveFormDataDTO = tableData
       }
-      if(this.currentSubItemlength_contact>0){
-           let tableData2 = this.$refs["tableFields2"].getCategorizeData();
-           this.formDataInfo.contactSlaveFormDataDTO = tableData2;
+      if (this.currentSubItemlength_contact > 0) {
+        let tableData2 = this.$refs['tableFields2'].getCategorizeData()
+        this.formDataInfo.contactSlaveFormDataDTO = tableData2
       }
-       if (!!_data.master.lastOrderDate) {
+      if (_data.master.lastOrderDate) {
         _data.master.lastOrderDate = dayjs(_data.master.lastOrderDate).format(
-          "YYYY-MM-DD HH:mm:ss"
-        );
-       }  
-        // if (this.formDataInfo.master.areaIdsList.length===0) {
-        //   this.$Message.error('所属地区不能为空')
-        //   return
-        // }
-        let addrList = this.$refs['tableFields'].get()
-        for (let index = 0; index < addrList.length; index++) {
-          if (addrList[index].areaIdsList==="") {
-            addrList[index].areaIdsList=[]
-          }          
-        }
-      return this.formDataInfo;
+          'YYYY-MM-DD HH:mm:ss'
+        )
+      }
+      let addrList = this.$refs['tableFields'].get()
+      // for (let index = 0; index < addrList.length; index++) {
+      //   if (addrList[index].areaIdsList==="") {
+      //     addrList[index].areaIdsList=[]
+      //   }
+      // }
+      return this.formDataInfo
     }
-  },created(){
-    //this.getCityCascader('0');
-  //  debugger
-    request.post('/bas/area/list',{pid:0},{pid:0}).then(res=>{
-        res.forEach(item=>{
-              item['children'] = [];
-         })
-       this.cityCascader = res;
+  },
+  created () {
+    request.post('/bas/area/list', { pid: 0 }, { pid: 0 }).then(res => {
+      res.forEach(item => {
+        item['children'] = []
       })
-      this.getpostTypeList();
-      this.getsexList();
+      this.cityCascader = res
+    })
+    this.getpostTypeList()
+    this.getsexList()
   }
-};
+}
 </script>
 
 <style>

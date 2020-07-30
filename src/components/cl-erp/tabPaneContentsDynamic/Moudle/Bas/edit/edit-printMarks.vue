@@ -21,7 +21,7 @@
             <Row :gutter="18">
               <Col span="12">
                 <FormItem label="印唛编号" prop="pmNo">
-                  <referenceField v-model="formDataInfo.pmNo" :disabled="detailDisabled" maxlength="20" disabled placeholder="请输入印唛编号" :form-name="formmastername"
+                  <referenceField  ref='firstFocusInput' v-model="formDataInfo.pmNo" :disabled="detailDisabled" maxlength="20" disabled placeholder="请输入印唛编号" :form-name="formmastername"
             :id="formDataInfo.id"></referenceField>
                 </FormItem>
               </Col>
@@ -75,9 +75,7 @@
                 <Input
                   :disabled="detailDisabled"
                   v-model="formDataInfo.pmZMRemark1"
-                  type="textarea"
                   maxlength="255"
-                  :autosize="{ minRows: 2, maxRows: 5 }"
                   placeholder="请输入正唛(一)"
                 ></Input>
               </FormItem>
@@ -87,9 +85,7 @@
                 <Input
                   :disabled="detailDisabled"
                   v-model="formDataInfo.pmZMRemark2"
-                  type="textarea"
                   maxlength="255"
-                  :autosize="{ minRows: 2, maxRows: 5 }"
                   placeholder="请输入正唛(二)"
                 ></Input>
               </FormItem>
@@ -99,9 +95,7 @@
                 <Input
                   :disabled="detailDisabled"
                   v-model="formDataInfo.pmCMRemark1"
-                  type="textarea"
                   maxlength="255"
-                  :autosize="{ minRows: 2, maxRows: 5 }"
                   placeholder="请输入侧唛(一)"
                 ></Input>
               </FormItem>
@@ -111,9 +105,7 @@
                 <Input
                   :disabled="detailDisabled"
                   v-model="formDataInfo.pmCMRemark2"
-                  type="textarea"
                   maxlength="255"
-                  :autosize="{ minRows: 2, maxRows: 5 }"
                   placeholder="请输入侧唛(二)"
                 ></Input>
               </FormItem>
@@ -124,9 +116,7 @@
                 <Input
                   :disabled="detailDisabled"
                   v-model="formDataInfo.pmSYRemark1"
-                  type="textarea"
                   maxlength="255"
-                  :autosize="{ minRows: 2, maxRows: 5 }"
                   placeholder="请输入上摇(一)"
                 ></Input>
               </FormItem>
@@ -136,9 +126,7 @@
                 <Input
                   :disabled="detailDisabled"
                   v-model="formDataInfo.pmSYRemark2"
-                  type="textarea"
                   maxlength="255"
-                  :autosize="{ minRows: 2, maxRows: 5 }"
                   placeholder="请输入上摇(二)"
                 ></Input>
               </FormItem>
@@ -148,7 +136,6 @@
                 <Input
                   :disabled="detailDisabled"
                   v-model="formDataInfo.pmXYRemark1"
-                  type="textarea"
                   maxlength="20"
                   placeholder="请输入下摇(一)"
                 ></Input>
@@ -160,9 +147,7 @@
                 <Input
                   :disabled="detailDisabled"
                   v-model="formDataInfo.pmXYRemark2"
-                  type="textarea"
                   maxlength="255"
-                  :autosize="{ minRows: 2, maxRows: 5 }"
                   placeholder="请输入下摇(二)"
                 ></Input>
               </FormItem>
@@ -173,9 +158,7 @@
                 <Input
                   :disabled="detailDisabled"
                   v-model="formDataInfo.remark"
-                  type="textarea"
                   maxlength="100"
-                  :autosize="{ minRows: 2, maxRows: 5 }"
                   placeholder="请输入备注..."
                 ></Input>
               </FormItem>
@@ -188,6 +171,7 @@
               <uploadImg
                 moduleName="bas"
                 :imgUrl="formDataInfo.pmImg"
+                :disabled="detailDisabled"
                 @uploadSuccess="uploadSuccessHeads"
                 tipInfo="唛头图片路径"
               />
@@ -196,6 +180,7 @@
               <uploadImg
                 moduleName="bas"
                 :imgUrl="formDataInfo.pmImg2"
+                :disabled="detailDisabled"
                 @uploadSuccess="uploadSuccessTails"
                 tipInfo="侧唛图片路径"
               />
@@ -222,45 +207,45 @@
  * @created 2019/11/20 17:07:54
  */
 import referenceField from '@/components/referenceField/referenceField'
-import popup from "@/components/popup/popup";
-import uploadImg from "@/components/cl-erp/uploadImg";
-import dayjs from "dayjs";
-import editBaseMixins from "../../mixins/edit";
-import { customValidator, uniqueValidator } from "@/libs/validator";
+import popup from '@/components/popup/popup'
+import uploadImg from '@/components/cl-erp/uploadImg'
+import dayjs from 'dayjs'
+import editBaseMixins from '../../mixins/edit'
+import { customValidator, uniqueValidator } from '@/libs/validator'
 const default_formDataInfo = {
-  bpDPNo: "",
-  bpName: "", //产品名称
-  bpNo: "", //产品编号
-  bpPPNo: "",
+  bpDPNo: '',
+  bpName: '', // 产品名称
+  bpNo: '', // 产品编号
+  bpPPNo: '',
   // colorName: "",
-  cusName: "",
-  cusCode: "", // done
-  custId: "",
-  pmCMRemark1: "",
-  pmCMRemark2: "",
-  pmDocNo1: "",
-  pmDocNo2: "",
-  pmImg: "",
-  pmImg2: "",
-  pmNo: "",
-  pmSYRemark1: "",
-  pmSYRemark2: "",
-  pmXYRemark1: "",
-  pmXYRemark2: "",
-  pmZMRemark1: "",
-  pmZMRemark2: "",
-  productId: "",
-  remark: ""
-};
+  cusName: '',
+  cusCode: '', // done
+  custId: '',
+  pmCMRemark1: '',
+  pmCMRemark2: '',
+  pmDocNo1: '',
+  pmDocNo2: '',
+  pmImg: '',
+  pmImg2: '',
+  pmNo: '',
+  pmSYRemark1: '',
+  pmSYRemark2: '',
+  pmXYRemark1: '',
+  pmXYRemark2: '',
+  pmZMRemark1: '',
+  pmZMRemark2: '',
+  productId: '',
+  remark: ''
+}
 export default {
-  name: "edit-printMarks",
+  name: 'edit-printMarks',
   mixins: [editBaseMixins],
-  components: { uploadImg, popup,referenceField },
-  data() {
+  components: { uploadImg, popup, referenceField },
+  data () {
     return {
-      formmastername:'printMarksFm',
-      actionSubtitle:'印唛', // 当前操作副标题
-      requestBaseUrl: "/bas/printMarks", // 请求 查询 操作的基础路径
+      formmastername: 'printMarksFm',
+      actionSubtitle: '印唛', // 当前操作副标题
+      requestBaseUrl: '/bas/printMarks', // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
@@ -268,52 +253,52 @@ export default {
         //   { required: true, message: "产编号不能为空", trigger: "blur" }
         // ]
       }
-    };
+    }
   },
 
   methods: {
-    //判断主表客户弹框不能为空
-    clickValuedate() {
-      debugger;
-      if (!this.formDataInfo.cusName || this.formDataInfo.cusName == "") {
-        this.$Message.error("客户不能为空");
-        return false;
+    // 判断主表客户弹框不能为空
+    clickValuedate () {
+      debugger
+      if (!this.formDataInfo.cusName || this.formDataInfo.cusName == '') {
+        this.$Message.error('客户不能为空')
+        return false
       }
-      return true;
+      return true
     },
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo() {
-      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    HandleFormDataInfo () {
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
     },
     // 唛头图片路径上传成功后 回调事件 返回图片地址
-    uploadSuccessHeads(res) {
+    uploadSuccessHeads (res) {
       // debugger
       if (!res.success) {
-        this.$Message.error(res.message);
-        return;
+        this.$Message.error(res.message)
+        return
       }
-      let picUrl = res.result;
-      if (!!picUrl) {
-        this.formDataInfo.pmImg = picUrl;
+      let picUrl = res.result
+      if (picUrl) {
+        this.formDataInfo.pmImg = picUrl
       }
     },
-    //侧唛图片路径上传成功后 回调事件 返回图片地址
-    uploadSuccessTails(res) {
+    // 侧唛图片路径上传成功后 回调事件 返回图片地址
+    uploadSuccessTails (res) {
       if (!res.success) {
-        this.$Message.error(res.message);
-        return;
+        this.$Message.error(res.message)
+        return
       }
-      let picUrl = res.result;
-      if (!!picUrl) {
-        this.formDataInfo.pmImg2 = picUrl;
+      let picUrl = res.result
+      if (picUrl) {
+        this.formDataInfo.pmImg2 = picUrl
       }
     }
   }
-};
+}
 </script>
 
 <style>
-.cl-edit-prinMarks .ivu-form-item {
+/* .cl-edit-prinMarks .ivu-form-item {
   margin-bottom: 12px !important;
-}
+} */
 </style>

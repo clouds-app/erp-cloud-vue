@@ -8,11 +8,11 @@
       :queryParamsDefault="queryParamsDefault"
     >
     </htmlTemplate>
-    <div class="content-container" :style="{ height: tableHeight + 'px' }">
+    <div ref="contextMenuTarget" class="content-container" :style="{ height: tableHeight + 'px' }">
       <vTable
         :height="tableHeight"
         ref="master_list_table"
-       :columns-url="functionParams.requestColBaseUrl + '/accountCustInitFm'"  
+       :columns-url="functionParams.requestColBaseUrl + '/accountCustInitFm'"
         url="/account/custinit/page"
         :pagination="true"
         @row-click="tableRowClick"
@@ -32,10 +32,10 @@
   </div>
 </template>
 <script>
-import vTable from "@/components/tables/vTable";
-import htmlTemplate from "../components/htmlTemplate";
-import editForm from "./edit/edit-custinit";
-import listBaseMixins from "../mixins/list";
+import vTable from '@/components/tables/vTable'
+import htmlTemplate from '../components/htmlTemplate'
+import editForm from './edit/edit-custinit'
+import listBaseMixins from '../mixins/list'
 export default {
   mixins: [listBaseMixins],
   components: {
@@ -43,56 +43,56 @@ export default {
     htmlTemplate,
     vTable
   },
-  data() {
+  data () {
     return {
       functionParams: {
-        requestBaseUrl: "/account/custinit",
-        uniqueId: "id"
+        requestBaseUrl: '/account/custinit',
+        uniqueId: 'id'
       },
       // 查询参数 ,注意格式
       queryParamsDefault: [
         {
-          title: "初始化单号",
-          code: "initNo",
-          initNo: ""
+          title: '初始化单号',
+          code: 'initNo',
+          initNo: ''
         },
         {
-          title: "客户名称",
-          name: "custName$like",
-          custName$like: ""
+          title: '客户名称',
+          name: 'custName$like',
+          custName$like: ''
         }
       ]
-     
-    };
+
+    }
   },
   methods: {
     // 重写父类方法,确认当前行 是否可以删除,默认true可以删除,false 返回false 不可以删除
-    canIDeleteRowItem(){
+    canIDeleteRowItem () {
       let canDelete = true
-      if(!!this.masterRowSelection){
+      if (this.masterRowSelection) {
         // 已开票金额
-        let itemHasAmt = Number(this.masterRowSelection['invoicedAmt']) 
-        if(itemHasAmt>0){
+        let itemHasAmt = Number(this.masterRowSelection['invoicedAmt'])
+        if (itemHasAmt > 0) {
           canDelete = false
         }
       }
-      if(!canDelete){
-           let  message = "当前数据(已开票金额不为0),不可操作";
-           this.$Message.warning(message);
-           return false
+      if (!canDelete) {
+        let message = '当前数据(已开票金额不为0),不可操作'
+        this.$Message.warning(message)
+        return false
       }
       return true
     },
-    tableRowClick(rowData, rowIndex) {
-      this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
-      this.masterRowSelection = rowData;
+    tableRowClick (rowData, rowIndex) {
+      this.formDetailData = {} // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData
       if (rowData != null) {
         // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
-        this.currrentRowItem.rowName = rowData.initNo + " " + rowData.custName;
+        this.currrentRowItem.rowName = rowData.initNo + ' ' + rowData.custName
       }
     }
   }
-};
+}
 </script>
 
 <style></style>

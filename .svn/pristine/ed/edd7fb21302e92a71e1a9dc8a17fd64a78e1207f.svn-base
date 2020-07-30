@@ -1,0 +1,134 @@
+<template>
+  <div class="cl-moudle">
+    <htmlTemplate
+      :currrentRowItem="currrentRowItem"
+      @isLoaddingDone="getLoaddingDone"
+      :requestBaseUrl="functionParams.requestBaseUrl"
+      :uniqueId="functionParams.uniqueId"
+      :queryParamsDefault="queryParamsDefault"
+    >
+    </htmlTemplate>
+    <div ref="contextMenuTarget" class="content-container" :style="{ height: tableHeight + 'px' }">
+      <Split :v-model="splitModel" mode="vertical">
+        <div slot="top" class="demo-split-pane">
+          <vTable
+            tabletitle="纸板主表"
+            :height="tableHeight / 2"
+            ref="master_list_table"
+            :columns-url="functionParams.requestColBaseUrl + '/basartFm'"
+            url="/bas/art/page"
+            :pagination="true"
+            @row-click="tableRowClick"
+            name="basartFm"
+          ></vTable>
+        </div>
+        <div slot="bottom" :style="{ 'padding-top': '6px' }">
+          <Tabs>
+            <TabPane label='纸质楞别' name="name1">
+              <vTable
+                tabletitle="纸质楞别"
+                :height="tableHeight / 2"
+                ref="tableFieldRef"
+                :table-data="tableFieldData"
+                :columns-url="functionParams.requestColBaseUrl + '/basartlengFm'"
+                :pagination="false"
+                name="basartlengFm"
+              ></vTable>
+            </TabPane>
+          </Tabs>
+        </div>
+      </Split>
+    </div>
+
+    <editForm
+      :isLoaddingDone="isLoaddingDone"
+      :form-detail-data="formDetailData"
+      moduleName="worker"
+      :action="action"
+      @submit-success="search()"
+      v-model="showEditWindow"
+      :detailDisabled="detailDisabled"
+      :detailConvertUpdate="detailConvertUpdate"
+
+    />
+  </div>
+</template>
+<script>
+import vTable from "@/components/tables/vTable";
+import htmlTemplate from "../components/htmlTemplate";
+//import editForm from "./edit/edit-art";
+import listBaseMixins from "../mixins/list";
+import request from "@/libs/request";
+export default {
+  mixins: [listBaseMixins],
+  components: {
+    editForm: function(resolve) {
+      //组件的异步加载
+      require(["./edit/edit-art"], resolve);
+    },
+    htmlTemplate,
+    vTable
+  },
+  data() {
+    return {
+      tableDataList:[
+        {title:'纸质主表',ref:'master_list_table'},
+        {title:'纸质楞别',ref:'tableFieldRef'}
+      ],
+      // who:'editForm', // 动态指定编辑控件
+      functionParams: {
+        requestBaseUrl: "/bas/art",
+        uniqueId: "artId"
+      },
+      // 查询参数 ,注意格式
+      queryParamsDefault: [
+        {
+          title: "纸质代号",
+          code: "artCode",
+          artCode: ""
+        },
+        {
+          title: "层数",
+          name: "artCS$like",
+          'artCS$like': ""
+        }
+      ],
+
+    };
+  },
+  methods: {
+    tableRowClick(rowData, rowIndex) {
+      this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData;
+      if (rowData != null) {
+        //debugger
+        // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
+        this.currrentRowItem.rowName = rowData.artCode + " " + rowData.artCS;
+      }
+      if (this.masterRowSelection) {
+        this.getItemDataById();
+      }
+    },
+    // 获取纸质楞别数据
+    getItemDataById() {
+      //debugger
+      let url = `/bas/art/item/list`;
+      let data = {
+        artId: this.masterRowSelection.id
+      };
+      let _self = this;
+      request.post(url, data).then(res => {
+        //debugger
+        _self.tableFieldData = res;
+      });
+    },
+    //重写父类方法, 更新操作
+    handleUpdateEvent() {
+      // debugger;
+      this.getItemDataById();
+    }
+  }
+};
+</script>
+
+<style></style>

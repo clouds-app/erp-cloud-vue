@@ -1,67 +1,13 @@
 <template>
   <div class="saleContent">
-    <!-- <div>
-     <Row>
-        <Col span="1">&nbsp;</Col>
-      <Col span="6" offset="1">
-        <Card>
-          <p slot="title">订单管理</p>
-          <br />
-          <p style="padding: 10px;">
-            <Button
-              @click="handleSubMenuEvent('boxAreaPrice','sale-boxAreaPrice','纸箱面积报价')"
-              type="info"
-           >纸箱面积报价</Button>
-          </p>
-          <br />
-          <p style="padding: 10px;">
-            <Button
-              @click="handleSubMenuEvent('boxProductPrice','sale-boxProductPrice','纸箱产品报价')"
-              type="info"
-            >纸箱产品报价</Button>
-          </p>
-          <br />
-          <p style="padding: 10px;">
-            <Button
-              @click="handleSubMenuEvent('boxSalesOrder','sale-boxSalesOrder','纸箱销售订单')"
-              type="info"
-            >纸箱销售订单</Button>
-          </p>
-        </Card>
-      </Col>
-      <Col span="6">
-        <Card>
-          <p slot="title">模块数据</p>
-          <br />
-          <p style="padding: 10px;">
-            <Button
-              @click="handleSubMenuEvent('customerInfo','sale-customerInfo','客户资料')"
-              type="info"
-            >客户资料</Button>
-          </p>
-        </Card>
-      </Col>
-      <Col span="6">
-        <Card>
-          <p slot="title">查询</p>
-          <br />
-          <p style="padding: 10px;">
-            <Button
-              @click="handleSubMenuEvent('analyzerNew','sale-analyzerNew','纸箱销售订单汇总')"
-              type="info"
-            >纸箱销售订单汇总</Button>
-          </p>
-        </Card>
-      </Col>
-    </Row> 
-    </div> -->
+
     <div class="saleContentItem leftItem">
       <div class="leftFlexBoxItem leftFlexBoxItemleft">
         <!-- 是否有权限访问 添加样式 diabledOrAccess -->
-        <div  @click="handleSubMenuEvent('boxAreaPrice','sale-boxAreaPrice','纸箱面积报价')" class="prizeItem areaPrize cursorPointer">
+        <div  @click="handleSubMenuEvent('boxAreaPrice','sale-boxAreaPrice','纸箱面积报价',secondenum.boxAreaPrice.val.disabled)" :class="[secondenum.boxAreaPrice.val.disabled?'diabledOrAccess':'']"  class="prizeItem areaPrize cursorPointer">
           <div class="areaPrizeTitle">纸箱面积报价</div>
         </div>
-        <div @click="handleSubMenuEvent('boxProductPrice','sale-boxProductPrice','纸箱产品报价')" class="prizeItem productPrize cursorPointer">
+        <div @click="handleSubMenuEvent('boxProductPrice','sale-boxProductPrice','纸箱产品报价',secondenum.boxProductPrice.val.disabled)" :class="[secondenum.boxProductPrice.val.disabled?'diabledOrAccess':'']" class="prizeItem productPrize cursorPointer">
           <div class="productPrizeTitle">纸箱产品报价</div>
         </div>
       </div>
@@ -87,7 +33,7 @@
                   <div class="towOrderTitle">工厂团订单</div>
                 </div>
               </div>
-              <div @click="handleSubMenuEvent('boxSalesOrder','sale-boxSalesOrder','纸箱销售订单')" class="downItem threeOrder cursorPointer">
+              <div @click="handleSubMenuEvent('boxSalesOrder','sale-boxSalesOrder','纸箱销售订单',secondenum.boxSalesOrder.val.disabled)" :class="[secondenum.boxSalesOrder.val.disabled?'diabledOrAccess':'']" class="downItem threeOrder cursorPointer">
                 <div class="threeOrderBgIcon">
                   <div class="threeOrderTitle">线下订单</div>
                 </div>
@@ -124,8 +70,9 @@
             <div class="moduleDataTitleBg">
                <div class="moduleDataTitle">模块数据</div>
                 <div class="moduleDataListBox cursorPointer">
-                     <div  @click="handleSubMenuEvent('customerInfo','sale-customerInfo','客户资料')" class="moduleDataItem">客户资料</div>
-                     
+                     <div  @click="handleSubMenuEvent('customerInfo','sale-customerInfo','客户资料',secondenum.customerInfo.val.disabled)" :class="[secondenum.customerInfo.val.disabled?'disabledColor':'']" class="moduleDataItem">客户资料</div>
+                     <div class="moduleDataItem" style="color:#bdb7b7">客户资料查询</div>
+
                 </div>
             </div>
          </div>
@@ -133,8 +80,19 @@
            <div class="reportTitleBg">
               <div class="reportTitle">报表</div>
                 <div class="reportDataListBox cursorPointer">
-                     <div  @click="handleSubMenuEvent('analyzerNew','sale-analyzerNew','纸箱销售订单汇总')" class="reportDataItem">纸箱销售订单汇总</div>
-                   
+                     <div @click="handleSubMenuEvent('analyzerNew','sale-analyzerNew','纸箱销售订单汇总',secondenum.analyzerNew.val.disabled)" :class="[secondenum.analyzerNew.val.disabled?'disabledColor':'']" class="reportDataItem">纸箱销售订单汇总</div>
+                     <div class="reportDataItem" style="color:#bdb7b7">产品基础资料查询</div>
+                     <div class="reportDataItem" style="color:#bdb7b7">纸板未报价客户查询</div>
+                     <div class="reportDataItem" style="color:#bdb7b7">未下单客户查询</div>
+                     <div class="reportDataItem" style="color:#bdb7b7">纸板订单特价查询</div>
+                     <div class="reportDataItem" style="color:#bdb7b7">纸箱订单状态表</div>
+                     <div class="reportDataItem" style="color:#bdb7b7">纸箱销售计划查询</div>
+                     <div class="reportDataItem" style="color:#bdb7b7">纸板已产未送查询</div>
+                     <div class="reportDataItem" style="color:#bdb7b7">纸板销单与删除情况表</div>
+                     <div class="reportDataItem" style="color:#bdb7b7">纸板部生产综合统计表</div>
+                     <div class="reportDataItem" style="color:#bdb7b7">纸板已产未送查询</div>
+                     <div class="reportDataItem" style="color:#bdb7b7">纸板补货查询</div>
+
                 </div>
            </div>
          </div>
@@ -143,48 +101,62 @@
 </template>
 
 <script>
-import globleMixin from "@/mixins";
-const default_btnFuncList = {
-  boxAreaPrice: true, // 纸箱面积报价 是否有权限,默认没有
-  boxProductPrice: true, // 纸箱产品报价
-  boxSalesOrder: true, // 纸箱销售订单
-  customerInfo: true, // 客户资料
-  analyzerNew: true // 纸箱销售订单汇总
-};
+import globleMixin from '@/mixins'
+// const default_btnFuncList = {
+//   boxAreaPrice: true, // 纸箱面积报价 是否有权限,默认没有
+//   boxProductPrice: true, // 纸箱产品报价
+//   boxSalesOrder: true, // 纸箱销售订单
+//   customerInfo: true, // 客户资料
+//   analyzerNew: true // 纸箱销售订单汇总
+// };
 export default {
   mixins: [globleMixin],
-  data() {
-    return {};
+  data () {
+    return {}
   },
-  activated() {
-    console.log("---------sale---- activated---------");
-    this.btnFuncList = Object.assign({}, default_btnFuncList);
+  activated () {
+    console.log('---------sale---- activated---------')
+    // this.btnFuncList = Object.assign({}, default_btnFuncList);
     // this.getSubMenu()
   },
-  mounted() {
-    this.$nextTick(() => {
-      console.log("---------sale----- mounted---------");
-      this.btnFuncList = Object.assign({}, default_btnFuncList);
-      // this.getSubMenu()
-    });
+  mounted () {
+    // this.$nextTick(() => {
+    console.log('---------sale----- mounted---------')
+    // this.btnFuncList = Object.assign({}, default_btnFuncList);
+    // this.getSubMenu()
+    // });
+  },
+  computed: {
+    secondenum () {
+      let dataList = this.$store.state.app.Secondaryauthority.Sale
+      console.log(dataList)
+      return dataList
+    }
   },
   methods: {
     // 子页面 参数: 页面.vue,唯一区别ID,TAB 标签显示名称
-    handleSubMenuEvent(currentPage, uniqueKey, tabName) {
+    handleSubMenuEvent (currentPage, uniqueKey, tabName, flag) {
+      if (flag) {
+        this.$Message.warning('暂无权限,请与管理员联系!')
+        return
+      }
       let params = {
-        menuName: "Sale",
-        page: currentPage, //显示控件页面
+        menuName: 'Sale',
+        page: currentPage, // 显示控件页面
         uniqueKey: uniqueKey,
         lable: tabName,
         isActive: true
-      };
-      this.handleMenuBaseEvent(params); // 调用MIXIN 共用方法
+      }
+      this.handleMenuBaseEvent(params) // 调用MIXIN 共用方法
     }
   }
-};
+}
 </script>
 
 <style lang="scss">
+.disabledColor{
+  color: #bdb7b7;
+}
 .saleContent {
   color: white;
   display: flex;
@@ -196,7 +168,7 @@ export default {
     &.leftItem {
      // border: 1px solid rgba(0, 222, 255, 1);
       border-radius: 5px;
-      box-shadow: 0px 0px 10px rgba(0, 222, 255, 1) inset; 
+      box-shadow: 0px 0px 10px rgba(0, 222, 255, 1) inset;
       width: 80%;
        margin: 10px;
       display: flex;

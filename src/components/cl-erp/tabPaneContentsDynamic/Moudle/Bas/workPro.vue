@@ -8,7 +8,7 @@
       :queryParamsDefault="queryParamsDefault"
     >
     </htmlTemplate>
-     <div class="content-container" :style="{ height: tableHeight + 'px' }">
+     <div ref="contextMenuTarget" class="content-container" :style="{ height: tableHeight + 'px' }">
       <Split :v-model="splitModel" mode="vertical">
         <div slot="top" class="demo-split-pane">
             <vTable
@@ -21,7 +21,7 @@
             @row-click="tableRowClick"
             name="workProcFm"
           ></vTable>
-          
+
         </div>
         <div slot="bottom" :style="{ 'padding-top': '6px' }">
           <Tabs>
@@ -31,7 +31,7 @@
                 :height="tableHeight / 2"
                 ref="tableFieldRef"
                 :table-data="tableFieldData"
-                :columns-url="functionParams.requestColBaseUrl +'/workProcItemFm'"   
+                :columns-url="functionParams.requestColBaseUrl +'/workProcItemFm'"
                 :pagination="false"
                 name="workProcItemFm"
               ></vTable>
@@ -52,42 +52,42 @@
       :detailConvertUpdate="detailConvertUpdate"
     />
   </div>
-  
+
 </template>
 <script>
-import vTable from "@/components/tables/vTable";
-import htmlTemplate from "../components/htmlTemplate";
-import editForm from "./edit/edit-workPro";
-import listBaseMixins from "../mixins/list";
-import request from "@/libs/request";
+import vTable from '@/components/tables/vTable'
+import htmlTemplate from '../components/htmlTemplate'
+import editForm from './edit/edit-workPro'
+import listBaseMixins from '../mixins/list'
+import request from '@/libs/request'
 export default {
   mixins: [listBaseMixins],
   components: {
-    'editForm': function(resolve) {
-      //组件的异步加载
-      require(["./edit/edit-workPro"], resolve);
+    'editForm': function (resolve) {
+      // 组件的异步加载
+      require(['./edit/edit-workPro'], resolve)
     },
     editForm,
     htmlTemplate,
     vTable
   },
-  data() {
+  data () {
     return {
       functionParams: {
-        requestBaseUrl: "/bas/workPro",
-        uniqueId: "workProcId"
+        requestBaseUrl: '/bas/workPro',
+        uniqueId: 'workProcId'
       },
       // 查询参数 ,注意格式
       queryParamsDefault: [
         {
-          title: "编号",
-          code: "wpNo",
-          wpNo: ""
+          title: '编号',
+          code: 'wpNo',
+          wpNo: ''
         },
         {
-          title: "名称",
-          name: "wpName$like",
-          'wpName$like': ""
+          title: '名称',
+          name: 'wpName$like',
+          'wpName$like': ''
         }
       ],
       // columns: [
@@ -154,38 +154,38 @@ export default {
       //   }
       // ],
       tableFieldColuns: []
-    };
+    }
   },
   methods: {
-    tableRowClick(rowData, rowIndex) {
-      this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
-      this.masterRowSelection = rowData;
+    tableRowClick (rowData, rowIndex) {
+      this.formDetailData = {} // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData
       if (rowData != null) {
-        //debugger
+        // debugger
         // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
-        this.currrentRowItem.rowName = rowData.wpNo + " " + rowData.wpName;
+        this.currrentRowItem.rowName = rowData.wpNo + ' ' + rowData.wpName
       }
       if (this.masterRowSelection) {
-        this.getItemDataById();
+        this.getItemDataById()
       }
     },
     // 获取工序资料明细
-    getItemDataById() {
-      let url = `/bas/workPro/item/list`;
+    getItemDataById () {
+      let url = `/bas/workPro/item/list`
       let data = {
         wpId: this.masterRowSelection.id
-      };
-      let _self = this;
+      }
+      let _self = this
       request.post(url, data).then(res => {
-        _self.tableFieldData = res;
-      });
+        _self.tableFieldData = res
+      })
     },
-    //重写父类方法, 更新操作
-    handleUpdateEvent() {
-      this.getItemDataById();
+    // 重写父类方法, 更新操作
+    handleUpdateEvent () {
+      this.getItemDataById()
     }
   }
-};
+}
 </script>
 
 <style></style>

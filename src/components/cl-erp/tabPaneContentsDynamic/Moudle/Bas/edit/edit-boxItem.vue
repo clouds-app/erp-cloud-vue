@@ -19,11 +19,11 @@
            <Col span="16">
                 <Row :gutter="18">
                         <Col span="12">
-                                
+
                                     <FormItem label="开料单双片" prop="boxCutMode">
                                     <Input
                                         v-model="formDataInfo.boxCutMode"
-                                        
+                                         ref='firstFocusInput'
                                         maxlength="20"
                                         placeholder="请输入开料单双片"
                                     ></Input>
@@ -77,7 +77,6 @@
                                         placeholder="请输入双片纸长"
                                     ></Input>
                                     </FormItem>
-
 
                         </Col>
                         <Col span="12">
@@ -209,9 +208,8 @@
                     ></Input>
                     </FormItem>
            </Col>
-         
-       </Row>
 
+       </Row>
 
       </Form>
     </editWindow>
@@ -232,58 +230,58 @@
  *
  * @created 2019/11/20 17:07:54
  */
-import editBaseMixins from "../../mixins/edit";
-const default_formDataInfo ={
-        boxCutMode: 0,
-        boxId: 0,
-        boxIfExpr: "",
-        boxIfExprMsg: "",
-        boxIfValue: 0,
-        boxKC1Expr: "",
-        boxKC1ExprMsg: "",
-        boxKC2Expr: "",
-        boxKC2ExprMsg: "",
-        boxL1Expr: "",
-        boxL1ExprMsg: "",
-        boxL2Expr: "",
-        boxL2ExprMsg: "",
-        boxW1Expr: "",
-        boxW1ExprMsg: "",
-        boxW2ExprMsg: "",
-        boxYS1ExprMsg: "",
-        boxYS1_Expr: "",
-        boxYS2Expr: "",
-        boxYS2ExprMsg: "",
-        box_W2Expr: "",
-        remark: ""
-      }
+import editBaseMixins from '../../mixins/edit'
+const default_formDataInfo = {
+  boxCutMode: 0,
+  boxId: 0,
+  boxIfExpr: '',
+  boxIfExprMsg: '',
+  boxIfValue: 0,
+  boxKC1Expr: '',
+  boxKC1ExprMsg: '',
+  boxKC2Expr: '',
+  boxKC2ExprMsg: '',
+  boxL1Expr: '',
+  boxL1ExprMsg: '',
+  boxL2Expr: '',
+  boxL2ExprMsg: '',
+  boxW1Expr: '',
+  boxW1ExprMsg: '',
+  boxW2ExprMsg: '',
+  boxYS1ExprMsg: '',
+  boxYS1_Expr: '',
+  boxYS2Expr: '',
+  boxYS2ExprMsg: '',
+  box_W2Expr: '',
+  remark: ''
+}
 export default {
-  name: "edit-boxItem",
+  name: 'edit-boxItem',
   mixins: [editBaseMixins],
 
-  data() {
+  data () {
     return {
-      requestBaseUrl: "/bas/boxItem", // 请求 查询 操作的基础路径
-      formDataInfo:Object.assign({},default_formDataInfo),// 防止添加和更新数据提交发生冲突
+      requestBaseUrl: '/bas/boxItem', // 请求 查询 操作的基础路径
+      formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
         boxCutMode: [
-          { required: true, message: "", trigger: "blur" }
+          { required: true, message: '', trigger: 'blur' }
         ],
         boxId: [
-            { required: true, message: "", trigger: "blur" }
+          { required: true, message: '', trigger: 'blur' }
         ]
       }
-    };
+    }
   },
 
   methods: {
-      // 重写父类,添加时候,清空数据
-    HandleFormDataInfo(){
-     this.formDataInfo=Object.assign({},default_formDataInfo)
-    },
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo () {
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
+    }
   }
-};
+}
 </script>
 
 <style></style>

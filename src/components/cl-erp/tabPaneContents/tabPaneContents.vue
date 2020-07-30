@@ -5,133 +5,130 @@
 </template>
 <script>
 
-import * as type from "@/enum"; //菜单枚举
+import * as type from '@/enum' // 菜单枚举
 export default {
-    props:{
-        contentType:{
-            type:String,
-            default:'Sale'
-        }
+  props: {
+    contentType: {
+      type: String,
+      default: 'Sale'
+    }
+  },
+  components: {
+    'Account': function (resolve) { // 组件的异步加载
+      require(['./moudle/Account.vue'], resolve)
     },
-    components:{
-            'Account':function(resolve) { //组件的异步加载
-                require(["./moudle/Account.vue"], resolve);
-            },
-            'Bas':function(resolve) { //组件的异步加载
-            require(["./moudle/Bas.vue"], resolve);
-         },
-            'Mrp':function(resolve) { //组件的异步加载
-            require(["./moudle/Mrp.vue"], resolve);
-         },
-            'Purchase':function(resolve) { //组件的异步加载
-            require(["./moudle/Purchase.vue"], resolve);
-         },
-            'Report':function(resolve) { //组件的异步加载
-            require(["./moudle/Report.vue"], resolve);
-         },
-            'Sale':function(resolve) { //组件的异步加载
-            require(["./moudle/Sale.vue"], resolve);
-         },
-            'Stock':function(resolve) { //组件的异步加载
-            require(["./moudle/Stock.vue"], resolve);
-         },
-            'Sys':function(resolve) { //组件的异步加载
-            require(["./moudle/Sys.vue"], resolve);
-         },
-            'SetPlatform':function(resolve) { //组件的异步加载
-            require(["./moudle/SetPlatform.vue"], resolve);
-         },
-         
-           
-           
-     },
-    data(){
-        return {
-           who:'Sale',
-           currentOperateMenu:[],//当前操作菜单数据
-        }
+    'Bas': function (resolve) { // 组件的异步加载
+      require(['./moudle/Bas.vue'], resolve)
     },
-    computed: {
-        // 顶部选中子菜单
-        currentSelectedSubMenu() {
-             return this.$store.state.app.currentSubMenu;
-        }
+    'Mrp': function (resolve) { // 组件的异步加载
+      require(['./moudle/Mrp.vue'], resolve)
     },
-    watch: {
-         contentType(newVal, oldVal) {
-           if(!!newVal){
-              this.switchTopMenuHanle(newVal);
-           }   
-          },
-          currentSelectedSubMenu: {
-                  handler(n,o){
-                       if(!!this.contentType){
-                          this.switchTopMenuHanle(this.contentType);
-                       }
-                  },
-                   immediate: true,  //刷新加载 立马触发一次handler
-                   deep: true  // 可以深度检测到 子菜单 对象的属性值的变化
-            }
+    'Purchase': function (resolve) { // 组件的异步加载
+      require(['./moudle/Purchase.vue'], resolve)
     },
-  methods:{
-    openSubMenu(params){
-         this.$emit('openSubMenu',params)
-    } ,
-     // 切换菜单 查询子菜单 固定菜单 事件处理
-    switchTopMenuHanle(key) {
-      switch (key.toLowerCase()+"") {
-        //财务管理
-        case type.topMenu_Account:
-            this.currentOperateMenu = this.currentSelectedSubMenu.Account
-            this.who='Account'
-          break;
-          //基础数据
-        case type.topMenu_Bas:
-             this.currentOperateMenu = this.currentSelectedSubMenu.Bas
-           this.who='Bas'
-          break;
-          //生产管理
-        case type.topMenu_Mrp:
-             this.currentOperateMenu = this.currentSelectedSubMenu.Mrp
-            this.who='Mrp'
-          break;
-          //采购管理
-        case type.topMenu_Purchase:
-              this.currentOperateMenu = this.currentSelectedSubMenu.Purchase
-         this.who='Purchase'
-          break;
-          //报表中心
-        case type.topMenu_report:
-             this.currentOperateMenu = this.currentSelectedSubMenu.Report
-        this.who='Report'
-          break;
-          //销售管理
-        case type.topMenu_sale:
-            this.currentOperateMenu = this.currentSelectedSubMenu.Sale
-        this.who='Sale'
-          break;
-          //储运管理
-        case type.topMenu_Stock:
-              this.currentOperateMenu = this.currentSelectedSubMenu.Stock
-          this.who='Stock'
-          break;
-          //系统设置
-         case type.topMenu_Sys:
-              this.currentOperateMenu = this.currentSelectedSubMenu.Sys
-           this.who='Sys'
-          break;
-         // 平台设置
-        default:type.topMenu_SetPlatform
-             this.currentOperateMenu = this.currentSelectedSubMenu.SetPlatform
-             this.who='SetPlatform'
-          break;
-        //   默认
-        // default:
-        //      this.currentOperateMenu = this.currentSelectedSubMenu.Sale
-        //      this.who='Sale'
-        //   break;
-      }
+    'Report': function (resolve) { // 组件的异步加载
+      require(['./moudle/Report.vue'], resolve)
+    },
+    'Sale': function (resolve) { // 组件的异步加载
+      require(['./moudle/Sale.vue'], resolve)
+    },
+    'Stock': function (resolve) { // 组件的异步加载
+      require(['./moudle/Stock.vue'], resolve)
+    },
+    'Sys': function (resolve) { // 组件的异步加载
+      require(['./moudle/Sys.vue'], resolve)
+    },
+    'SetPlatform': function (resolve) { // 组件的异步加载
+      require(['./moudle/SetPlatform.vue'], resolve)
+    }
 
+  },
+  data () {
+    return {
+      who: '',
+      currentOperateMenu: []// 当前操作菜单数据
+    }
+  },
+  computed: {
+    // 顶部选中子菜单
+    currentSelectedSubMenu () {
+      return this.$store.state.app.currentSubMenu
+    }
+  },
+  watch: {
+    contentType (newVal, oldVal) {
+      if (newVal) {
+        this.switchTopMenuHanle(newVal)
+      }
+    },
+    currentSelectedSubMenu: {
+      handler (n, o) {
+        if (this.contentType) {
+          this.switchTopMenuHanle(this.contentType)
+        }
+      },
+      immediate: true, // 刷新加载 立马触发一次handler
+      deep: true // 可以深度检测到 子菜单 对象的属性值的变化
+    }
+  },
+  methods: {
+    openSubMenu (params) {
+      this.$emit('openSubMenu', params)
+    },
+    // 切换菜单 查询子菜单 固定菜单 事件处理
+    switchTopMenuHanle (key) {
+      switch (key.toLowerCase() + '') {
+        // 财务管理
+        case type.topMenu_Account:
+          this.currentOperateMenu = this.currentSelectedSubMenu.Account
+          this.who = 'Account'
+          break
+          // 基础数据
+        case type.topMenu_Bas:
+          this.currentOperateMenu = this.currentSelectedSubMenu.Bas
+          this.who = 'Bas'
+          break
+          // 生产管理
+        case type.topMenu_Mrp:
+          this.currentOperateMenu = this.currentSelectedSubMenu.Mrp
+          this.who = 'Mrp'
+          break
+          // 采购管理
+        case type.topMenu_Purchase:
+          this.currentOperateMenu = this.currentSelectedSubMenu.Purchase
+          this.who = 'Purchase'
+          break
+          // 报表中心
+        case type.topMenu_report:
+          this.currentOperateMenu = this.currentSelectedSubMenu.Report
+          this.who = 'Report'
+          break
+          // 销售管理
+        case type.topMenu_sale:
+          this.currentOperateMenu = this.currentSelectedSubMenu.Sale
+          this.who = 'Sale'
+          break
+          // 储运管理
+        case type.topMenu_Stock:
+          this.currentOperateMenu = this.currentSelectedSubMenu.Stock
+          this.who = 'Stock'
+          break
+          // 系统设置
+        case type.topMenu_Sys:
+          this.currentOperateMenu = this.currentSelectedSubMenu.Sys
+          this.who = 'Sys'
+          break
+          // 平台设置
+        case type.topMenu_SetPlatform:
+          this.currentOperateMenu = this.currentSelectedSubMenu.SetPlatform
+          this.who = 'SetPlatform'
+          break
+          // 默认
+        default:
+          //  this.currentOperateMenu = this.currentSelectedSubMenu.Sale
+          //  this.who='Sale'
+          break
+      }
     }
   }
 

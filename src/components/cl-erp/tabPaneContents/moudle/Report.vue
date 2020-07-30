@@ -9,7 +9,7 @@
         </div>
         <div class="acdountItemfont">
           <div class="fontdata">
-            <div class="fontdatasize"  style="cursor: pointer;color:#fff !important"  @click="handleSubMenuEvent('analyzerNew','sale-analyzerNew','纸箱销售订单汇总')">纸箱销售订单汇总</div>
+            <div class="fontdatasize"  @click="handleSubMenuEvent('analyzerNew','sale-analyzerNew','纸箱销售订单汇总',secondenum.analyzerNew.val.disabled)" :class="[secondenum.analyzerNew.val.disabled?'':'clickstyle' ]">纸箱销售订单汇总</div>
             <div class="fontdatasize" >客户资料查询</div>
             <div class="fontdatasize" >产品基础资料查询</div>
             <div class="fontdatasize" >纸板未报价客户查询</div>
@@ -42,7 +42,7 @@
         </div>
         <div class="acdountItemfont">
           <div class="fontdata">
-            <div class="fontdatasize" style="cursor: pointer;color:#fff !important"   @click="handleSubMenuEvent('purPaperPoAnalyz','purchase-purPaperPoAnalyz','纸板采购情况分析')">纸板采购情况分析</div>
+            <div class="fontdatasize" :class="[secondenum.purPaperPoAnalyz.val.disabled?'':'clickstyle' ]"  @click="handleSubMenuEvent('purPaperPoAnalyz','purchase-purPaperPoAnalyz','纸板采购情况分析',secondenum.purPaperPoAnalyz.val.disabled)">纸板采购情况分析</div>
             <div class="fontdatasize">纸板采购查询</div>
             <div class="fontdatasize">原纸申购查询</div>
             <div class="fontdatasize">原纸采购查询</div>
@@ -100,8 +100,8 @@
         </div>
         <div class="acdountItemfont">
           <div class="fontdata">
-            <div class="fontdatasize" style="cursor: pointer;color:#fff !important"   @click="handleSubMenuEvent('selectStoreTotal','stock-selectStoreTotal','纸箱库存查询')">纸箱库存查询</div>
-            <div class="fontdatasize" style="cursor: pointer;color:#fff !important"   @click="handleSubMenuEvent('selectAnalyzer','stock-selectAnalyzer','纸箱出货汇总查询')">纸箱出货汇总查询</div>
+            <div class="fontdatasize" :class="[secondenum.selectStoreTotal.val.disabled?'':'clickstyle' ]"  @click="handleSubMenuEvent('selectStoreTotal','stock-selectStoreTotal','纸箱库存查询',secondenum.selectStoreTotal.val.disabled)">纸箱库存查询</div>
+            <div class="fontdatasize" :class="[secondenum.selectAnalyzer.val.disabled?'':'clickstyle' ]"  @click="handleSubMenuEvent('selectAnalyzer','stock-selectAnalyzer','纸箱出货汇总查询',secondenum.selectAnalyzer.val.disabled)">纸箱出货汇总查询</div>
             <div class="fontdatasize">纸箱用料库存</div>
             <div class="fontdatasize">纸板库存查询</div>
             <div class="fontdatasize">纸板出货汇总查询</div>
@@ -135,24 +135,38 @@
   </div>
 </template>
 <script>
-import globleMixin from "@/mixins";
+import globleMixin from '@/mixins'
 export default {
-  mixins:[globleMixin],
+  mixins: [globleMixin],
   methods: {
-    handleSubMenuEvent(currentPage, uniqueKey, tabName) {
+    handleSubMenuEvent (currentPage, uniqueKey, tabName, flag) {
+      if (flag) {
+        this.$Message.warning('暂无权限,请与管理员联系!')
+        return
+      }
       let params = {
         menuName: 'Report',
-        page: currentPage, //显示控件页面
+        page: currentPage, // 显示控件页面
         uniqueKey: uniqueKey,
         lable: tabName,
         isActive: true
-      };
-      this.handleMenuBaseEvent(params); // 调用MIXIN 共用方法
+      }
+      this.handleMenuBaseEvent(params) // 调用MIXIN 共用方法
+    }
+  },
+  computed: {
+    secondenum () {
+      let dataList = this.$store.state.app.Secondaryauthority.Report
+      return dataList
     }
   }
 }
 </script>
 <style lang="scss">
+.clickstyle{
+  cursor:pointer;
+  color: #ffffff !important;
+}
 .reportContent {
   color: white;
   min-height: 600px;
@@ -332,7 +346,7 @@ export default {
             }
         }
 }
-        
-    }   
+
+    }
 }
 </style>

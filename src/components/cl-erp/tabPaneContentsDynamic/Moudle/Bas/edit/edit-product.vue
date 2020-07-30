@@ -26,7 +26,7 @@
               <Row>
                 <Col span="24">
                   <FormItem label="产品编号" prop="bpNo">
-                    <Input v-model="formDataInfo.master.bpNo" :disabled="true" placeholder="产品编号"></Input>
+                    <Input  ref='firstFocusInput' v-model="formDataInfo.master.bpNo" :disabled="true" placeholder="产品编号"></Input>
                   </FormItem>
                 </Col>
                 <Col span="24">
@@ -248,14 +248,14 @@
                   </FormItem>
                 </Col>
                 <Col span="18">
-                  <FormItem label="颜色" prop="colorName">
+                  <FormItem label="颜色" prop="bpColorNames">
                     <popup
                       :disabled="detailDisabled"
-                      v-model="formDataInfo.master.colorName"
-                      field-name="colorName"
+                      v-model="formDataInfo.master.bpColorNames"
+                      field-name="bpColorNames"
                       popup-name="ColorMultiBox"
                       :fill-model.sync="formDataInfo.master"
-                      render-fields="bpColorId,colorName"
+                      render-fields="bpColorId,bpColorNames"
                       from-fields="id,colorName"
                       @on-fill="(a,length)=>{this.formDataInfo.master.bpColorQty = length}"
                       :suffix="false"
@@ -753,20 +753,20 @@
  *
  * @created 2019/11/20 17:07:54
  */
-import tableSelect from "@/components/table-select/table-select";
-import editWindow from "@/components/edit-window/edit-window";
+import tableSelect from '@/components/table-select/table-select'
+import editWindow from '@/components/edit-window/edit-window'
 // import Form from '@/components/form/form'
-import eTable from "@/components/e-table/e-table";
-import request from "@/libs/request";
-import popup from "@/components/popup/popup";
-import editBaseMixins from "../../mixins/edit";
-import InputNumber from "@/components/input-number";
-import formControl from "@/components/form-control/form-control";
-import { customValidator } from "@/libs/validator";
-import calc from "@/libs/calc";
-import productSpec from "../components/productSpec";
+import eTable from '@/components/e-table/e-table'
+import request from '@/libs/request'
+import popup from '@/components/popup/popup'
+import editBaseMixins from '../../mixins/edit'
+import InputNumber from '@/components/input-number'
+import formControl from '@/components/form-control/form-control'
+import { customValidator } from '@/libs/validator'
+import calc from '@/libs/calc'
+import productSpec from '../components/productSpec'
 export default {
-  name: "edit-product",
+  name: 'edit-product',
   mixins: [editBaseMixins],
   components: {
     editWindow,
@@ -778,34 +778,34 @@ export default {
     formControl,
     productSpec
   },
-  data() {
+  data () {
     const bpHatchValidator = (rule, value, callback) => {
       // debugger
       const compareValue = Math.min(
         this.formDataInfo.master.bpCSizeL,
         this.formDataInfo.master.bpCSizeW
-      );
-      if (typeof value === "string") {
-        value = Number(value);
+      )
+      if (typeof value === 'string') {
+        value = Number(value)
       }
 
       if (value > compareValue) {
-        callback(new Error("开口不能大于客方长或客方宽"));
+        callback(new Error('开口不能大于客方长或客方宽'))
       } else {
-        callback();
+        callback()
       }
-    };
+    }
     return {
-      actionSubtitle: "产品资料", // 当前操作副标题
+      actionSubtitle: '产品资料', // 当前操作副标题
       productSpecShow: false,
       unitItems: [
-        { text: "英寸", value: "0" },
-        { text: "厘米", value: "1" },
-        { text: "毫米", value: "2" }
+        { text: '英寸', value: '0' },
+        { text: '厘米', value: '1' },
+        { text: '毫米', value: '2' }
       ],
       currentSubItemlength_productMData: 0, // 当前子表数据个数
       currentSubItemlength_productWorkProc: 0, // 当前子表数据个数
-      requestBaseUrl: "/bas/product", // 请求 查询 操作的基础路径
+      requestBaseUrl: '/bas/product', // 请求 查询 操作的基础路径
       formDataInfo: {
         // 主表 更改字段
         master: {},
@@ -815,7 +815,7 @@ export default {
           deleteList: [], // 删除列
           updateList: [] // 更新列
         },
-        //子表 生产工序
+        // 子表 生产工序
         productworkProcs: {
           addList: [], // 添加列
           defaultList: [], // 默认列
@@ -828,55 +828,55 @@ export default {
         bpName: [
           {
             required: true,
-            message: "产品名称不能为空",
-            trigger: "blur"
+            message: '产品名称不能为空',
+            trigger: 'blur'
           },
           {
             validator: customValidator,
-            trigger: "blur",
-            customRule: ["toCDB", "spaceStr"],
-            fieldDesc: "产品名称"
+            trigger: 'blur',
+            customRule: ['toCDB', 'spaceStr'],
+            fieldDesc: '产品名称'
           }
         ],
         cusCode: [
           {
             required: true,
-            message: "客户不能为空",
-            trigger: "blur,change"
+            message: '客户不能为空',
+            trigger: 'blur,change'
           }
         ],
         bpCBoxCode: [
           {
             required: true,
-            message: "客方盒式不能为空",
-            trigger: "blur,change"
+            message: '客方盒式不能为空',
+            trigger: 'blur,change'
           }
         ],
         bpCArtCode: [
           {
             required: true,
-            message: "客方纸质不能为空",
-            trigger: "blur,change"
+            message: '客方纸质不能为空',
+            trigger: 'blur,change'
           }
         ],
         bpPBoxCode: [
           {
             required: true,
-            message: "生产盒式不能为空",
-            trigger: "blur,change"
+            message: '生产盒式不能为空',
+            trigger: 'blur,change'
           }
         ],
         bpPArtCode: [
           {
             required: true,
-            message: "生产纸质不能为空",
-            trigger: "blur,change"
+            message: '生产纸质不能为空',
+            trigger: 'blur,change'
           }
         ],
         bpHatch: [
           {
             validator: bpHatchValidator,
-            trigger: "blur"
+            trigger: 'blur'
           }
         ]
       },
@@ -903,147 +903,147 @@ export default {
           productMDataFm: {}
         }
       },
-      pressingLineTypeList: [], //压线类型
+      pressingLineTypeList: [], // 压线类型
       pressingLineDeepList: [],
-      productMDatasTableDataList: [], //存放处理过后的纸板规格数据:[],
+      productMDatasTableDataList: [], // 存放处理过后的纸板规格数据:[],
       timeoutId: 0,
       requestCount: 0,
       updateFirstRequstIntercept: true,
       updateFirstRequstTimeoutId: -1,
-      productMDatasDBClickIndex: -1, //纸板规格双击的行号
-      productMDatasTableDataListCache: [], //把每次返回的数据缓存下来
+      productMDatasDBClickIndex: -1, // 纸板规格双击的行号
+      productMDatasTableDataListCache: [], // 把每次返回的数据缓存下来
       cSizeBak: {
         CSizeL: -1,
         CSizeW: -1,
         CSizeH: -1
       }
-    };
+    }
   },
   computed: {
-    dpLWComputed() {
-      const unit = this.$params.DieCutUnit.substring(0, 1);
-      if (unit == "0") {
-        this.formDataInfo.master.dpLength = this.formDataInfo.master.dpLengthInch;
-        this.formDataInfo.master.dpWidth = this.formDataInfo.master.dpWidthInch;
+    dpLWComputed () {
+      const unit = this.$params.DieCutUnit.substring(0, 1)
+      if (unit == '0') {
+        this.formDataInfo.master.dpLength = this.formDataInfo.master.dpLengthInch
+        this.formDataInfo.master.dpWidth = this.formDataInfo.master.dpWidthInch
         return {
           dpLength: this.formDataInfo.master.dpLengthInch,
           dpWidth: this.formDataInfo.master.dpWidthInch
-        };
+        }
       }
-      return this.formDataInfo.master;
+      return this.formDataInfo.master
     },
-    bpCBoxCode() {
-      return this.formDataInfo.master.bpCBoxCode;
+    bpCBoxCode () {
+      return this.formDataInfo.master.bpCBoxCode
     },
-    bpCSizeL() {
-      return this.formDataInfo.master.bpCSizeL;
+    bpCSizeL () {
+      return this.formDataInfo.master.bpCSizeL
     },
-    bpPSizeComputed() {
+    bpPSizeComputed () {
       return (
         this.formDataInfo.master.bpPSizeL +
         this.formDataInfo.master.bpPSizeW +
         this.formDataInfo.master.bpPSizeH
-      );
+      )
     },
-    bpCSizeComptued() {
-      //return this.formDataInfo.master.bpCSizeL + this.formDataInfo.master.bpCSizeW + this.formDataInfo.master.bpCSizeH;
-      return 0;
+    bpCSizeComptued () {
+      // return this.formDataInfo.master.bpCSizeL + this.formDataInfo.master.bpCSizeW + this.formDataInfo.master.bpCSizeH;
+      return 0
     },
-    lbComputed() {
+    lbComputed () {
       return (
         this.formDataInfo.master.bpCArtId +
         this.formDataInfo.master.lengId +
         this.formDataInfo.master.bpPArtId
-      );
+      )
     },
-    productMDatasTableDataComputed() {
+    productMDatasTableDataComputed () {
       if (this.productMDatasTableDataList.length > 0) {
-        let tempData = this.productMDatasTableDataList[0];
+        let tempData = this.productMDatasTableDataList[0]
         return (
           tempData.bmSSizeL +
           tempData.bmSSizeW +
           tempData.bmSizeL +
           tempData.bmSizeW
-        );
+        )
       } else {
-        return -1;
+        return -1
       }
     }
   },
   watch: {
-    showWindow: function(n, o) {
+    showWindow: function (n, o) {
       if (!n) {
-        //this.resetForm();
+        // this.resetForm();
       }
     },
     lbCodeList: {
-      handler(newData, oldData) {
-        //愣别列表被加载后，默认选中第一条数据
+      handler (newData, oldData) {
+        // 愣别列表被加载后，默认选中第一条数据
         if (newData != undefined && newData.length > 0) {
-          //this.$set(this.formDataInfo.master,'lengId',newData[0].lengId);
-          this.formDataInfo.master.lengId = newData[0].lengId;
-          this.formDataInfo.master.lbCode = newData[0].lbCode;
+          // this.$set(this.formDataInfo.master,'lengId',newData[0].lengId);
+          this.formDataInfo.master.lengId = newData[0].lengId
+          this.formDataInfo.master.lbCode = newData[0].lbCode
         }
       },
       deep: true
     },
-    "formDataInfo.master.bpIsDiameter": function(n, o) {
-      //内径改变，需要改变生产规格,然后生产规格改变加载数据
+    'formDataInfo.master.bpIsDiameter': function (n, o) {
+      // 内径改变，需要改变生产规格,然后生产规格改变加载数据
       if (n != o) {
-        this.calcProductSizeByDiameter();
+        this.calcProductSizeByDiameter()
       }
     },
-    "formDataInfo.master.custId": function(n, o) {
-      //客户改变 --> 生产规格 --> 纸板规格用料
-      //1.计算生产规格
-      //debugger;
+    'formDataInfo.master.custId': function (n, o) {
+      // 客户改变 --> 生产规格 --> 纸板规格用料
+      // 1.计算生产规格
+      // debugger;
       if (n != o) {
-        this.calcProductSizeByDiameter();
+        this.calcProductSizeByDiameter()
       }
     },
-    bpPSizeComputed(n, o) {
+    bpPSizeComputed (n, o) {
       /**
        * 生产规格改变
        *   纸板规格用料
        *   计算面积，体积，单重
        */
-      //延迟一会儿在触发，避免发送多次请求
+      // 延迟一会儿在触发，避免发送多次请求
       if (n != o) {
-        clearTimeout(this.timeoutId);
+        clearTimeout(this.timeoutId)
         this.timeoutId = setTimeout(() => {
-          //1.计算用料
-          this.calcMaterialData();
-          //2.计算面积，体积，单重
-          //this.calcBoxExpressions();
-        }, 1000);
+          // 1.计算用料
+          this.calcMaterialData()
+          // 2.计算面积，体积，单重
+          // this.calcBoxExpressions();
+        }, 1000)
       }
     },
-    "formDataInfo.master.bpPBoxCode": function(n, o) {
+    'formDataInfo.master.bpPBoxCode': function (n, o) {
       /**
        * 生产盒式改变 --> 生产规格 ->纸板规格用料--> 计算面积等
        */
       if (n != o) {
-        this.calcProductSizeByDiameter();
+        this.calcProductSizeByDiameter()
       }
     },
-    bpCSizeComptued() {
-      //客方规格改变 --> 生产规格 --> 纸板规格用料 --> 计算面积等
-      //this.calcProductSizeByDiameter();
+    bpCSizeComptued () {
+      // 客方规格改变 --> 生产规格 --> 纸板规格用料 --> 计算面积等
+      // this.calcProductSizeByDiameter();
     },
-    "formDataInfo.master.bpPArtCode": function(n, o) {
-      //生产纸质改变 --> 纸板规格用料 --> 计算面积等
-      //this.calcMaterialData();
+    'formDataInfo.master.bpPArtCode': function (n, o) {
+      // 生产纸质改变 --> 纸板规格用料 --> 计算面积等
+      // this.calcMaterialData();
     },
-    "formDataInfo.master.bpIsFullPrint": function(n, o) {
-      //满版印刷 --> 纸板规格用料 --> 计算面积等
+    'formDataInfo.master.bpIsFullPrint': function (n, o) {
+      // 满版印刷 --> 纸板规格用料 --> 计算面积等
       if (n != o) {
-        this.calcMaterialData();
+        this.calcMaterialData()
       }
     },
-    "formDataInfo.master.bpMoCut": function(n, o) {
-      //模数改变 --> 纸板规格用料 --> 计算面积等
+    'formDataInfo.master.bpMoCut': function (n, o) {
+      // 模数改变 --> 纸板规格用料 --> 计算面积等
       if (n != o) {
-        this.calcMaterialData();
+        this.calcMaterialData()
       }
     },
     // "formDataInfo.master.bpDPNo": function(n, o) {
@@ -1052,149 +1052,149 @@ export default {
     //     this.calcMaterialData();
     //   }
     // },
-    lbComputed(n, o) {
-      //愣别改变 --> 纸板规格用料 --> 计算面积等
-      let lengId = this.formDataInfo.master.lengId;
+    lbComputed (n, o) {
+      // 愣别改变 --> 纸板规格用料 --> 计算面积等
+      let lengId = this.formDataInfo.master.lengId
       if (n != o && lengId != null && lengId != null) {
-        clearTimeout(this.timeoutId);
+        clearTimeout(this.timeoutId)
         this.timeoutId = setTimeout(() => {
-          this.calcMaterialData();
-        }, 500);
+          this.calcMaterialData()
+        }, 500)
       }
     },
-    "formDataInfo.master.bpUnit": function(n, o) {
-      //客方单位 --> 纸板规格用料 --> 计算面积等
+    'formDataInfo.master.bpUnit': function (n, o) {
+      // 客方单位 --> 纸板规格用料 --> 计算面积等
       if (n != o) {
         // this.calcMaterialData();
-        this.calcProductSizeByDiameter();
+        this.calcProductSizeByDiameter()
       }
     },
-    productMDatasTableDataComputed(n, o) {
+    productMDatasTableDataComputed (n, o) {
       /**
        * 纸板规格第一行
        * bmSSizeL/净料规格长   bmSSizeW/净料规格宽   bmSizeL/用料规格长   bmSizeW/用料规格宽
        * 值改变事件
        */
       if (n == 0) {
-        return;
+        return
       }
-      //延迟执行加载体积，重量，等数据
-      clearTimeout(this.timeoutId);
+      // 延迟执行加载体积，重量，等数据
+      clearTimeout(this.timeoutId)
       this.timeoutId = setTimeout(() => {
-        this.calcBoxExpressions();
-      }, 1000);
+        this.calcBoxExpressions()
+      }, 1000)
     },
-    "formDataInfo.productMDatas.defaultList": {
-      handler(n, o) {
-        //什么时候会出现数据，编辑的时候，会有，直接赋值就好
+    'formDataInfo.productMDatas.defaultList': {
+      handler (n, o) {
+        // 什么时候会出现数据，编辑的时候，会有，直接赋值就好
         if (n && n.length > 0) {
-          this.productMDatasTableDataList = JSON.parse(JSON.stringify(n));
+          this.productMDatasTableDataList = JSON.parse(JSON.stringify(n))
         }
         this.updateFirstRequstTimeoutId = setTimeout(() => {
-          this.updateFirstRequstIntercept = false;
-          this.updateFirstRequstTimeoutId = -1;
-        }, 2000);
+          this.updateFirstRequstIntercept = false
+          this.updateFirstRequstTimeoutId = -1
+        }, 2000)
       },
       deep: true
     },
-    "formDataInfo.master.bpCArtId": function(n, o) {
-      if (n && n != null && n != "") {
-        let data = [];
-        data.push({ data: { bpCArtId: n } });
-        this.artPopupFillEvent(data);
+    'formDataInfo.master.bpCArtId': function (n, o) {
+      if (n && n != null && n != '') {
+        let data = []
+        data.push({ data: { bpCArtId: n } })
+        this.artPopupFillEvent(data)
       }
     }
   },
   methods: {
-    //controller start
-    getPressingLineTypeList() {
-      //获取压线类型
+    // controller start
+    getPressingLineTypeList () {
+      // 获取压线类型
       request
         .get(
-          "/common/sys/dic/childList/bmScoreType",
+          '/common/sys/dic/childList/bmScoreType',
           {},
           {
-            qt: "pValue"
+            qt: 'pValue'
           }
         )
         .then(res => {
           res.forEach(item => {
-            item.dicValue = parseInt(item.dicValue);
-          });
-          this.pressingLineTypeList = res;
-        });
+            item.dicValue = parseInt(item.dicValue)
+          })
+          this.pressingLineTypeList = res
+        })
     },
-    getPressingLineDeepList() {
-      //压线深度
+    getPressingLineDeepList () {
+      // 压线深度
       request
         .get(
-          "/common/sys/dic/childList/bmScoreDepth",
+          '/common/sys/dic/childList/bmScoreDepth',
           {},
           {
-            qt: "pValue"
+            qt: 'pValue'
           }
         )
         .then(res => {
           res.forEach(item => {
-            item.dicValue = parseInt(item.dicValue);
-          });
-          this.pressingLineDeepList = res;
-        });
+            item.dicValue = parseInt(item.dicValue)
+          })
+          this.pressingLineDeepList = res
+        })
     },
-    getFormInitDataObj() {
-      //加载表单初始化数据
-      request.get("/sys/form/init/productFm").then(res => {
-        res.initData.master.bpHatch = 0; //开口赋默认值
-        res.initData.master.bpAdjBorder = 0; //修边赋默认值
-        this.initData = res;
-        this.formDataInfo["master"] = JSON.parse(
+    getFormInitDataObj () {
+      // 加载表单初始化数据
+      request.get('/sys/form/init/productFm').then(res => {
+        res.initData.master.bpHatch = 0 // 开口赋默认值
+        res.initData.master.bpAdjBorder = 0 // 修边赋默认值
+        this.initData = res
+        this.formDataInfo['master'] = JSON.parse(
           JSON.stringify(res.initData.master)
-        );
-        this.formDataInfo.master["dpLengthInch"] = 0;
-        this.formDataInfo.master["dpWidthInch"] = 0;
-      });
+        )
+        this.formDataInfo.master['dpLengthInch'] = 0
+        this.formDataInfo.master['dpWidthInch'] = 0
+      })
     },
-    getLbList(artId, callback) {
-      //根据纸质ID,查询纸质对应的愣别列表
+    getLbList (artId, callback) {
+      // 根据纸质ID,查询纸质对应的愣别列表
       request
-        .post("/bas/art/item/list", {
+        .post('/bas/art/item/list', {
           artId: artId
         })
         .then(res => {
           if (callback) {
-            callback(res);
+            callback(res)
           } else {
             if (res.length > 0) {
-              this.lbCodeList = res;
+              this.lbCodeList = res
             } else {
-              this.$Message.error(this.$t("product.edit.artLbNotFound"));
+              this.$Message.error(this.$t('product.edit.artLbNotFound'))
             }
           }
         })
         .catch(() => {
-          this.$Message.error(this.$t("product.edit.lbLoadError"));
-        });
+          this.$Message.error(this.$t('product.edit.lbLoadError'))
+        })
     },
-    submitFormData(submitDataObj) {
-      //提交表单数据
+    submitFormData (submitDataObj) {
+      // 提交表单数据
       return new Promise((resolve, reject) => {
         request
-          .post("/bas/product/saveOrUpdate", submitDataObj)
+          .post('/bas/product/saveOrUpdate', submitDataObj)
           .then(res => {
-            resolve(res);
+            resolve(res)
           })
           .catch(err => {
-            reject(err);
-          });
-      });
+            reject(err)
+          })
+      })
     },
-    getCalProductSizeValue(custId, bpPBoxId, lengId, pSize, type) {
+    getCalProductSizeValue (custId, bpPBoxId, lengId, pSize, type) {
       /**
        * 获取计算的生产规格
        * 参数：客户id(custId),生产盒式id(bpPBoxId),楞别id（lengId),
        * 客方规格(pSize),type:类型（L,W,H）
        */
-      request.fsLoading = true;
+      request.fsLoading = true
       return new Promise((resolve, reject) => {
         let requestDataObj = {
           custId: custId,
@@ -1202,71 +1202,71 @@ export default {
           lengId: lengId,
           pSize: pSize,
           type: type
-        };
+        }
         request
-          .post("/bas/product/calProductSize", requestDataObj)
+          .post('/bas/product/calProductSize', requestDataObj)
           .then(res => {
             if (res != null) {
-              resolve(res);
+              resolve(res)
             } else {
-              reject();
+              reject()
             }
           })
           .catch(err => {
-            reject(err);
-          });
-      });
+            reject(err)
+          })
+      })
     },
-    getCalMaterialDataList(requestDataObj) {
-      //计算用料
-      request.fsLoading = true;
+    getCalMaterialDataList (requestDataObj) {
+      // 计算用料
+      request.fsLoading = true
       return new Promise((resolve, reject) => {
         request
-          .post("/bas/product/calMaterialData", requestDataObj)
+          .post('/bas/product/calMaterialData', requestDataObj)
           .then(res => {
-            resolve(res);
+            resolve(res)
           })
           .catch(err => {
-            reject(err);
-          });
-      });
+            reject(err)
+          })
+      })
     },
-    getCalProductSizeByDiameterObj(requestDataObj) {
-      //内径改变计算生产规格
-      request.fsLoading = true;
+    getCalProductSizeByDiameterObj (requestDataObj) {
+      // 内径改变计算生产规格
+      request.fsLoading = true
       return new Promise((resolve, reject) => {
         request
-          .post("/bas/product/calProductSizeByDiameter", requestDataObj)
+          .post('/bas/product/calProductSizeByDiameter', requestDataObj)
           .then(res => {
             if (res != null) {
-              resolve(res);
+              resolve(res)
             } else {
-              reject();
+              reject()
             }
           })
           .catch(err => {
-            reject(err);
-          });
-      });
+            reject(err)
+          })
+      })
     },
-    getCalcBoxExpressionsObj(requestDataObj) {
-      //计算面积，体积，单重等
-      request.fsLoading = true;
+    getCalcBoxExpressionsObj (requestDataObj) {
+      // 计算面积，体积，单重等
+      request.fsLoading = true
       return new Promise((resolve, reject) => {
         request
-          .post("/bas/product/calcBoxExpressions", requestDataObj)
+          .post('/bas/product/calcBoxExpressions', requestDataObj)
           .then(res => {
-            resolve(res);
+            resolve(res)
           })
           .catch(err => {
-            reject(err);
-          });
-      });
+            reject(err)
+          })
+      })
     },
-    //controller end
-    //handler start
-    calcProductSize(custSpecValue, type) {
-      /**custSpecValue:客方规格，长|宽|高 的值
+    // controller end
+    // handler start
+    calcProductSize (custSpecValue, type) {
+      /** custSpecValue:客方规格，长|宽|高 的值
        *type：类型  L|W|H
        * productSpecFieldName:生产规格字段名称
        * 计算生产规格，什么时候计算？
@@ -1275,50 +1275,50 @@ export default {
       if (
         custSpecValue == undefined ||
         custSpecValue == null ||
-        custSpecValue == ""
+        custSpecValue == ''
       ) {
-        return;
+        return
       }
       if (
         !this.formDataInfo.master.bpIsDiameter ||
         this.formDataInfo.master.bpPBoxId == null ||
-        this.formDataInfo.master.bpPBoxId == ""
+        this.formDataInfo.master.bpPBoxId == ''
       ) {
-        if (type == "L") {
-          this.formDataInfo.master.bpPSizeL = custSpecValue;
-        } else if (type == "W") {
-          this.formDataInfo.master.bpPSizeW = custSpecValue;
-        } else if (type == "H") {
-          this.formDataInfo.master.bpPSizeH = custSpecValue;
+        if (type == 'L') {
+          this.formDataInfo.master.bpPSizeL = custSpecValue
+        } else if (type == 'W') {
+          this.formDataInfo.master.bpPSizeW = custSpecValue
+        } else if (type == 'H') {
+          this.formDataInfo.master.bpPSizeH = custSpecValue
         }
-        return;
+        return
       }
-      //请求服务器
-      let custId = this.formDataInfo.master.custId;
-      let bpPBoxId = this.formDataInfo.master.bpPBoxId;
-      let lengId = this.formDataInfo.master.lengId;
-      //res 存在返回null的情况，会存入catch
+      // 请求服务器
+      let custId = this.formDataInfo.master.custId
+      let bpPBoxId = this.formDataInfo.master.bpPBoxId
+      let lengId = this.formDataInfo.master.lengId
+      // res 存在返回null的情况，会存入catch
       this.getCalProductSizeValue(custId, bpPBoxId, lengId, custSpecValue, type)
         .then(res => {
-          if (type == "L") {
-            this.formDataInfo.master.bpPSizeL = res;
-          } else if (type == "W") {
-            this.formDataInfo.master.bpPSizeW = res;
-          } else if (type == "H") {
-            this.formDataInfo.master.bpPSizeH = res;
+          if (type == 'L') {
+            this.formDataInfo.master.bpPSizeL = res
+          } else if (type == 'W') {
+            this.formDataInfo.master.bpPSizeW = res
+          } else if (type == 'H') {
+            this.formDataInfo.master.bpPSizeH = res
           }
         })
         .catch(err => {
-          if (type == "L") {
-            this.formDataInfo.master.bpPSizeL = custSpecValue;
-          } else if (type == "W") {
-            this.formDataInfo.master.bpPSizeW = custSpecValue;
-          } else if (type == "H") {
-            this.formDataInfo.master.bpPSizeH = custSpecValue;
+          if (type == 'L') {
+            this.formDataInfo.master.bpPSizeL = custSpecValue
+          } else if (type == 'W') {
+            this.formDataInfo.master.bpPSizeW = custSpecValue
+          } else if (type == 'H') {
+            this.formDataInfo.master.bpPSizeH = custSpecValue
           }
-        });
+        })
     },
-    calcUseMaterialNum() {
+    calcUseMaterialNum () {
       /**
        * 针对于纸板规格
        * 计算用料系数
@@ -1332,49 +1332,49 @@ export default {
       /* if (!this.formDataInfo.productMDatas) {
             return;
           } */
-      let _self = this;
+      let _self = this
       this.productMDatasTableDataList.forEach((item, index) => {
-        //计算纸度开 纸度开=用料规格宽/净料规格宽
-        let bmKsW = calc.div(item.bmSizeW, item.bmSSizeW);
-        item.bmKsW = isNaN(bmKsW) ? item.bmKsW : Math.ceil(bmKsW);
-        //计算纸长开 纸长开=用料规格长/净料规格长
-        let bmKsL = calc.div(item.bmSizeL, item.bmSSizeL);
-        item.bmKsL = isNaN(bmKsL) ? item.bmKsL : bmKsL;
-        //总开数=纸度开*纸长开
-        let bmKsTotal = calc.mul(item.bmKsW, item.bmKsL);
-        item.bmKsTotal = isNaN(bmKsTotal) ? 1 : bmKsTotal == 0 ? 1 : bmKsTotal;
-        //计算修边
+        // 计算纸度开 纸度开=用料规格宽/净料规格宽
+        let bmKsW = calc.div(item.bmSizeW, item.bmSSizeW)
+        item.bmKsW = isNaN(bmKsW) ? item.bmKsW : Math.ceil(bmKsW)
+        // 计算纸长开 纸长开=用料规格长/净料规格长
+        let bmKsL = calc.div(item.bmSizeL, item.bmSSizeL)
+        item.bmKsL = isNaN(bmKsL) ? item.bmKsL : bmKsL
+        // 总开数=纸度开*纸长开
+        let bmKsTotal = calc.mul(item.bmKsW, item.bmKsL)
+        item.bmKsTotal = isNaN(bmKsTotal) ? 1 : bmKsTotal == 0 ? 1 : bmKsTotal
+        // 计算修边
         let bmAdjBorder = calc.sub(
           item.bmSizeW,
           calc.mul(item.bmSSizeW, item.bmKsW)
-        );
-        item.bmAdjBorder = isNaN(bmAdjBorder) ? item.bmAdjBorder : bmAdjBorder;
-        //计算用料系数
-        let modulus = 1;
+        )
+        item.bmAdjBorder = isNaN(bmAdjBorder) ? item.bmAdjBorder : bmAdjBorder
+        // 计算用料系数
+        let modulus = 1
         if (item.bmDoubleCut) {
-          //双片
-          modulus = 2;
+          // 双片
+          modulus = 2
         }
         let qty = calc.div(
           modulus,
           calc.div(item.bmKsTotal, _self.formDataInfo.master.bpMoCut)
-        );
-        item.bmQty = qty;
-      });
+        )
+        item.bmQty = qty
+      })
     },
-    calcProductSizeByDiameter() {
-      if (this.action != "add" && this.updateFirstRequstIntercept) {
-        return;
+    calcProductSizeByDiameter () {
+      if (this.action != 'add' && this.updateFirstRequstIntercept) {
+        return
       }
       /**
        * 内径发生改变，需要计算生产规格
        */
-      let master = this.formDataInfo.master;
-      let fields = ["bpCSizeL", "bpCSizeW", "bpCSizeH"];
+      let master = this.formDataInfo.master
+      let fields = ['bpCSizeL', 'bpCSizeW', 'bpCSizeH']
       for (let i = 0; i < fields.length; i++) {
-        let value = master[fields[i]];
-        if (value == undefined || value == null || value == "") {
-          return;
+        let value = master[fields[i]]
+        if (value == undefined || value == null || value == '') {
+          return
         }
       }
       if (!this.formDataInfo.master.bpIsDiameter) {
@@ -1385,10 +1385,10 @@ export default {
             this.formDataInfo.master.bpCSizeW ||
           this.formDataInfo.master.bpPSizeH != this.formDataInfo.master.bpCSizeH
         ) {
-          this.formDataInfo.master.bpPSizeL = this.formDataInfo.master.bpCSizeL;
-          this.formDataInfo.master.bpPSizeW = this.formDataInfo.master.bpCSizeW;
-          this.formDataInfo.master.bpPSizeH = this.formDataInfo.master.bpCSizeH;
-          return;
+          this.formDataInfo.master.bpPSizeL = this.formDataInfo.master.bpCSizeL
+          this.formDataInfo.master.bpPSizeW = this.formDataInfo.master.bpCSizeW
+          this.formDataInfo.master.bpPSizeH = this.formDataInfo.master.bpCSizeH
+          return
         }
       }
 
@@ -1400,51 +1400,51 @@ export default {
         bpCSizeW: master.bpCSizeW,
         bpCSizeH: master.bpCSizeH,
         bpUnit: master.bpUnit
-      };
+      }
       this.getCalProductSizeByDiameterObj(requestDataObj)
         .then(res => {
-          //debugger;
+          // debugger;
           if (res != null) {
             if (res.bpPSizeL != null) {
-              this.formDataInfo.master.bpPSizeL = res.bpPSizeL;
+              this.formDataInfo.master.bpPSizeL = res.bpPSizeL
             }
             if (res.bpPSizeW != null) {
-              this.formDataInfo.master.bpPSizeW = res.bpPSizeW;
+              this.formDataInfo.master.bpPSizeW = res.bpPSizeW
             }
             if (res.bpPSizeH != null) {
-              this.formDataInfo.master.bpPSizeH = res.bpPSizeH;
+              this.formDataInfo.master.bpPSizeH = res.bpPSizeH
             }
-            //需要获取纸质规格
-            //this.calMaterialData();
+            // 需要获取纸质规格
+            // this.calMaterialData();
           }
         })
         .catch(() => {
-          this.formDataInfo.master.bpPSizeL = this.formDataInfo.master.bpCSizeL;
-          this.formDataInfo.master.bpPSizeW = this.formDataInfo.master.bpCSizeW;
-          this.formDataInfo.master.bpPSizeH = this.formDataInfo.master.bpCSizeH;
-          this.calcMaterialData();
-        });
+          this.formDataInfo.master.bpPSizeL = this.formDataInfo.master.bpCSizeL
+          this.formDataInfo.master.bpPSizeW = this.formDataInfo.master.bpCSizeW
+          this.formDataInfo.master.bpPSizeH = this.formDataInfo.master.bpCSizeH
+          this.calcMaterialData()
+        })
     },
-    calcBoxExpressions() {
-      if (this.action != "add" && this.updateFirstRequstIntercept) {
-        return;
+    calcBoxExpressions () {
+      if (this.action != 'add' && this.updateFirstRequstIntercept) {
+        return
       }
       /**
        * 计算面积，体积，单重等
        * 用料规格，净料规格，双片，修边都取纸板规格第一条数据
        */
-      let master = this.formDataInfo.master;
+      let master = this.formDataInfo.master
       if (this.productMDatasTableDataList.length == 0) {
-        return;
+        return
       }
-      //需要对关键字段进行校验，如果为空，就不能去请求
-      let subData = this.productMDatasTableDataList[0];
+      // 需要对关键字段进行校验，如果为空，就不能去请求
+      let subData = this.productMDatasTableDataList[0]
       if (
         !subData.bmArtId ||
         subData.bmArtId == null ||
-        subData.bmArtId == ""
+        subData.bmArtId == ''
       ) {
-        return;
+        return
       }
       let requestDataObj = {
         artId: subData.bmArtId,
@@ -1456,7 +1456,7 @@ export default {
         bmSizeW: subData.bmSizeW,
         boxCode: master.bpPBoxCode,
         bpHatch: master.bpHatch,
-        coDate: "2020-02-01 09:59:49", //有点问题，但是不这么写后台会报错，先暂时这么处理.@白羊 2020.02.26
+        coDate: '2020-02-01 09:59:49', // 有点问题，但是不这么写后台会报错，先暂时这么处理.@白羊 2020.02.26
         custId: master.custId,
         kQty: 1,
         lbCode: master.lbCode,
@@ -1472,38 +1472,38 @@ export default {
         unit: master.bpUnit,
         waste: master.bpAdjBorder,
         totalKs: subData.bmKsTotal
-      };
+      }
       this.getCalcBoxExpressionsObj(requestDataObj).then(res => {
-        //单面积
-        this.formDataInfo.master.bpSArea = res.bp_SArea;
-        //客户单面积
-        this.formDataInfo.master.bpCustSArea = res.bp_CustSArea;
-        //单重
-        this.formDataInfo.master.bpSWeight = res.bp_SWeight;
-        //客方单重
-        this.formDataInfo.master.bpCustSWeight = res.bp_CustSWeight;
-        //单体积
-        this.formDataInfo.master.bpSCube = res.bp_SCube;
-      });
+        // 单面积
+        this.formDataInfo.master.bpSArea = res.bp_SArea
+        // 客户单面积
+        this.formDataInfo.master.bpCustSArea = res.bp_CustSArea
+        // 单重
+        this.formDataInfo.master.bpSWeight = res.bp_SWeight
+        // 客方单重
+        this.formDataInfo.master.bpCustSWeight = res.bp_CustSWeight
+        // 单体积
+        this.formDataInfo.master.bpSCube = res.bp_SCube
+      })
     },
-    buildMaterialRequestData() {
-      //构建用料参数组装
-      let master = this.formDataInfo.master;
+    buildMaterialRequestData () {
+      // 构建用料参数组装
+      let master = this.formDataInfo.master
       let validatorFields = [
-        "custId",
-        "bpUnit",
-        "bpCArtCode",
-        "bpPBoxCode",
-        "bpPSizeL",
-        "bpPSizeW",
-        "lbCode",
-        "lengId"
-      ];
-      //校验，每个参数都必须有值，否则请求后台会返回多个参数错误的异常提示
+        'custId',
+        'bpUnit',
+        'bpCArtCode',
+        'bpPBoxCode',
+        'bpPSizeL',
+        'bpPSizeW',
+        'lbCode',
+        'lengId'
+      ]
+      // 校验，每个参数都必须有值，否则请求后台会返回多个参数错误的异常提示
       for (let i = 0; i < validatorFields.length; i++) {
-        let value = master[validatorFields[i]];
-        if (value == undefined || value == null || value === "") {
-          return;
+        let value = master[validatorFields[i]]
+        if (value == undefined || value == null || value === '') {
+          return
         }
       }
 
@@ -1523,12 +1523,12 @@ export default {
         sizeHeight: master.bpPSizeH,
         unit: master.bpUnit,
         waste: 0
-      };
-      return requestDataObj;
+      }
+      return requestDataObj
     },
-    calcMaterialData() {
-      if (this.action != "add" && this.updateFirstRequstIntercept) {
-        return;
+    calcMaterialData () {
+      if (this.action != 'add' && this.updateFirstRequstIntercept) {
+        return
       }
       /**
        *计算用料
@@ -1543,41 +1543,41 @@ export default {
        * 最小紙長大于最大紙長
        */
 
-      let requestDataObj = this.buildMaterialRequestData();
+      let requestDataObj = this.buildMaterialRequestData()
       if (!requestDataObj) {
-        return;
+        return
       }
       this.getCalMaterialDataList(requestDataObj).then(res => {
         /**
          * 得到结果之后，需要对数据进行处理，处理的原则是根据bmIndex字段来判断，多条数据中，如果
          * bmIndex都相同，那么就只显示相同的第一条数据
          */
-        let flag = -1;
-        this.productMDatasTableDataList = [];
-        this.productMDatasTableDataListCache = res;
+        let flag = -1
+        this.productMDatasTableDataList = []
+        this.productMDatasTableDataListCache = res
         res.forEach((item, index) => {
           if (flag != item.bmIndex) {
-            flag = item.bmIndex;
+            flag = item.bmIndex
             if (item.bmIndex && item.bmIndex == 0) {
-              item.bmIndex = index + 1;
+              item.bmIndex = index + 1
             }
-            this.productMDatasTableDataList.push(item);
+            this.productMDatasTableDataList.push(item)
           }
-        });
-        //计算完用料之后，加载体积等。。。
-        //this.calcBoxExpressions();
-      });
+        })
+        // 计算完用料之后，加载体积等。。。
+        // this.calcBoxExpressions();
+      })
     },
-    buildProductworkProcsSubmitData() {
+    buildProductworkProcsSubmitData () {
       /**
        * 构建纸板规格提交数据结构，编辑的时候情况比较麻烦，所以自行构造数据结构，
        * 基本思路是：编辑的时候数据存放在defaultList里面，同时这些数据也会放在productMDatasTableDataList里面
        * 最终的操作也是针对productMDatasTableDataList
        * 所以，在最后构建数据的时候和defaultList里面的数据比较，ID相同的就是修改，没有ID的就是添加，ID已经不存在的就是删除
        */
-      //如果list中没有数据，那么直接调用eTable中的方法获取
+      // 如果list中没有数据，那么直接调用eTable中的方法获取
       if (this.formDataInfo.productMDatas.defaultList.length == 0) {
-        return this.$refs.slave_edit_productMDataFm.getCategorizeData();
+        return this.$refs.slave_edit_productMDataFm.getCategorizeData()
       }
       /**
        * 存在数据就需要比较，最终数据结构为
@@ -1591,222 +1591,222 @@ export default {
         addList: [],
         updateList: [],
         deleteList: []
-      };
-      //下面开始比较
-      //找新增
-      let productMDatasTableTempData = {};
+      }
+      // 下面开始比较
+      // 找新增
+      let productMDatasTableTempData = {}
       this.productMDatasTableDataList.forEach(item => {
-        //ID不存在就是添加
-        if (item.id == undefined || item.id == null || item.id == "") {
-          productMDatas.addList.push(item);
+        // ID不存在就是添加
+        if (item.id == undefined || item.id == null || item.id == '') {
+          productMDatas.addList.push(item)
         } else {
-          productMDatasTableTempData[item.id] = item;
+          productMDatasTableTempData[item.id] = item
         }
-      });
-      //找修改和删除
+      })
+      // 找修改和删除
       this.formDataInfo.productMDatas.defaultList.forEach(item => {
         if (productMDatasTableTempData[item.id] == undefined) {
-          productMDatas.deleteList.push(item);
+          productMDatas.deleteList.push(item)
         } else {
-          productMDatas.updateList.push(item);
+          productMDatas.updateList.push(item)
         }
-      });
-      return productMDatas;
+      })
+      return productMDatas
     },
-    closeActionTigger() {
-      //清空表单数据
+    closeActionTigger () {
+      // 清空表单数据
       this.formDataInfo.master = JSON.parse(
         JSON.stringify(this.initData.initData.master)
-      );
-      this.$refs.masterForm.resetFields();
-      this.$refs.slave_edit_productMDataFm.reset();
-      this.$refs.ProductWorkProc.reset();
-      this.productMDatasTableDataList = [];
-      this.formDataInfo.productworkProcs.defaultList = [];
-      this.updateFirstRequstIntercept = true;
-      clearTimeout(this.updateFirstRequstTimeoutId);
+      )
+      this.$refs.masterForm.resetFields()
+      this.$refs.slave_edit_productMDataFm.reset()
+      this.$refs.ProductWorkProc.reset()
+      this.productMDatasTableDataList = []
+      this.formDataInfo.productworkProcs.defaultList = []
+      this.updateFirstRequstIntercept = true
+      clearTimeout(this.updateFirstRequstTimeoutId)
     },
-    checkColumnsIsHidden(columnName) {
-      //判断列是否隐藏
+    checkColumnsIsHidden (columnName) {
+      // 判断列是否隐藏
       let hiddenColumns = [
-        "bmSize",
-        "bmSizeL",
-        "bmSizeW",
-        "bmKsW",
-        "bmKsL",
-        "bmKsTotal",
-        "bmDoubleCut",
-        "bmQty",
-        "bmAdjBorder"
-      ];
+        'bmSize',
+        'bmSizeL',
+        'bmSizeW',
+        'bmKsW',
+        'bmKsL',
+        'bmKsTotal',
+        'bmDoubleCut',
+        'bmQty',
+        'bmAdjBorder'
+      ]
       for (let i = 0; i < hiddenColumns.length; i++) {
         if (
           hiddenColumns[i] == columnName &&
-          this.$params.isCalPaperWidth == "0"
+          this.$params.isCalPaperWidth == '0'
         ) {
-          return false;
+          return false
         }
       }
-      return true;
+      return true
     },
-    //handler end
-    //event start
-    lbCodeChangedEvent(selectItem) {
-      //愣别发生改变
+    // handler end
+    // event start
+    lbCodeChangedEvent (selectItem) {
+      // 愣别发生改变
       if (selectItem.label) {
-        this.formDataInfo.master.lbCode = selectItem.label;
+        this.formDataInfo.master.lbCode = selectItem.label
       }
     },
-    artPopupFillEvent(data) {
-      //选择纸质后的填充事件
-      //加载愣别数据，已经默认选中第一条数据
-      let artId = data[0].data.bpCArtId;
-      if (artId != undefined && artId != "") {
-        this.getLbList(artId);
+    artPopupFillEvent (data) {
+      // 选择纸质后的填充事件
+      // 加载愣别数据，已经默认选中第一条数据
+      let artId = data[0].data.bpCArtId
+      if (artId != undefined && artId != '') {
+        this.getLbList(artId)
       }
     },
-    subArtPopupFillEvent(data) {
-      //debugger
-      //选择纸质后的填充事件
-      //加载愣别数据，已经默认选中第一条数据
-      let artId = data[0].data.bmArtId;
-      if (artId != undefined && artId != "") {
+    subArtPopupFillEvent (data) {
+      // debugger
+      // 选择纸质后的填充事件
+      // 加载愣别数据，已经默认选中第一条数据
+      let artId = data[0].data.bmArtId
+      if (artId != undefined && artId != '') {
         this.getLbList(artId, res => {
-          //debugger
-          let existsLb = false;
+          // debugger
+          let existsLb = false
           for (let i = 0; i < res.length; i++) {
             if (res[i].lengId === this.formDataInfo.master.lengId) {
-              existsLb = true;
+              existsLb = true
             }
           }
           if (!existsLb) {
-            this.$Message.error(this.$t("product.edit.artLbNotFound"));
-            //this.formDataInfo.master.lengId = ''
+            this.$Message.error(this.$t('product.edit.artLbNotFound'))
+            // this.formDataInfo.master.lengId = ''
             // this.lbCodeList = res
             this.$nextTick(() => {
               this.$refs.slave_edit_productMDataFm.set(
-                { artCode: "", bmArtId: "" },
+                { artCode: '', bmArtId: '' },
                 data[0].index
-              );
-            });
+              )
+            })
           } else {
-            this.calcBoxExpressions();
+            this.calcBoxExpressions()
           }
-        });
+        })
       }
     },
-    bpCSizeLBlurEvent() {
-      //客方长失去焦点事件
-      //更新生产规格长数据
-      //this.formDataInfo.master.bpPSizeL = this.formDataInfo.master.bpCSizeL;
-      //计算生产规格长
+    bpCSizeLBlurEvent () {
+      // 客方长失去焦点事件
+      // 更新生产规格长数据
+      // this.formDataInfo.master.bpPSizeL = this.formDataInfo.master.bpCSizeL;
+      // 计算生产规格长
       if (this.cSizeBak.CSizeL != this.formDataInfo.master.bpCSizeL) {
-        this.calcProductSize(this.formDataInfo.master.bpCSizeL, "L");
-        this.cSizeBak.CSizeL = this.formDataInfo.master.bpCSizeL;
+        this.calcProductSize(this.formDataInfo.master.bpCSizeL, 'L')
+        this.cSizeBak.CSizeL = this.formDataInfo.master.bpCSizeL
       }
-      //计算用料
-      //this.calcMaterialData();
+      // 计算用料
+      // this.calcMaterialData();
     },
-    bpCSizeWBlurEvent() {
-      //客方宽失去焦点事件
-      //this.formDataInfo.master.bpPSizeW = this.formDataInfo.master.bpCSizeW;
+    bpCSizeWBlurEvent () {
+      // 客方宽失去焦点事件
+      // this.formDataInfo.master.bpPSizeW = this.formDataInfo.master.bpCSizeW;
       if (this.cSizeBak.CSizeW != this.formDataInfo.master.bpCSizeW) {
-        this.calcProductSize(this.formDataInfo.master.bpCSizeW, "W");
-        this.cSizeBak.CSizeW = this.formDataInfo.master.bpCSizeW;
+        this.calcProductSize(this.formDataInfo.master.bpCSizeW, 'W')
+        this.cSizeBak.CSizeW = this.formDataInfo.master.bpCSizeW
       }
 
-      //this.calcMaterialData();
+      // this.calcMaterialData();
     },
-    bpCSizeHBlurEvent() {
-      //客方高失去焦点事件
-      //this.formDataInfo.master.bpPSizeH = this.formDataInfo.master.bpCSizeH;
+    bpCSizeHBlurEvent () {
+      // 客方高失去焦点事件
+      // this.formDataInfo.master.bpPSizeH = this.formDataInfo.master.bpCSizeH;
       if (this.cSizeBak.CSizeH != this.formDataInfo.master.bpCSizeH) {
-        this.calcProductSize(this.formDataInfo.master.bpCSizeH, "H");
-        this.cSizeBak.CSizeH = this.formDataInfo.master.bpCSizeH;
+        this.calcProductSize(this.formDataInfo.master.bpCSizeH, 'H')
+        this.cSizeBak.CSizeH = this.formDataInfo.master.bpCSizeH
       }
-      //this.calcMaterialData();
+      // this.calcMaterialData();
     },
-    paperSpecSelectRenderEvent(selectData) {
-      //纸板规格选中回调事件
+    paperSpecSelectRenderEvent (selectData) {
+      // 纸板规格选中回调事件
       let newSpecData = Object.assign(
         this.productMDatasTableDataList[this.productMDatasDBClickIndex],
         selectData
-      );
+      )
       this.$refs.slave_edit_productMDataFm.set(
         newSpecData,
         this.productMDatasDBClickIndex
-      );
+      )
     },
-    paperSpecRowDBClickEvent(rowIndex, rowData) {
-      //纸板规格行被双击事件
-      //debugger;
-      let requestDataObj = this.buildMaterialRequestData();
+    paperSpecRowDBClickEvent (rowIndex, rowData) {
+      // 纸板规格行被双击事件
+      // debugger;
+      let requestDataObj = this.buildMaterialRequestData()
       if (!requestDataObj) {
-        return;
+        return
       }
-      this.productMDatasDBClickIndex = rowIndex;
-      this.productSpecShow = true;
-      //调用弹出框，加载数据方法，加载弹出框数据
-      this.$refs.productSpec.loadData(requestDataObj, rowData.bmIndex);
+      this.productMDatasDBClickIndex = rowIndex
+      this.productSpecShow = true
+      // 调用弹出框，加载数据方法，加载弹出框数据
+      this.$refs.productSpec.loadData(requestDataObj, rowData.bmIndex)
     },
-    submitFormDataEvent() {
-      //表单数据提交事件
+    submitFormDataEvent () {
+      // 表单数据提交事件
       this.$refs.masterForm.validate(valid => {
-        //主表校验失败
+        // 主表校验失败
         if (!valid) {
-          return;
+          return
         }
-        //纸板规格校验 true就是有问题
-        let result = this.$refs.slave_edit_productMDataFm.validate();
+        // 纸板规格校验 true就是有问题
+        let result = this.$refs.slave_edit_productMDataFm.validate()
         if (result) {
-          return;
+          return
         }
-        //生产工序校验
-        result = this.$refs.ProductWorkProc.validate();
+        // 生产工序校验
+        result = this.$refs.ProductWorkProc.validate()
         if (result) {
-          return;
+          return
         }
         /**
          * 组装提交的数据结构
          * {master:{},productMDatas:{},productworkProcs:{}}
          */
-        let productMDatasData = this.buildProductworkProcsSubmitData();
-        let productworkProcsData = this.$refs.ProductWorkProc.getCategorizeData();
+        let productMDatasData = this.buildProductworkProcsSubmitData()
+        let productworkProcsData = this.$refs.ProductWorkProc.getCategorizeData()
         let submitDataObj = {
           master: this.formDataInfo.master,
           productMDatas: productMDatasData,
           productworkProcs: productworkProcsData
-        };
-        //提交数据
+        }
+        // 提交数据
         this.submitFormData(submitDataObj).then(res => {
-          this.$Message.success(this.$t("common.handlerSuccess"));
-          this.$emit("submit-success");
-          this.closeActionTigger();
-          this.showWindow = false;
-        });
-      });
+          this.$Message.success(this.$t('common.handlerSuccess'))
+          this.$emit('submit-success')
+          this.closeActionTigger()
+          this.showWindow = false
+        })
+      })
     },
-    bpDPNoOnFillEvent(data) {
+    bpDPNoOnFillEvent (data) {
       // 模板填充事件
       // 模板改变 --> 纸板规格用料 --> 计算面积等
       if (data[0].data.bpDPNo && data[0].data.bpDPNo != null) {
-        this.calcMaterialData();
+        this.calcMaterialData()
       }
     }
   },
-  created() {
-    this.getFormInitDataObj(); //获取初始化数据
-    this.getPressingLineTypeList(); //获取压线类型列表
-    this.getPressingLineDeepList(); //获取压线深度列表
+  created () {
+    this.getFormInitDataObj() // 获取初始化数据
+    this.getPressingLineTypeList() // 获取压线类型列表
+    this.getPressingLineDeepList() // 获取压线深度列表
   },
-  updated() {
+  updated () {
     if (this.$refs.masterForm) {
-      let height = document.body.offsetHeight;
+      let height = document.body.offsetHeight
       this.tableDefaultHeight =
-        height - (this.$refs.masterForm.$el.offsetHeight + 60 + 50 + 40);
+        height - (this.$refs.masterForm.$el.offsetHeight + 60 + 50 + 40)
     }
   }
-};
+}
 </script>
 
 <style>

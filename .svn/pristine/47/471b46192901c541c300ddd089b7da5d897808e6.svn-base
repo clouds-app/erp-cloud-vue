@@ -1,0 +1,170 @@
+<template>
+  <div class="cl-moudle">
+    <htmlTemplate
+      :currrentRowItem="currrentRowItem"
+      @isLoaddingDone="getLoaddingDone"
+      :requestBaseUrl="functionParams.requestBaseUrl"
+      :uniqueId="functionParams.uniqueId"
+      :queryParamsDefault="queryParamsDefault"
+    >
+    </htmlTemplate>
+    <div ref="contextMenuTarget" class="content-container" :style="{ height: tableHeight + 'px' }">
+      <Split :v-model="splitModel" mode="vertical">
+        <div slot="top" class="demo-split-pane" ref="contextMenuTarget">
+          <vTable
+            :height="tableHeight / 2"
+            ref="master_list_table"
+            :url="`${functionParams.requestBaseUrl}/page`"
+            :columns-url="functionParams.requestColBaseUrl + '/accountwriteoffFm'"
+            :pagination="true"
+            @row-click="tableRowClick"
+            name="accountwriteoffFm"
+          ></vTable>
+        </div>
+        <div slot="bottom" :style="{ 'padding-top': '6px' }">
+          <Tabs @on-click="TabsClickEvent">
+            <TabPane label="开票明细" name="writeoffin">
+              <vTable
+                :height="tableHeight / 2.3"
+                ref="tableFieldRef"
+                :table-data="tableFieldData"
+                :columns-url="functionParams.requestColBaseUrl + '/accountwriteoffinFm'"
+                :pagination="false"
+                name="accountwriteoffinFm"
+              ></vTable>
+            </TabPane>
+            <TabPane label="收款明细" name="writeOffOut">
+              <vTable
+                :height="tableHeight / 2.3"
+                ref="tableFieldRef2"
+                :table-data="tableFieldData2"
+                :columns-url="functionParams.requestColBaseUrl + '/accountwriteoffoutFm'"
+                :pagination="false"
+                name="accountwriteoffoutFm"
+                childrenTable
+              ></vTable>
+            </TabPane>
+          </Tabs>
+        </div>
+      </Split>
+    </div>
+    
+    <editForm
+      :isLoaddingDone="isLoaddingDone"
+      :form-detail-data="formDetailData"
+       moduleName="worker"
+      :action="action"
+      @submit-success="search()"
+      v-model="showEditWindow"
+      :detailDisabled="detailDisabled"
+      :detailConvertUpdate="detailConvertUpdate"
+    />
+  </div>
+</template>
+<script>
+import vTable from "@/components/tables/vTable";
+import htmlTemplate from "../components/htmlTemplate";
+//import editForm from "./edit/edit-warehouse";
+import listBaseMixins from "../mixins/list";
+import request from '@/libs/request'
+export default {
+  mixins: [listBaseMixins],
+  components: {
+    'editForm':function(resolve) { //组件的异步加载
+                require(["./edit/edit-writeOff"], resolve);
+            },
+    htmlTemplate,
+    vTable
+  },
+  data() {
+    return {
+      // 导出参数配置
+       tableDataList:[
+        {ref:'master_list_table',title:'应付冲销'},
+        {ref:'tableFieldRef',title:'收票明细'},
+        {ref:'tableFieldRef2',title:'收款明细'},
+      ],
+      tableFieldData:[], //开票明细列列表
+      tableFieldData2:[], //收款明细列表
+      currentTabName:'writeoffin',// 当前TABL名称
+     // who:'editForm', // 动态指定编辑控件
+      functionParams: {
+        requestBaseUrl: "/account/writeOff",
+        uniqueId: "woId"
+      },
+      // 查询参数 ,注意格式
+      queryParamsDefault: [
+        {
+          title: "请输入冲销单号",
+          code: "woNo",
+          woNo: ""
+        },
+        {
+          title: "请输入客户名称",
+          name: "custName$like",
+          custName$like: ""
+        }
+      ],
+    };
+  },
+  methods: {
+    // tab 切换事件
+    TabsClickEvent(name){
+     //debugger
+      this.currentTabName = name
+      if(this.masterRowSelection && this.masterRowSelection.id!=null && this.masterRowSelection.id!=""){
+          if(name==='writeOffOut'){
+          this.getContactListById()
+        }else if(name==='writeoffin'){
+          this.getWriteoffinById()
+        }
+      }
+    },
+    tableRowClick(rowData, rowIndex) {
+      this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData;
+      if (rowData != null) {
+        //debugger
+        // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
+        this.currrentRowItem.rowName =
+          rowData.woNo + " " + rowData.custName;
+      }
+      if(this.masterRowSelection){
+          this.TabsClickEvent(this.currentTabName)
+      }
+    },
+    // 查询开票明细列表信息
+    getContactListById(){
+       //debugger
+        let url =`/account/writeOff/writeOffOut/list`;
+        let data ={
+          woId:this.masterRowSelection.id,
+        }
+        let _self = this;
+        request.post(url,data).then(res => {
+          //debugger
+          _self.tableFieldData2 = res
+        });
+    },
+    // 查询收款明细列表信息
+    getWriteoffinById(){
+       //debugger
+        let url = `/account/writeOff/writeOffIn/list`;
+        let data ={
+          woId:this.masterRowSelection.id,
+        }
+        let _self = this;
+        request.post(url,data).then(res => {
+          //debugger
+          _self.tableFieldData = res
+        });
+    },
+    //重写父类方法, 更新操作
+    handleUpdateEvent(){
+       this.TabsClickEvent(this.currentTabName)
+    },
+  }
+};
+</script>
+
+<style></style>

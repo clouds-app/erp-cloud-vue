@@ -1,0 +1,573 @@
+<template>
+  <div ref="dom" class="charts chart-bar"></div>
+</template>
+
+<script>
+import echarts from 'echarts'
+import tdTheme from './theme.json'
+import { on, off } from '@/libs/tools'
+echarts.registerTheme('tdTheme', tdTheme)
+export default {
+  name: 'barStockStatistics', // 库存统计
+  props: {
+    value: Object,
+    text: String,
+    subtext: String
+  },
+  data () {
+    return {
+      dom: null
+    }
+  },
+  methods: {
+    resize () {
+      this.dom.resize()
+    },
+    testAlert (type) {
+      alert(type)
+    }
+  },
+  mounted () {
+    this.$nextTick(() => {
+      let xAxisData = Object.keys(this.value[0])
+      let seriesData = Object.values(this.value[0])
+      let seriesTwoData = Object.values(this.value[1])
+      let _self = this
+      let option = {
+        title: {
+          textStyle: {
+            color: 'white',
+            fontSize: 14
+          },
+          left: 15,
+          top: 5,
+          text: this.text,
+          subtext: this.subtext,
+          x: 'left'
+        },
+        tooltip: {
+          trigger: 'axis',
+          confine: true, // 是否将 tooltip 框限制在图表的区域内。
+          transitionDuration: 0, // 提示框浮层的移动动画过渡时间，单位是 s，设置为 0 的时候会紧跟着鼠标移动。
+          axisPointer: {
+            type: 'cross',
+            label: {
+              backgroundColor: '#6a7985'
+            }
+          }
+        },
+        toolbox: {
+          showTitle: false, // 隐藏默认文字，否则两者位置会重叠
+          left: 90,
+          top: 5,
+          feature: {
+            iconStyle: {},
+            // 注意，自定义的工具名字，只能以 my 开头，例如下例中的 myTool1，myTool2：
+            myTool0: {
+              show: true,
+              title: '日',
+              icon:
+                'image://data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAQAAAAngNWGAAAABGdBTUEAALGOfPtRkwAAACBjSFJNAAB6JQAAgIMAAPn/AACA6QAAdTAAAOpgAAA6mAAAF2+SX8VGAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfkBx0CFQP8asOmAAAAbUlEQVQoz2P8z0AcYCJSHQMLEruDwRhD/ixDBaZCYwYX4kyEmPAezhZEseE/Au7+//+/CxLf5f///7thPKI9Q5avIR7CzsZQ2EF1qysYziJZ3YFb4VmGPRRaTbYbO1CiEI9CYxwG0iBRMBKbFQASqD6usM5QLgAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAyMC0wNy0yOVQwMjoyMTowMSswMDowMD5gH6AAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMjAtMDctMjlUMDI6MjE6MDErMDA6MDBPPaccAAAAAElFTkSuQmCC',
+              onclick: function () {
+                _self.testAlert('I love my world')
+              }
+            },
+            myTool1: {
+              show: true,
+              title: '月',
+              icon:
+                'image://data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAMAAAC6V+0/AAAABGdBTUEAALGOfPtRkwAAACBjSFJNAAB6JQAAgIMAAPn/AACA6QAAdTAAAOpgAAA6mAAAF2+SX8VGAAAA51BMVEW/vNr///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8xL6inptr///+dnNX///////////////////////////////////+8u+ICAJQ1M6lFRLETEZvMzOokIqKJiM2amdR4d8ZWVbirqtuG/8Y9AAAAQHRSTlMABTp/utrbv4ZBBzCz/b47avh+RvZZCLjHEvpdjaTD0OTf5uDN1ZqybhbMIV/+dJitBKsO+vRvLHG77e7hwXok0HRongAAAAFiS0dEAf8CLd4AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfkBx0CDDDYuguoAAAA2UlEQVQY02WQ7VaCQBCGRym0D6wkS9M00tTKokzNsnRYQDb0/q/HnUEgDu+fOfOcmWfPDgClUNQODvVS+egYkpycGhilchaz8wt04hjVPVMTIg6iRsy8zEKjBnB1TS7h8rKrINYbYN4w9PgdjyA2ocWd8D2Kz/AW2hFMnYgduMtPWnCPOWcXelTWIpCUgOED9Kk4GecAank4hMcnVaSQqVN/Bhi9ILr/4St93qbtNeKfDGn97Z0vbIciUBMbpQxw/LE/6GiyZbHwp7NCcvrP+Zf1vfj5Xa643QE3jk2nhFaXYAAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAyMC0wNy0yOVQwMjoxMjo0OCswMDowMF1niYsAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMjAtMDctMjlUMDI6MTI6NDgrMDA6MDAsOjE3AAAAAElFTkSuQmCC',
+              onclick: function () {
+                _self.testAlert('I love my world')
+              }
+            },
+            myTool2: {
+              show: true,
+              title: '年',
+              icon:
+                'image://data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAQAAAAngNWGAAAABGdBTUEAALGOfPtRkwAAACBjSFJNAAB6JQAAgIMAAPn/AACA6QAAdTAAAOpgAAA6mAAAF2+SX8VGAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfkBx0CBzlCkmrHAAAAt0lEQVQoz42SYRWDMAyEP/YwgAUs1AKTgIVZAAlomIQhgVqohUmgEm5/KAUKHZc/TXPvLnlJIe7hsctmpjvElor6UlIxPkrRhWpUrGlzPZbrqwNG3sCAoccB8D1aG0mSEUKTpEbsI1gPgF1UssN0mnWGVTGKt3lioa24oz8MY9OpATwW8ICLlLMVZhCsJ6DB4wBDhcMvjOeeeH1Exb7HflN6UfPe7CQ5ihDZzfzFbWJ58jdikw75AdLMqwz7y09FAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDIwLTA3LTI5VDAyOjA3OjU3KzAwOjAwQCLteAAAACV0RVh0ZGF0ZTptb2RpZnkAMjAyMC0wNy0yOVQwMjowNzo1NyswMDowMDF/VcQAAAAASUVORK5CYII=',
+              onclick: function () {
+                _self.testAlert('hello world')
+              }
+            }
+          }
+        },
+        legend: {
+          itemWidth: 20,
+          itemHeight: 6,
+          right: 120,
+          top: 55,
+          data: [
+            {
+              name: '金额',
+              icon: 'rect',
+              textStyle: {
+                color: 'white'
+              }
+            },
+            {
+              name: '平方米',
+              icon: 'rect',
+              textStyle: {
+                color: 'white'
+              }
+            }
+          ]
+        },
+        graphic: [
+          // 15天内图像
+          {
+            type: 'group',
+            right: '50%',
+            top: '2%',
+            cursor: 'auto',
+            children: [
+              {
+                type: 'rect',
+                z: 100,
+                left: 'center',
+                top: 'middle',
+                shape: {
+                  width: 35,
+                  height: 15
+                },
+                style: {
+                  fill: '#FF9E9E'
+                  // stroke: "#FF9E9E",
+                  // lineWidth: 2,
+                  // shadowBlur: 8,
+                  // shadowOffsetX: 3,
+                  // shadowOffsetY: 3,
+                  // shadowColor: "rgba(0,0,0,0.3)"
+                }
+              },
+              {
+                type: 'text',
+                z: 100,
+                left: 'center',
+                top: 'middle',
+                style: {
+                  fill: 'white',
+                  text: ['15天内'],
+                  font: '10px Microsoft YaHei'
+                }
+              }
+            ]
+          },
+          // 15天内 VALUE
+          {
+            type: 'group',
+            right: '40%',
+            top: '3.5%',
+            children: [
+              {
+                type: 'text',
+                z: 100,
+                left: 'center',
+                top: 'middle',
+                style: {
+                  fill: 'white',
+                  textAlign: 'right',
+                  text: '123.50' + 'm²',
+                  font: '10px Microsoft YaHei'
+                }
+              }
+            ]
+          },
+          // 30天内图像
+          {
+            type: 'group',
+            right: '50%',
+            top: '10%',
+            children: [
+              {
+                type: 'rect',
+                z: 100,
+                left: 'center',
+                top: 'middle',
+                shape: {
+                  width: 35,
+                  height: 15
+                },
+                style: {
+                  fill: '#FE6464'
+                  // stroke: "#FF9E9E",
+                  // lineWidth: 2,
+                  // shadowBlur: 8,
+                  // shadowOffsetX: 3,
+                  // shadowOffsetY: 3,
+                  // shadowColor: "rgba(0,0,0,0.3)"
+                }
+              },
+              {
+                type: 'text',
+                z: 100,
+                left: 'center',
+                top: 'middle',
+                style: {
+                  fill: 'white',
+                  text: ['30天内'],
+                  font: '10px Microsoft YaHei'
+                }
+              }
+            ]
+          },
+          // 30天内图像 VALUE
+          {
+            type: 'group',
+            right: '40%',
+            top: '11%',
+            children: [
+              {
+                type: 'text',
+                z: 100,
+                left: 'center',
+                top: 'middle',
+                style: {
+                  fill: 'white',
+                  textAlign: 'right',
+                  text: '333.30' + 'm²',
+                  font: '10px Microsoft YaHei'
+                }
+              }
+            ]
+          },
+          // 60天内图像
+          {
+            type: 'group',
+            right: '30%',
+            top: '2%',
+            children: [
+              {
+                type: 'rect',
+                z: 100,
+                left: 'center',
+                top: 'middle',
+                shape: {
+                  width: 35,
+                  height: 15
+                },
+                style: {
+                  fill: '#FE5252'
+                  // stroke: "#FF9E9E",
+                  // lineWidth: 2,
+                  // shadowBlur: 8,
+                  // shadowOffsetX: 3,
+                  // shadowOffsetY: 3,
+                  // shadowColor: "rgba(0,0,0,0.3)"
+                }
+              },
+              {
+                type: 'text',
+                z: 100,
+                left: 'center',
+                top: 'middle',
+                style: {
+                  fill: 'white',
+                  text: ['60天内'],
+                  font: '10px Microsoft YaHei'
+                }
+              }
+            ]
+          },
+          // 60天内图像 VALUE
+          {
+            type: 'group',
+            right: '20%',
+            top: '3.5%',
+            children: [
+              {
+                type: 'text',
+                z: 100,
+                left: 'center',
+                top: 'middle',
+                style: {
+                  fill: 'white',
+                  textAlign: 'right',
+                  text: '666.30' + 'm²',
+                  font: '10px Microsoft YaHei'
+                }
+              }
+            ]
+          },
+          // 60天内图像 查看详情
+          {
+            type: 'group',
+            right: '5%',
+            top: '3.5%',
+            children: [
+              {
+                type: 'text',
+                z: 100,
+                left: 'center',
+                top: 'middle',
+                style: {
+                  fill: 'white',
+                  textAlign: 'right',
+                  text: '查看详情',
+                  font: '12px Microsoft YaHei'
+                }
+              }
+            ],
+            onclick: function () {
+              alert('60天内详情查看....')
+            }
+          },
+          // 60以上图像
+          {
+            type: 'group',
+            right: '30%',
+            top: '10%',
+            children: [
+              {
+                type: 'rect',
+                z: 100,
+                left: 'center',
+                top: 'middle',
+                shape: {
+                  width: 35,
+                  height: 15
+                },
+                style: {
+                  fill: '#FF2A2A'
+                  // stroke: "#FF9E9E",
+                  // lineWidth: 2,
+                  // shadowBlur: 8,
+                  // shadowOffsetX: 3,
+                  // shadowOffsetY: 3,
+                  // shadowColor: "rgba(0,0,0,0.3)"
+                }
+              },
+              {
+                type: 'text',
+                z: 100,
+                left: 'center',
+                top: 'middle',
+                style: {
+                  fill: 'white',
+                  text: ['60以上'],
+                  font: '10px Microsoft YaHei'
+                }
+              }
+            ]
+          },
+          // 60以上图像 VALUE
+          {
+            type: 'group',
+            right: '20%',
+            top: '11%',
+            children: [
+              {
+                type: 'text',
+                z: 100,
+                left: 'center',
+                top: 'middle',
+                style: {
+                  fill: 'white',
+                  textAlign: 'right',
+                  text: '888.30' + 'm²',
+                  font: '10px Microsoft YaHei'
+                }
+              }
+            ]
+          },
+          // 60以上图像 查看详情
+          {
+            type: 'group',
+            right: '5%',
+            top: '11%',
+            children: [
+              {
+                type: 'text',
+                z: 100,
+                left: 'center',
+                top: 'middle',
+                style: {
+                  fill: 'white',
+                  textAlign: 'right',
+                  text: '查看详情',
+                  font: '12px Microsoft YaHei'
+                }
+              }
+            ],
+            onclick: function () {
+              alert('60天以上详情查看....')
+            }
+          }
+        ],
+        grid: {
+          width: 300,
+          height: 140,
+          // show:true,
+          left: '22%',
+          bottom: '25%'
+        },
+        xAxis: [
+          {
+            // boundaryGap: false, // 是否从X轴起始点开始
+            axisLine: {
+              show: true,
+              lineStyle: {
+                color: '#01D7FB'
+              }
+            },
+            splitLine: {
+              show: false,
+              lineStyle: {
+                color: 'purple'
+              }
+            },
+            type: 'category',
+            data: xAxisData
+          }
+        ],
+        yAxis: [
+          {
+            // 第一根Y轴显示控制
+            name: '(元)',
+            nameTextStyle: {
+              align: 'right',
+              padding: [0, 5, 0, 0]
+            },
+            type: 'value',
+            // show:false,
+            axisLine: {
+              show: true,
+              lineStyle: {
+                color: '#01D7FB'
+              }
+            },
+            splitLine: {
+              show: false,
+              lineStyle: {
+                // 使用深浅的间隔色
+                color: 'purple',
+                type: 'dotted',
+                opacity: 0.5
+              }
+            }
+          },
+          {
+            // 第二根Y轴显示控制
+            name: '(m²)',
+            nameTextStyle: {
+              align: 'left',
+              padding: [0, 0, 0, 8]
+            },
+            type: 'value',
+            axisLine: {
+              show: false,
+              lineStyle: {
+                color: '#01D7FB'
+              }
+            },
+            splitLine: {
+              show: false,
+              lineStyle: {
+                // 使用深浅的间隔色
+                color: 'purple',
+                type: 'dotted',
+                opacity: 0.5
+              }
+            }
+          }
+        ],
+        series: [
+          {
+            name: '金额',
+            yAxisIndex: 0,
+            symbol: 'none', // 是否显示小圆点
+            // areaStyle: {
+            //   opacity: 0.2,
+            //   color: {
+            //     type: "linear",
+            //     x: 0,
+            //     y: 0,
+            //     x2: 0,
+            //     y2: 1,
+            //     colorStops: [
+            //       {
+            //         offset: 0,
+            //         color: "yellow"
+            //       },
+            //       {
+            //         offset: 0.5,
+            //         color: "yellow"
+            //       },
+            //       {
+            //         offset: 1,
+            //         color: "rgba(88,160,253,0)"
+            //       }
+            //     ]
+            //   }
+            // },
+            itemStyle: {
+              // color: "#2546D4",
+              color: {
+                type: 'linear',
+                x: 0,
+                y: 0,
+                x2: 0,
+                y2: 1,
+                colorStops: [
+                  {
+                    offset: 0,
+                    color: '#2546D4'
+                  },
+                  {
+                    offset: 0.5,
+                    color: '#2580D5'
+                  },
+                  {
+                    offset: 1,
+                    color: '#26B5D6'
+                  }
+                ]
+              }
+            },
+            data: seriesData,
+            type: 'bar'
+          },
+          {
+            name: '平方米',
+            yAxisIndex: 1,
+            symbol: 'none', // 是否显示小圆点
+            itemStyle: {
+              // color: "#D0742A"
+              color: {
+                type: 'linear',
+                x: 0,
+                y: 0,
+                x2: 0,
+                y2: 1,
+                colorStops: [
+                  {
+                    offset: 0,
+                    color: '#D0742A'
+                  },
+                  {
+                    offset: 0.5,
+                    color: '#D49F27'
+                  },
+                  {
+                    offset: 1,
+                    color: '#D5BE26'
+                  }
+                ]
+              }
+            },
+            data: seriesTwoData,
+            type: 'bar'
+          }
+        ]
+      }
+      this.dom = echarts.init(this.$refs.dom, 'tdTheme')
+      this.dom.setOption(option)
+      on(window, 'resize', this.resize)
+    })
+  },
+  beforeDestroy () {
+    off(window, 'resize', this.resize)
+  }
+}
+</script>

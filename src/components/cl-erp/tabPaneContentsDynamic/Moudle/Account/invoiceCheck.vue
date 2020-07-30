@@ -9,7 +9,7 @@
     >
     </htmlTemplate>
 
-    <div class="content-container" v-if="formInitData.listView" :style="{ height: tableHeight + 'px' }">
+    <div ref="contextMenuTarget" class="content-container" v-if="formInitData.listView" :style="{ height: tableHeight + 'px' }">
       <Split :v-model="splitModel" mode="vertical">
         <div slot="top" class="demo-split-pane" ref="contextMenuTarget">
           <vTable
@@ -51,15 +51,15 @@
   </div>
 </template>
 <script>
-// 发票登记信息 
-import vTable from "@/components/tables/vTable";
-import htmlTemplate from "../components/htmlTemplate";
-import listBaseMixins from "../mixins/list";
-import request from "@/libs/request"
-import eTable from "@/components/e-table/e-table";
-import editWindow from "@/components/edit-window/edit-window";
-import formControl from "@/components/form-control/form-control";
-import dayjs from "dayjs"
+// 发票登记信息
+import vTable from '@/components/tables/vTable'
+import htmlTemplate from '../components/htmlTemplate'
+import listBaseMixins from '../mixins/list'
+import request from '@/libs/request'
+import eTable from '@/components/e-table/e-table'
+import editWindow from '@/components/edit-window/edit-window'
+import formControl from '@/components/form-control/form-control'
+import dayjs from 'dayjs'
 export default {
   mixins: [listBaseMixins],
   components: {
@@ -67,66 +67,65 @@ export default {
     editWindow,
     formControl,
     dayjs,
-    'editForm':function(resolve) { //组件的异步加载
-                require(["./edit/edit-invoiceCheck"], resolve);
-            },
-        
+    'editForm': function (resolve) { // 组件的异步加载
+      require(['./edit/edit-invoiceCheck'], resolve)
+    },
+
     htmlTemplate,
-    vTable,
+    vTable
   },
-  data() {
+  data () {
     return {
       // 导出参数配置
-      tableDataList:[
-        {ref:'master_list_table',title:'开票主表'},
-        {ref:'slave_list_table',title:'开票明细'}
+      tableDataList: [
+        { ref: 'master_list_table', title: '开票主表' },
+        { ref: 'slave_list_table', title: '开票明细' }
       ],
-      tableContextMenu:this.$refs['contextmenu'],
-      //数据查询修改等基本参数设置
+      tableContextMenu: this.$refs['contextmenu'],
+      // 数据查询修改等基本参数设置
       functionParams: {
-        formInitPreName: 'accountInvoiceCheck', //  查询表格列头信息 前缀 例如:accountInvoiceCheck  Fm/itemFm 	
-        requestBaseUrl: "/account/invoiceCheck",
-        uniqueId: "invoiceId"
+        formInitPreName: 'accountInvoiceCheck', //  查询表格列头信息 前缀 例如:accountInvoiceCheck  Fm/itemFm
+        requestBaseUrl: '/account/invoiceCheck',
+        uniqueId: 'invoiceId'
       },
       // 查询参数 ,注意格式
       queryParamsDefault: [
         {
-          title: "请输入开票单号",
-          code: "icNo",
-          icNo: ""
+          title: '请输入开票单号',
+          code: 'icNo',
+          icNo: ''
         },
         {
-          title: "请输入客户名称",
-          name: "custName$like",
-          custName$like: ""
+          title: '请输入客户名称',
+          name: 'custName$like',
+          custName$like: ''
         }
-      ],
-    };
+      ]
+    }
   },
-   
+
   created () {
     // 查询多个表格列表头数据
     // 无需变更,配置functionParams 参数即可
     if (this.functionParams.formInitPreName) {
       this.getFormInitData(`${this.functionParams.formInitPreName}Fm`)
     }
-     
   },
   methods: {
-     // 重写父类方法,确认当前行 是否可以删除,默认true可以删除,false 返回false 不可以删除
-    canIDeleteRowItem(){
+    // 重写父类方法,确认当前行 是否可以删除,默认true可以删除,false 返回false 不可以删除
+    canIDeleteRowItem () {
       let canDelete = true
-      if(!!this.masterRowSelection){
+      if (this.masterRowSelection) {
         // 已开票金额
-        let itemHasAmt = Number(this.masterRowSelection['writeOffAmt']) 
-        if(itemHasAmt>0){
+        let itemHasAmt = Number(this.masterRowSelection['writeOffAmt'])
+        if (itemHasAmt > 0) {
           canDelete = false
         }
       }
-      if(!canDelete){
-           let  message = "当前数据(已冲金额不为0),不可操作";
-           this.$Message.warning(message);
-           return false
+      if (!canDelete) {
+        let message = '当前数据(已冲金额不为0),不可操作'
+        this.$Message.warning(message)
+        return false
       }
       return true
     },
@@ -137,13 +136,12 @@ export default {
       this.$refs['slave_list_table'].search({ invoiceCheckId: rowData.id })
     },
     // 纸箱出货明细 行点击事件
-    slave_list_tableRowClick(rowData, rowIndex){
+    slave_list_tableRowClick (rowData, rowIndex) {
 
-    },
-   
+    }
 
   }
-};
+}
 </script>
 
 <style></style>

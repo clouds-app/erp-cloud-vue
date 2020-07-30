@@ -1,0 +1,64 @@
+<template>
+  <Input
+   size="small"
+   v-bind="$attrs"
+   v-on="$listeners"
+   :disabled="fieldDisabled"
+   >
+  </Input>
+</template>
+
+<script>
+  import request from "@/libs/request";
+  export default{
+    data(){
+      return {
+        fieldDisabled:false
+      }
+    },props:{
+      formName:String,
+      id:[String,Number],
+      disabled:{
+        type:Boolean,
+        default:false
+      },
+      showWindow:Boolean
+    },
+    watch:{
+      // showWindow(n,o){
+      //   debugger
+      // },
+      id(n,o){
+        if(n && n!=''){
+          this.getReferce();
+        }else{
+          this.fieldDisabled = false
+        }
+      },
+      disabled(n,o){
+         this.fieldDisabled = this.disabled;
+      }
+    },
+    methods:{
+      getReferce(){
+        if(this.disabled){
+          this.fieldDisabled = this.disabled
+          return;
+        }
+        if(this.formName && this.formName != '' && this.id && this.id !=''){
+          request.post('/sys/form/validator/referenceData',{
+            formName:this.formName,
+            id:this.id
+          }).then(res=>{
+            this.fieldDisabled = res;
+          });
+        }
+      }
+    },created() {
+
+    }
+  }
+</script>
+
+<style>
+</style>

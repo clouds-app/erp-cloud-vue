@@ -1,0 +1,387 @@
+<template>
+  <div>
+    <editWindow
+      id="cl-edit-boxLibMove"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="80%"
+      :loading="!isLoaddingDone"
+      :spinLoaddingText="spinLoaddingText"
+      @on-ok="submitFormDataEvent"
+      v-if="initData.columns"
+    >
+      <div v-if="formDataInfo.master">
+        <Form
+          ref="formDataInfo"
+          :show-message="true"
+          :model="formDataInfo.master"
+          :rules="ruleValidate"
+          :label-width="124"
+        >
+          <div class="edit-boxLibMoveSlave">
+            <Row>
+             <Col span="5">
+                <FormItem label="工单号" prop="workNo">
+                  <Input
+                    v-model="formDataInfo.master.workNo"
+                    maxlength="20"
+                    placeholder="工单号"
+                  ></Input>
+                </FormItem>
+              </Col>
+              <Col span="5">
+                <FormItem label="产品编号" prop="bpNo"  :label-width="110">
+                  <Input
+                    v-model="formDataInfo.master.bpNo"
+                    maxlength="20"
+                    placeholder="产品编号"
+                  ></Input>
+                </FormItem>
+              </Col>
+              <Col span="5" >
+                    <FormItem label="规格(L*W*H)">
+                        <Row>
+                            <Col span="8" >
+                             <Input v-model="formDataInfo.master.bpCSizeL" maxlength="20"></Input>
+                             </Col>
+                             <Col span="8" >
+                            <Input v-model="formDataInfo.master.bpCSizeW" maxlength="20"></Input>
+                            </Col>
+                            <Col span="8" >
+                            <Input v-model="formDataInfo.master.bpCSizeH" maxlength="20"></Input>
+                            </Col>
+                        </Row>                      
+                    </FormItem>
+              </Col>
+              <Col span="5">
+                    <FormItem label :label-width="30"> 
+                        <Checkbox v-model="formDataInfo.master.mode">是否显示不同于此产品的工单</Checkbox>
+                    </FormItem>
+                  </Col> 
+              <Col span="1">
+                <FormItem label>
+                  <Button type="primary" @click="clickmaster()">搜索</Button>
+                </FormItem>
+              </Col>
+            </Row>
+          </div>
+        </Form>
+
+        <Tabs>
+          <!--  注意:eTable formDataInfo.wareHouseItems.defaultList  ===wareHouseItems=== 需要根据实际接口修改,其它不变-->
+          <TabPane>
+            <eTable
+              ref="slave_edit-boxLibMove"
+              :height="400"
+              unqiue-mark="id"
+              :index-menu="true"
+              :col-start="0"
+              :width="200"
+              :row-init-data="initData.initData.boxlibmoveitemworknodataFm"
+              :data.sync="productMDatasTableDataList"
+              :rules="tableFieldsValidator"
+              :showContextMenu="!detailDisabled"
+            >
+              <template slot="head">
+                <tr
+                  v-for="(columnGroup,index) in initData.columns.boxlibmoveitemworknodataFm.editGroups"
+                  :key="index"
+                >
+                <template>
+                  <th 
+                    v-for="(column,index2) in columnGroup"
+                    v-if="excludeFiled('isSourceStation',column.key)"
+                    class="ivu-table-column-left"
+                    :key="index2"
+                    :width="column.width"
+                    :colspan="column.colSpan"
+                    :rowspan="column.rowSpan"
+                    style="text-align:center;"
+                  >
+                    <!-- <div v-if="column.key == 'stationCode'" @click="purPaperPoClick('仓位编号','stationCode')" class="ivu-table-cell" v-show="isSourceStation">
+                      <span class>仓位编号</span>
+                    </div> -->
+                    <!-- <div v-else-if="column.key == 'custName'" @click="purPaperPoClick('客户名称','custName')" class="ivu-table-cell">
+                      <span class >客户名称</span>
+                    </div>
+                    <div v-else-if="column.key == 'bcCustPo'" class="ivu-table-cell">
+                      <span class @click="purPaperPoClick('客户PO号','bcCustPo')">客户PO号</span>
+                    </div>  -->
+                    <div class="ivu-table-cell">
+                      <span class>{{column.title}}</span>
+                    </div>
+                  </th>
+                  </template>
+                </tr>
+              </template>
+              <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
+                <template  v-for="(column,columnIndex) in initData.columns.boxlibmoveitemworknodataFm.editColumns">
+                <td
+                v-if="excludeFiled('isSourceStation',column.key)"
+                  class="ivu-table-column-left"
+                 
+                  :key="columnIndex"
+                  :width="column.width"
+                >
+                   
+                  <formControl
+                    :control-type="column.controlType"
+                    v-model="row[column.key]"
+                    :disabled="column.readOnly"
+                    @input="value => {valueChangeAssign(value, index, row,column.key)}"
+                  ></formControl>
+                </td>
+                </template>
+              </template>
+            </eTable>
+          </TabPane>
+        </Tabs>
+        <!-- <productSpec
+          v-model="productSpecShow"
+          ref="productSpec"
+          
+
+          :bpMoCut="formDataInfo.master.bpMoCut"
+        ></productSpec>-->
+      </div>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author ming xing
+ *
+ * @created 2020/04/12 17:07:54
+ */
+import tableSelect from "@/components/table-select/table-select";
+import editWindow from "@/components/edit-window/edit-window";
+// import Form from '@/components/form/form'
+import eTable from "@/components/e-table/e-table";
+import request from "@/libs/request";
+import popup from "@/components/popup/popup";
+import editBaseMixins from "../../mixins/edit";
+import InputNumber from "@/components/input-number";
+import formControl from "@/components/form-control/form-control";
+import { customValidator } from "@/libs/validator";
+import calc from "@/libs/calc";
+import list from "../../mixins/list";
+import dayjs from "dayjs";
+export default {
+  name: "edit-boxLibMoveSlave",
+  mixins: [editBaseMixins],
+  components: {
+    editWindow,
+    popup,
+    tableSelect,
+    eTable,
+    InputNumber,
+    formControl
+  },
+
+  mounted() {
+    
+  },
+  props: {
+    inSupplierId: {
+      type: String,
+      default: ""
+    },
+    isSourceStation: {
+      type: Boolean,
+      default: false
+    },
+    stationId: {
+      type: String,
+      default: ""
+    },
+    List: {
+      type: String,
+      default: ""
+    },
+    workNoList: {
+      type: String,
+      defaule: ""
+    },
+    WorkOrderNumber1: {
+      type: Object,
+      defaule: "null"
+    }
+  },
+  data() {
+    return {
+      //actionSubtitle: "纸箱销售订单明细", // 当前操作副标
+      productSpecShow: false,
+      formDataInfo: {
+        // 主表 更改字段
+        master: {},
+        productMDatas: {
+          artCode: "",
+          workNo: ""
+        }
+        // List:thsi.list
+      }, // 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {},
+      tableFieldsValidator: {},
+      WorkOrderNumber: {
+        boxUseBatchNo: "", //用料批次号
+        artCode: "",
+      },
+      title: "工单",
+      formName: "boxlibmoveitemworknodataFm",
+      propvalue: "inWorkNo", //存储子表每个对应的字段
+      productMDatasTableDataList: [], //存放处理过后的数据:[],
+      table: [], //存储子表全部对应的字段
+      // bcCustPo: "",
+      // custName: "",
+      bcNo: ""
+    };
+  },
+  watch: {
+    // isSourceStation(a,b){
+    //   debugger
+    //   console.log(a)
+    //   console.log(this.isSourceStation)
+    //   console.log(this.initData.columns.boxlibmoveitemworknodataFm)
+    //   if(a){
+    //     let arr = this.initData.columns.boxlibmoveitemworknodataFm.editColumns
+    //     for(let i=0;i<arr.length;i++){
+    //       if(arr[i].key=="stationCode"){
+    //         arr.splice(i,1)
+    //         i--
+    //       }
+    //     }
+    //     let arr2 = this.initData.columns.boxlibmoveitemworknodataFm.listColumns
+    //     for(let i=0;i<arr2.length;i++){
+    //       if(arr2[i].key=="stationCode"){
+    //         arr2.splice(i,1)
+    //         i--
+    //       }
+    //     }
+    //     let arr3 = this.initData.columns.boxlibmoveitemworknodataFm.editGroups[0]
+    //     for(let i=0;i<arr3.length;i++){
+    //       if(arr3[i].key=="stationCode"){
+    //         arr3.splice(i,1)
+    //         i--
+    //       }
+    //     }
+    //   }
+    // }
+  },
+  methods: {
+    // 排除不需要显示的字段
+      excludeFiled(type,key){
+        let exListItemFm = ['stationCode','stationName']
+        let exListOtherfeeFm = []
+       type = this.isSourceStation
+        let exList=[]
+        switch (type) {
+            case true:
+              exList = exListItemFm 
+              break;
+          
+            default:
+              exList = []
+              break;
+        }
+        let isExist = exList.includes(key)
+        // if(type==='tableColSetOrderInfo'){
+        //   isExist=!isExist
+        // }
+        if(isExist){
+          return false
+        }else{
+          return true
+        }
+      }, 
+    purPaperPoClick(name, value) {
+      //debugger
+      this.title = name;
+      this.propvalue = value;
+    },
+    //搜索点击事件
+    clickmaster() {
+      //debugger
+      let params = {
+            // stationId: this.formDataInfo.master.sourceStationId,
+            bpNo:this.formDataInfo.master.bpNo,  //调出产品编号
+            workNoList:this.workNoList,
+            workNo: this.formDataInfo.master.workNo,
+            productNo:"",
+            mode: this.formDataInfo.master.mode?1:0,
+            bpCSizeL: this.formDataInfo.master.bpCSizeL,
+            bpCSizeW: this.formDataInfo.master.bpCSizeW,
+            bpCSizeH: this.formDataInfo.master.bpCSizeH,
+            stationId: this.stationId,
+            type:this.isSourceStation?0:1,
+      };
+
+      request.post(`/stock/boxLibMove/getMoveItemBoxData`, params).then(res => {
+        this.$refs["slave_edit-boxLibMove"].cloneData = res;
+      });
+    },
+
+    //加载表单初始化数据
+    getFormInitDataObj(data) {
+      //debugger;
+      var begin = new Date();
+      let startDate = dayjs(
+        new Date(begin.setMonth(new Date().getMonth() - 1))
+      ).format("YYYY-MM-DD");
+      //加载表单初始化数据
+      this.formDataInfo["master"] = {
+        bpCSizeL: 0,
+        bpCSizeW: 0,
+        bpCSizeH: 0,
+        flag: "1",
+        endDate: dayjs().format("YYYY-MM-DD"),
+        startDate: startDate
+      };
+      if (data == "" || data == null) {
+        return;
+      }
+      this.$refs["slave_edit-boxLibMove"].cloneData = data;
+    },
+
+    //表单数据提交事件
+    submitFormDataEvent() {
+      //debugger;
+      //表单数据提交事件
+      // true就是有问题
+      let result = this.$refs["slave_edit-boxLibMove"].validate();
+      if (result) {
+        return;
+      }
+      let parms = [];
+      let submitDataObj = this.$refs["slave_edit-boxLibMove"].cloneData;
+      for (let index = 0; index < submitDataObj.length; index++) {
+        let Choice = this.$refs["slave_edit-boxLibMove"].cloneData[index]
+          .iisChose;
+        if (Choice === true) {
+          parms.push(submitDataObj[index]);
+        }
+      }
+      //提交数据
+      // 向外暴露的方法:
+      this.$emit("closeMain", parms);
+      this.showWindow = false; // 关闭当前窗口
+      // });
+    }
+  }
+};
+</script>
+<style >
+.ivu-form-item-text2 .ivu-form-item-content {
+  margin-left: 2.8125rem !important;
+}
+</style>

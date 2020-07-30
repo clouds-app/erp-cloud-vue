@@ -23,6 +23,7 @@
               <Col span="12">
                 <FormItem label="客户" prop="master.cusName">
                     <popup
+                     ref='firstFocusInput'
                       v-model="formDataInfo.master.cusCode"
                       field-name="cusCode"
                       :disabled="detailDisabled"
@@ -35,7 +36,7 @@
                       :query-params="{}"
                     />
                   </FormItem>
-                
+
               </Col>
               <Col span="12">
                 <FormItem label="盒式" prop="master.boxName">
@@ -51,7 +52,7 @@
                     :suffix-model="formDataInfo.master.boxName"
                     :query-params="{}"
                   />
-               
+
                 </FormItem>
               </Col>
             </Row>
@@ -122,7 +123,6 @@
                   </div>
                 </th>
 
-
                 <th class="ivu-table-column-center" width="240">
                   <div class="ivu-table-cell">
                     <span class>单片纸宽</span>
@@ -153,7 +153,7 @@
                     <span class>双片纸长</span>
                   </div>
                 </th>
-                
+
                 <th class="ivu-table-column-center" width="240">
                   <div class="ivu-table-cell">
                     <span class>双片压线</span>
@@ -201,8 +201,6 @@
                   @on-click="showExpression('boxIfExpr',index)"
                 ></Input>
               </td>
-
-         
 
               <td class="ivu-table-column-center" width="100">
                 <Input
@@ -295,7 +293,6 @@
                 ></Input>
               </td>
 
-
               <td class="ivu-table-column-center" width="100">
                 <Input
                   v-model="row.boxL2ExprMsg"
@@ -378,73 +375,73 @@
  *
  * @created 2019/11/20 17:07:54
  */
-import boxExpression from "@/components/box-expression/boxExpression";
-import optionSearch from "../../components/optionSearch";
-import editWindow from "@/components/edit-window/edit-window";
+import boxExpression from '@/components/box-expression/boxExpression'
+import optionSearch from '../../components/optionSearch'
+import editWindow from '@/components/edit-window/edit-window'
 // import Form from '@/components/form/form'
-import eTable from "@/components/e-table/e-table";
-import request from "@/libs/request";
-import editBaseMixins from "../../mixins/edit";
-import uploadImg from "@/components/cl-erp/uploadImg";
-import popup from "@/components/popup/popup";
+import eTable from '@/components/e-table/e-table'
+import request from '@/libs/request'
+import editBaseMixins from '../../mixins/edit'
+import uploadImg from '@/components/cl-erp/uploadImg'
+import popup from '@/components/popup/popup'
 
 const default_formDataInfo = {
   master: {
     boxId: 0,
-    boxName: "",
+    boxName: '',
     custId: 0,
-    custName: "",
-    spAreaExpr: "",
-    spAreaExprJson: "",
-    spAreaExprMsg: "",
-    spCMExpr: "",
-    spCMExprJson: "",
-    spCMExprMsg: "",
-    spCubeExpr: "",
-    spCubeExprJson: "",
-    spCubeExprMsg: "",
-    spInchExpr: "",
-    spInchExprJson: "",
-    spInchExprMsg: "",
-    spWeightExpr: "",
-    spWeightExprJson: "",
-    spWeightExprMsg: "",
-    boxCWeightExprMsg: "",
-    remark: ""
+    custName: '',
+    spAreaExpr: '',
+    spAreaExprJson: '',
+    spAreaExprMsg: '',
+    spCMExpr: '',
+    spCMExprJson: '',
+    spCMExprMsg: '',
+    spCubeExpr: '',
+    spCubeExprJson: '',
+    spCubeExprMsg: '',
+    spInchExpr: '',
+    spInchExprJson: '',
+    spInchExprMsg: '',
+    spWeightExpr: '',
+    spWeightExprJson: '',
+    spWeightExprMsg: '',
+    boxCWeightExprMsg: '',
+    remark: ''
   },
-  //子表 box 根据实际接口更改，其他不变
+  // 子表 box 根据实际接口更改，其他不变
   basSpecPriceItemSlaves: {
     addList: [], // 添加列
     defaultList: [{
-        boxCutMode: true,
-				boxIfExpr: "",
-				boxIfExprMsg: "",
-				boxIfValue: 0,
-				boxKC1Expr: "",
-				boxKC1ExprMsg: "",
-				boxKC2Expr: "",
-		  	boxKC2ExprMsg: "",
-				boxL1Expr: "",
-				boxL1ExprMsg: "",
-				boxL2Expr: "",
-				boxL2ExprMsg: "",
-				boxW1Expr: "",
-				boxW1ExprMsg: "",
-				boxW2Expr: "",
-				boxW2ExprMsg: "",
-				boxYS1Expr: "",
-				boxYS1ExprMsg: "",
-				boxYS2Expr: "",
-				boxYS2ExprMsg: "",
-				remark: "",
-				specPriceId: 0
+      boxCutMode: true,
+      boxIfExpr: '',
+      boxIfExprMsg: '',
+      boxIfValue: 0,
+      boxKC1Expr: '',
+      boxKC1ExprMsg: '',
+      boxKC2Expr: '',
+		  	boxKC2ExprMsg: '',
+      boxL1Expr: '',
+      boxL1ExprMsg: '',
+      boxL2Expr: '',
+      boxL2ExprMsg: '',
+      boxW1Expr: '',
+      boxW1ExprMsg: '',
+      boxW2Expr: '',
+      boxW2ExprMsg: '',
+      boxYS1Expr: '',
+      boxYS1ExprMsg: '',
+      boxYS2Expr: '',
+      boxYS2ExprMsg: '',
+      remark: '',
+      specPriceId: 0
     }], // 默认列
     deleteList: [], // 删除列
     updateList: [] // 更新列
   }
-};
+}
 export default {
-  name: "edit-specPrice",
+  name: 'edit-specPrice',
   mixins: [editBaseMixins],
   components: {
     boxExpression,
@@ -456,18 +453,18 @@ export default {
     eTable
   },
 
-  data() {
+  data () {
     return {
-      actionSubtitle:'客户化计价盒式', // 当前操作副标题
-      formName:"specPriceFm",
-      currentExpressType: "", // 当前打开的盒式公式类型
+      actionSubtitle: '客户化计价盒式', // 当前操作副标题
+      formName: 'specPriceFm',
+      currentExpressType: '', // 当前打开的盒式公式类型
       showBoxExpression: false, // show express  or not...
-      requestBaseUrl: "/bas/specPrice", // 请求 查询 操作的基础路径
+      requestBaseUrl: '/bas/specPrice', // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
-        'master.cusName': [{required: true, message: "客户不能为空", trigger: "change"}],
-      'master.boxName': [{required: true, message: "盒式不能为空", trigger: "blur, change"}],
+        'master.cusName': [{ required: true, message: '客户不能为空', trigger: 'change' }],
+        'master.boxName': [{ required: true, message: '盒式不能为空', trigger: 'blur, change' }]
         // boxName: [
         //   { required: true, message: "盒式名称不能为空", trigger: "blur" }
         // ],
@@ -485,53 +482,49 @@ export default {
         // ]
       },
       tableFieldsValidator: {},
-      subBoxClickIndex:-1,
+      subBoxClickIndex: -1,
       flag: null
-    };
+    }
   },
 
   methods: {
-    //打开编辑页面调用接口，判断英寸平米计价公式是否可修改
-    resetTitle() {
+    // 打开编辑页面调用接口，判断英寸平米计价公式是否可修改
+    resetTitle () {
       // debugger;
-     this.flag = this.$params.isCalAreaPriceSale
-      if (this.$params.isCalAreaPriceSale == "0") {
+      this.flag = this.$params.isCalAreaPriceSale
+      if (this.$params.isCalAreaPriceSale == '0') {
         this.flag = false
-      }else{
+      } else {
         this.flag = true
       }
     },
     // 打开盒式计算公式，参数：当前类型：
-    showExpression(type,subBoxClickIndex) {
-      this.showBoxExpression = true;
-      this.currentExpressType = type;
-      this.subBoxClickIndex = -1;
-      if(subBoxClickIndex >= 0){
-        this.subBoxClickIndex = subBoxClickIndex;
+    showExpression (type, subBoxClickIndex) {
+      this.showBoxExpression = true
+      this.currentExpressType = type
+      this.subBoxClickIndex = -1
+      if (subBoxClickIndex >= 0) {
+        this.subBoxClickIndex = subBoxClickIndex
       }
     },
     // 盒式公式的回调方式，返回参数
-    expressionOk(text, value, json) {
-
+    expressionOk (text, value, json) {
       //  this.formDataInfo.master.currentExpressType = this.formDataInfo.master['currentExpressType']
-      
-      if(this.subBoxClickIndex == -1){
-        this.formDataInfo.master[this.currentExpressType + "Msg"] = text;
-        this.formDataInfo.master[this.currentExpressType + "Json"] = json;
-        this.formDataInfo.master[this.currentExpressType] = value;
-      }else{
-        let data = {};
-        data[this.currentExpressType + "Msg"] = text;
-        data[this.currentExpressType ] = value;
-        this.$refs.tableFields.set(data,this.subBoxClickIndex);
+
+      if (this.subBoxClickIndex == -1) {
+        this.formDataInfo.master[this.currentExpressType + 'Msg'] = text
+        this.formDataInfo.master[this.currentExpressType + 'Json'] = json
+        this.formDataInfo.master[this.currentExpressType] = value
+      } else {
+        let data = {}
+        data[this.currentExpressType + 'Msg'] = text
+        data[this.currentExpressType ] = value
+        this.$refs.tableFields.set(data, this.subBoxClickIndex)
       }
-      
-      
-      
     },
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo() {
-      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    HandleFormDataInfo () {
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
     },
     // // 盒式图片一路径上传成功后 回调事件 返回图片地址
     // uploadSuccessHeads(res) {
@@ -549,14 +542,14 @@ export default {
     // },
 
     // 重写父类,修改提交数据
-    resetformDataInfo(_data) {
-      let tableData = this.$refs["tableFields"].getCategorizeData();
+    resetformDataInfo (_data) {
+      let tableData = this.$refs['tableFields'].getCategorizeData()
       // debugger
-      this.formDataInfo.basSpecPriceItemSlaves = tableData;
-      return this.formDataInfo;
+      this.formDataInfo.basSpecPriceItemSlaves = tableData
+      return this.formDataInfo
     }
   }
-};
+}
 </script>
 
 <style>

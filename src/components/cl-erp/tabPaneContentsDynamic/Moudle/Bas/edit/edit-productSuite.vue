@@ -25,7 +25,7 @@
             <Row>
               <Col span="15">
                 <FormItem label="套件编号" prop="puNo">
-                  <Input v-model="formDataInfo.master.puNo" :disabled="true" />
+                  <Input   v-model="formDataInfo.master.puNo" :disabled="true" />
                 </FormItem>
               </Col>
               <Col span="9">
@@ -38,7 +38,7 @@
 
           <Col span="6">
             <FormItem label="套件名称" prop="puName">
-              <Input v-model="formDataInfo.master.puName" :disabled="detailDisabled"></Input>
+              <Input  v-model="formDataInfo.master.puName" :disabled="detailDisabled"></Input>
             </FormItem>
           </Col>
 
@@ -300,16 +300,16 @@
  *
  * @created 2019/11/20 17:07:54
  */
-import editWindow from "@/components/edit-window/edit-window";
+import editWindow from '@/components/edit-window/edit-window'
 // import Form from '@/components/form/form'
-import eTable from "@/components/e-table/e-table";
-import request from "@/libs/request";
-import editBaseMixins from "../../mixins/edit";
-import formControl from "@/components/form-control/form-control";
-import popup from "@/components/popup/popup";
+import eTable from '@/components/e-table/e-table'
+import request from '@/libs/request'
+import editBaseMixins from '../../mixins/edit'
+import formControl from '@/components/form-control/form-control'
+import popup from '@/components/popup/popup'
 
 export default {
-  name: "edit-warehouse",
+  name: 'edit-warehouse',
   mixins: [editBaseMixins],
   components: {
     editWindow,
@@ -318,11 +318,11 @@ export default {
     formControl,
     popup
   },
-  data() {
+  data () {
     return {
-      actionSubtitle: "纸箱产品套件", // 当前操作副标题
-      formName: "productUnionFm",
-      requestBaseUrl: "/bas/productUnion", // 请求 查询 操作的基础路径
+      actionSubtitle: '纸箱产品套件', // 当前操作副标题
+      formName: 'productUnionFm',
+      requestBaseUrl: '/bas/productUnion', // 请求 查询 操作的基础路径
       formDataInfo: {
         master: {},
         productUnionSlaves: []
@@ -332,15 +332,15 @@ export default {
         puName: [
           {
             required: true,
-            message: "套件名称不能为空",
-            trigger: "blur"
+            message: '套件名称不能为空',
+            trigger: 'blur'
           }
         ],
         cusCode: [
           {
             required: true,
-            message: "客户不能为空",
-            trigger: "blur,change"
+            message: '客户不能为空',
+            trigger: 'blur,change'
           }
         ]
       },
@@ -350,38 +350,38 @@ export default {
       productUnionSubList: [],
       productUnionSubItems: {},
       tableDefaultHeight: 200
-    };
+    }
   },
   watch: {
     initData: {
-      handler(n, o) {
+      handler (n, o) {
         if (n.initData) {
-          this.formDataInfo.master = n.initData.master;
+          this.formDataInfo.master = n.initData.master
         }
       },
       deep: true
     }
   },
   computed: {
-    productUnionItemFmProdNoList() {
-      //获取产品编号	列表，转换为 "",""格式，用于弹出框排除数据
-      let temp = [];
+    productUnionItemFmProdNoList () {
+      // 获取产品编号	列表，转换为 "",""格式，用于弹出框排除数据
+      let temp = []
       this.productUnionList.forEach((item, index) => {
-        if (item.master && item.master.prodNo != "") {
-          temp.push(item.master.prodNo);
+        if (item.master && item.master.prodNo != '') {
+          temp.push(item.master.prodNo)
         }
-      });
-      return temp.toString();
+      })
+      return temp.toString()
     }
   },
   methods: {
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo() {
-      //this.formDataInfo=Object.assign({},default_formDataInfo)
+    HandleFormDataInfo () {
+      // this.formDataInfo=Object.assign({},default_formDataInfo)
     },
     // 重写父类,修改提交数据
-    resetformDataInfo() {
-      //组装数据
+    resetformDataInfo () {
+      // 组装数据
       /**
        * {
           master:{},
@@ -392,40 +392,40 @@ export default {
        productUnionItemFm_edit
        productUnionSubFm_edit
        */
-      //debugger;
+      // debugger;
       let data = {
         master: this.formDataInfo.master
-      };
-      let productUnionSlaves = [];
-      let unionItemList = this.$refs.productUnionItemFm_edit.getTableEditData();
+      }
+      let productUnionSlaves = []
+      let unionItemList = this.$refs.productUnionItemFm_edit.getTableEditData()
       unionItemList.forEach((item, index) => {
-        let sub = [];
+        let sub = []
         if (!item.hasDelete) {
-          sub = this.productUnionSubItems[item.prodNo];
+          sub = this.productUnionSubItems[item.prodNo]
         }
         productUnionSlaves.push({
           master: item,
           productUnionSubList: sub
-        });
-      });
+        })
+      })
 
-      data["productUnionSlaves"] = productUnionSlaves;
-      //console.log(data);
-      return data;
+      data['productUnionSlaves'] = productUnionSlaves
+      // console.log(data);
+      return data
     },
-    fillProductUnionSubFm(data) {
-      //填充第三层表的数据，根据第二层表中的产品编号（productId）和产品类型
-      //去查询第三层的数据
+    fillProductUnionSubFm (data) {
+      // 填充第三层表的数据，根据第二层表中的产品编号（productId）和产品类型
+      // 去查询第三层的数据
       if (data && data.length > 0) {
         if (!data[0].data.prodNo) {
-          return;
+          return
         }
       }
       data.forEach(item => {
-        let _self = this;
+        let _self = this
         request
           .get(
-            "bas/productUnion/sub/getProductInfo",
+            'bas/productUnion/sub/getProductInfo',
             {},
             {
               productNo: item.data.prodNo,
@@ -433,8 +433,8 @@ export default {
             }
           )
           .then(res => {
-            let resData = [];
-            res.forEach((item2)=>{
+            let resData = []
+            res.forEach((item2) => {
               resData.push({
                 bpNo: item2.bpNo,
                 bpName: item2.bpName,
@@ -446,93 +446,93 @@ export default {
                 uiQty: item2.valCount,
                 bpBatchNo: item2.bpBatchNo,
                 productId: item2.id
-              });
+              })
             })
             if (_self.productUnionItemFmRowIndex == item.index) {
-              _self.productUnionSubList = resData;
+              _self.productUnionSubList = resData
             }
-            //产品编号：
-            _self.productUnionSubItems[item.data.prodNo] = resData;
+            // 产品编号：
+            _self.productUnionSubItems[item.data.prodNo] = resData
           })
           .catch(err => {
-            //console.log(err);
-            _self.$Message.error(`产品编号${item.data.prodNo}获取套件失败`);
-          });
-      });
+            // console.log(err);
+            _self.$Message.error(`产品编号${item.data.prodNo}获取套件失败`)
+          })
+      })
     },
-    productUnionItemFmRowClick(index) {
-      //第二层表被点击，显示第三层表的数据
-      this.productUnionItemFmRowIndex = index;
-      this.productUnionSubList = [];
+    productUnionItemFmRowClick (index) {
+      // 第二层表被点击，显示第三层表的数据
+      this.productUnionItemFmRowIndex = index
+      this.productUnionSubList = []
       this.productUnionSubList = this.productUnionSubItems[
         this.productUnionList[index].prodNo
-      ];
+      ]
     },
-    formDetailDataCall() {
-      //数据初始化，把第二层表的master组装成一个List结构
-      this.productUnionList = [];
+    formDetailDataCall () {
+      // 数据初始化，把第二层表的master组装成一个List结构
+      this.productUnionList = []
       this.formDataInfo.productUnionSlaves.forEach((item, index) => {
-        this.productUnionList.push(item.master);
-        this.productUnionSubItems[item.master.prodNo] = item.productUnionSubList;
-      });
-      //this.productUnionSubList
-      //第三层套餐，编辑时，默认显示数据
-      if(this.formDataInfo.productUnionSlaves.length > 0 && this.formDataInfo.productUnionSlaves[0].productUnionSubList.length > 0){
-        this.productUnionSubList = this.formDataInfo.productUnionSlaves[0].productUnionSubList;
+        this.productUnionList.push(item.master)
+        this.productUnionSubItems[item.master.prodNo] = item.productUnionSubList
+      })
+      // this.productUnionSubList
+      // 第三层套餐，编辑时，默认显示数据
+      if (this.formDataInfo.productUnionSlaves.length > 0 && this.formDataInfo.productUnionSlaves[0].productUnionSubList.length > 0) {
+        this.productUnionSubList = this.formDataInfo.productUnionSlaves[0].productUnionSubList
       }
     },
-    formTableDataSubmit() {
-      //提交数据
-      let data = this.resetformDataInfo();
+    formTableDataSubmit () {
+      // 提交数据
+      let data = this.resetformDataInfo()
 
-      this.$refs["formDataInfo"].validate(valid => {
+      this.$refs['formDataInfo'].validate(valid => {
         if (!valid) {
-          return;
+          return
         }
-        let result = this.$refs["productUnionItemFm_edit"].validate();
+        let result = this.$refs['productUnionItemFm_edit'].validate()
         if (result) {
-          return;
+          return
         }
         request
-          .post("bas/productUnion/saveOrUpdate", data)
+          .post('bas/productUnion/saveOrUpdate', data)
           .then(res => {
-            //console.log(res);
-            this.$Message.success("执行成功");
-            this.closeActionTigger();
-            this.$emit("submit-success");
-            this.showWindow = false;
+            // console.log(res);
+            this.$Message.success('执行成功')
+            this.closeActionTigger()
+            this.$emit('submit-success')
+            this.showWindow = false
           })
           .catch(err => {
-            //console.log(err);
-            this.$Message.error("执行失败");
-          });
-      });
+            // console.log(err);
+            this.$Message.error('执行失败')
+          })
+      })
     },
-    productNoValidator() {
+    productNoValidator () {
       if (
         this.formDataInfo.master.custId == undefined ||
-        this.formDataInfo.master.custId == ""
+        this.formDataInfo.master.custId == ''
       ) {
-        this.$Message.warning("请选择客户");
-        return false;
+        this.$Message.warning('请选择客户')
+        return false
       }
-      return true;
+      return true
     },
-    closeActionTigger() {
-      //this.$refs.formDataInfo.resetFields();
-      this.formDataInfo.master = JSON.parse(JSON.stringify(this.initData.initData.master));
-      this.$refs.productUnionItemFm_edit.reset();
-      this.$refs.productUnionSubFm_edit.reset();
+    closeActionTigger () {
+      // this.$refs.formDataInfo.resetFields();
+      this.formDataInfo.master = JSON.parse(JSON.stringify(this.initData.initData.master))
+      this.$refs.productUnionItemFm_edit.reset()
+      this.$refs.productUnionSubFm_edit.reset()
     }
   },
-  updated() {
+  updated () {
     if (this.$refs.formDataInfo) {
-      let height = document.body.offsetHeight;
+      let height = document.body.offsetHeight
       this.tableDefaultHeight =
-        height - (this.$refs.formDataInfo.$el.offsetHeight + 60 + 50 + 40);
+        height - (this.$refs.formDataInfo.$el.offsetHeight + 60 + 50 + 40)
     }
   }
-};
+}
 </script>
 
 <style>

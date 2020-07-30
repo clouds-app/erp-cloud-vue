@@ -8,21 +8,20 @@
 
 <script>
 import request from '@/libs/request'
-	export default {
-    name: 'App',
-    data(){
-      return {
-        topMenuList:null
-      }
-    },
-
-    created(){
-    },
-    methods:{
-
-    
+export default {
+  name: 'App',
+  data () {
+    return {
+      topMenuList: null
     }
-	}
+  },
+
+  created () {
+  },
+  methods: {
+
+  }
+}
 </script>
 
 <style lang="less">
@@ -43,7 +42,6 @@ html,body{
 .ivu-card-body {
     padding: 2px !important;
 }
-
 
 .main .content-wrapper {
     padding: 0px !important;
@@ -98,7 +96,6 @@ html,body{
 	background: -webkit-gradient(linear, left top, left bottom, color-stop(3%,#f8f8f9), color-stop(4%,#ffffff), color-stop(100%,#f2f2f2));
 }
 
-
 .ivu-table-border th{
 	border-right: 1px dotted #e3e5e8 !important;
   color: #000 !important;
@@ -141,13 +138,13 @@ td.ivu-table-column-center {
 }
 
 .edit-row-bg{
-	line-height:10px;
+  line-height:10px;
+  background-color: #d4f0fd !important;
 }
 
 .edit-row-bg td{
-        background-color: #d4f0fd !important;
+  background-color: #d4f0fd !important;
  }
-
 
  .search input, .ivu-date-picker {
     width: 100%;

@@ -20,6 +20,7 @@
             <Col span="12">
                 <FormItem label="楞别" prop="lbCode">
                 <referenceField
+                    ref='firstFocusInput'
                   :disabled="detailDisabled"
                   v-model="formDataInfo.lbCode"
                   maxlength="20"
@@ -32,7 +33,6 @@
             <Col span="12">
                  <FormItem label="层数" prop="lpCS">
                   <InputNumber
-                  type="number"
                     :disabled="detailDisabled"
                     v-model="formDataInfo.lpCS"
                      :formatter="value => ` ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
@@ -175,20 +175,17 @@
                     ></InputNumber>
                   </FormItem>
             </Col>
-            <Col span="12">
+            <Col span="24">
                 <FormItem label="备注" prop="remark">
                   <Input
+
                   :disabled="detailDisabled"
                     v-model="formDataInfo.remark"
-                    type="textarea"
                     maxlength="100"
-                    :autosize="{ minRows: 2, maxRows: 5 }"
                     placeholder="请输入备注..."
                   ></Input>
                 </FormItem>
             </Col>
-
-
 
         </Row>
       </Form>
@@ -210,155 +207,158 @@
  *
  * @created 2019/11/20 17:07:54
  */
+import InputNumber from '@/components/input-number'
 import referenceField from '@/components/referenceField/referenceField'
-import editBaseMixins from "../../mixins/edit";
-import { customValidator,uniqueValidator } from "@/libs/validator";
+import editBaseMixins from '../../mixins/edit'
+import { customValidator, uniqueValidator } from '@/libs/validator'
 const default_formDataInfo = {
-  lbCode: "",
-  remark: "",
+  lbCode: '',
+  remark: '',
   lpHeigth: 0,
-  lpCS: 0,
+  lpCS: null,
   lbLengLose: 0,
   lpAreaRate: 0,
   lbYxAdd: 0,
   lbWidthLose: 0,
   lbDtInch: 0,
   lbDtCm: 0,
-  lbPMinEdge:0,
-  lbPMaxCut:0,
-  lbPMaxWidth:0
-};
+  lbPMinEdge: 0,
+  lbPMaxCut: 0,
+  lbPMaxWidth: 0
+}
 export default {
-  name: "edit-leng",
+  name: 'edit-leng',
   mixins: [editBaseMixins],
-  components:{referenceField},
-  data() {
+  components: { referenceField, InputNumber },
+  data () {
     return {
-      formmastername:'baselengFm',
-      actionSubtitle:'楞别', // 当前操作副标题
-      requestBaseUrl: "/bas/leng", // 请求 查询 操作的基础路径
+      formmastername: 'baselengFm',
+      actionSubtitle: '楞别', // 当前操作副标题
+      requestBaseUrl: '/bas/leng', // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
-        lbCode: [{ required: true, message: "楞别不能为空", trigger: "blur" },
+        lbCode: [{ required: true, message: '楞别不能为空', trigger: 'blur' },
           {
-              validator:customValidator,
-              trigger: "blur",
-              customRule:["identifier"],
-              fieldDesc:"楞别"
-          },{
-            validator:uniqueValidator,
-             trigger: "blur",
-             fieldDesc: "楞别",
-             params:{
-               fieldName:'lbCode',
-               formName:'baselengFm',
-               id:()=>{
-                 return this.formDataInfo.id;
-               },lpCS:()=>{
-                 return this.formDataInfo.lpCS;
-               }
-             }
+            validator: customValidator,
+            trigger: 'blur',
+            customRule: ['identifier'],
+            fieldDesc: '楞别'
+          }, {
+            validator: uniqueValidator,
+            trigger: 'blur',
+            fieldDesc: '楞别',
+            params: {
+              fieldName: 'lbCode',
+              formName: 'baselengFm',
+              id: () => {
+                return this.formDataInfo.id
+              },
+              lpCS: () => {
+                return this.formDataInfo.lpCS
+              }
+            }
           }
         ],
         lpCS: [
-          { required: true, message: "层数不能为空", trigger: "blur" },
-           {validator:customValidator,
-              trigger: "blur",
-              customRule:["toCDB","spaceStr","number"],
-              fieldDesc:"层数"}
+          { required: true, message: '层数不能为空', trigger: 'blur' },
+          { validator: customValidator,
+            trigger: 'blur',
+            customRule: ['toCDB', 'spaceStr', 'number'],
+            fieldDesc: '层数' }
         ],
         lpCS: [ {
-            validator:customValidator,
-            trigger: "blur",
-            customRule:["mustDouble"],
-            fieldDesc:"层数"
-          }
+          validator: customValidator,
+          trigger: 'blur',
+          customRule: ['mustDouble'],
+          fieldDesc: '层数'
+        }
         ],
         lpHeigth: [ {
-            validator:customValidator,
-            trigger: "blur",
-            customRule:["mustDouble"],
-            fieldDesc:"厚度(mm)"
-          }
+          validator: customValidator,
+          trigger: 'blur',
+          customRule: ['mustDouble'],
+          fieldDesc: '厚度(mm)'
+        }
         ],
         lbDtCm: [ {
-            validator:customValidator,
-            trigger: "blur",
-            customRule:["mustDouble"],
-            fieldDesc:"钉条(cm)"
-          }
+          validator: customValidator,
+          trigger: 'blur',
+          customRule: ['mustDouble'],
+          fieldDesc: '钉条(cm)'
+        }
         ],
         lbDtInch: [ {
-            validator:customValidator,
-            trigger: "blur",
-            customRule:["mustDouble"],
-            fieldDesc:"钉条(inch)"
-          }
+          validator: customValidator,
+          trigger: 'blur',
+          customRule: ['mustDouble'],
+          fieldDesc: '钉条(inch)'
+        }
         ],
         lbWidthLose: [ {
-            validator:customValidator,
-            trigger: "blur",
-            customRule:["mustDouble"],
-            fieldDesc:"纸度废边mm"
-          }
+          validator: customValidator,
+          trigger: 'blur',
+          customRule: ['mustDouble'],
+          fieldDesc: '纸度废边mm'
+        }
         ],
         lbLengLose: [ {
-            validator:customValidator,
-            trigger: "blur",
-            customRule:["mustDouble"],
-            fieldDesc:"纸长废边mm"
-          }
+          validator: customValidator,
+          trigger: 'blur',
+          customRule: ['mustDouble'],
+          fieldDesc: '纸长废边mm'
+        }
         ],
         lbYxAdd: [ {
-            validator:customValidator,
-            trigger: "blur",
-            customRule:["mustDouble"],
-            fieldDesc:"压线加分mm"
-          }
+          validator: customValidator,
+          trigger: 'blur',
+          customRule: ['mustDouble'],
+          fieldDesc: '压线加分mm'
+        }
         ],
         lpAreaRate: [ {
-            validator:customValidator,
-            trigger: "blur",
-            customRule:["mustDouble"],
-            fieldDesc:"折面积系数"
-          }
+          validator: customValidator,
+          trigger: 'blur',
+          customRule: ['mustDouble'],
+          fieldDesc: '折面积系数'
+        }
         ],
         lbPMaxWidth: [ {
-            validator:customValidator,
-            trigger: "blur",
-            customRule:["mustDouble"],
-            fieldDesc:"折面积系数"
-          }
+          validator: customValidator,
+          trigger: 'blur',
+          customRule: ['mustDouble'],
+          fieldDesc: '折面积系数'
+        }
         ],
         lbPMaxCut: [ {
-            validator:customValidator,
-            trigger: "blur",
-            customRule:["mustDouble"],
-            fieldDesc:"折面积系数"
-          }
+          validator: customValidator,
+          trigger: 'blur',
+          customRule: ['mustDouble'],
+          fieldDesc: '折面积系数'
+        }
         ],
         lbPMinEdge: [ {
-            validator:customValidator,
-            trigger: "blur",
-            customRule:["mustDouble"],
-            fieldDesc:"折面积系数"
-          }
-        ],
+          validator: customValidator,
+          trigger: 'blur',
+          customRule: ['mustDouble'],
+          fieldDesc: '折面积系数'
+        }
+        ]
       }
-    };
+    }
   },
-
   methods: {
+
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo() {
-      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    HandleFormDataInfo () {
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
     }
   }
-};
+}
 </script>
 
 <style>
-.cl-edit-leng .ivu-form-item {
-  margin-bottom: 5px !important;
-}</style>
+/* .cl-edit-leng .ivu-form-item {
+  margin-bottom: 0px !important;
+} */
+</style>

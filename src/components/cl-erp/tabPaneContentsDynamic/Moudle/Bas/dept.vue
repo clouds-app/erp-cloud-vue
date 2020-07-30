@@ -8,7 +8,7 @@
       :queryParamsDefault="queryParamsDefault"
     >
     </htmlTemplate>
-    <div class="content-container" :style="{ height: tableHeight + 'px' }">
+    <div ref="contextMenuTarget" class="content-container" :style="{ height: tableHeight + 'px' }">
       <vTable
         :height="tableHeight"
         ref="master_list_table"
@@ -20,7 +20,7 @@
         name="deptFm"
       ></vTable>
     </div>
-    
+
     <editForm
       :isLoaddingDone="isLoaddingDone"
       :form-detail-data="formDetailData"
@@ -33,10 +33,10 @@
   </div>
 </template>
 <script>
-import vTable from "@/components/tables/vTable";
-import htmlTemplate from "../components/htmlTemplate";
-import editForm from "./edit/edit-dept";
-import listBaseMixins from "../mixins/list";
+import vTable from '@/components/tables/vTable'
+import htmlTemplate from '../components/htmlTemplate'
+import editForm from './edit/edit-dept'
+import listBaseMixins from '../mixins/list'
 export default {
   mixins: [listBaseMixins],
   components: {
@@ -44,23 +44,23 @@ export default {
     htmlTemplate,
     vTable
   },
-  data() {
+  data () {
     return {
       functionParams: {
-        requestBaseUrl: "/bas/dept",
-        uniqueId: "deptId"
+        requestBaseUrl: '/bas/dept',
+        uniqueId: 'deptId'
       },
       // 查询参数 ,注意格式
       queryParamsDefault: [
         {
-          title: "部门编码",
-          code: "deptCode",
-          deptCode: ""
+          title: '部门编码',
+          code: 'deptCode',
+          deptCode: ''
         },
         {
-          title: "部门名称",
-          name: "deptName$like",
-          'deptName$like': ""
+          title: '部门名称',
+          name: 'deptName$like',
+          'deptName$like': ''
         }
       ]
       // columns: [
@@ -120,22 +120,23 @@ export default {
       //     align: 'center'
       //   },
       // ],
-    };
+    }
   },
   methods: {
-    tableRowClick(rowData, rowIndex) {
-      this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
-      this.masterRowSelection = rowData;
+    tableRowClick (rowData, rowIndex) {
+      this.formDetailData = {} // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData
       if (rowData != null) {
         // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
         this.currrentRowItem.rowName =
-          rowData.deptCode + " " + rowData.deptName;
+          rowData.deptCode + ' ' + rowData.deptName
       }
-    },tableRowDBClick(rowIndex, rowData){
-      this.editAction();
+    },
+    tableRowDBClick (rowIndex, rowData) {
+      this.editAction()
     }
   }
-};
+}
 </script>
 
 <style></style>

@@ -14,7 +14,7 @@
         :show-message="true"
         :model="formDataInfo"
         :rules="ruleValidate"
-        :label-width="80"
+        :label-width="100"
       >
         <Row :gutter="18">
           <Col span="24">
@@ -22,6 +22,7 @@
                  <Col span="12">
                 <FormItem label="客户" prop="cusName">
                   <popup
+                  ref='firstFocusInput'
                     :disabled="detailDisabled"
                     v-model="formDataInfo.cusCode"
                     field-name="cusCode"
@@ -33,7 +34,7 @@
                     :suffix-model="formDataInfo.cusName"
                     :query-params="{}"
                   />
-                
+
                 </FormItem>
               </Col>
               <Col span="12">
@@ -50,14 +51,12 @@
                     :suffix-model="formDataInfo.boxName"
                     :query-params="{}"
                   />
-               
+
                 </FormItem>
               </Col>
             </Row>
           </Col>
-          
-          
-             
+
           <Col span="12">
             <FormItem label="增量宽度" prop="bsSizeW">
               <InputNumber
@@ -71,7 +70,7 @@
               ></InputNumber>
             </FormItem>
           </Col>
-         
+
           <Col span="12">
                <FormItem label="楞别" prop="lbCode">
                   <popup
@@ -83,7 +82,7 @@
                     render-fields="lbCode,lengId"
                     from-fields="lbCode,id"
                   />
-               
+
                 </FormItem>
             <!-- <FormItem label="楞别代号" prop="lbCode">
               <Input
@@ -94,7 +93,7 @@
               ></Input>
             </FormItem> -->
           </Col>
-          
+
           <Col span="12">
             <FormItem label="增量长度" prop="bsSizeL">
               <InputNumber
@@ -120,7 +119,7 @@
               />
             </FormItem>
           </Col>
-          
+
           <Col span="12">
             <FormItem label="增量高度" prop="bsSizeH">
               <InputNumber
@@ -166,68 +165,68 @@
  *
  * @created 2019/11/20 17:07:54
  */
-import referenceField from '@/components/referenceField/referenceField';
-import editBaseMixins from "../../mixins/edit";
-import popup from "@/components/popup/popup";
-import optionSearch from "../../components/optionSearch";
-import { customValidator,uniqueValidator } from "@/libs/validator"
+import referenceField from '@/components/referenceField/referenceField'
+import editBaseMixins from '../../mixins/edit'
+import popup from '@/components/popup/popup'
+import optionSearch from '../../components/optionSearch'
+import { customValidator, uniqueValidator } from '@/libs/validator'
 const default_formDataInfo = {
-  cusCode: "",
-  boxCode: "",
-  lbCode: "",
-  cusName: "",
-  boxName: "",
+  cusCode: '',
+  boxCode: '',
+  lbCode: '',
+  cusName: '',
+  boxName: '',
   bsUnit: '1',
   bsSizeL: 0,
   bsSizeH: 0,
   bsSizeW: 0,
-  remark: ""
-};
+  remark: ''
+}
 export default {
-  name: "edit-boxSizeSet",
+  name: 'edit-boxSizeSet',
   mixins: [editBaseMixins],
-  components: { optionSearch, popup,referenceField },
+  components: { optionSearch, popup, referenceField },
 
-  data() {
+  data () {
     return {
-      frommastername:'boxSizeSetFm',
-      actionSubtitle:'纸箱内外径', // 当前操作副标题
-      requestBaseUrl: "/bas/boxSizeSet", // 请求 查询 操作的基础路径
+      frommastername: 'boxSizeSetFm',
+      actionSubtitle: '纸箱内外径', // 当前操作副标题
+      requestBaseUrl: '/bas/boxSizeSet', // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
-       cusName: [{required: true, message: "客户不能为空", trigger: "blur, change"}],
-       boxName: [{required: true, message: "盒式不能为空", trigger: "blur, change"}],
-       bsSizeW:[ {
-            validator:customValidator,
-            trigger: "blur",
-            customRule:["mustDouble"],
-            fieldDesc:"增量宽度"
-          }],
-       bsSizeL:[ {
-            validator:customValidator,
-            trigger: "blur",
-            customRule:["mustDouble"],
-            fieldDesc:"增量长度"
-          }],
-       bsSizeH:[ {
-            validator:customValidator,
-            trigger: "blur",
-            customRule:["mustDouble"],
-            fieldDesc:"增量高度"
-          }],
-      
+        cusName: [{ required: true, message: '客户不能为空', trigger: 'blur, change' }],
+        boxName: [{ required: true, message: '盒式不能为空', trigger: 'blur, change' }],
+        bsSizeW: [ {
+          validator: customValidator,
+          trigger: 'blur',
+          customRule: ['mustDouble'],
+          fieldDesc: '增量宽度'
+        }],
+        bsSizeL: [ {
+          validator: customValidator,
+          trigger: 'blur',
+          customRule: ['mustDouble'],
+          fieldDesc: '增量长度'
+        }],
+        bsSizeH: [ {
+          validator: customValidator,
+          trigger: 'blur',
+          customRule: ['mustDouble'],
+          fieldDesc: '增量高度'
+        }]
+
       }
-    };
+    }
   },
 
   methods: {
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo() {
-      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    HandleFormDataInfo () {
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
     }
   }
-};
+}
 </script>
 
 <style>

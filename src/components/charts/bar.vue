@@ -30,9 +30,16 @@ export default {
       let seriesData = Object.values(this.value)
       let option = {
         title: {
+          textStyle: {
+            color: 'white'
+          },
           text: this.text,
           subtext: this.subtext,
           x: 'center'
+        },
+        grid: {
+          left: '20%',
+          bottom: '25%'
         },
         xAxis: {
           type: 'category',

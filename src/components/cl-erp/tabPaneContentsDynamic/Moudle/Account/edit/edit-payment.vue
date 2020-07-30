@@ -22,13 +22,6 @@
         <Row>
           <Col span="6">
             <FormItem label="付款单号" prop="spNo">
-              <!-- <referenceField v-model="formDataInfo.initNo"
-               :disabled="true" 
-                maxlength="20"
-                placeholder="初始单号"
-                :form-name="frommastername"
-                :id="formDataInfo.id"
-              ></referenceField>-->
               <Input :disabled="true" v-model="formDataInfo.spNo" maxlength="80" placeholder="付款单号"></Input>
             </FormItem>
           </Col>
@@ -57,19 +50,6 @@
                 @on-fill="onFill"
               />
             </FormItem>
-            <!-- <FormItem label="供应商编号" prop="custCode">
-              coinRate 汇率  taxRate 	税率
-                <popup
-                    v-model="formDataInfo.custCode"
-                    field-name="custCode"
-                    popup-name="CustomerCommonSingleBox"
-                    :fill-model.sync="formDataInfo"
-                    render-fields="custId,custCode,custName,rate,taxRat,discount,coinId,coinCode,coinName"
-                    from-fields="id,cusCode,cusName,coinRate,taxRate,discount,coinId,coinCode,coinName"
-                    :suffix="true"
-                    :suffix-model="formDataInfo.custName"
-                />
-            </FormItem>-->
           </Col>
           <Col span="6">
             <FormItem label="会计月份" prop="spYm">
@@ -116,43 +96,31 @@
           </Col>
           <Col span="6">
             <FormItem label="汇率" prop="rate">
-              <InputNumber
+              <inputNumber
                 style="width:100%"
                 :disabled="false"
-                type="number"
                 v-model="formDataInfo.rate"
                 maxlength="20"
                 placeholder="汇率"
                 @on-blur="changeRate()"
-              ></InputNumber>
+              ></inputNumber>
             </FormItem>
           </Col>
-          <!-- <Col span="6">
-            <FormItem label="税别" prop="taxType">
-               <optionSearch
-                    @onChange="optionOnChange"
-                    :defaultItem="formDataInfo.taxType"
-                    :loaddingDataWhen="showWindow"
-                    formKey="taxType"
-                    query="taxTypePur"
-                  />
-            </FormItem>
-          </Col>-->
           <Col span="6">
             <FormItem label="税率" prop="taxRat">
-              <InputNumber
+              <inputNumber
                 :disabled="false"
                 style="width:100%"
                 type="number"
                 v-model="formDataInfo.taxRat"
                 maxlength="20"
                 placeholder="税率"
-              ></InputNumber>
+              ></inputNumber>
             </FormItem>
           </Col>
           <Col span="6">
             <FormItem label="付款金额" prop="spamt">
-              <InputNumber
+              <inputNumber
                 :disabled="false"
                 style="width:100%"
                 type="number"
@@ -160,24 +128,24 @@
                 maxlength="20"
                 placeholder="付款金额"
                 @on-blur="changeInAmt()"
-              ></InputNumber>
+              ></inputNumber>
             </FormItem>
           </Col>
           <Col span="6">
             <FormItem label="汇算金额" prop="inAmt">
-              <InputNumber
+              <inputNumber
                 style="width:100%"
                 :disabled="true"
                 type="number"
                 v-model="formDataInfo.inAmt"
                 maxlength="20"
                 placeholder="汇算金额"
-              ></InputNumber>
+              ></inputNumber>
             </FormItem>
           </Col>
           <Col span="6">
             <FormItem label="折扣(%)" prop="discount">
-              <InputNumber
+              <inputNumber
                 @on-blur="changeDiscount()"
                 style="width:100%"
                 :disabled="false"
@@ -186,7 +154,7 @@
                 min=0
                 max=100
                 placeholder="折扣(%)"
-              ></InputNumber>
+              ></inputNumber>
             </FormItem>
           </Col>
           <Col span="6">
@@ -230,9 +198,6 @@
                 format="yyyy-MM-dd"
               ></DatePicker>
             </FormItem>
-            <!-- <FormItem label="到账日期" prop="spInDate">
-              <DatePicker transfer :value="formDataInfo.spInDate" type="date" format="yyyy-MM-dd"></DatePicker>
-            </FormItem> -->
           </Col>
           <Col span="6">
             <FormItem label="备注" prop="remark">
@@ -286,95 +251,97 @@
  *
  * @created 2020/05/27
  */
-import dayjs from "dayjs";
-import optionSearch from "../../components/optionSearch";
-import popup from "@/components/popup/popup";
-import editBaseMixins from "../../mixins/edit";
-import { deepCopy } from "view-design/src/utils/assist";
-import { customValidator, uniqueValidator } from "@/libs/validator";
-import referenceField from "@/components/referenceField/referenceField";
+import dayjs from 'dayjs'
+import inputNumber from '@/components/input-number'
+import optionSearch from '../../components/optionSearch'
+import popup from '@/components/popup/popup'
+import editBaseMixins from '../../mixins/edit'
+import { deepCopy } from 'view-design/src/utils/assist'
+import { customValidator, uniqueValidator } from '@/libs/validator'
+import referenceField from '@/components/referenceField/referenceField'
 const default_formDataInfo = {
-  spYm: dayjs().format("YYYYMM"), //会计月份
-  coinCode: "",
+  spYm: dayjs().format('YYYYMM'), // 会计月份
+  coinCode: '',
   coinId: 0,
-  coinName: "",
-  //iisAudit: 0,
-  spOrderNo: "",
-  spDate: dayjs().format("YYYY-MM-DD HH:mm:ss"), //初始化日期
-  spInDate: dayjs().format("YYYY-MM-DD HH:mm:ss"), //初始化日期
-  spNo: "",
-  supplierId: "",
-  supplierCode: "",
-  purName: "",
-  remark: "",
+  coinName: '',
+  // iisAudit: 0,
+  spOrderNo: '',
+  spDate: dayjs().format('YYYY-MM-DD HH:mm:ss'), // 初始化日期
+  spInDate: dayjs().format('YYYY-MM-DD HH:mm:ss'), // 初始化日期
+  spNo: '',
+  supplierId: '',
+  supplierCode: '',
+  purName: '',
+  remark: '',
   status: 1, // 禁用
   taxRat: 0,
-  spOrderType: "0",
-  spOrderTypeText: "",
+  spOrderType: '0',
+  spOrderTypeText: '',
   spamt: 0,
   inAmt: 0,
   discount: 0,
   accAmt: 0,
-  billType: "0",
-  spInvNo: "",
+  billType: '0',
+  spInvNo: '',
   writeOffAmt: 0,
   noWriteOffAmtt: 0,
   rate: 0
-};
+}
 export default {
-  name: "edit-payment",
+  name: 'edit-payment',
   mixins: [editBaseMixins],
   components: {
     optionSearch,
     popup,
-    referenceField
+    referenceField,
+    inputNumber
   },
 
-  data() {
+  data () {
     return {
-      disabledSubmitBtn: false, //是否禁用提交按钮
-      frommastername: "accountPaymentFm",
-      actionSubtitle: "已付款", // 当前操作副标题
-      requestBaseUrl: "/account/payment", // 请求 查询 操作的基础路径
+      disabledSubmitBtn: false, // 是否禁用提交按钮
+      frommastername: 'accountPaymentFm',
+      actionSubtitle: '已付款', // 当前操作副标题
+      requestBaseUrl: '/account/payment', // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // writeOffAmtDisabled: false, //已冲金额不等于0禁用
       // 需要验证的数据
       ruleValidate: {
         supplierCode: [
-          { required: true, message: "供应商编号不能为空", trigger: "blur" }
+          { required: true, message: '供应商编号不能为空', trigger: 'blur' }
         ]
         // initDate: [
         //   { required: true,type:'date',message: "初始化日期不能为空", trigger: "blur" }
         // ],
       }
-    };
+    }
   },
   watch: {
-    showWindow: function(n, o) {
-      //debugger
+    showWindow: function (n, o) {
+      // debugger
       if (n) {
-        let _self = this;
+        let _self = this
         this.$nextTick(() => {
           // 延迟赋值,不然数据还没有正确返回的情况下,无法绑定默认值
           setTimeout(() => {
-            this.setDefaultData();
-          }, 1000);
-        });
+            this.setDefaultData()
+          }, 1000)
+        })
       }
     }
   },
   methods: {
-     // 设置默认值
-    setDefaultData() {
-      //debugger
+    // 设置默认值
+    setDefaultData () {
+      // debugger
       this.disabledSubmitBtn = false
       // 判断是否禁用提交按钮
-      if(this.action != "add" &&this.formDataInfo.writeOffAmt !=null && Number(this.formDataInfo.writeOffAmt)>0){
-        //已开票金额一旦写入值时，单据不能修改/不能删除
-        this.disabledSubmitBtn = true;
+      if (this.action != 'add' && this.formDataInfo.writeOffAmt != null && Number(this.formDataInfo.writeOffAmt) > 0) {
+        // 已开票金额一旦写入值时，单据不能修改/不能删除
+        this.disabledSubmitBtn = true
       }
     },
-    //初始化日期 变动日期
+    // 初始化日期 变动日期
     // onChange_spDate(item) {
     //   //debugger
     //   if (!_.isEmpty(item)) {
@@ -383,117 +350,118 @@ export default {
     // },
     // 继承中修改,提交数据前 验证数据 ,默认 false 没有错误
     validateBeforePost () {
-      //debugger
-      let spamt = Number(this.formDataInfo.spamt);
+      // debugger
+      let spamt = Number(this.formDataInfo.spamt)
       if (spamt <= 0) {
-        this.$Message.warning("付款金额要大于0");
-        return true;
+        this.$Message.warning('付款金额要大于0')
+        return true
       }
       return false
     },
     // 继承中修改,添加数据时,重置修改一些提交的数据
-    resetAddformDataInfo(_data) {
-      //debugger
+    resetAddformDataInfo (_data) {
+      // debugger
       if (_data.spDate) {
-        _data.spDate = dayjs(_data.spDate).format("YYYY-MM-DD HH:mm:ss");
+        _data.spDate = dayjs(_data.spDate).format('YYYY-MM-DD HH:mm:ss')
       }
       if (_data.spInDate) {
-        _data.spInDate = dayjs(_data.spInDate).format("YYYY-MM-DD HH:mm:ss");
+        _data.spInDate = dayjs(_data.spInDate).format('YYYY-MM-DD HH:mm:ss')
       }
-      return _data;
+      return _data
     },
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo() {
-      //debugger
-      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    HandleFormDataInfo () {
+      // debugger
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
     },
     // 重写父类 关闭窗口时 触发事件
-    closeActionTigger() {
-      //debugger
+    closeActionTigger () {
+      // debugger
       // fix 清除上次的错误提示 formDataInfo 为表单ref名称
-      this.$refs["formDataInfo"].resetFields();
-      this.formDataInfo = Object.assign({}, default_formDataInfo);
+      this.$refs['formDataInfo'].resetFields()
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
     },
-    //判断一个值是数字
-    myIsNaN(value) {
-      return typeof value === "number" && !isNaN(value);
+    // 判断一个值是数字
+    myIsNaN (value) {
+      return typeof value === 'number' && !isNaN(value)
     },
-    //弹框值改变重新计算汇算金额
-     onFill(){
+    // 弹框值改变重新计算汇算金额
+    onFill () {
       this.changeInAmt()
     },
-    //计算汇算金额
-    changeInAmt() {
-      //debugger
-      let spamtClone = this.formDataInfo.spamt;
-      let isNumber = this.myIsNaN(Number(spamtClone));
-      if (!isNumber || (spamtClone + "").substr(0, 1) == "-") {
-        this.$Message.error("请输入正数");
-        return;
+    // 计算汇算金额
+    changeInAmt () {
+      // debugger
+      let spamtClone = this.formDataInfo.spamt
+      let isNumber = this.myIsNaN(Number(spamtClone))
+      if (!isNumber || (spamtClone + '').substr(0, 1) == '-') {
+        this.$Message.error('请输入正数')
+        return
       }
-      //汇算金额=付款金额*汇率
+      // 汇算金额=付款金额*汇率
       this.formDataInfo.inAmt = (
         Number(this.formDataInfo.spamt) * Number(this.formDataInfo.rate)
-      ).toFixed(2);
-      //入账金额 = 汇算金额*折扣
+      ).toFixed(2)
+      // 入账金额 = 汇算金额*折扣
       this.formDataInfo.accAmt = (
         (Number(this.formDataInfo.inAmt) * Number(this.formDataInfo.discount)) /
         100
-      ).toFixed(2);
-     // 未冲金额等于入账金额
-     this.formDataInfo.noWriteOffAmtt = this.formDataInfo.accAmt
+      ).toFixed(2)
+      // 未冲金额等于入账金额
+      this.formDataInfo.noWriteOffAmtt = this.formDataInfo.accAmt
     },
     // 货币选择后回调事件 汇率change 计算汇算金额
-    coinCodeOnFillEvent(item) {
-      //货币改变
-      //debugger
-      this.$refs["formDataInfo"].validateField("coinCode", err => {});
+    coinCodeOnFillEvent (item) {
+      // 货币改变
+      // debugger
+      this.$refs['formDataInfo'].validateField('coinCode', err => {})
       this.changeInAmt()
       this.changeDiscount()
     },
-    //汇率change 计算汇算金额
-    changeRate(){
-      //debugger
+    // 汇率change 计算汇算金额
+    changeRate () {
+      // debugger
       let rateClone = this.formDataInfo.rate
       let isNumber = this.myIsNaN(Number(rateClone))
-      if(!isNumber||(rateClone+"").substr(0,1)=="-"){
-         this.$Message.error("请输入正数")
-         return
+      if (!isNumber || (rateClone + '').substr(0, 1) == '-') {
+        this.$Message.error('请输入正数')
+        return
       }
-      //汇算金额=付款金额*汇率
-      this.formDataInfo.inAmt = (Number(this.formDataInfo.spamt)*Number(this.formDataInfo.rate)).toFixed(2)
+      // 汇算金额=付款金额*汇率
+      this.formDataInfo.inAmt = (Number(this.formDataInfo.spamt) * Number(this.formDataInfo.rate)).toFixed(2)
+      this.changeDiscount()
     },
-    //discount change 计算入账金额
-    changeDiscount() {
-      //debugger
-      let discountClone = this.formDataInfo.discount;
-      let isNumber = this.myIsNaN(Number(discountClone));
-      if (!isNumber || discountClone.substr(0, 1) == "-") {
-        this.$Message.error("请输入正数");
-        return;
-      }
-      //入账金额 = 汇算金额*折扣
+    // discount change 计算入账金额
+    changeDiscount () {
+      // debugger
+      // let discountClone = this.formDataInfo.discount;
+      // let isNumber = this.myIsNaN(Number(discountClone));
+      // if (!isNumber || discountClone.substr(0, 1) == "-") {
+      //   this.$Message.error("请输入正数");
+      //   return;
+      // }
+      // 入账金额 = 汇算金额*折扣
       this.formDataInfo.accAmt = (
         (Number(this.formDataInfo.inAmt) * Number(this.formDataInfo.discount)) /
         100
-      ).toFixed(2);
+      ).toFixed(2)
     },
     // Initializationdata(){
     //   //debugger
     //   this.$forceUpdate()//强制更新
     // }
-    //判断数据是新增还是修改
-    formDetailDataCall() {
-      //debugger
+    // 判断数据是新增还是修改
+    formDetailDataCall () {
+      // debugger
       // if (this.action != "add") {
       //   if (this.formDataInfo.writeOffAmt != 0) {
       //     //已冲金额不等于0，页面全禁用
-          
+
       //   }
       // }
-    },
+    }
   }
-};
+}
 </script>
 
 <style>

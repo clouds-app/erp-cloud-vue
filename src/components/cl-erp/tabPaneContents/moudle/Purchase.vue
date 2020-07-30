@@ -2,7 +2,7 @@
   <div class="purchaseContent">
     <!-- <Row>
       <Col span="1">&nbsp;</Col>
-    
+
       <Col span="6" offset="1">
       <Card>
         <p slot="title">
@@ -34,12 +34,12 @@
       </Col>
     </Row> -->
     <div class="purchaseContentItem leftItem">
-      <div @click="handleSubMenuEvent('paperPrice','purchase-paperPrice','纸板进价')" class="circleBallItem purchaseAdvanced cursorPointer">
+      <div @click="handleSubMenuEvent('paperPrice','purchase-paperPrice','纸板进价',secondenum.paperPrice.val.disabled)" :class="[secondenum.paperPrice.val.disabled?'diabledOrAccess':'']"  class="circleBallItem purchaseAdvanced cursorPointer">
         <div class="purchaseAdvancedIcon">
           <div class="purchaseAdvancedTitle">纸板进价</div>
         </div>
       </div>
-      <div @click="handleSubMenuEvent('purPaperPo','purchase-purPaperPo','纸板采购')" class="circleBallItem purchaseOrder cursorPointer">
+      <div @click="handleSubMenuEvent('purPaperPo','purchase-purPaperPo','纸板采购',secondenum.purPaperPo.val.disabled)" :class="[secondenum.purPaperPo.val.disabled?'diabledOrAccess':'']" class="circleBallItem purchaseOrder cursorPointer">
         <div class="purchaseOrderIcon">
           <div class="purchaseOrderTitle">纸板采购</div>
         </div>
@@ -50,8 +50,8 @@
             <div class="moduleDataTitleBg">
                <div class="moduleDataTitle">模块数据</div>
                 <div class="moduleDataListBox cursorPointer">
-                     <div @click="handleSubMenuEvent('supplier','Purchase-supplier','供应商')" class="moduleDataItem">供应商</div>
-                     <div @click="handleSubMenuEvent('supplierArt','purchase-supplierArt','供应商纸质')" class="moduleDataItem">供应商纸质</div>
+                     <div @click="handleSubMenuEvent('supplier','Purchase-supplier','供应商',secondenum.supplier.val.disabled)" :class="[secondenum.supplier.val.disabled?'disabledColor':'']" class="moduleDataItem">供应商</div>
+                     <div @click="handleSubMenuEvent('supplierArt','purchase-supplierArt','供应商纸质',secondenum.supplierArt.val.disabled)" :class="[secondenum.supplierArt.val.disabled?'disabledColor':'']" class="moduleDataItem">供应商纸质</div>
                 </div>
             </div>
          </div>
@@ -59,8 +59,13 @@
            <div class="reportTitleBg">
               <div class="reportTitle">报表</div>
                 <div class="reportDataListBox cursorPointer">
-                     <div @click="handleSubMenuEvent('purPaperPoAnalyz','purchase-purPaperPoAnalyz','纸板采购情况分析')" class="reportDataItem">纸板采购情况分析</div>
-                   
+                     <div @click="handleSubMenuEvent('purPaperPoAnalyz','purchase-purPaperPoAnalyz','纸板采购情况分析',secondenum.purPaperPoAnalyz.val.disabled)" :class="[secondenum.purPaperPoAnalyz.val.disabled?'disabledColor':'']" class="reportDataItem">纸板采购情况分析</div>
+                     <div class="reportDataItem disabledColor">纸板采购查询</div>
+                     <div class="reportDataItem disabledColor">原纸申购查询</div>
+                     <div class="reportDataItem disabledColor">原纸采购查询</div>
+                     <div class="reportDataItem disabledColor">辅料申购查询</div>
+                     <div class="reportDataItem disabledColor">辅料采购查询</div>
+
                 </div>
            </div>
          </div>
@@ -69,36 +74,50 @@
 </template>
 
 <script>
-import globleMixin from "@/mixins";
-//import subMenuMixin from './mixins'
+import globleMixin from '@/mixins'
+// import subMenuMixin from './mixins'
 export default {
   mixins: [globleMixin],
-  data() {
-    return {};
+  data () {
+    return {}
   },
-  activated() {
-    console.log("---------Purchase---- activated---------");
+  activated () {
+    console.log('---------Purchase---- activated---------')
   },
-  created() {
-    console.log("---------Purchase----- created---------");
+  created () {
+    console.log('---------Purchase----- created---------')
+  },
+  computed: {
+    secondenum () {
+      let dataList = this.$store.state.app.Secondaryauthority.Purchase
+      console.log(dataList)
+      return dataList
+    }
   },
   methods: {
     // 子页面 参数: 页面.vue,唯一区别ID,TAB 标签显示名称
-    handleSubMenuEvent(currentPage, uniqueKey, tabName) {
+    handleSubMenuEvent (currentPage, uniqueKey, tabName, flag) {
+      if (flag) {
+        this.$Message.warning('暂无权限,请与管理员联系!')
+        return
+      }
       let params = {
-        menuName: "Purchase",
-        page: currentPage, //显示控件页面
+        menuName: 'Purchase',
+        page: currentPage, // 显示控件页面
         uniqueKey: uniqueKey,
         lable: tabName,
         isActive: true
-      };
-      this.handleMenuBaseEvent(params); // 调用MIXIN 共用方法
+      }
+      this.handleMenuBaseEvent(params) // 调用MIXIN 共用方法
     }
   }
-};
+}
 </script>
 
 <style lang="scss">
+.disabledColor{
+  color: #bdb7b7;
+}
 .purchaseContent {
   color: white;
   min-height: 600px;

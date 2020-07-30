@@ -13,12 +13,13 @@
         :show-message="true"
         :model="formDataInfo"
         :rules="ruleValidate"
-        :label-width="80"
+        :label-width="100"
       >
         <FormItem label="银行编号" prop="bankCode">
           <referenceField
+           ref='firstFocusInput'
             v-model="formDataInfo.bankCode"
-            :disabled="detailDisabled"  
+            :disabled="detailDisabled"
             maxlength="20"
             placeholder="请输入银行编码"
             :form-name="frommastername"
@@ -68,10 +69,8 @@
         <FormItem label="备注" prop="remark">
           <Input
             v-model="formDataInfo.remark"
-            type="textarea"
             :disabled="detailDisabled"
             maxlength="100"
-            :autosize="{ minRows: 2, maxRows: 5 }"
             placeholder="请输入备注..."
           ></Input>
         </FormItem>
@@ -95,94 +94,94 @@
  * @created 2019/11/20 17:07:54
  */
 import referenceField from '@/components/referenceField/referenceField'
-import editBaseMixins from "../../mixins/edit";
-import { customValidator,uniqueValidator } from "@/libs/validator"
-const default_formDataInfo ={
-        bankCode: "",
-        bankName: "",
-        cardNo:"",
-        initAmt:0,
-        endItAmt:0,
-        remark: ""
-      }
+import editBaseMixins from '../../mixins/edit'
+import { customValidator, uniqueValidator } from '@/libs/validator'
+const default_formDataInfo = {
+  bankCode: '',
+  bankName: '',
+  cardNo: '',
+  initAmt: 0,
+  endItAmt: 0,
+  remark: ''
+}
 export default {
-  name: "edit-bank",
+  name: 'edit-bank',
   mixins: [editBaseMixins],
-  components:{
+  components: {
     referenceField
   },
-  data() {
+  data () {
     return {
-      frommastername:'backFm',
-      actionSubtitle:"银行信息",
-      requestBaseUrl: "/bas/bank", // 请求 查询 操作的基础路径
-      formDataInfo:Object.assign({},default_formDataInfo),// 防止添加和更新数据提交发生冲突
+      frommastername: 'backFm',
+      actionSubtitle: '银行信息',
+      requestBaseUrl: '/bas/bank', // 请求 查询 操作的基础路径
+      formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
-         cardNo: [
-          { required: true, message: "账号不能为空", trigger: "blur" },
-          {validator:customValidator,
-          trigger:"blur",
-          customRule:["number","spaceStr"],
-          fieldDesc:"银行账号"
+        cardNo: [
+          { required: true, message: '账号不能为空', trigger: 'blur' },
+          { validator: customValidator,
+            trigger: 'blur',
+            customRule: ['number', 'spaceStr'],
+            fieldDesc: '银行账号'
           }
         ],
-         initAmt: [
+        initAmt: [
           {
-            validator:customValidator,
-            trigger: "blur",
-            customRule:["mustDouble"],
-            fieldDesc:"初始金额"
+            validator: customValidator,
+            trigger: 'blur',
+            customRule: ['mustDouble'],
+            fieldDesc: '初始金额'
           }
         ],
-         endItAmt: [
+        endItAmt: [
           {
-            validator:customValidator,
-            trigger: "blur",
-            customRule:["mustDouble"],
-            fieldDesc:"期末金额"
+            validator: customValidator,
+            trigger: 'blur',
+            customRule: ['mustDouble'],
+            fieldDesc: '期末金额'
           }
         ],
         bankCode: [
-          { required: true, message: "编码不能为空", trigger: "blur" },
-           {
-              validator:customValidator,
-              trigger: "blur",
-              customRule:["identifier"],
-              fieldDesc:"编码"
+          { required: true, message: '编码不能为空', trigger: 'blur' },
+          {
+            validator: customValidator,
+            trigger: 'blur',
+            customRule: ['identifier'],
+            fieldDesc: '编码'
           },
           {
-            validator:uniqueValidator,
-             trigger: "blur",
-             fieldDesc: "银行编号",
-             params:{
-               fieldName:'bankCode',
-               formName:'backFm',
-               id:()=>{
-                 return this.formDataInfo.id;
-               }
-             }
+            validator: uniqueValidator,
+            trigger: 'blur',
+            fieldDesc: '银行编号',
+            params: {
+              fieldName: 'bankCode',
+              formName: 'backFm',
+              id: () => {
+                return this.formDataInfo.id
+              }
+            }
           }
         ],
-        bankName: [{ required: true, message: "名称不能为空", trigger: "blur" },
-         {
-              validator:customValidator,
-              trigger: "blur",
-              customRule:["toCDB","spaceStr"],
-              fieldDesc:"银行名称"
+        bankName: [{ required: true, message: '名称不能为空', trigger: 'blur' },
+          {
+            validator: customValidator,
+            trigger: 'blur',
+            customRule: ['toCDB', 'spaceStr'],
+            fieldDesc: '银行名称'
           }
         ]
       }
-    };
+    }
   },
 
   methods: {
-      // 重写父类,添加时候,清空数据
-    HandleFormDataInfo(){
-     this.formDataInfo=Object.assign({},default_formDataInfo)
-    },
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo () {
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
+    }
   }
-};
+}
 </script>
 
 <style></style>

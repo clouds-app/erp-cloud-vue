@@ -19,7 +19,9 @@
         <Row :gutter="18">
           <Col span="12">
             <FormItem label="机台编号" prop="moCode">
-              <referenceField v-model="formDataInfo.moCode" maxlength="20" placeholder="请输入机台编号" :form-name="formmastername"
+              <referenceField
+               ref='firstFocusInput'
+               v-model="formDataInfo.moCode" maxlength="20" placeholder="请输入机台编号" :form-name="formmastername"
             :id="formDataInfo.id" :disabled="detailDisabled"></referenceField>
             </FormItem>
           </Col>
@@ -136,14 +138,12 @@
               ></InputNumber>
             </FormItem>
           </Col>
-          <Col span="12">
+          <Col span="24">
             <FormItem label="备注" prop="remark">
               <Input
                 v-model="formDataInfo.remark"
                 :disabled="detailDisabled"
-                type="textarea"
                 maxlength="100"
-                :autosize="{ minRows: 2, maxRows: 5 }"
                 placeholder="请输入备注..."
               ></Input>
             </FormItem>
@@ -168,119 +168,119 @@
  *
  * @created 2019/11/20 17:07:54
  */
-import optionSearch from "../../components/optionSearch";
-import editBaseMixins from "../../mixins/edit";
+import optionSearch from '../../components/optionSearch'
+import editBaseMixins from '../../mixins/edit'
 import referenceField from '@/components/referenceField/referenceField'
-import { customValidator, uniqueValidator } from "@/libs/validator";
+import { customValidator, uniqueValidator } from '@/libs/validator'
 
 const default_formDataInfo = {
-  moCode: "",
-  moName: "",
-  bwpiUnitText: "",
+  moCode: '',
+  moName: '',
+  bwpiUnitText: '',
   moInteral: 0,
-  remark: "",
-  bwpiParamNum:1 ,
-  bwpiUnit: "",
-  maxLength:0,
+  remark: '',
+  bwpiParamNum: 1,
+  bwpiUnit: '',
+  maxLength: 0,
   maxWidth: 0,
-  minLength:0 ,
-  minWidth:0, 
-};
+  minLength: 0,
+  minWidth: 0
+}
 export default {
-  name: "edit-machine",
+  name: 'edit-machine',
   mixins: [editBaseMixins],
-  components: { optionSearch, optionSearch,referenceField },
-  data() {
+  components: { optionSearch, optionSearch, referenceField },
+  data () {
     return {
-      formmastername:'machine',
-      actionSubtitle:'机台', // 当前操作副标题
-      requestBaseUrl: "/bas/machine", // 请求 查询 操作的基础路径
+      formmastername: 'machine',
+      actionSubtitle: '机台', // 当前操作副标题
+      requestBaseUrl: '/bas/machine', // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
         bwpiParamNum: [ {
-            validator:customValidator,
-            trigger: "blur",
-            customRule:["mustDouble"],
-            fieldDesc:"工作参量"
-          }
+          validator: customValidator,
+          trigger: 'blur',
+          customRule: ['mustDouble'],
+          fieldDesc: '工作参量'
+        }
         ],
         moInteral: [ {
-            validator:customValidator,
-            trigger: "blur",
-            customRule:["mustDouble"],
-            fieldDesc:"换单间隔"
-          }
+          validator: customValidator,
+          trigger: 'blur',
+          customRule: ['mustDouble'],
+          fieldDesc: '换单间隔'
+        }
         ],
         maxLength: [ {
-            validator:customValidator,
-            trigger: "blur",
-            customRule:["mustDouble"],
-            fieldDesc:"maxLength"
-          }
+          validator: customValidator,
+          trigger: 'blur',
+          customRule: ['mustDouble'],
+          fieldDesc: 'maxLength'
+        }
         ],
         maxWidth: [ {
-            validator:customValidator,
-            trigger: "blur",
-            customRule:["mustDouble"],
-            fieldDesc:"最大尺寸宽"
-          }
+          validator: customValidator,
+          trigger: 'blur',
+          customRule: ['mustDouble'],
+          fieldDesc: '最大尺寸宽'
+        }
         ],
         minLength: [ {
-            validator:customValidator,
-            trigger: "blur",
-            customRule:["mustDouble"],
-            fieldDesc:"最小尺寸长"
-          }
+          validator: customValidator,
+          trigger: 'blur',
+          customRule: ['mustDouble'],
+          fieldDesc: '最小尺寸长'
+        }
         ],
         minWidth: [ {
-            validator:customValidator,
-            trigger: "blur",
-            customRule:["mustDouble"],
-            fieldDesc:"最小尺寸宽"
-          }
+          validator: customValidator,
+          trigger: 'blur',
+          customRule: ['mustDouble'],
+          fieldDesc: '最小尺寸宽'
+        }
         ],
         moCode: [
-          { required: true, message: "机台编号不能为空", trigger: "blur" },
+          { required: true, message: '机台编号不能为空', trigger: 'blur' },
           {
             validator: customValidator,
-            trigger: "blur",
-            customRule: ["identifier"],
-            fieldDesc: "机台编号"
+            trigger: 'blur',
+            customRule: ['identifier'],
+            fieldDesc: '机台编号'
           },
           {
             validator: uniqueValidator,
-            trigger: "blur",
-            fieldDesc: "机台编号",
+            trigger: 'blur',
+            fieldDesc: '机台编号',
             params: {
-              fieldName: "moCode",
-              formName: "machine",
+              fieldName: 'moCode',
+              formName: 'machine',
               id: () => {
-                return this.formDataInfo.id;
+                return this.formDataInfo.id
               }
             }
           }
         ],
         moName: [
-          { required: true, message: "机台名称不能为空", trigger: "blur" },
+          { required: true, message: '机台名称不能为空', trigger: 'blur' },
           {
             validator: customValidator,
-            trigger: "blur",
-            customRule: ["toCDB", "spaceStr"],
-            fieldDesc: "机台名称"
+            trigger: 'blur',
+            customRule: ['toCDB', 'spaceStr'],
+            fieldDesc: '机台名称'
           }
         ]
       }
-    };
+    }
   },
 
   methods: {
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo() {
-      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    HandleFormDataInfo () {
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
     }
   }
-};
+}
 </script>
 
 <style>

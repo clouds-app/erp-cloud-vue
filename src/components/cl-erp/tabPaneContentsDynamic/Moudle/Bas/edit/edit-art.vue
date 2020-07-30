@@ -25,11 +25,12 @@
               <Col span="12">
                 <FormItem label="纸质代号" prop="artCode">
                   <referenceField v-model="formDataInfo.master.artCode"
+                   ref='firstFocusInput'
                    :disabled="detailDisabled"
                    maxlength="20" placeholder="纸质代号"
                       :form-name="frommastername"
                       :id="formDataInfo.master.id"
-           
+
                   ></referenceField>
                 </FormItem>
               </Col>
@@ -44,7 +45,7 @@
                     style="width:100%"
                     maxlength="20"
                     placeholder="层数"
-             
+
                   ></InputNumber>
                 </FormItem>
               </Col>
@@ -56,11 +57,8 @@
               <Input
               :disabled="detailDisabled"
                 v-model="formDataInfo.master.remark"
-                type="textarea"
                 maxlength="100"
-                :autosize="{ minRows: 2, maxRows: 5 }"
                 placeholder="备注..."
-   
               ></Input>
             </FormItem>
           </Col>
@@ -275,35 +273,37 @@
  *
  * @created 2019/11/20 17:07:54
  */
-import rightMenu from "@/components/e-table/right-menu"
+import InputNumber from '@/components/input-number'
+import rightMenu from '@/components/e-table/right-menu'
 import referenceField from '@/components/referenceField/referenceField'
-import editWindow from "@/components/edit-window/edit-window";
-import popup from "@/components/popup/popup";
-import eTable from "@/components/e-table/e-table";
-import request from "@/libs/request";
-import editBaseMixins from "../../mixins/edit";
-import { customValidator, uniqueValidator } from "@/libs/validator";
-import optionSearch from "../../components/optionSearch";
+import editWindow from '@/components/edit-window/edit-window'
+import popup from '@/components/popup/popup'
+import eTable from '@/components/e-table/e-table'
+import request from '@/libs/request'
+import editBaseMixins from '../../mixins/edit'
+import { customValidator, uniqueValidator } from '@/libs/validator'
+import optionSearch from '../../components/optionSearch'
 const default_formDataInfo = {
   // 主表 更改字段
   master: {
-    artCode: "",
+    artCode: '',
     artCS: 0,
-    saleByWt: "false",
-    remark: ""
+    saleByWt: 'false',
+    remark: ''
   },
   // 子表 artLengs 根据实际接口更改,其它不变
   artLengs: {
-    defaultList: [], //默认列
+    defaultList: [], // 默认列
     addList: [], // 添加列
     deleteList: [], // 删除列
     updateList: [] // 更新列
   }
-};
+}
 export default {
-  name: "edit-art",
+  name: 'edit-art',
   mixins: [editBaseMixins],
   components: {
+    InputNumber,
     editWindow,
     optionSearch,
     popup,
@@ -312,14 +312,14 @@ export default {
     referenceField,
     rightMenu
   },
-  data() {
+  data () {
     return {
-      showContextMenu:true,
-      showEditMenu:false,
-      frommastername:'basartFm',
-      actionSubtitle:"纸质",
-      formName: "basartlengFm",
-      requestBaseUrl: "/bas/art", // 请求 查询 操作的基础路径
+      showContextMenu: true,
+      showEditMenu: false,
+      frommastername: 'basartFm',
+      actionSubtitle: '纸质',
+      formName: 'basartlengFm',
+      requestBaseUrl: '/bas/art', // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       subTableFieldInitData: {
 
@@ -328,22 +328,22 @@ export default {
       // 需要验证的数据
       ruleValidate: {
         artCode: [
-          { required: true, message: "纸质代号不能为空", trigger: "blur" },
+          { required: true, message: '纸质代号不能为空', trigger: 'blur' },
           {
             validator: customValidator,
-            trigger: "blur",
-            customRule: ["identifier"],
-            fieldDesc: "纸质代号"
+            trigger: 'blur',
+            customRule: ['identifier'],
+            fieldDesc: '纸质代号'
           },
           {
             validator: uniqueValidator,
-            trigger: "blur",
-            fieldDesc: "纸质代号",
+            trigger: 'blur',
+            fieldDesc: '纸质代号',
             params: {
-              fieldName: "artCode",
-              formName: "basartFm",
+              fieldName: 'artCode',
+              formName: 'basartFm',
               id: () => {
-                return this.formDataInfo.master.id;
+                return this.formDataInfo.master.id
               }
             }
           }
@@ -352,75 +352,75 @@ export default {
         // artCS: [{ required: true,  message: "层数不能为空", trigger: "blur" }]
       },
       tableFieldsValidator: {
-         lbCode: [
-           { required: true, message: "楞别不能为空", trigger: "blur" }
-          ]
+        lbCode: [
+          { required: true, message: '楞别不能为空', trigger: 'blur' }
+        ]
       },
-      getartcs:0
-    };
+      getartcs: 0
+    }
   },
   methods: {
-     //判断数据是新增还是修改
-    formDetailDataCall() {
-      //debugger
+    // 判断数据是新增还是修改
+    formDetailDataCall () {
+      // debugger
       if (this.action != 'add') {
-          //debugger
-          this.getartcs = this.formDataInfo.master.artCS
+        // debugger
+        this.getartcs = this.formDataInfo.master.artCS
+      }
+    },
+    // 当主表层数改变时清空子表数据
+    deleterow () {
+      // debugger
+      let tableData = this.$refs['tableFields'].getCategorizeData()
+      if (this.formDataInfo.master.artCS) {
+        if (this.formDataInfo.master.artCS != this.getartcs) {
+          this.formDataInfo.artLengs.defaultList = []
+          tableData.deleteList = tableData.updateList
         }
+        this.getartcs = this.formDataInfo.master.artCS
+      }
     },
-    //当主表层数改变时清空子表数据
-    deleterow(){
-      //debugger
-      let tableData = this.$refs["tableFields"].getCategorizeData();
-        if (this.formDataInfo.master.artCS) {
-            if (this.formDataInfo.master.artCS != this.getartcs) {
-              this.formDataInfo.artLengs.defaultList = []
-            tableData.deleteList = tableData.updateList
-            }
-            this.getartcs = this.formDataInfo.master.artCS
-          }
-    },
-    clickValuedate() {
-      //debugger;
+    clickValuedate () {
+      // debugger;
       if (
         !this.formDataInfo.master.artCS ||
-        this.formDataInfo.master.artCS == ""
+        this.formDataInfo.master.artCS == ''
       ) {
-        this.$Message.error("层数不能为空");
-        return false;
+        this.$Message.error('层数不能为空')
+        return false
       }
-      return true;
+      return true
     },
 
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo() {
+    HandleFormDataInfo () {
       // debugger
-      this.formDataInfo = Object.assign({}, default_formDataInfo);
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
     },
     // 重写父类 关闭窗口时 触发事件
-    closeActionTigger() {
+    closeActionTigger () {
       // debugger
       // fix 清除上次的错误提示 formDataInfo 为表单ref名称
-      this.$refs["formDataInfo"].resetFields();
-      this.$refs["tableFields"].reset();
-      this.formDataInfo.artLengs.defaultList=this.$refs["tableFields"].cloneData
+      this.$refs['formDataInfo'].resetFields()
+      this.$refs['tableFields'].reset()
+      this.formDataInfo.artLengs.defaultList = this.$refs['tableFields'].cloneData
     },
     // 重写父类,修改提交数据
-    resetformDataInfo(_data) {
-      let tableData = this.$refs["tableFields"].getCategorizeData();
+    resetformDataInfo (_data) {
+      let tableData = this.$refs['tableFields'].getCategorizeData()
       // //debugger
-      this.formDataInfo.artLengs = tableData;
-      return this.formDataInfo;
+      this.formDataInfo.artLengs = tableData
+      return this.formDataInfo
     }
   }
-};
+}
 </script>
 
 <style>
-.cl-edit-art .ivu-form-item {
+/* .cl-edit-art .ivu-form-item {
   margin-bottom: 5px !important;
 }
 .cl-edit-art .ivu-select-item {
   display: block;
-}
+} */
 </style>

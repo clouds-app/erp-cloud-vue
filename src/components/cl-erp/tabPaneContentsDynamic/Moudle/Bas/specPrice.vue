@@ -8,7 +8,7 @@
       :queryParamsDefault="queryParamsDefault"
     >
     </htmlTemplate>
-    <div class="content-container" :style="{ height: tableHeight + 'px' }">
+    <div ref="contextMenuTarget" class="content-container" :style="{ height: tableHeight + 'px' }">
       <Split :v-model="splitModel" mode="vertical">
         <div slot="top" class="demo-split-pane">
           <vTable
@@ -54,96 +54,94 @@
   </div>
 </template>
 <script>
-import vTable from "@/components/tables/vTable";
-import htmlTemplate from "../components/htmlTemplate";
-//import editForm from "./edit/edit-warehouse";
-import listBaseMixins from "../mixins/list";
-import request from "@/libs/request";
+import vTable from '@/components/tables/vTable'
+import htmlTemplate from '../components/htmlTemplate'
+// import editForm from "./edit/edit-warehouse";
+import listBaseMixins from '../mixins/list'
+import request from '@/libs/request'
 export default {
   mixins: [listBaseMixins],
   components: {
-    'editForm': function(resolve) {
-      //组件的异步加载
-      require(["./edit/edit-specPrice"], resolve);
+    'editForm': function (resolve) {
+      // 组件的异步加载
+      require(['./edit/edit-specPrice'], resolve)
     },
     htmlTemplate,
     vTable
   },
-  data() {
+  data () {
     return {
       // who:'editForm', // 动态指定编辑控件
       functionParams: {
-        requestBaseUrl: "/bas/specPrice",
-        uniqueId: "specPriceId"
+        requestBaseUrl: '/bas/specPrice',
+        uniqueId: 'specPriceId'
       },
       // 查询参数 ,注意格式
       queryParamsDefault: [
         {
-          title: "客户",
-          code: "custName",
-          custName: ""
+          title: '客户',
+          code: 'custName',
+          custName: ''
         },
         {
-          title: "盒式名称",
-          name: "boxName$like",
-          'boxName$like': ""
+          title: '盒式名称',
+          name: 'boxName$like',
+          'boxName$like': ''
         }
       ],
       columns: [],
       tableFieldColuns: []
-    };
+    }
   },
   methods: {
-    getShowColumns(columns){
-      //debugger
-      if(Array.isArray(columns) && columns.length > 0){
+    getShowColumns (columns) {
+      // debugger
+      if (Array.isArray(columns) && columns.length > 0) {
         let hiddenColumns = {
-          'spInchExpr':0,
-          'spInchExprMsg':0,
-          'spCMExpr':0,
-          'spCMExprMsg':0,
-          };  
-        for(let i = columns.length - 1;i >= 0;i--){
-          if(hiddenColumns[columns[i].key] != undefined && this.$params.isCalAreaPriceSale == "0"){
-           // debugger
-            columns.splice(i,1);
+          'spInchExpr': 0,
+          'spInchExprMsg': 0,
+          'spCMExpr': 0,
+          'spCMExprMsg': 0
+        }
+        for (let i = columns.length - 1; i >= 0; i--) {
+          if (hiddenColumns[columns[i].key] != undefined && this.$params.isCalAreaPriceSale == '0') {
+            // debugger
+            columns.splice(i, 1)
           }
         }
       }
-      return columns;
+      return columns
     },
-    tableRowClick(rowData, rowIndex) {
-      this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
-      this.masterRowSelection = rowData;
+    tableRowClick (rowData, rowIndex) {
+      this.formDetailData = {} // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData
       if (rowData != null) {
-        //debugger
+        // debugger
         // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
-        this.currrentRowItem.rowName = rowData.boxCode + "," + rowData.boxName;
+        this.currrentRowItem.rowName = rowData.boxCode + ',' + rowData.boxName
       }
       if (this.masterRowSelection) {
-        this.getItemDataById();
+        this.getItemDataById()
       }
     },
     // 获取纸质规格
-    getItemDataById() {
-      //debugger
-      let url = `/bas/specPrice/item/list`;
+    getItemDataById () {
+      // debugger
+      let url = `/bas/specPrice/item/list`
       let data = {
         specPriceId: this.masterRowSelection.id
-      };
-      let _self = this;
+      }
+      let _self = this
       request.post(url, data).then(res => {
-
-        _self.tableFieldData = res;
-      });
+        _self.tableFieldData = res
+      })
     },
-    //重写父类方法, 更新操作
-    handleUpdateEvent() {
-
-      this.getItemDataById();
+    // 重写父类方法, 更新操作
+    handleUpdateEvent () {
+      this.getItemDataById()
     }
   }
-};
+}
 </script>
 
 <style></style>

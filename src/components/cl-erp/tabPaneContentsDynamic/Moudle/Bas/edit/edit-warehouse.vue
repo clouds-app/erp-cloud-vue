@@ -21,6 +21,7 @@
           <Col span="12">
             <FormItem label="仓库编号" prop="whCode">
               <referenceField
+               ref='firstFocusInput'
               :disabled="detailDisabled"
                 v-model="formDataInfo.master.whCode"
                 maxlength="20"
@@ -159,20 +160,20 @@
  * @created 2019/11/20 17:07:54
  */
 import referenceField from '@/components/referenceField/referenceField'
-import optionSearch from "../../components/optionSearch";
-import editWindow from "@/components/edit-window/edit-window";
+import optionSearch from '../../components/optionSearch'
+import editWindow from '@/components/edit-window/edit-window'
 // import Form from '@/components/form/form'
-import eTable from "@/components/e-table/e-table";
-import request from "@/libs/request";
-import editBaseMixins from "../../mixins/edit";
-import { customValidator, uniqueValidator } from "@/libs/validator";
+import eTable from '@/components/e-table/e-table'
+import request from '@/libs/request'
+import editBaseMixins from '../../mixins/edit'
+import { customValidator, uniqueValidator } from '@/libs/validator'
 const default_formDataInfo = {
   // 主表 更改字段
   master: {
-    whCode: "",
-    whName: "",
-    whType: "2",
-    remark: ""
+    whCode: '',
+    whName: '',
+    whType: '2',
+    remark: ''
   },
   // 子表 wareHouseItems 根据实际接口更改,其它不变
   wareHouseItems: {
@@ -181,9 +182,9 @@ const default_formDataInfo = {
     deleteList: [], // 删除列
     updateList: [] // 更新列
   }
-};
+}
 export default {
-  name: "edit-warehouse",
+  name: 'edit-warehouse',
   mixins: [editBaseMixins],
   components: {
     editWindow,
@@ -192,58 +193,58 @@ export default {
     referenceField,
     eTable
   },
-  data() {
+  data () {
     return {
-      formmastername:'warehouseFm',
-      actionSubtitle: "仓库", // 当前操作副标题
-      formName: "warehouseFm", //主表的formName名称
-      requestBaseUrl: "/bas/warehouse", // 请求 查询 操作的基础路径
+      formmastername: 'warehouseFm',
+      actionSubtitle: '仓库', // 当前操作副标题
+      formName: 'warehouseFm', // 主表的formName名称
+      requestBaseUrl: '/bas/warehouse', // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
         whCode: [
-          { required: true, message: "仓库编号不能为空", trigger: "blur" },
+          { required: true, message: '仓库编号不能为空', trigger: 'blur' },
           {
             validator: uniqueValidator,
-            trigger: "blur",
-            fieldDesc: "仓库编号",
+            trigger: 'blur',
+            fieldDesc: '仓库编号',
             params: {
-              fieldName: "whCode",
-              formName: "warehouseFm",
+              fieldName: 'whCode',
+              formName: 'warehouseFm',
               id: () => {
-                return this.formDataInfo.master.id;
+                return this.formDataInfo.master.id
               }
             }
           },
           {
             validator: customValidator,
-            trigger: "blur",
-            customRule: ["identifier"],
-            fieldDesc: "仓位编号"
+            trigger: 'blur',
+            customRule: ['identifier'],
+            fieldDesc: '仓位编号'
           }
         ],
         whName: [
-          { required: true, message: "仓库名称不能为空", trigger: "blur" },
+          { required: true, message: '仓库名称不能为空', trigger: 'blur' },
           {
             validator: customValidator,
-            trigger: "blur",
-            customRule: ["toCDB", "spaceStr"],
-            fieldDesc: "仓库名称"
+            trigger: 'blur',
+            customRule: ['toCDB', 'spaceStr'],
+            fieldDesc: '仓库名称'
           }
         ],
         whType: [
-          { required: true, message: "仓库类型不能为空", trigger: "blur" }
+          { required: true, message: '仓库类型不能为空', trigger: 'blur' }
         ]
       },
       tableFieldsValidator: {
         wsCode: [
-          { required: true, message: "仓位编号不能为空", trigger: "blur" }
+          { required: true, message: '仓位编号不能为空', trigger: 'blur' }
         ],
         wsName: [
-          { required: true, message: "仓位名称不能为空", trigger: "blur" }
+          { required: true, message: '仓位名称不能为空', trigger: 'blur' }
         ]
       }
-    };
+    }
   },
 
   methods: {
@@ -258,56 +259,56 @@ export default {
     //   //     if (wsCode===cloneData[index2].wsCode) {
     //   //       this.$refs.tableFields.cloneData[index].wsCode=''
     //   //       this.$Message.error('该编号已经存在，请重新输入')
-    //   //     }  
+    //   //     }
     //   //   }
     //   // }
     //   this.validatorWsCode(index)
     // },
-    //子表编号唯一检验
-    validatorWsCode(index){
+    // 子表编号唯一检验
+    validatorWsCode (index) {
       // debugger
-      //拿到主表仓库类型
+      // 拿到主表仓库类型
       let whType = this.formDataInfo.master.whType
-      //仓位编号
+      // 仓位编号
       let wsCode = this.$refs.tableFields.cloneData[index].wsCode
       let id = this.$refs.tableFields.cloneData[index].id
       let basWareHouseItem = {
         wsCode,
         id
       }
-      request.post(`/bas/warehouse/validatorWsCode?whType=${whType}`,basWareHouseItem).then(res=>{
-        if (res==false) {
-          this.$refs.tableFields.cloneData[index].wsCode=''
+      request.post(`/bas/warehouse/validatorWsCode?whType=${whType}`, basWareHouseItem).then(res => {
+        if (res == false) {
+          this.$refs.tableFields.cloneData[index].wsCode = ''
           this.$Message.error('该仓位编号在此仓库类型下已存在,请重新输入')
         }
       })
     },
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo() {
+    HandleFormDataInfo () {
       // debugger
-      this.formDataInfo = Object.assign({}, default_formDataInfo);
-      this.$refs.tableFields.cloneData=[{
-                        remark: "",
-                        whId: null,
-                        wsCode: "",
-                        wsName: ""
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
+      this.$refs.tableFields.cloneData = [{
+        remark: '',
+        whId: null,
+        wsCode: '',
+        wsName: ''
       }]
     },
     // 重写父类,修改提交数据
-    resetformDataInfo(_data) {
-      let tableData = this.$refs["tableFields"].getCategorizeData();
+    resetformDataInfo (_data) {
+      let tableData = this.$refs['tableFields'].getCategorizeData()
       // debugger
-      this.formDataInfo.wareHouseItems = tableData;
-      return this.formDataInfo;
+      this.formDataInfo.wareHouseItems = tableData
+      return this.formDataInfo
     }
   }
-};
+}
 </script>
 
 <style>
-.cl-edit-warehouse .ivu-form-item {
+/* .cl-edit-warehouse .ivu-form-item {
   margin-bottom: 5px !important;
-}
+} */
 .cl-edit-warehouse .ivu-select-item {
   display: block;
 }

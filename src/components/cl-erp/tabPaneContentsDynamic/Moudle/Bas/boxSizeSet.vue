@@ -8,7 +8,7 @@
       :queryParamsDefault="queryParamsDefault"
     >
     </htmlTemplate>
-    <div class="content-container" :style="{ height: tableHeight + 'px' }">
+    <div ref="contextMenuTarget" class="content-container" :style="{ height: tableHeight + 'px' }">
       <vTable
         :height="tableHeight"
         ref="master_list_table"
@@ -31,10 +31,10 @@
   </div>
 </template>
 <script>
-import vTable from "@/components/tables/vTable";
-import htmlTemplate from "../components/htmlTemplate";
-import editForm from "./edit/edit-boxSizeSet";
-import listBaseMixins from "../mixins/list";
+import vTable from '@/components/tables/vTable'
+import htmlTemplate from '../components/htmlTemplate'
+import editForm from './edit/edit-boxSizeSet'
+import listBaseMixins from '../mixins/list'
 export default {
   mixins: [listBaseMixins],
   components: {
@@ -42,113 +42,113 @@ export default {
     htmlTemplate,
     vTable
   },
-  data() {
+  data () {
     return {
       functionParams: {
-        requestBaseUrl: "/bas/boxSizeSet",
-        uniqueId: "boxSizeSetId"
+        requestBaseUrl: '/bas/boxSizeSet',
+        uniqueId: 'boxSizeSetId'
       },
       // 查询参数 ,注意格式
 
       queryParamsDefault: [
         {
-          title: "客户编号",
-          code: "cusCode",
-          cusCode: ""
+          title: '客户编号',
+          code: 'cusCode',
+          cusCode: ''
         },
         {
-          title: "盒式编号",
-          name: "boxCode$like",
-          'boxCode$like': ""
+          title: '盒式编号',
+          name: 'boxCode$like',
+          'boxCode$like': ''
         }
       ],
       columns: [
         {
-          title: "客户",
-          key: "custId",
-          align: "center"
+          title: '客户',
+          key: 'custId',
+          align: 'center'
         },
         {
-          title: "楞别",
-          key: "lengId",
-          align: "center"
-        },
-
-        {
-          title: "盒式",
-          key: "boxId",
-          align: "center"
-        },
-        {
-          title: "单位",
-          key: "bsUnit",
-          align: "center"
-        },
-        {
-          title: "增量高度",
-          key: "bsSizeH",
-          align: "center"
-        },
-        {
-          title: "增量长度",
-          key: "bsSizeL",
-          align: "center"
-        },
-        {
-          title: "增量宽度",
-          key: "bsSizeW",
-          align: "center"
+          title: '楞别',
+          key: 'lengId',
+          align: 'center'
         },
 
         {
-          title: "审核状态",
-          key: "iisAudit",
-          align: "center"
+          title: '盒式',
+          key: 'boxId',
+          align: 'center'
         },
         {
-          title: "审核人",
-          key: "auditUser",
-          align: "center"
+          title: '单位',
+          key: 'bsUnit',
+          align: 'center'
         },
         {
-          title: "审核时间 ",
-          key: "auditTime",
-          align: "center"
+          title: '增量高度',
+          key: 'bsSizeH',
+          align: 'center'
         },
         {
-          title: "创建人",
-          key: "createUser",
-          align: "center"
+          title: '增量长度',
+          key: 'bsSizeL',
+          align: 'center'
         },
         {
-          title: "创建时间",
-          key: "createTime",
-          align: "center"
+          title: '增量宽度',
+          key: 'bsSizeW',
+          align: 'center'
+        },
+
+        {
+          title: '审核状态',
+          key: 'iisAudit',
+          align: 'center'
         },
         {
-          title: "修改人",
-          key: "updateUser",
-          align: "center"
+          title: '审核人',
+          key: 'auditUser',
+          align: 'center'
         },
         {
-          title: "修改时间",
-          key: "updateTime",
-          align: "center"
+          title: '审核时间 ',
+          key: 'auditTime',
+          align: 'center'
+        },
+        {
+          title: '创建人',
+          key: 'createUser',
+          align: 'center'
+        },
+        {
+          title: '创建时间',
+          key: 'createTime',
+          align: 'center'
+        },
+        {
+          title: '修改人',
+          key: 'updateUser',
+          align: 'center'
+        },
+        {
+          title: '修改时间',
+          key: 'updateTime',
+          align: 'center'
         }
       ]
-    };
+    }
   },
   methods: {
-    tableRowClick(rowData, rowIndex) {
-      this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
-      this.masterRowSelection = rowData;
+    tableRowClick (rowData, rowIndex) {
+      this.formDetailData = {} // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData
       if (rowData != null) {
         // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
-        this.currrentRowItem.rowName = rowData.cusName + "," + rowData.boxCode+","+ rowData.boxName;
+        this.currrentRowItem.rowName = rowData.cusName + ',' + rowData.boxCode + ',' + rowData.boxName
       }
     }
   }
-};
+}
 </script>
 
 <style></style>

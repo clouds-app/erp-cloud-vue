@@ -17,6 +17,7 @@
       >
         <FormItem label="摘要编号" prop="resumeCode">
           <referenceField
+           ref='firstFocusInput'
             v-model="formDataInfo.resumeCode"
             maxlength="20"
             :disabled="detailDisabled"
@@ -26,35 +27,23 @@
           ></referenceField>
         </FormItem>
 
-
         <FormItem label="摘要说明" prop="resumeName">
           <Input
             v-model="formDataInfo.resumeName"
-            type="textarea"
             :disabled="detailDisabled"
             maxlength="100"
-            :autosize="{ minRows: 2, maxRows: 5 }"
             placeholder="请输入摘要说明"
           ></Input>
         </FormItem>
         <FormItem label="摘要分类" prop="resumeType">
            <optionSearch @onChange="optionOnChange" :disabled="detailDisabled" :defaultItem="formDataInfo.resumeType" :loaddingDataWhen="showWindow"  query="resumeType"/>
-          <!-- <Input
-            v-model="formDataInfo.resumeType"
-            maxlength="20"
-            placeholder="请输入摘要分类 "
-          ></Input> -->
         </FormItem>
-
-        
 
          <FormItem label="备注" prop="remark">
           <Input
             v-model="formDataInfo.remark"
             :disabled="detailDisabled"
-            type="textarea"
             maxlength="100"
-            :autosize="{ minRows: 2, maxRows: 5 }"
             placeholder="请输入备注..."
           ></Input>
         </FormItem>
@@ -79,55 +68,55 @@
  */
 import referenceField from '@/components/referenceField/referenceField'
 import optionSearch from '../../components/optionSearch'
-import editBaseMixins from "../../mixins/edit";
-import { customValidator ,uniqueValidator} from "@/libs/validator"; 
+import editBaseMixins from '../../mixins/edit'
+import { customValidator, uniqueValidator } from '@/libs/validator'
 const default_formDataInfo = {
-        resumeCode: "",
-        resumeName: "",
-        resumeType: "A",
-        remark: ""
-      }
+  resumeCode: '',
+  resumeName: '',
+  resumeType: 'A',
+  remark: ''
+}
 export default {
-  name: "edit-resume",
+  name: 'edit-resume',
   mixins: [editBaseMixins],
-  components:{optionSearch,referenceField},
-  data() {
+  components: { optionSearch, referenceField },
+  data () {
     return {
-      formmastername:'resumeFm',
-      actionSubtitle:'摘要说明', // 当前操作副标题
-      requestBaseUrl: "/bas/resume", // 请求 查询 操作的基础路径
-      formDataInfo:Object.assign({},default_formDataInfo),// 防止添加和更新数据提交发生冲突
+      formmastername: 'resumeFm',
+      actionSubtitle: '摘要说明', // 当前操作副标题
+      requestBaseUrl: '/bas/resume', // 请求 查询 操作的基础路径
+      formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
         resumeCode: [
-          { required: true, message: "摘要编号不能为空", trigger: "blur" },
-        
-             {
-                validator:uniqueValidator,
-                trigger: "blur",
-                fieldDesc: "摘要编号",
-                params:{
-                  fieldName:'resumeCode',
-                  formName:'resumeFm',
-                  id:()=>{
-                    return this.formDataInfo.id;
-                  }
-                }
+          { required: true, message: '摘要编号不能为空', trigger: 'blur' },
+
+          {
+            validator: uniqueValidator,
+            trigger: 'blur',
+            fieldDesc: '摘要编号',
+            params: {
+              fieldName: 'resumeCode',
+              formName: 'resumeFm',
+              id: () => {
+                return this.formDataInfo.id
               }
+            }
+          }
         ],
-        resumeType: [{ required: true, message: "摘要分类不能为空", trigger: "blur" }],
-        resumeName: [{ required: true, message: "摘要说明不能为空", trigger: "blur" }]
+        resumeType: [{ required: true, message: '摘要分类不能为空', trigger: 'blur' }],
+        resumeName: [{ required: true, message: '摘要说明不能为空', trigger: 'blur' }]
       }
-    };
+    }
   },
 
   methods: {
-      // 重写父类,添加时候,清空数据
-    HandleFormDataInfo(){
-     this.formDataInfo=Object.assign({},default_formDataInfo)
-    },
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo () {
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
+    }
   }
-};
+}
 </script>
 
 <style></style>

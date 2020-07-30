@@ -87,22 +87,23 @@
           </Col>
           <Col span="12">
             <Row>
-              <Col span="8" style="padding-top: 5px; width:65%">
-                <FormItem label="所属地区" prop="areaIdsList">
+              <Col span="16" style="padding-top: 5px; ">
+                <FormItem label="所属地区" prop="areaIds">
                   <Cascader
                     :data="cityCascader"
                     :disabled="detailDisabled"
                     :load-data="getCityCascader"
-                    v-model="formDataInfo.areaIdsList"
+                    v-model="formDataInfo.areaIds"
+                    @on-change="getareaIds"
                     maxlength="20"
                     placeholder="请输入所属地区"
                   ></Cascader>
                 </FormItem>
               </Col>
               <Col span="4">
-                <FormItem label prop="addrDetail" style="margin-left: -90%; width:100%">
+                <FormItem label prop="addrDetail" style=" width:100%" :label-width="10">
                   <Input
-                    style="width: 200px;;"
+                    style="width: 200px;"
                     v-model="formDataInfo.addrDetail"
                     :disabled="detailDisabled"
                     maxlength="20"
@@ -176,14 +177,6 @@
                       @on-fill="coinCodevalidator"
                       :query-params="{}"
                     />
-                  <!-- <optionSearch
-                    @onChange="optionOnChange"
-                    :disabled="detailDisabled"
-                    :defaultItem="formDataInfo.coinId"
-                    :loaddingDataWhen="showWindow"
-                    formKey="coinId"
-                    query="coinId"
-                  /> -->
                 </FormItem>
               </Col>
               <Col span="6">
@@ -260,7 +253,7 @@
                   />
                 </FormItem>
               </Col>
-             
+
               <Col span="6">
                 <FormItem label="月结天数" prop="monthDays">
                   <InputNumber
@@ -380,20 +373,104 @@
               ></Input>
             </FormItem>
           </Col>
-
-          <Col span="12" style="margin-bottom: 10px; margin-top: 10px;">
-            <FormItem label="备注:" prop="remark">
-              <Input
-                v-model="formDataInfo.remark"
+        <Col span="24">
+          <Row :gutter="18">
+              <Col span="12">
+                <FormItem label="备注:" prop="remark">
+                  <Input
+                    v-model="formDataInfo.remark"
+                    :disabled="detailDisabled"
+                    maxlength="100"
+                    :autosize="{ minRows: 2, maxRows: 5 }"
+                    placeholder="请输入备注..."
+                  ></Input>
+                </FormItem>
+              </Col>
+          </Row>
+        </Col>
+        <Col span="24">
+          <Row :gutter="18">
+            <Col span="6">
+              <FormItem label="瓦线参数:">
+              </FormItem>
+            </Col>
+          </Row>
+        </Col>
+        <Col span="6">
+          <FormItem label="最大门幅(mm)" prop="widthMax" :label-width="128">
+              <inputNumber
+                v-model="formDataInfo.widthMax"
                 :disabled="detailDisabled"
-                type="textarea"
-                maxlength="100"
-                :autosize="{ minRows: 2, maxRows: 5 }"
-                placeholder="请输入备注..."
-              ></Input>
+                maxlength="20"
+                placeholder="请输入最大门幅"
+              ></inputNumber>
             </FormItem>
-          </Col>
-        </Row>
+        </Col>
+        <Col span="6">
+          <FormItem label="最小门幅(mm)" prop="widthMin">
+              <inputNumber
+                v-model="formDataInfo.widthMin"
+                :disabled="detailDisabled"
+                maxlength="20"
+                placeholder="请输入最小门幅"
+              ></inputNumber>
+            </FormItem>
+        </Col>
+        <Col span="6"><!--KsMax-->
+          <FormItem label="最大开数" prop="KsMax">
+              <optionSearch
+                :disabled="detailDisabled"
+                @onChange="optionOnChange"
+                :defaultItem="formDataInfo.KsMax"
+                :loaddingDataWhen="showWindow"
+                formKey="KsMax"
+                query="KsMax"
+              />
+            </FormItem>
+        </Col>
+        <Col span="6">
+          <FormItem label="最小切长(mm)" prop="cutLengthMin">
+              <inputNumber
+                v-model="formDataInfo.cutLengthMin"
+                :disabled="detailDisabled"
+                number
+                maxlength="20"
+                placeholder="请输入最小切长"
+              ></inputNumber>
+            </FormItem>
+        </Col>
+        <Col span="6">
+          <FormItem label="最小接单米数(m)" prop="orderLengthMin" :label-width="128">
+              <inputNumber
+                v-model="formDataInfo.orderLengthMin"
+                :disabled="detailDisabled"
+                maxlength="20"
+                placeholder="请输入最小切长"
+              ></inputNumber>
+            </FormItem>
+        </Col>
+        <Col span="6">
+          <FormItem label="可生产楞别" prop="producibleLbCodes" >
+              <popup
+                v-model="formDataInfo.producibleLbCodes"
+                field-name="producibleLbCodes"
+                :disabled="detailDisabled"
+                popup-name="LengMultiBox"
+                :fill-model.sync="formDataInfo"
+                render-fields="producibleLbCodes"
+                from-fields="lbCode"
+                :suffix="false"
+                @on-fill="producibleLbCodesvalidator"
+                :query-params="{lbCS:-1}"
+              />
+              <!-- <Input
+                v-model="formDataInfo.producibleLbCodes"
+                :disabled="detailDisabled"
+                maxlength="20"
+              ></Input> -->
+            </FormItem>
+        </Col>
+    </Row>
       </Form>
     </editWindow>
   </div>
@@ -413,219 +490,269 @@
  *
  * @created 2019/11/20 17:07:54
  */
-import referenceField from "@/components/referenceField/referenceField";
-import editBaseMixins from "../../mixins/edit";
-import popup from "@/components/popup/popup";
-import optionSearch from "../../components/optionSearch";
-import request from "@/libs/request";
-import { customValidator, uniqueValidator } from "@/libs/validator";
-import { deepCopy } from "view-design/src/utils/assist";
+import referenceField from '@/components/referenceField/referenceField'
+import editBaseMixins from '../../mixins/edit'
+import popup from '@/components/popup/popup'
+import optionSearch from '../../components/optionSearch'
+import request from '@/libs/request'
+import { customValidator, uniqueValidator } from '@/libs/validator'
+import { deepCopy } from 'view-design/src/utils/assist'
+import inputNumber from '@/components/input-number'
 
 const default_formDataInfo = {
-  payCode:'',
-  vType: "0",
-  payId: "0",
+  widthMax: '0',
+  widthMin: '0',
+  KsMax: '1',
+  KsMaxText: '',
+  cutLengthMin: '0',
+  orderLengthMin: '0',
+  producibleLbCodes: '',
+  payCode: '',
+  vType: '0',
+  payId: '0',
   payName: '',
-  arpType: "0",
-  vLevel: "A",
-  taxTP: "I",
-  areaIdsList: [],
-  addrDetail: "",
+  arpType: '0',
+  vLevel: 'A',
+  taxTP: 'I',
+  areaNames: '',
+  areaIds: '',
+  addrDetail: '',
   amtDot: 2,
-  poType: "",
-  areaIds: "",
-  backName: "",
-  bankNo: "",
-  coinId:'',
-  coinCode: "",
-  coinName: "",
+  poType: '',
+  backName: '',
+  bankNo: '',
+  coinId: '',
+  coinCode: '',
+  coinName: '',
   ctDot: 2,
-  curyCode: "",
+  curyCode: '',
   discount: 100,
-  enName: "",
+  enName: '',
   iisAudit: 0,
   monthDays: 30,
   monthEnd: 31,
   pointj: 0,
   pointw: 0,
   priceAreaMode: 0,
-  purCode: "",
-  purName: "",
-  remark: "",
-  shortName: "",
+  purCode: '',
+  purName: '',
+  remark: '',
+  shortName: '',
   status: 1,
-  taxLicence: "",
+  taxLicence: '',
   taxRate: 0,
-  vContractor: "",
-  vContractorTel: "",
-  vFax: "",
-  vTel: "",
-  unitId: ""
-};
+  vContractor: '',
+  vContractorTel: '',
+  vFax: '',
+  vTel: '',
+  unitId: ''
+}
 export default {
-  name: "edit-supplier",
+  name: 'edit-supplier',
   mixins: [editBaseMixins],
   components: {
     optionSearch,
     popup,
     referenceField,
-    deepCopy
+    deepCopy,
+    inputNumber
   },
 
-  data() {
+  data () {
     return {
-      frommastername: "purSupplierFm",
-      actionSubtitle: "供应商", // 当前操作副标题
-      requestBaseUrl: "/purchase/supplier", // 请求 查询 操作的基础路径
-      formDataInfo:deepCopy(default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      frommastername: 'purSupplierFm',
+      actionSubtitle: '供应商', // 当前操作副标题
+      requestBaseUrl: '/purchase/supplier', // 请求 查询 操作的基础路径
+      formDataInfo: deepCopy(default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
         vTel: [
           {
             validator: customValidator,
-            trigger: "blur",
-            customRule: ["phone"],
-            fieldDesc: "电话"
+            trigger: 'blur',
+            customRule: ['phone'],
+            fieldDesc: '电话'
           }
         ],
         ctDot: [
           {
             validator: customValidator,
-            trigger: "blur",
-            customRule: ["mustDouble"],
-            fieldDesc: "单价小数位"
+            trigger: 'blur',
+            customRule: ['mustDouble'],
+            fieldDesc: '单价小数位'
           }
         ],
         amtDot: [
           {
             validator: customValidator,
-            trigger: "blur",
-            customRule: ["mustDouble"],
-            fieldDesc: "金额小数位"
+            trigger: 'blur',
+            customRule: ['mustDouble'],
+            fieldDesc: '金额小数位'
           }
         ],
         discount: [
           {
             validator: customValidator,
-            trigger: "blur",
-            customRule: ["mustDouble"],
-            fieldDesc: "折扣%"
+            trigger: 'blur',
+            customRule: ['mustDouble'],
+            fieldDesc: '折扣%'
           }
         ],
         monthDays: [
           {
             validator: customValidator,
-            trigger: "blur",
-            customRule: ["mustDouble"],
-            fieldDesc: "月结天数"
+            trigger: 'blur',
+            customRule: ['mustDouble'],
+            fieldDesc: '月结天数'
           }
         ],
         monthEnd: [
           {
             validator: customValidator,
-            trigger: "blur",
-            customRule: ["mustDouble"],
-            fieldDesc: "月结终止日"
+            trigger: 'blur',
+            customRule: ['mustDouble'],
+            fieldDesc: '月结终止日'
           }
         ],
         taxRate: [
           {
             validator: customValidator,
-            trigger: "blur",
-            customRule: ["mustDouble"],
-            fieldDesc: "税率%"
+            trigger: 'blur',
+            customRule: ['mustDouble'],
+            fieldDesc: '税率%'
           }
         ],
         purCode: [
-          { required: true, message: "供应商编号不能为空", trigger: "blur" }
+          { required: true, message: '供应商编号不能为空', trigger: 'blur' }
         ],
         purName: [
-          { required: true, message: "供应商名称不能为空", trigger: "blur" }
+          { required: true, message: '供应商名称不能为空', trigger: 'blur' }
         ],
         shortName: [
-          { required: true, message: "简称不能为空", trigger: "blur" }
+          { required: true, message: '简称不能为空', trigger: 'blur' }
         ],
         payCode: [
-          { required: true, message: "付款方式不能为空", trigger: "blur" }
+          { required: true, message: '付款方式不能为空', trigger: 'blur' }
         ],
         coinCode: [
-          { required: true, message: "结算货币不能为空", trigger: "blur" }
+          { required: true, message: '结算货币不能为空', trigger: 'blur' }
         ],
+        widthMax: [
+          {
+            validator: customValidator,
+            trigger: 'blur',
+            customRule: ['mustDouble'],
+            fieldDesc: '最大门幅'
+          }
+          // { required: true, message: "最大门幅不能为空", trigger: "blur,change" , type:'number'}
+        ],
+        widthMin: [
+          {
+            validator: customValidator,
+            trigger: 'blur',
+            customRule: ['mustDouble'],
+            fieldDesc: '最小门幅'
+          }
+          // { required: true, message: "最小门幅不能为空", trigger: "blur,change" , type:'number'}
+        ],
+        cutLengthMin: [
+          {
+            validator: customValidator,
+            trigger: 'blur',
+            customRule: ['mustDouble'],
+            fieldDesc: '最小切长'
+          }
+          // { required: true, message: "最小切长不能为空", trigger: "blur" }
+        ],
+        orderLengthMin: [
+          {
+            validator: customValidator,
+            trigger: 'blur',
+            customRule: ['mustDouble'],
+            fieldDesc: '最小接单米数'
+          }
+          // { required: true, message: "最小接单米数不能为空", trigger: "blur" }
+        ],
+        producibleLbCodes: [
+          { required: true, message: '可生产楞别不能为空', trigger: 'blur' }
+        ]
       },
       cityCascader: [],
       cityCascaderCount: 0
-    };
+    }
   },
-  created() {
-    //获取纸板采购模式默认值
-    let IsSmallQty = this.$params.IsSmallQty;
-    default_formDataInfo.poType = IsSmallQty;
-    request.post("/bas/area/list", { pid: 0 }, { pid: 0 }).then(res => {
+  created () {
+    // 获取纸板采购模式默认值
+    let IsSmallQty = this.$params.IsSmallQty
+    default_formDataInfo.poType = IsSmallQty
+    request.post('/bas/area/list', { pid: 0 }, { pid: 0 }).then(res => {
       res.forEach(item => {
-        item["children"] = [];
-      });
-      this.cityCascader = res;
-    });
-    let unit = this.$params.Unit;
-    if (unit === "1:厘米" || unit === "2:毫米") {
-      default_formDataInfo.unitId = "1:平方米";
+        item['children'] = []
+      })
+      this.cityCascader = res
+    })
+    let unit = this.$params.Unit
+    if (unit === '1:厘米' || unit === '2:毫米') {
+      default_formDataInfo.unitId = '1:平方米'
     } else {
-      default_formDataInfo.unitId = "0:千平方英寸";
+      default_formDataInfo.unitId = '0:千平方英寸'
     }
   },
   methods: {
-    payCodevalidator(){
-      this.$refs['formDataInfo'].validateField('payCode',err=>{
+    // 所属地区回调事件
+    getareaIds (value, selectedData) {
+      this.formDataInfo.areaIds = value.map(val => val).join(',')
+      this.formDataInfo.areaNames = selectedData.map(o => o.label).join(',')
+    },
+    payCodevalidator () {
+      this.$refs['formDataInfo'].validateField('payCode', err => {
       })
     },
     // 结算货币回调事件
-    coinCodevalidator(){
+    coinCodevalidator () {
       // this.$refs['formDataInfo'].validateField('coinCode','payCode',err=>{})
-      this.$refs['formDataInfo'].validateField('coinCode',err=>{
+      this.$refs['formDataInfo'].validateField('coinCode', err => {
       })
     },
-    //税率提示
-    taxRateMessage() {
+    // 可生产楞别回调
+    producibleLbCodesvalidator () {
+      this.$refs['formDataInfo'].validateField('producibleLbCodes', err => {
+      })
+    },
+    // 税率提示
+    taxRateMessage () {
       if (this.formDataInfo.taxRate > 17) {
-        this.$Message.warning("税率过高请注意");
+        this.$Message.warning('税率过高请注意')
       }
     },
-    getCityCascader(item, callback) {
+    getCityCascader (item, callback) {
       // debugger;
-      item.loading = true;
-      request
-        .post(
-          "/bas/area/list",
-          { pid: item.value, name: item.label },
-          { pid: item.value, name: item.label }
-        )
-        .then(res => {
-          // this.cityCascaderCount++;
-          // console.log(this.cityCascaderCount)
-          if (res != null) {
-            // debugger;
-            res.forEach(item => {
-              item["children"] = [];
-            });
-            delete item.loading;
-            item.children = res;
-          }
-          item.loading = false;
-          callback();
-        });
+      item.loading = true
+      request.post('/bas/area/list', { pid: item.value, name: item.label }, { pid: item.value, name: item.label }).then(res => {
+        if (res != null) {
+          // debugger;
+          res.forEach(item => {
+            item['children'] = []
+          })
+          delete item.loading
+          item.children = res
+        }
+        item.loading = false
+        callback()
+      })
     },
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo() {
+    HandleFormDataInfo () {
       // debugger
-      this.$refs["formDataInfo"].resetFields();
+      this.$refs['formDataInfo'].resetFields()
       this.formDataInfo = deepCopy(default_formDataInfo)
     },
-    //关闭窗口触发
-    closeActionTigger() {},
-    //打开窗口触发
-    openActionTigger() {}
+    // 关闭窗口触发
+    closeActionTigger () {},
+    // 打开窗口触发
+    openActionTigger () {}
   }
-};
+}
 </script>
 
 <style>

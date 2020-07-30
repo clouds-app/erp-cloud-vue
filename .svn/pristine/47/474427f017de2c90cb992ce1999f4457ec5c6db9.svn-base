@@ -1,0 +1,304 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-prinMarks"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="80%"
+      :loading="!isLoaddingDone"
+      @on-ok="formDataSubmit()"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-message="true"
+        :model="formDataInfo"
+        :rules="ruleValidate"
+        :label-width="100"
+      >
+        <Row :gutter="18">
+          <Col span="16">
+            <Row :gutter="18">
+              <Col span="12">
+                <FormItem label="印唛编号" prop="pmNo">
+                  <referenceField  ref='firstFocusInput' v-model="formDataInfo.pmNo" :disabled="detailDisabled" maxlength="20" disabled placeholder="请输入印唛编号" :form-name="formmastername"
+            :id="formDataInfo.id"></referenceField>
+                </FormItem>
+              </Col>
+              <Col span="12">
+                <FormItem label="产品" prop="bpName">
+                  <popup
+                    :disabled="detailDisabled"
+                    :popupClickValidator="clickValuedate"
+                    v-model="formDataInfo.bpNo"
+                    field-name="bpNo"
+                    popup-name="BasicProductSingleBox"
+                    :fill-model.sync="formDataInfo"
+                    render-fields="productId,bpNo,bpName"
+                    from-fields="id,bpNo,bpName"
+                    :suffix="true"
+                    :suffix-model="formDataInfo.bpName"
+                    :query-params="{custId:formDataInfo.custId}"
+                  />
+                </FormItem>
+              </Col>
+            </Row>
+
+            <Col span="24">
+              <Row :gutter="18">
+                <Col span="12">
+                  <FormItem label="客户" prop="cusName">
+                    <popup
+                      v-model="formDataInfo.cusCode"
+                      field-name="cusCode"
+                      :disabled="detailDisabled"
+                      popup-name="CustomerSingleBox"
+                      :fill-model.sync="formDataInfo"
+                      render-fields="custId,cusCode,cusName"
+                      from-fields="id,cusCode,cusName"
+                      :suffix="true"
+                      :suffix-model="formDataInfo.cusName"
+                      :query-params="{}"
+                    />
+                  </FormItem>
+                </Col>
+                <Col span="12">
+                  <FormItem label="公用" prop="iisPublicCompany">
+                    <Checkbox v-model="formDataInfo.iisPublicCompany" :disabled="detailDisabled" maxlength="20" placeholder></Checkbox>
+                  </FormItem>
+                </Col>
+              </Row>
+            </Col>
+
+            <Col span="12">
+              <FormItem label="正唛(一)" prop="pmZMRemark1">
+                <Input
+                  :disabled="detailDisabled"
+                  v-model="formDataInfo.pmZMRemark1"
+                  maxlength="255"
+                  placeholder="请输入正唛(一)"
+                ></Input>
+              </FormItem>
+            </Col>
+            <Col span="12">
+              <FormItem label="正唛(二)" prop="pmZMRemark2">
+                <Input
+                  :disabled="detailDisabled"
+                  v-model="formDataInfo.pmZMRemark2"
+                  maxlength="255"
+                  placeholder="请输入正唛(二)"
+                ></Input>
+              </FormItem>
+            </Col>
+            <Col span="12">
+              <FormItem label="侧唛(一)" prop="pmCMRemark1">
+                <Input
+                  :disabled="detailDisabled"
+                  v-model="formDataInfo.pmCMRemark1"
+                  maxlength="255"
+                  placeholder="请输入侧唛(一)"
+                ></Input>
+              </FormItem>
+            </Col>
+            <Col span="12">
+              <FormItem label="侧唛(二)" prop="pmCMRemark2">
+                <Input
+                  :disabled="detailDisabled"
+                  v-model="formDataInfo.pmCMRemark2"
+                  maxlength="255"
+                  placeholder="请输入侧唛(二)"
+                ></Input>
+              </FormItem>
+            </Col>
+
+            <Col span="12">
+              <FormItem label="上摇(一)" prop="pmSYRemark1">
+                <Input
+                  :disabled="detailDisabled"
+                  v-model="formDataInfo.pmSYRemark1"
+                  maxlength="255"
+                  placeholder="请输入上摇(一)"
+                ></Input>
+              </FormItem>
+            </Col>
+            <Col span="12">
+              <FormItem label="上摇(二)" prop="pmSYRemark2">
+                <Input
+                  :disabled="detailDisabled"
+                  v-model="formDataInfo.pmSYRemark2"
+                  maxlength="255"
+                  placeholder="请输入上摇(二)"
+                ></Input>
+              </FormItem>
+            </Col>
+            <Col span="12">
+              <FormItem label="下摇(一)" prop="pmXYRemark1">
+                <Input
+                  :disabled="detailDisabled"
+                  v-model="formDataInfo.pmXYRemark1"
+                  maxlength="20"
+                  placeholder="请输入下摇(一)"
+                ></Input>
+              </FormItem>
+            </Col>
+
+            <Col span="12">
+              <FormItem label="下摇(二)" prop="pmXYRemark2">
+                <Input
+                  :disabled="detailDisabled"
+                  v-model="formDataInfo.pmXYRemark2"
+                  maxlength="255"
+                  placeholder="请输入下摇(二)"
+                ></Input>
+              </FormItem>
+            </Col>
+
+            <Col span="12">
+              <FormItem label="备注" prop="remark">
+                <Input
+                  :disabled="detailDisabled"
+                  v-model="formDataInfo.remark"
+                  maxlength="100"
+                  placeholder="请输入备注..."
+                ></Input>
+              </FormItem>
+            </Col>
+          </Col>
+
+          <Col span="8">
+            <div>
+              图片上传
+              <uploadImg
+                moduleName="bas"
+                :imgUrl="formDataInfo.pmImg"
+                :disabled="detailDisabled"
+                @uploadSuccess="uploadSuccessHeads"
+                tipInfo="唛头图片路径"
+              />
+              <br />
+
+              <uploadImg
+                moduleName="bas"
+                :imgUrl="formDataInfo.pmImg2"
+                :disabled="detailDisabled"
+                @uploadSuccess="uploadSuccessTails"
+                tipInfo="侧唛图片路径"
+              />
+            </div>
+          </Col>
+        </Row>
+      </Form>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:07:54
+ */
+import referenceField from '@/components/referenceField/referenceField'
+import popup from "@/components/popup/popup";
+import uploadImg from "@/components/cl-erp/uploadImg";
+import dayjs from "dayjs";
+import editBaseMixins from "../../mixins/edit";
+import { customValidator, uniqueValidator } from "@/libs/validator";
+const default_formDataInfo = {
+  bpDPNo: "",
+  bpName: "", //产品名称
+  bpNo: "", //产品编号
+  bpPPNo: "",
+  // colorName: "",
+  cusName: "",
+  cusCode: "", // done
+  custId: "",
+  pmCMRemark1: "",
+  pmCMRemark2: "",
+  pmDocNo1: "",
+  pmDocNo2: "",
+  pmImg: "",
+  pmImg2: "",
+  pmNo: "",
+  pmSYRemark1: "",
+  pmSYRemark2: "",
+  pmXYRemark1: "",
+  pmXYRemark2: "",
+  pmZMRemark1: "",
+  pmZMRemark2: "",
+  productId: "",
+  remark: ""
+};
+export default {
+  name: "edit-printMarks",
+  mixins: [editBaseMixins],
+  components: { uploadImg, popup,referenceField },
+  data() {
+    return {
+      formmastername:'printMarksFm',
+      actionSubtitle:'印唛', // 当前操作副标题
+      requestBaseUrl: "/bas/printMarks", // 请求 查询 操作的基础路径
+      formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {
+        // productId: [
+        //   { required: true, message: "产编号不能为空", trigger: "blur" }
+        // ]
+      }
+    };
+  },
+
+  methods: {
+    //判断主表客户弹框不能为空
+    clickValuedate() {
+      debugger;
+      if (!this.formDataInfo.cusName || this.formDataInfo.cusName == "") {
+        this.$Message.error("客户不能为空");
+        return false;
+      }
+      return true;
+    },
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo() {
+      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    },
+    // 唛头图片路径上传成功后 回调事件 返回图片地址
+    uploadSuccessHeads(res) {
+      // debugger
+      if (!res.success) {
+        this.$Message.error(res.message);
+        return;
+      }
+      let picUrl = res.result;
+      if (!!picUrl) {
+        this.formDataInfo.pmImg = picUrl;
+      }
+    },
+    //侧唛图片路径上传成功后 回调事件 返回图片地址
+    uploadSuccessTails(res) {
+      if (!res.success) {
+        this.$Message.error(res.message);
+        return;
+      }
+      let picUrl = res.result;
+      if (!!picUrl) {
+        this.formDataInfo.pmImg2 = picUrl;
+      }
+    }
+  }
+};
+</script>
+
+<style>
+/* .cl-edit-prinMarks .ivu-form-item {
+  margin-bottom: 12px !important;
+} */
+</style>

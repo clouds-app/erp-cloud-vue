@@ -136,7 +136,7 @@
                     :maxlength="20"
                     @on-blur="inputopenProductsList(value, index, row,column.key)"
                   >
-                    <Icon @click="openProductsList('icNo')" slot="suffix" type="md-add" />
+                    <Icon @click="openProductsList('icNo')" slot="suffix" type="md-add" v-show="!detailDisabled"/>
                   </Input>
                   <!-- 单据类型 -->
                       <Select @on-change="value => {valueChangeAssign(value, index, row,column.key)}" :disabled="true" v-else-if="column.key == 'billType'" v-model="row[column.key]" transfer>
@@ -231,7 +231,7 @@
                         v-model="row[column.key]"
                         :disabled="column.readOnly"
                         @input="tableColTiggerEvent(row,column,index,'gNoChangeEvent_Out')">
-                        <Icon @click="openProductsList('gNo')" slot="suffix" type="md-add" />
+                        <Icon @click="openProductsList('gNo')" slot="suffix" type="md-add" v-show="!detailDisabled"/>
                       </Input>
                     </template>
                     <!-- 单据类型 -->
@@ -309,54 +309,54 @@
  *
  * @created 2020/05/18
  */
- let _ = require('lodash')
-import popup from "@/components/popup/popup";
-import editWindow from "@/components/edit-window/edit-window";
-import eTable from "@/components/e-table/e-table";
-import request from "@/libs/request";
-import editBaseMixins from "../../mixins/edit";
-import optionSearch from "../../components/optionSearch";
-import InputNumber from "@/components/input-number";
-import dayjs from "dayjs";
-import Sys from "@/api/sys";
-import formControl from "@/components/form-control/form-control";
-import editForm from "./edit-writeOffSlave";
-import { deepCopy } from "view-design/src/utils/assist";
+import popup from '@/components/popup/popup'
+import editWindow from '@/components/edit-window/edit-window'
+import eTable from '@/components/e-table/e-table'
+import request from '@/libs/request'
+import editBaseMixins from '../../mixins/edit'
+import optionSearch from '../../components/optionSearch'
+import InputNumber from '@/components/input-number'
+import dayjs from 'dayjs'
+import Sys from '@/api/sys'
+import formControl from '@/components/form-control/form-control'
+import editForm from './edit-writeOffSlave'
+import { deepCopy } from 'view-design/src/utils/assist'
+let _ = require('lodash')
 const default_formDataInfo = {
   // 主表 更改字段
   master: {
-    woAmt: 0, //冲销金额
-    areaIds: "",
-    bdAcceptDate: "", //验收日期
-    bdAcceptNo: "",
-    bdBackDate: "", //签回日期
-    bdBackOper: "",
-    bdBackType: "",
-    woDate: new Date(dayjs().format("YYYY-MM-DD")), //送货日期
+    woAmt: 0, // 冲销金额
+    areaIds: '',
+    bdAcceptDate: '', // 验收日期
+    bdAcceptNo: '',
+    bdBackDate: '', // 签回日期
+    bdBackOper: '',
+    bdBackType: '',
+    woDate: new Date(dayjs().format('YYYY-MM-DD')), // 送货日期
     bdDecAmount: null,
-    bdDecReason: "",
-    woNo: "",
-    bdSaleId: "",
-    bdSaleName: "",
-    carDriverCode: "",
-    carDriverId: "",
-    carDriverName: "",
-    custCode: "",
-    custId: "",
-    custName: "",
-    followCarId: "",
-    followCarName: "",
-    followerId: "",
-    followerName: "",
+    bdDecReason: '',
+    woNo: '',
+    bdSaleId: '',
+    bdSaleName: '',
+    carDriverCode: '',
+    carDriverId: '',
+    carDriverName: '',
+    custCode: '',
+    custId: '',
+    custName: '',
+    followCarId: '',
+    followCarName: '',
+    followerId: '',
+    followerName: '',
     hasDelete: false,
-    id: "",
-    iisAudit: 0, //审核状态：0未审核1已审核
-    loadorId: "",
-    loadorName: "",
-    remark: "",
-    senderId: "",
-    senderName: "",
-    status: 1 //状态：0停用,1正常
+    id: '',
+    iisAudit: 0, // 审核状态：0未审核1已审核
+    loadorId: '',
+    loadorName: '',
+    remark: '',
+    senderId: '',
+    senderName: '',
+    status: 1 // 状态：0停用,1正常
   },
   writeOffInItems: {
     addList: [], // 添加列
@@ -370,9 +370,9 @@ const default_formDataInfo = {
     deleteList: [], // 删除列
     updateList: []
   }
-};
+}
 export default {
-  name: "edit-writeOff",
+  name: 'edit-writeOff',
   mixins: [editBaseMixins],
   components: {
     editWindow,
@@ -383,31 +383,31 @@ export default {
     editForm,
     formControl
   },
-  data() {
+  data () {
     return {
-        searchDataConfig:{
-        In:'writeOffInItems',// 搜索类型:In:获取开票明细弹出框数据,
-        Out:'writeOffOutItems',//搜索类型: Out:获取收款明细弹出框数据
-        type:'writeOffInItems',// 默认搜索类型
-        keyWord:''// 搜索内容
+      searchDataConfig: {
+        In: 'writeOffInItems', // 搜索类型:In:获取开票明细弹出框数据,
+        Out: 'writeOffOutItems', // 搜索类型: Out:获取收款明细弹出框数据
+        type: 'writeOffInItems', // 默认搜索类型
+        keyWord: ''// 搜索内容
       },
-      searchDataList:[],// 搜索返回的数据列表
+      searchDataList: [], // 搜索返回的数据列表
       writeOffInItemBillTypeList: [], // 开票单据类型
-      writeOffOutItemBillTypeList: [], //收款单据类型
-      currentTabName: "writeoffin",
-      formName: "accountwriteoffFm", // 重写父类 查询表单名称
-      custId: "",
+      writeOffOutItemBillTypeList: [], // 收款单据类型
+      currentTabName: 'writeoffin',
+      formName: 'accountwriteoffFm', // 重写父类 查询表单名称
+      custId: '',
       // 查询配置参数
       functionParams: {
-        formInitPreName: "accountwriteoff", // 查询表格列头信息 前缀 例如:saleboxproductprice Fm/itemFm/mdataFm
-        requestBaseUrl: "/account/writeOff", // 查询 表格行 数据 接口前缀地址
-        uniqueId: "woId" // 查询详细的唯一ID,需要顶部查询中使用
+        formInitPreName: 'accountwriteoff', // 查询表格列头信息 前缀 例如:saleboxproductprice Fm/itemFm/mdataFm
+        requestBaseUrl: '/account/writeOff', // 查询 表格行 数据 接口前缀地址
+        uniqueId: 'woId' // 查询详细的唯一ID,需要顶部查询中使用
       },
-      actionSubtitle: "应收冲销", //重写父类 当前操作副标题
+      actionSubtitle: '应收冲销', // 重写父类 当前操作副标题
       salveWindow: {
         isLoaddingDone: false, // 窗口是否加载完成
         showEditWindow: false, // 是否显示edit-boxSalesOrderSlave 编辑窗口
-        action: "add" // 当前操作功能 添加/编辑
+        action: 'add' // 当前操作功能 添加/编辑
       },
       formDataInfo: deepCopy(default_formDataInfo), // 防止添加和更新数据提交发生冲突
       masterRuleValidate: {
@@ -420,83 +420,83 @@ export default {
         //   }
         // ],
         custCode: [
-          { required: true, message: "客户编号不能为空", trigger: "blur" }
+          { required: true, message: '客户编号不能为空', trigger: 'blur' }
         ]
       }, // 纸箱出货 需要验证的数据
       slaveTableFieldsValidator: {}, // 纸箱出货明细 需要验证的数据
       subTableFieldsValidator: {}, // 出货其他费用 需要验证的数据
-      masterHeight: 0, //表单高度
-      otherHeight: 0, //剩余高度
-      searchParams: {}, //传递查询参数
-      feeTypeList: [], //费用类型列表
-      selectedIcNoList: [], //已经选择的工单列表ID
-      otherFee_priceTypeList: [], //单价类型列表
+      masterHeight: 0, // 表单高度
+      otherHeight: 0, // 剩余高度
+      searchParams: {}, // 传递查询参数
+      feeTypeList: [], // 费用类型列表
+      selectedIcNoList: [], // 已经选择的工单列表ID
+      otherFee_priceTypeList: [], // 单价类型列表
       // disabledCustCode: false // 是否禁用 客户编号
-      totalWoAmtIn: 0 , //主表开票冲销金额
-      totalWoAmtOut: 0, //主表收款冲销金额
-    };
+      totalWoAmtIn: 0, // 主表开票冲销金额
+      totalWoAmtOut: 0 // 主表收款冲销金额
+    }
   },
   watch: {
-    showWindow: function(n, o) {
-      //debugger
+    showWindow: function (n, o) {
+      // debugger
       if (n) {
-        let _self = this;
+        let _self = this
         this.$nextTick(() => {
-          this.registerEvent();
-          this.pageResize();
-        });
+          this.registerEvent()
+          this.pageResize()
+        })
       }
     }
   },
-  created() {
-    this.getInItemBillTypeList(); // 开票单据类型列表
-    this.getOutItemBillTypeList(); // 收款单据类型列表
+  created () {
+    this.getInItemBillTypeList() // 开票单据类型列表
+    this.getOutItemBillTypeList() // 收款单据类型列表
     this.debouncedSearchDataBy = _.debounce(this.searchDataBy, 1000)
   },
   methods: {
-     // 根据输入的参数查询所需数据,避免重复查询,使用延时加载
-    searchDataBy(){
-      //debugger
-      this.searchDataList =[] // 默认清除数据集列表
+    // 根据输入的参数查询所需数据,避免重复查询,使用延时加载
+    searchDataBy () {
+      // debugger
+      this.searchDataList = [] // 默认清除数据集列表
       let params = {
-        likeFlag:'0', // 固定 精确查询
-        custId:this.formDataInfo.master.custId, // 供应商编号
-        icNo:this.searchDataConfig.keyWord.trim(), // 开票编号 
+        likeFlag: '0', // 固定 精确查询
+        custId: this.formDataInfo.master.custId, // 供应商编号
+        icNo: this.searchDataConfig.keyWord.trim() // 开票编号
         // gNo:this.searchDataConfig.keyWord.trim(),// 收款编号
       }
-      let url_In =  `/account/writeOff/getInvoiceInfoBoxData` //获取开票明细弹出框数据
-      let url_Out = `/account/writeOff/getGatherInfoBoxData` //获取收款明细弹出框数据
+      let url_In = `/account/writeOff/getInvoiceInfoBoxData` // 获取开票明细弹出框数据
+      let url_Out = `/account/writeOff/getGatherInfoBoxData` // 获取收款明细弹出框数据
       let url = url_In // 默认查询 开票编号
-      
-      if(this.searchDataConfig.type === this.searchDataConfig.Out){
+
+      if (this.searchDataConfig.type === this.searchDataConfig.Out) {
         url = url_Out
-          params = {
-          likeFlag:'0', // 固定 精确查询
-          custId:this.formDataInfo.master.custId, // 供应商编号 
-          gNo:this.searchDataConfig.keyWord.trim(),// 收款编号
+        params = {
+          likeFlag: '0', // 固定 精确查询
+          custId: this.formDataInfo.master.custId, // 供应商编号
+          gNo: this.searchDataConfig.keyWord.trim()// 收款编号
         }
       }
       let _self = this
-      this.getDataByUrl(url,params).then(res=>{
-        //debugger
+      this.getDataByUrl(url, params).then(res => {
+        // debugger
         _self.searchDataList = res
-        //输个不存在的编号，列表数据清空
-        if(_self.searchDataList && _self.searchDataList.length==0){
-           let slaveClone = _self.$refs["slave_list_table_edit"].get()
-           for(let i=0;i<slaveClone.length;i++){
-             if(slaveClone[i].icNo == _self.searchDataConfig.keyWord.trim()){
-                slaveClone.splice(i,1)
-                i--
-             }
-           }
-           let subClone = _self.$refs["sub_list_table_edit"].get()
-           for(let j=0;j<subClone.length;j++){
-             if(subClone[j].gNo == _self.searchDataConfig.keyWord.trim()){
-                subClone.splice(j,1)
-                j--
-             }
-           }
-         }
+        // 输个不存在的编号，列表数据清空
+        if (_self.searchDataList && _self.searchDataList.length == 0) {
+          let slaveClone = _self.$refs['slave_list_table_edit'].get()
+          for (let i = 0; i < slaveClone.length; i++) {
+            if (slaveClone[i].icNo == _self.searchDataConfig.keyWord.trim()) {
+              slaveClone.splice(i, 1)
+              i--
+            }
+          }
+          let subClone = _self.$refs['sub_list_table_edit'].get()
+          for (let j = 0; j < subClone.length; j++) {
+            if (subClone[j].gNo == _self.searchDataConfig.keyWord.trim()) {
+              subClone.splice(j, 1)
+              j--
+            }
+          }
+        }
         //  let paramsData = {
         //     data:res,// 数据列表
         //     type:this.searchDataConfig.type, // 类型: writeOffInItems :开票明细,writeOffOutItems :收款明细
@@ -504,27 +504,27 @@ export default {
         //     money:(this.searchDataConfig.type === this.searchDataConfig.Out?'accAmt':'icAmt'),// 发票金额/入帐金额 是否为空
         //     suffix:(this.searchDataConfig.type === this.searchDataConfig.Out?'OutFm':'InFm'),// 表单后缀
         //   }
-         if(_self.searchDataList && _self.searchDataList.length>0){
-           _self.onSubmitEditForm(_self.searchDataList)
-         }
+        if (_self.searchDataList && _self.searchDataList.length > 0) {
+          _self.onSubmitEditForm(_self.searchDataList)
+        }
       })
     },
-    getInItemBillTypeList() {
-      //开票单据类型
-      this.getDataFromDictionaryBy("icInvoiceX").then(res => {
-        //debugger
-        res.forEach(item=>{
-          item.dicValue = "0"+item.dicValue
+    getInItemBillTypeList () {
+      // 开票单据类型
+      this.getDataFromDictionaryBy('icInvoiceX').then(res => {
+        // debugger
+        res.forEach(item => {
+          item.dicValue = '0' + item.dicValue
         })
-        this.writeOffInItemBillTypeList = res;
-      });
+        this.writeOffInItemBillTypeList = res
+      })
     },
-    getOutItemBillTypeList() {
-      //收款单据类型
-      this.getDataFromDictionaryBy("gatheringType").then(res => {
-        //debugger
-        this.writeOffOutItemBillTypeList = res;
-      });
+    getOutItemBillTypeList () {
+      // 收款单据类型
+      this.getDataFromDictionaryBy('gatheringType').then(res => {
+        // debugger
+        this.writeOffOutItemBillTypeList = res
+      })
     },
     // getbillTypeList() {
     //   //获取  单据类型列表
@@ -532,249 +532,246 @@ export default {
     //     this.billTypeList = res;
     //   });
     // },
-    onChange_bdBackDate(item) {
-      //debugger
+    onChange_bdBackDate (item) {
+      // debugger
       if (!_.isEmpty(item)) {
-        this.formDataInfo.master.woDate = new Date(item);
+        this.formDataInfo.master.woDate = new Date(item)
       }
     },
     // 表格列值改变 回调事件处理event：{row, column, index, event,config}
-    tableColTiggerEventCall(obj) {
-      //debugger
-      //本次冲销金额不能大于(入账金额-已冲金额)
+    tableColTiggerEventCall (obj) {
+      // debugger
+      // 本次冲销金额不能大于(入账金额-已冲金额)
       switch (obj.event) {
-        case "thisWriteOffAmt":
-          let currentItem = this.formDataInfo["writeOffOutItems"].defaultList[
+        case 'thisWriteOffAmt':
+          let currentItem = this.formDataInfo['writeOffOutItems'].defaultList[
             obj.index
-          ];
-          let crrentPrice = 0;
-          let accAmt = Number(Number(currentItem.accAmt));
-          let writeOffAmt = Number(Number(currentItem.writeOffAmt));
+          ]
+          let crrentPrice = 0
+          let accAmt = Number(Number(currentItem.accAmt))
+          let writeOffAmt = Number(Number(currentItem.writeOffAmt))
           // 触发修改值 直接修改原始数据 无效
-          this.$refs["sub_list_table_edit"].set(
+          this.$refs['sub_list_table_edit'].set(
             {
               accAmt: obj.row.accAmt,
               qtwriteOffAmty: obj.row.writeOffAmt
             },
             obj.index
-          );
-          break;
-         // 收款编号 手动输入查询 
-         case "gNoChangeEvent_Out":
-           this.searchDataConfig.type = this.searchDataConfig.Out
-           this.searchDataConfig.keyWord = obj.row.gNo
-            if(!!obj.row.gNo){//!!!obj.row.accAmt &&
-                // 触发修改值 直接修改原始数据 无效,使用内置方法修改
-                this.$refs['sub_list_table_edit'].set(
-                  { gNo: obj.row.gNo },
-                  obj.index
-                );
-              // 入帐金额 为空 采取执行
-                this.debouncedSearchDataBy()
-            }
-          break; 
+          )
+          break
+          // 收款编号 手动输入查询
+        case 'gNoChangeEvent_Out':
+          this.searchDataConfig.type = this.searchDataConfig.Out
+          this.searchDataConfig.keyWord = obj.row.gNo
+          if (obj.row.gNo) { //! !!obj.row.accAmt &&
+            // 触发修改值 直接修改原始数据 无效,使用内置方法修改
+            this.$refs['sub_list_table_edit'].set(
+              { gNo: obj.row.gNo },
+              obj.index
+            )
+            // 入帐金额 为空 采取执行
+            this.debouncedSearchDataBy()
+          }
+          break
         default:
-          break;
+          break
       }
-      this.sumMoneyWriteOff("writeOffOutItems");
+      this.sumMoneyWriteOff('writeOffOutItems')
     },
     // 表格列值改变 回调事件处理event：{row, column, index, event,config}
-    tableColTiggerEventSlaveCall(obj) {
-      //debugger
-      let currentItem = this.formDataInfo["writeOffInItems"].defaultList[
+    tableColTiggerEventSlaveCall (obj) {
+      // debugger
+      let currentItem = this.formDataInfo['writeOffInItems'].defaultList[
         obj.index
-      ];
+      ]
       let thisWriteOffAmt = Number(
         currentItem.thisWriteOffAmt == null ? 0 : currentItem.thisWriteOffAmt
-      ); // 本次冲销金额
+      ) // 本次冲销金额
       switch (obj.event) {
-        //本次冲销金额
-        case "thisWriteOffAmt":
+        // 本次冲销金额
+        case 'thisWriteOffAmt':
           // let toFixedUnit = 2; // 保留小数位数
-          //本次冲销金额不能大于(发票金额-已冲金额)
-          let icAmt = Number(Number(currentItem.icAmt));
-          let writeOffAmt = Number(Number(currentItem.writeOffAmt));
-          this.$refs["slave_list_table_edit"].set(
+          // 本次冲销金额不能大于(发票金额-已冲金额)
+          let icAmt = Number(Number(currentItem.icAmt))
+          let writeOffAmt = Number(Number(currentItem.writeOffAmt))
+          this.$refs['slave_list_table_edit'].set(
             {
               icAmt: Number(icAmt),
               writeOffAmt: Number(writeOffAmt)
             },
             obj.index
-          );
-          break;
+          )
+          break
         // 开票编号 手动输入查询
-         case "icNoChangeEvent_In":
-           this.searchDataConfig.type = this.searchDataConfig.In
-           this.searchDataConfig.keyWord = obj.row.icNo
-           
-            if(!!obj.row.icNo){//!!!obj.row.icAmt && 
-               // 触发修改值 直接修改原始数据 无效,使用内置方法修改
-                this.$refs['slave_list_table_edit'].set(
-                  { icNo: obj.row.icNo },
-                  obj.index
-                );
-              // 发票金额 为空 采取执行
-                this.debouncedSearchDataBy()
-            }
-          break;      
+        case 'icNoChangeEvent_In':
+          this.searchDataConfig.type = this.searchDataConfig.In
+          this.searchDataConfig.keyWord = obj.row.icNo
+
+          if (obj.row.icNo) { //! !!obj.row.icAmt &&
+            // 触发修改值 直接修改原始数据 无效,使用内置方法修改
+            this.$refs['slave_list_table_edit'].set(
+              { icNo: obj.row.icNo },
+              obj.index
+            )
+            // 发票金额 为空 采取执行
+            this.debouncedSearchDataBy()
+          }
+          break
         default:
-          break;
+          break
       }
 
       // 触发修改值 直接修改原始数据 无效
-      this.$refs["slave_list_table_edit"].set(
+      this.$refs['slave_list_table_edit'].set(
         { currentItem: Number(currentItem) },
         obj.index
-      );
-      this.sumMoneyWriteOff("writeOffInItems");
+      )
+      this.sumMoneyWriteOff('writeOffInItems')
     },
 
     // 开票明细 删除数据 回调
-    slave_list_table_edit_Delete(type) {
-      //debugger
+    slave_list_table_edit_Delete (type) {
+      // debugger
       // (重新计算金额)
       // this.sumMoneyAreaVolumeWeight();
-      this.sumMoneyWriteOff(type)  
+      this.sumMoneyWriteOff(type)
     },
     // 开票明细删除数据 回调
-    sub_list_table_edit_Delete(type) {
-      //debugger
+    sub_list_table_edit_Delete (type) {
+      // debugger
       // (重新计算金额)
       this.sumMoneyWriteOff(type)
     },
     // 验证产品编号选择前先选择客户
-    popupClickValidator() {
-      //debugger
+    popupClickValidator () {
+      // debugger
       if (
         !this.formDataInfo.master.custCode ||
-        this.formDataInfo.master.custCode == ""
+        this.formDataInfo.master.custCode == ''
       ) {
-        this.$Message.error("请先选择客户编号");
-        return false;
+        this.$Message.error('请先选择客户编号')
+        return false
       }
-      return true;
+      return true
     },
-    custCodeChangeValidator() {
-      //debugger
-      let msg = "客户编号改变，开票明细收款明细也会跟着改变?";
-      this.beforeOnFillValidator(msg);
+    custCodeChangeValidator () {
+      // debugger
+      let msg = '客户编号改变，开票明细收款明细也会跟着改变?'
+      this.beforeOnFillValidator(msg)
     },
     // 更新选择客户,确认提交前验证
-    beforeOnFillValidator(msg = "") {
-      //debugger
-      if (!!!msg) {
-        msg = "送货地址改变，开票明细收款明细也会跟着改变?";
+    beforeOnFillValidator (msg = '') {
+      // debugger
+      if (!msg) {
+        msg = '送货地址改变，开票明细收款明细也会跟着改变?'
       }
-      let _self = this;
+      let _self = this
       return new Promise((resolve, reject) => {
-        if (this.action == "add") {
-          reject();
-          return;
+        if (this.action == 'add') {
+          reject()
+          return
         }
         this.$Modal.confirm({
-          title: "提示",
+          title: '提示',
           content: `${msg}`,
           onOk: () => {
-            _self.$refs["slave_list_table_edit"].deleteAllData(); // 仅仅记录删除记录,
-            _self.formDataInfo["writeOffInItems"].defaultList = [];
-            _self.formDataInfo["writeOffOutItems"].defaultList = [];
-            _self.sumMoneyAreaVolumeWeight();
-            resolve(true);
+            _self.$refs['slave_list_table_edit'].deleteAllData() // 仅仅记录删除记录,
+            _self.formDataInfo['writeOffInItems'].defaultList = []
+            _self.formDataInfo['writeOffOutItems'].defaultList = []
+            _self.sumMoneyAreaVolumeWeight()
+            resolve(true)
           },
           onCancel: () => {
-            resolve(false);
+            resolve(false)
           }
-        });
-      });
+        })
+      })
     },
     // 弹框==确认==回调事件,返回选择的数据
-    onSubmitEditForm(dataList) {
-      //debugger
+    onSubmitEditForm (dataList) {
+      // debugger
       if (dataList && Array.isArray(dataList) && dataList.length > 0) {
         // this.disabledCustCode = true; // 禁用客户选择
-        dataList = JSON.parse(JSON.stringify(this.itemAdapter(dataList)));
-        let writeOffInItems = [];
+        dataList = JSON.parse(JSON.stringify(this.itemAdapter(dataList)))
+        let writeOffInItems = []
         if (dataList[0].icNo) {
-          writeOffInItems = this.formDataInfo["writeOffInItems"].defaultList;
+          writeOffInItems = this.formDataInfo['writeOffInItems'].defaultList
         } else if (dataList[0].gNo) {
-          writeOffInItems = this.formDataInfo["writeOffOutItems"].defaultList;
+          writeOffInItems = this.formDataInfo['writeOffOutItems'].defaultList
         }
 
-        if (writeOffInItems[0].icNo == "" || writeOffInItems[0].gNo == "") {
-          if (writeOffInItems[0].icNo == "")
-            this.formDataInfo["writeOffInItems"].defaultList = dataList;
-          if (writeOffInItems[0].gNo == "")
-            this.formDataInfo["writeOffOutItems"].defaultList = dataList;
+        if (writeOffInItems[0].icNo == '' || writeOffInItems[0].gNo == '') {
+          if (writeOffInItems[0].icNo == '') { this.formDataInfo['writeOffInItems'].defaultList = dataList }
+          if (writeOffInItems[0].gNo == '') { this.formDataInfo['writeOffOutItems'].defaultList = dataList }
         } else {
-          dataList.forEach((item,index) => {
+          dataList.forEach((item, index) => {
             if (!this.checkIsExistBy(item)) {
               if (item.icNo)
-                // this.formDataInfo["writeOffInItems"].defaultList.push(item);
-                this.formDataInfo["writeOffInItems"].defaultList.push(item);
-              if (item.gNo)
-                this.formDataInfo["writeOffOutItems"].defaultList.push(item);
+              // this.formDataInfo["writeOffInItems"].defaultList.push(item);
+              { this.formDataInfo['writeOffInItems'].defaultList.push(item) }
+              if (item.gNo) { this.formDataInfo['writeOffOutItems'].defaultList.push(item) }
             }
-          });
+          })
           // 删除多余的空行
-          this.formDataInfo["writeOffInItems"].defaultList.forEach(
+          this.formDataInfo['writeOffInItems'].defaultList.forEach(
             (item, index) => {
-              if (item.icNo == "" || item.icNo == null || (item.icNo != ""&&item.icAmt<=0)) {
-                this.formDataInfo["writeOffInItems"].defaultList.splice(
+              if (item.icNo == '' || item.icNo == null || (item.icNo != '' && item.icAmt <= 0)) {
+                this.formDataInfo['writeOffInItems'].defaultList.splice(
                   index,
                   1
-                );
+                )
               }
             }
-          );
-          this.formDataInfo["writeOffOutItems"].defaultList.forEach(
+          )
+          this.formDataInfo['writeOffOutItems'].defaultList.forEach(
             (item, index) => {
-              if (item.gNo == "" || item.gNo == null || (item.gNo != ""&&item.accAmt<=0)) {
-                this.formDataInfo["writeOffOutItems"].defaultList.splice(
+              if (item.gNo == '' || item.gNo == null || (item.gNo != '' && item.accAmt <= 0)) {
+                this.formDataInfo['writeOffOutItems'].defaultList.splice(
                   index,
                   1
-                );
+                )
               }
             }
-          );
+          )
         }
-        this.sumMoneyAreaVolumeWeight(dataList);
+        this.sumMoneyAreaVolumeWeight(dataList)
       }
     },
-    //实体转换,获取相同Key的value,个别不同的手动修改值
-    itemAdapter(dataList) {
-      //debugger
-      let newDataList = [];
-      let newItem = [];
+    // 实体转换,获取相同Key的value,个别不同的手动修改值
+    itemAdapter (dataList) {
+      // debugger
+      let newDataList = []
+      let newItem = []
       dataList.forEach(oldItem => {
         if (dataList[0].icNo) {
           newItem = JSON.parse(
-            JSON.stringify(this.initData.initData["accountwriteoffinFm"])
-          );
+            JSON.stringify(this.initData.initData['accountwriteoffinFm'])
+          )
         } else if (dataList[0].gNo) {
           newItem = JSON.parse(
-            JSON.stringify(this.initData.initData["accountwriteoffoutFm"])
-          );
+            JSON.stringify(this.initData.initData['accountwriteoffoutFm'])
+          )
         }
 
-        let newItemKeys = Object.keys(newItem);
+        let newItemKeys = Object.keys(newItem)
         newItemKeys.forEach(itemKey => {
-          newItem[itemKey] = null;
+          newItem[itemKey] = null
           if (oldItem[itemKey]) {
-            newItem[itemKey] = oldItem[itemKey];
+            newItem[itemKey] = oldItem[itemKey]
           }
-        });
+        })
 
         newItem.writeOffAmt =
-          newItem.writeOffAmt == null ? 0 : newItem.writeOffAmt; //  已出货数 已冲金额
+          newItem.writeOffAmt == null ? 0 : newItem.writeOffAmt //  已出货数 已冲金额
 
         // newItem.biPrepQty = oldItem.deliPrepQty; //备品数
-        newDataList.push(newItem);
-      });
-      return newDataList;
+        newDataList.push(newItem)
+      })
+      return newDataList
     },
     // 检查列表数据是否已经存在,避免重复添加
-    checkIsExistBy(item) {
-      //debugger
+    checkIsExistBy (item) {
+      // debugger
       // let isExistIndex = this.formDataInfo[
       //   paramsData.type
       // ].defaultList.findIndex(subItem => {
@@ -788,161 +785,161 @@ export default {
       // } else {
       //   return false;
       // }
-      let currentList = [];
-      let isExistIndex = 0;
+      let currentList = []
+      let isExistIndex = 0
       if (item.icNo) {
-        currentList = this.formDataInfo["writeOffInItems"].defaultList;
+        currentList = this.formDataInfo['writeOffInItems'].defaultList
         isExistIndex = currentList.findIndex(subItem => {
           return (
             subItem.icNo == item.icNo && subItem.icInvoiceNo == item.icInvoiceNo
-          );
-        });
+          )
+        })
       } else if (item.gNo) {
-        currentList = this.formDataInfo["writeOffOutItems"].defaultList;
+        currentList = this.formDataInfo['writeOffOutItems'].defaultList
         isExistIndex = currentList.findIndex(subItem => {
           return (
             subItem.gNo == item.gNo && subItem.accAmt == item.accAmt
-          );
-        });
+          )
+        })
       }
       if (isExistIndex != -1) {
-        return true;
+        return true
       } else {
-        return false;
+        return false
       }
     },
-    sumMoneyWriteOff(type) {
+    sumMoneyWriteOff (type) {
       // 本次冲销金额不能大于(发票金额-已冲金额)icAmt writeOffAmt
-      //debugger
-      if (type == "writeOffInItems") {
+      // debugger
+      if (type == 'writeOffInItems') {
         let totalWoAmtIn = 0
-        this.formDataInfo["writeOffInItems"].defaultList.forEach(item => {
-          let icAmt = Number(item.icAmt == null ? 0 : item.icAmt);
+        this.formDataInfo['writeOffInItems'].defaultList.forEach(item => {
+          let icAmt = Number(item.icAmt == null ? 0 : item.icAmt)
           let writeOffAmt = Number(
             item.writeOffAmt == null ? 0 : item.writeOffAmt
-          );
+          )
           let thisWriteOffAmt = Number(
             item.thisWriteOffAmt == null ? 0 : item.thisWriteOffAmt
-          );
+          )
           if (thisWriteOffAmt > icAmt - writeOffAmt) {
-            item.thisWriteOffAmt = 0;
-            this.$Message.error("本次冲销金额不能大于未冲销金额");
+            item.thisWriteOffAmt = 0
+            this.$Message.error('本次冲销金额不能大于未冲销金额')
           }
-          totalWoAmtIn+=Number(item.thisWriteOffAmt)
-        });
+          totalWoAmtIn += Number(item.thisWriteOffAmt)
+        })
         this.totalWoAmtIn = totalWoAmtIn
         this.formDataInfo.master.woAmt = totalWoAmtIn
-      } else if (type == "writeOffOutItems") {
+      } else if (type == 'writeOffOutItems') {
         let totalWoAmtOut = 0
-        this.formDataInfo["writeOffOutItems"].defaultList.forEach(item => {
-          let accAmt = Number(item.accAmt == null ? 0 : item.accAmt);
+        this.formDataInfo['writeOffOutItems'].defaultList.forEach(item => {
+          let accAmt = Number(item.accAmt == null ? 0 : item.accAmt)
           let writeOffAmt = Number(
             item.writeOffAmt == null ? 0 : item.writeOffAmt
-          );
+          )
           let thisWriteOffAmt = Number(
             item.thisWriteOffAmt == null ? 0 : item.thisWriteOffAmt
-          );
+          )
           if (thisWriteOffAmt > accAmt - writeOffAmt) {
-            item.thisWriteOffAmt = 0;
-            this.$Message.error("本次冲销金额不能大于未冲销金额");
+            item.thisWriteOffAmt = 0
+            this.$Message.error('本次冲销金额不能大于未冲销金额')
           }
-          totalWoAmtOut+=Number(item.thisWriteOffAmt)
-        });
+          totalWoAmtOut += Number(item.thisWriteOffAmt)
+        })
         this.totalWoAmtOut = totalWoAmtOut
         // this.formDataInfo.master.woAmt = totalWoAmtOut
       }
     },
     // 汇总 冲销金额
-    sumMoneyAreaVolumeWeight(dataList) {
+    sumMoneyAreaVolumeWeight (dataList) {
       // 本次冲销金额不能大于(发票金额-已冲金额)icAmt writeOffAmt
-      //this.sumMoneyWriteOff(this.searchParams.mode)
-      //debugger
-      let writeOffInItemsClone = this.$refs["slave_list_table_edit"].get();
-      if(writeOffInItemsClone.length ==1 && (writeOffInItemsClone.icNo == "" || writeOffInItemsClone.icNo == undefined)) //这时候没有数据用传过来的数据
-      writeOffInItemsClone = dataList
-      let totalWoAmtIn = 0  //主表开票冲销金额
-      let totalWoAmtOut = 0 //主表收款冲销金额
-      if(this.searchParams.mode=="icNo"){
-        for(let k=0;k<writeOffInItemsClone.length;k++){
-          totalWoAmtIn+=writeOffInItemsClone[k].thisWriteOffAmt
+      // this.sumMoneyWriteOff(this.searchParams.mode)
+      // debugger
+      let writeOffInItemsClone = this.$refs['slave_list_table_edit'].get()
+      if (writeOffInItemsClone.length == 1 && (writeOffInItemsClone.icNo == '' || writeOffInItemsClone.icNo == undefined)) // 这时候没有数据用传过来的数据
+      { writeOffInItemsClone = dataList }
+      let totalWoAmtIn = 0 // 主表开票冲销金额
+      let totalWoAmtOut = 0 // 主表收款冲销金额
+      if (this.searchParams.mode == 'icNo') {
+        for (let k = 0; k < writeOffInItemsClone.length; k++) {
+          totalWoAmtIn += writeOffInItemsClone[k].thisWriteOffAmt
         }
         this.totalWoAmtIn = totalWoAmtIn
         this.formDataInfo.master.woAmt = totalWoAmtIn
-      }else if(this.searchParams.mode=="gNo"){
-        for(let g=0;g<writeOffInItemsClone.length;g++){
-          totalWoAmtOut+=writeOffInItemsClone[g].thisWriteOffAmt
+      } else if (this.searchParams.mode == 'gNo') {
+        for (let g = 0; g < writeOffInItemsClone.length; g++) {
+          totalWoAmtOut += writeOffInItemsClone[g].thisWriteOffAmt
         }
         this.totalWoAmtOut = totalWoAmtOut
         // this.formDataInfo.master.woAmt = totalWoAmtOut
       }
     },
-    
+
     // 弹框==取消==回调事件
-    onCancelEditForm() {},
+    onCancelEditForm () {},
     // 订单编号 点击事件,打开选择产品列表窗口
-    openProductsList(mode) {
-      //debugger
-      this.selectedIcNoList = "";
-      if (mode == "icNo") {
+    openProductsList (mode) {
+      // debugger
+      this.selectedIcNoList = ''
+      if (mode == 'icNo') {
         if (
-          this.formDataInfo["writeOffInItems"] &&
-          this.formDataInfo["writeOffInItems"].defaultList.length > 0
+          this.formDataInfo['writeOffInItems'] &&
+          this.formDataInfo['writeOffInItems'].defaultList.length > 0
         ) {
-          this.formDataInfo["writeOffInItems"].defaultList.forEach(item => {
-            if (this.selectedIcNoList == "") {
-              this.selectedIcNoList = item.icNo;
+          this.formDataInfo['writeOffInItems'].defaultList.forEach(item => {
+            if (this.selectedIcNoList == '') {
+              this.selectedIcNoList = item.icNo
             } else {
-              this.selectedIcNoList += "," + item.icNo;
+              this.selectedIcNoList += ',' + item.icNo
             }
-          });
+          })
         }
         this.searchParams = {
           custId: this.formDataInfo.master.custId, // 客户id
-          icNoList: this.selectedIcNoList, //(过滤已选的工单号集合,多个都好隔开)
-          mode: mode //开票明细或者收款明细
-        };
-      } else if (mode == "gNo") {
+          icNoList: this.selectedIcNoList, // (过滤已选的工单号集合,多个都好隔开)
+          mode: mode // 开票明细或者收款明细
+        }
+      } else if (mode == 'gNo') {
         if (
-          this.formDataInfo["writeOffOutItems"] &&
-          this.formDataInfo["writeOffOutItems"].defaultList.length > 0
+          this.formDataInfo['writeOffOutItems'] &&
+          this.formDataInfo['writeOffOutItems'].defaultList.length > 0
         ) {
-          this.formDataInfo["writeOffOutItems"].defaultList.forEach(item => {
-            if (this.selectedIcNoList == "") {
-              this.selectedIcNoList = item.gNo;
+          this.formDataInfo['writeOffOutItems'].defaultList.forEach(item => {
+            if (this.selectedIcNoList == '') {
+              this.selectedIcNoList = item.gNo
             } else {
-              this.selectedIcNoList += "," + item.gNo;
+              this.selectedIcNoList += ',' + item.gNo
             }
-          });
+          })
         }
         this.searchParams = {
           custId: this.formDataInfo.master.custId, // 客户id
-          gNoList: this.selectedIcNoList, //(过滤已选的工单号集合,多个都好隔开)
-          mode: mode //开票明细或者收款明细
-        };
+          gNoList: this.selectedIcNoList, // (过滤已选的工单号集合,多个都好隔开)
+          mode: mode // 开票明细或者收款明细
+        }
       }
 
       if (this.popupClickValidator()) {
-        this.salveWindow.showEditWindow = true;
+        this.salveWindow.showEditWindow = true
       }
     },
-    custCodeOnFillEvent() {
-      //debugger
-      this.custId = this.formDataInfo.master.custId;
+    custCodeOnFillEvent () {
+      // debugger
+      this.custId = this.formDataInfo.master.custId
       // 切换用户,清除明细信息
       // 开票明细
-      let dataList_In = this.formDataInfo["writeOffInItems"].defaultList;
+      let dataList_In = this.formDataInfo['writeOffInItems'].defaultList
       if (dataList_In && dataList_In.length > 0) {
-        if (dataList_In[0].icNo != null && dataList_In[0].icNo != "") {
-          this.$refs["slave_list_table_edit"].deleteAllData(); // 仅仅记录删除记录,
-          this.formDataInfo["writeOffInItems"].defaultList = []; // 手动清除本页数据
+        if (dataList_In[0].icNo != null && dataList_In[0].icNo != '') {
+          this.$refs['slave_list_table_edit'].deleteAllData() // 仅仅记录删除记录,
+          this.formDataInfo['writeOffInItems'].defaultList = [] // 手动清除本页数据
         }
       }
       // 收款明细
-      let dataList_Out = this.formDataInfo["writeOffOutItems"].defaultList;
+      let dataList_Out = this.formDataInfo['writeOffOutItems'].defaultList
       if (dataList_Out && dataList_Out.length > 0) {
-        if (dataList_Out[0].gNo != null && dataList_Out[0].gNo != "") {
-          this.$refs["sub_list_table_edit"].deleteAllData(); // 仅仅记录删除记录,
-          this.formDataInfo["writeOffOutItems"].defaultList = []; // 手动清除本页数据
+        if (dataList_Out[0].gNo != null && dataList_Out[0].gNo != '') {
+          this.$refs['sub_list_table_edit'].deleteAllData() // 仅仅记录删除记录,
+          this.formDataInfo['writeOffOutItems'].defaultList = [] // 手动清除本页数据
         }
       }
     },
@@ -966,108 +963,108 @@ export default {
     //   }
     // },
     // 注册窗口事件
-    registerEvent() {
-      let _self = this; //赋值vue的this
+    registerEvent () {
+      let _self = this // 赋值vue的this
       window.onresize = () => {
-        //调用methods中的事件
-        _self.pageResize();
-      };
-    },
-    // 触发窗口大小变化事件
-    pageResize() {
-      this.$nextTick(() => {
-        this.getTabWindowHeight();
-      });
-    },
-    // 获取当前TAB标签的实际高度
-    getTabWindowHeight() {
-      this.getMasterheight();
-      // 因为使用V-SHOW 隐藏,实际还会占用高度,所以切换时,设置为0 或使用V-IF 可以不用那么麻烦,但性能较低
-      if (!!this.$refs["masterHeight"]) {
-        this.masterHeight = this.$refs["masterHeight"].offsetHeight;
-        this.otherHeight = this.$refs["otherHeight"].offsetHeight;
+        // 调用methods中的事件
+        _self.pageResize()
       }
     },
-    getMasterheight() {
-      return 35;
+    // 触发窗口大小变化事件
+    pageResize () {
+      this.$nextTick(() => {
+        this.getTabWindowHeight()
+      })
     },
-    //判断数据是新增还是修改
-    formDetailDataCall() {
-      //debugger
-      if (this.action != "add") {
+    // 获取当前TAB标签的实际高度
+    getTabWindowHeight () {
+      this.getMasterheight()
+      // 因为使用V-SHOW 隐藏,实际还会占用高度,所以切换时,设置为0 或使用V-IF 可以不用那么麻烦,但性能较低
+      if (this.$refs['masterHeight']) {
+        this.masterHeight = this.$refs['masterHeight'].offsetHeight
+        this.otherHeight = this.$refs['otherHeight'].offsetHeight
+      }
+    },
+    getMasterheight () {
+      return 35
+    },
+    // 判断数据是新增还是修改
+    formDetailDataCall () {
+      // debugger
+      if (this.action != 'add') {
       }
     },
     // 重写父类 关闭窗口时 触发事件
-    closeActionTigger() {
-      //debugger
+    closeActionTigger () {
+      // debugger
       // fix 清除上次的错误提示 formDataInfo 为表单ref名称
-      this.$refs["formDataInfo"].resetFields();
-      this.$refs["slave_list_table_edit"].reset();
-      this.$refs["sub_list_table_edit"].reset();
+      this.$refs['formDataInfo'].resetFields()
+      this.$refs['slave_list_table_edit'].reset()
+      this.$refs['sub_list_table_edit'].reset()
       // this.disabledCustCode = false;
-      this.searchDataConfig.keyWord=''
-      this.formDataInfo = deepCopy(default_formDataInfo);
+      this.searchDataConfig.keyWord = ''
+      this.formDataInfo = deepCopy(default_formDataInfo)
     },
     // 重写父类,添加时候,清空数据
     // HandleFormDataInfo() {
     //   this.formDataInfo = deepCopy(default_formDataInfo)
     // },
     // 重写父类,修改提交数据
-    resetformDataInfo() {
-      //debugger
+    resetformDataInfo () {
+      // debugger
       let writeOffInItems = this.$refs[
-        "slave_list_table_edit"
-      ].getCategorizeData();
+        'slave_list_table_edit'
+      ].getCategorizeData()
       let writeOffOutItems = this.$refs[
-        "sub_list_table_edit"
-      ].getCategorizeData();
-      this.formDataInfo["writeOffInItems"] = writeOffInItems;
-      this.formDataInfo["writeOffOutItems"] = writeOffOutItems;
-      if (this.formDataInfo.master.woDate != "") {
+        'sub_list_table_edit'
+      ].getCategorizeData()
+      this.formDataInfo['writeOffInItems'] = writeOffInItems
+      this.formDataInfo['writeOffOutItems'] = writeOffOutItems
+      if (this.formDataInfo.master.woDate != '') {
         this.formDataInfo.master.woDate = dayjs(
           this.formDataInfo.master.woDate
-        ).format("YYYY-MM-DD HH:mm:ss");
+        ).format('YYYY-MM-DD HH:mm:ss')
       }
-      return this.formDataInfo;
+      return this.formDataInfo
     },
 
     // 提交主从表数据
-    formTableDataSubmit() {
-      //debugger
+    formTableDataSubmit () {
+      // debugger
       // 防止出错,提交前再次 (重新计算体积/面积/金额等)
       // this.sumMoneyAreaVolumeWeight();
-      this.$refs["formDataInfo"].validate(valid => {
+      this.$refs['formDataInfo'].validate(valid => {
         if (!valid) {
-          return;
-        }
-        let woAmt = Number(this.formDataInfo.master.woAmt) // 冲销金额
-        if(woAmt<=0){
-           this.$Message.warning("请添加明细数据!");
-           return;
-        }
-        if(this.totalWoAmtIn != this.totalWoAmtOut){
-          this.$Message.warning("开票明细 和 收款明细 中的【本次冲销金额】的合计要一致!");
           return
         }
-        let submitData = this.resetformDataInfo();
+        let woAmt = Number(this.formDataInfo.master.woAmt) // 冲销金额
+        if (woAmt <= 0) {
+          this.$Message.warning('请添加明细数据!')
+          return
+        }
+        if (this.totalWoAmtIn != this.totalWoAmtOut) {
+          this.$Message.warning('开票明细 和 收款明细 中的【本次冲销金额】的合计要一致!')
+          return
+        }
+        let submitData = this.resetformDataInfo()
         request
           .post(
             `${this.functionParams.requestBaseUrl}/saveOrUpdate`,
             submitData
           )
           .then(res => {
-            this.showWindow = false; // 关闭当前编辑页面
-            this.$Message.success("执行成功");
-            this.$emit("submit-success"); // 刷新主页面数据
-          });
-      });
+            this.showWindow = false // 关闭当前编辑页面
+            this.$Message.success('执行成功')
+            this.$emit('submit-success') // 刷新主页面数据
+          })
+      })
     },
-    //输入时打开选择产品列表窗口
-    inputopenProductsList(value, index, row,key){
-      //debugger
+    // 输入时打开选择产品列表窗口
+    inputopenProductsList (value, index, row, key) {
+      // debugger
     }
   }
-};
+}
 </script>
 
 <style>

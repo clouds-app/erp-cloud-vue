@@ -17,6 +17,7 @@
       >
         <FormItem label="纸度" prop="plWidth">
           <referenceField
+           ref='firstFocusInput'
           :disabled="detailDisabled"
             v-model="formDataInfo.plWidth"
             style="width:100%"
@@ -26,7 +27,7 @@
             :id="formDataInfo.id"
           ></referenceField>
         </FormItem>
-        
+
         <FormItem label="毫米对照" prop="plWidthMM">
           <Input
           :disabled="detailDisabled"
@@ -38,14 +39,14 @@
         </FormItem>
         <FormItem label="开料">
           <Checkbox v-model="formDataInfo.plkarat" :disabled="detailDisabled" maxlength="20" placeholder>
-                    
+
           </Checkbox>
             <!-- <i-switch size="default" v-model="formDataInfo.plkarat">
               <span slot="open">是</span>
               <span slot="close">否</span>
             </i-switch> -->
         </FormItem>
-          
+
         <FormItem label="备注" prop="remark">
           <Input
           :disabled="detailDisabled"
@@ -57,7 +58,7 @@
           ></Input>
         </FormItem>
       </Form>
-      
+
     </editWindow>
   </div>
 </template>
@@ -77,82 +78,81 @@
  * @created 2019/11/20 17:07:54
  */
 import referenceField from '@/components/referenceField/referenceField'
-import editBaseMixins from "../../mixins/edit";
-import { customValidator,uniqueValidator } from "@/libs/validator"
+import editBaseMixins from '../../mixins/edit'
+import { customValidator, uniqueValidator } from '@/libs/validator'
 const default_formDataInfo = {
   plWidth: 0,
-  plkarat: "false",
-  p1WidthMM:"",
-  plWidthMM:0,
-  remark: ""
-};
+  plkarat: 'false',
+  p1WidthMM: '',
+  plWidthMM: 0,
+  remark: ''
+}
 export default {
-  name: "edit-paperLimit",
+  name: 'edit-paperLimit',
   mixins: [editBaseMixins],
-  components:{referenceField},
-  data() {
+  components: { referenceField },
+  data () {
     return {
-      formmastername:'paperLimitFm',
-      actionSubtitle:'纸宽', // 当前操作副标题
-      requestBaseUrl: "/bas/paperLimit", // 请求 查询 操作的基础路径
+      formmastername: 'paperLimitFm',
+      actionSubtitle: '纸宽', // 当前操作副标题
+      requestBaseUrl: '/bas/paperLimit', // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
-       
-    
+
         plWidth: [
-            {
-              validator:customValidator,
-              trigger: "blur",
-              customRule:["toCDB","number","spaceStr","mustDouble"],
-              fieldDesc:"纸度"
-            }, 
-            {
-              validator:uniqueValidator,
-              trigger: "blur",
-              fieldDesc: "纸度",
-              params:{
-                fieldName:'plWidth',
-                formName:'paperLimitFm',
-                id:()=>{
-                  return this.formDataInfo.id;
-                }
-              }
-            }
-        ],
-        plWidthMM: [{
-             
+          {
             validator: customValidator,
-            trigger: "blur",
-            customRule: ["number","spaceStr","mustDouble"],
-            fieldDesc: "毫米对照"
-          
+            trigger: 'blur',
+            customRule: ['toCDB', 'number', 'spaceStr', 'mustDouble'],
+            fieldDesc: '纸度'
           },
           {
-            validator:uniqueValidator,
-             trigger: "blur",
-             fieldDesc: "毫米对照",
-             params:{
-               fieldName:'plWidthMM',
-               formName:'paperLimitFm',
-               id:()=>{
-                 return this.formDataInfo.id;
-               }
-             }
+            validator: uniqueValidator,
+            trigger: 'blur',
+            fieldDesc: '纸度',
+            params: {
+              fieldName: 'plWidth',
+              formName: 'paperLimitFm',
+              id: () => {
+                return this.formDataInfo.id
+              }
+            }
           }
-         
+        ],
+        plWidthMM: [{
+
+          validator: customValidator,
+          trigger: 'blur',
+          customRule: ['number', 'spaceStr', 'mustDouble'],
+          fieldDesc: '毫米对照'
+
+        },
+        {
+          validator: uniqueValidator,
+          trigger: 'blur',
+          fieldDesc: '毫米对照',
+          params: {
+            fieldName: 'plWidthMM',
+            formName: 'paperLimitFm',
+            id: () => {
+              return this.formDataInfo.id
+            }
+          }
+        }
+
         ]
       }
-    };
+    }
   },
 
   methods: {
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo() {
-      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    HandleFormDataInfo () {
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
     }
   }
-};
+}
 </script>
 
 <style></style>

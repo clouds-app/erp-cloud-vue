@@ -77,7 +77,7 @@
               :height="400"
               :index-menu="true"
               :col-start="0"
-              :width="200"              
+              :width="200"
               :data.sync="productMDatasTableDataList"
               :rules="tableFieldsValidator"
             >
@@ -152,7 +152,7 @@
                     <div class="ivu-table-cell">
                       <span class>仓位名称</span>
                     </div>
-                  </th>                                               
+                  </th>
                 </tr>
               </template>
               <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
@@ -168,7 +168,7 @@
                     "
                   ></Checkbox>
                 </td>
-                
+
                 <!-- 用料单号 -->
                 <td class="ivu-table-column-left" width="110">
                   <Input
@@ -196,7 +196,7 @@
                     "
                   ></Input>
                 </td>
-               
+
                 <!-- 工单号 -->
                 <td class="ivu-table-column-left" width="100">
                   <Input
@@ -210,7 +210,7 @@
                     size="small"
                     :maxlength="20"
                   ></Input>
-                </td> 
+                </td>
                 <!-- 出库数 -->
                 <td class="ivu-table-column-left" width="70">
                   <Input
@@ -224,7 +224,7 @@
                     size="small"
                     :maxlength="20"
                   ></Input>
-                </td>                         
+                </td>
                 <!-- 已退仓数		 -->
                 <td class="ivu-table-column-left" width="70">
                   <Input
@@ -336,7 +336,7 @@
                     size="small"
                     :maxlength="20"
                   ></Input>
-                </td>                                        
+                </td>
                 <!-- 备注	-->
                 <!-- <td class="ivu-table-column-left" width="140">
                   <Input
@@ -350,7 +350,7 @@
                     :maxlength="20"
                   ></Input>
                 </td> -->
-               
+
               </template>
             </eTable>
           </TabPane>
@@ -358,7 +358,6 @@
         <!-- <productSpec
           v-model="productSpecShow"
           ref="productSpec"
-          
 
           :bpMoCut="formDataInfo.master.bpMoCut"
         ></productSpec> -->
@@ -381,21 +380,21 @@
  *
  * @created 2020/04/02 17:07:54
  */
-import tableSelect from "@/components/table-select/table-select";
-import editWindow from "@/components/edit-window/edit-window";
+import tableSelect from '@/components/table-select/table-select'
+import editWindow from '@/components/edit-window/edit-window'
 // import Form from '@/components/form/form'
-import eTable from "@/components/e-table/e-table";
-import request from "@/libs/request";
-import popup from "@/components/popup/popup";
-import editBaseMixins from "../../mixins/edit";
-import InputNumber from "@/components/input-number";
-import formControl from "@/components/form-control/form-control";
-import { customValidator } from "@/libs/validator";
-import calc from "@/libs/calc";
-import list from '../../mixins/list';
-import dayjs from "dayjs";
+import eTable from '@/components/e-table/e-table'
+import request from '@/libs/request'
+import popup from '@/components/popup/popup'
+import editBaseMixins from '../../mixins/edit'
+import InputNumber from '@/components/input-number'
+import formControl from '@/components/form-control/form-control'
+import { customValidator } from '@/libs/validator'
+import calc from '@/libs/calc'
+import list from '../../mixins/list'
+import dayjs from 'dayjs'
 export default {
-  name: "edit-boxUseBackSlave",
+  name: 'edit-boxUseBackSlave',
   mixins: [editBaseMixins],
   components: {
     editWindow,
@@ -403,69 +402,67 @@ export default {
     tableSelect,
     eTable,
     InputNumber,
-    formControl,
+    formControl
   },
-   
 
-  mounted() {
+  mounted () {
     // console.log(this.List)
   },
-   props:{
-     batchNoList:{
-       type: String,
-       default: ""
-     },
-     inWsId: {
+  props: {
+    batchNoList: {
       type: String,
-      default: ""
-    }, 
-      List:{
-        type: String,
-        default: ''  
-      }
+      default: ''
     },
-  data() {
+    inWsId: {
+      type: String,
+      default: ''
+    },
+    List: {
+      type: String,
+      default: ''
+    }
+  },
+  data () {
     return {
-      actionSubtitle: "用料退仓", // 当前操作副标
+      actionSubtitle: '用料退仓', // 当前操作副标
       productSpecShow: false,
       formDataInfo: {
         // 主表 更改字段
         master: {},
         productMDatas: {
-            
-         
-        },
+
+        }
         // List:thsi.list
       }, // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {},
       tableFieldsValidator: {
 
-       },
-      productMDatasTableDataList: [], //存放处理过后的数据:[],
+      },
+      productMDatasTableDataList: [], // 存放处理过后的数据:[],
       timeoutId: 0,
       requestCount: 0,
-      table:[], //存储子表全部对应的字段
-      title:'工单号',
-      propvalue:'workNo',//存储子表每个对应的字段\
+      table: [], // 存储子表全部对应的字段
+      title: '工单号',
+      propvalue: 'workNo', // 存储子表每个对应的字段\
       inBatchOn: '',
-      mateWorkNo:'',
-      workNo:"",
+      mateWorkNo: '',
+      workNo: '',
       beginDate: '',
       endDate: ''
-    };
+    }
   },
   computed: {
   },
   methods: {
-    purPaperPoClick(data,index,value){
-      //debugger
-      this.title=data
-      this.propvalue=value
+    purPaperPoClick (data, index, value) {
+      // debugger
+      this.title = data
+      this.propvalue = value
     },
-    //搜索点击事件
-    clickmaster(){
-      //debugger
+    // 搜索点击事件
+    clickmaster () {
+      // debugger
       // let ddata = this.formDataInfo
       // if (!!ddata.master.beginDate) {
       //   ddata.master.beginDate = dayjs(ddata.master.beginDate).format(
@@ -479,116 +476,114 @@ export default {
       // }
     //  let bbiCoNo = this.formDataInfo.master.bbiCoNo
     //   let flag = this.formDataInfo.master.flag
-    let beginDate = this.get7DaysBefore(1,this.formDataInfo.master.beginDate)
-    let endDate = this.get7DaysBefore(2,this.formDataInfo.master.endDate)
-     if(this.propvalue=='bmMateWorkNo'){
-      this.mateWorkNo = this.formDataInfo.master.propvalue
-      this.workNo=""
-      this.inBatchOn=""
-      }else if(this.propvalue=='workNo'){
-      this.workNo=this.formDataInfo.master.propvalue
-      this.mateWorkNo=""
-      this.inBatchOn=""
-      }else if(this.propvalue=='BoxUseBatchOn'){
-      this.inBatchOn=this.formDataInfo.master.propvalue
-      this.mateWorkNo=""
-       this.workNo=""
-      }
-      else {
-      this.workNo=""
-      this.mateWorkNo=""
-      this.inBatchOn==""
+      let beginDate = this.get7DaysBefore(1, this.formDataInfo.master.beginDate)
+      let endDate = this.get7DaysBefore(2, this.formDataInfo.master.endDate)
+      if (this.propvalue == 'bmMateWorkNo') {
+        this.mateWorkNo = this.formDataInfo.master.propvalue
+        this.workNo = ''
+        this.inBatchOn = ''
+      } else if (this.propvalue == 'workNo') {
+        this.workNo = this.formDataInfo.master.propvalue
+        this.mateWorkNo = ''
+        this.inBatchOn = ''
+      } else if (this.propvalue == 'BoxUseBatchOn') {
+        this.inBatchOn = this.formDataInfo.master.propvalue
+        this.mateWorkNo = ''
+        this.workNo = ''
+      } else {
+        this.workNo = ''
+        this.mateWorkNo = ''
+        this.inBatchOn == ''
       }
       let one = {
-        inWorkNo : this.workNo,
+        inWorkNo: this.workNo,
         flag: this.formDataInfo.master.flag,
-        inMateWorkNo : this.mateWorkNo,
+        inMateWorkNo: this.mateWorkNo,
         inBatchOn: this.inBatchOn,
         beginDate: beginDate,
         endDate: endDate,
         inWsId: this.inWsId,
         batchNoList: this.batchNoList,
+        isInput: 0
       }
-       request.post(`/stock/boxUseBack/getBackWorkNo`,one).then(res => {
-         //debugger
+      request.post(`/stock/boxUseBack/getBackWorkNo`, one).then(res => {
+        // debugger
         this.$refs['slave_edit-boxUseBack'].cloneData = res
       })
     },
 
-    //加载表单初始化数据
-    getFormInitDataObj(data) {
-       //debugger;
-      //加载表单初始化数据
-      this.formDataInfo["master"] = {
+    // 加载表单初始化数据
+    getFormInitDataObj (data) {
+      // 加载表单初始化数据
+      this.formDataInfo['master'] = {
         bbiCoNo: '',
-        flag:"0",
+        flag: '0',
         beginDate: this.beginDate,
         endDate: this.endDate
       }
-      if (data==''||data==null) {
+      if (!data) {
+        this.$refs['slave_edit-boxUseBack'].cloneData = []
         return
       }
-      this.$refs['slave_edit-boxUseBack'].cloneData=data
+      this.$refs['slave_edit-boxUseBack'].cloneData = data
     },
 
-    //表单数据提交事件
-    submitFormDataEvent() {
-      //debugger;
-      //表单数据提交事件
+    // 表单数据提交事件
+    submitFormDataEvent () {
+      // debugger;
+      // 表单数据提交事件
       // true就是有问题
-      let result = this.$refs['slave_edit-boxUseBack'].validate();
-        if (result) {
-          return;
+      let result = this.$refs['slave_edit-boxUseBack'].validate()
+      if (result) {
+        return
+      }
+      let parms = []
+      let submitDataObj = this.$refs['slave_edit-boxUseBack'].cloneData
+      for (let index = 0; index < submitDataObj.length; index++) {
+        let Choice = this.$refs['slave_edit-boxUseBack'].cloneData[index].Choice
+        if (Choice === true) {
+          parms.push(submitDataObj[index])
         }
-        let parms = []
-        let submitDataObj = this.$refs['slave_edit-boxUseBack'].cloneData
-        for (let index = 0; index < submitDataObj.length; index++) {
-          let Choice = this.$refs['slave_edit-boxUseBack'].cloneData[index].Choice
-          if(Choice===true){
-            parms.push(submitDataObj[index])
-          }
-            
-        }
-        //提交数据
-        // 向外暴露的方法:
-          this.$emit('closeMain',parms)
-          this.showWindow = false // 关闭当前窗口
+      }
+      // 提交数据
+      // 向外暴露的方法:
+      this.$emit('closeMain', parms)
+      this.showWindow = false // 关闭当前窗口
       // });
     },
-    //实现取任意时间前7天的时间||现在时间
-    get7DaysBefore(type,date){
-      //debugger
-      if(date){
+    // 实现取任意时间前7天的时间||现在时间
+    get7DaysBefore (type, date) {
+      // debugger
+      if (date) {
         return dayjs(date).format(
-          "YYYY-MM-DD HH:mm:ss"
-        );
-      }else {
+          'YYYY-MM-DD HH:mm:ss'
+        )
+      } else {
         var date = new Date(),
-          timestamp, newDate;
-        if(!(date instanceof Date)){
-            date = new Date(date.replace(/-/g, '/'));
+          timestamp, newDate
+        if (!(date instanceof Date)) {
+          date = new Date(date.replace(/-/g, '/'))
         }
-        //前7天的时间
-        if(type == 1){
-            timestamp = date.getTime();
-            newDate = new Date(timestamp - 7 * 24 * 3600 * 1000);    
-            return newDate.getFullYear()+ "-" +(newDate.getMonth() + 1) +"-"+ newDate.getDate() + " 00:00:00";
+        // 前7天的时间
+        if (type == 1) {
+          timestamp = date.getTime()
+          newDate = new Date(timestamp - 7 * 24 * 3600 * 1000)
+          return newDate.getFullYear() + '-' + (newDate.getMonth() + 1) + '-' + newDate.getDate() + ' 00:00:00'
         }
-        //现在时间
-        if(type == 2){
-          timestamp = date.getTime();
-          newDate = new Date(timestamp);
-          return newDate.getFullYear()+ "-" +(newDate.getMonth() + 1) +"-"+ newDate.getDate() + " 23:59:59";
-        }  
+        // 现在时间
+        if (type == 2) {
+          timestamp = date.getTime()
+          newDate = new Date(timestamp)
+          return newDate.getFullYear() + '-' + (newDate.getMonth() + 1) + '-' + newDate.getDate() + ' 23:59:59'
+        }
       }
-         
     }
   },
-  created() {
-     //获取初始化数据
+  created () {
+    // 获取初始化数据
     this.beginDate = this.get7DaysBefore(1)
     this.endDate = this.get7DaysBefore(2)
-    this.getFormInitDataObj();
+    this.getFormInitDataObj()
   }
   // updated() {
   //   if (this.$refs.masterForm) {
@@ -597,7 +592,7 @@ export default {
   //       height - (this.$refs.masterForm.$el.offsetHeight + 60 + 50 + 40);
   //   }
   // }
-};
+}
 </script>
 <style >
 .ivu-form-item-text2 .ivu-form-item-content {

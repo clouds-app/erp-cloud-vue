@@ -8,7 +8,7 @@
       :queryParamsDefault="queryParamsDefault"
     >
     </htmlTemplate>
-    <div class="content-container" :style="{ height: tableHeight + 'px' }">
+    <div ref="contextMenuTarget" class="content-container" :style="{ height: tableHeight + 'px' }">
       <vTable
         :height="tableHeight"
         ref="master_list_table"
@@ -31,10 +31,10 @@
   </div>
 </template>
 <script>
-import vTable from "@/components/tables/vTable";
-import htmlTemplate from "../components/htmlTemplate";
-import editForm from "./edit/edit-car";
-import listBaseMixins from "../mixins/list";
+import vTable from '@/components/tables/vTable'
+import htmlTemplate from '../components/htmlTemplate'
+import editForm from './edit/edit-car'
+import listBaseMixins from '../mixins/list'
 export default {
   mixins: [listBaseMixins],
   components: {
@@ -42,23 +42,23 @@ export default {
     htmlTemplate,
     vTable
   },
-  data() {
+  data () {
     return {
       functionParams: {
-        requestBaseUrl: "/bas/car",
-        uniqueId: "carId"
+        requestBaseUrl: '/bas/car',
+        uniqueId: 'carId'
       },
       // 查询参数 ,注意格式
       queryParamsDefault: [
         {
-          title: "车牌号",
-          code: "carNo",
-          poCode: ""
+          title: '车牌号',
+          code: 'carNo',
+          poCode: ''
         },
         {
-          title: "司机名称",
-          name: "driver$like",
-          'poName$like': ""
+          title: '司机名称',
+          name: 'driver$like',
+          'poName$like': ''
         }
       ]
       // columns: [
@@ -148,20 +148,20 @@ export default {
       //     align: 'center'
       //   },
       // ],
-    };
+    }
   },
   methods: {
-    tableRowClick(rowData, rowIndex) {
+    tableRowClick (rowData, rowIndex) {
       //  debugger
-      this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
-      this.masterRowSelection = rowData;
+      this.formDetailData = {} // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData
       if (rowData != null) {
         // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
-        this.currrentRowItem.rowName = rowData.carNo + " " + rowData.driver; // 要修改成对应的 列
+        this.currrentRowItem.rowName = rowData.carNo + ' ' + rowData.driver // 要修改成对应的 列
       }
     }
   }
-};
+}
 </script>
 
 <style></style>

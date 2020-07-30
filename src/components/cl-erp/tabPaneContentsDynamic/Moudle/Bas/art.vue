@@ -8,7 +8,7 @@
       :queryParamsDefault="queryParamsDefault"
     >
     </htmlTemplate>
-    <div class="content-container" :style="{ height: tableHeight + 'px' }">
+    <div ref="contextMenuTarget" class="content-container" :style="{ height: tableHeight + 'px' }">
       <Split :v-model="splitModel" mode="vertical">
         <div slot="top" class="demo-split-pane">
           <vTable
@@ -54,81 +54,81 @@
   </div>
 </template>
 <script>
-import vTable from "@/components/tables/vTable";
-import htmlTemplate from "../components/htmlTemplate";
-//import editForm from "./edit/edit-art";
-import listBaseMixins from "../mixins/list";
-import request from "@/libs/request";
+import vTable from '@/components/tables/vTable'
+import htmlTemplate from '../components/htmlTemplate'
+// import editForm from "./edit/edit-art";
+import listBaseMixins from '../mixins/list'
+import request from '@/libs/request'
 export default {
   mixins: [listBaseMixins],
   components: {
-    editForm: function(resolve) {
-      //组件的异步加载
-      require(["./edit/edit-art"], resolve);
+    editForm: function (resolve) {
+      // 组件的异步加载
+      require(['./edit/edit-art'], resolve)
     },
     htmlTemplate,
     vTable
   },
-  data() {
+  data () {
     return {
-      tableDataList:[
-        {title:'纸质主表',ref:'master_list_table'},
-        {title:'纸质楞别',ref:'tableFieldRef'}
+      tableDataList: [
+        { title: '纸质主表', ref: 'master_list_table' },
+        { title: '纸质楞别', ref: 'tableFieldRef' }
       ],
       // who:'editForm', // 动态指定编辑控件
       functionParams: {
-        requestBaseUrl: "/bas/art",
-        uniqueId: "artId"
+        requestBaseUrl: '/bas/art',
+        uniqueId: 'artId'
       },
       // 查询参数 ,注意格式
       queryParamsDefault: [
         {
-          title: "纸质代号",
-          code: "artCode",
-          artCode: ""
+          title: '纸质代号',
+          code: 'artCode',
+          artCode: ''
         },
         {
-          title: "层数",
-          name: "artCS$like",
-          'artCS$like': ""
+          title: '层数',
+          name: 'artCS$like',
+          'artCS$like': ''
         }
-      ],
+      ]
 
-    };
+    }
   },
   methods: {
-    tableRowClick(rowData, rowIndex) {
-      this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
-      this.masterRowSelection = rowData;
+    tableRowClick (rowData, rowIndex) {
+      this.formDetailData = {} // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData
       if (rowData != null) {
-        //debugger
+        // debugger
         // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
-        this.currrentRowItem.rowName = rowData.artCode + " " + rowData.artCS;
+        this.currrentRowItem.rowName = rowData.artCode + ' ' + rowData.artCS
       }
       if (this.masterRowSelection) {
-        this.getItemDataById();
+        this.getItemDataById()
       }
     },
     // 获取纸质楞别数据
-    getItemDataById() {
-      //debugger
-      let url = `/bas/art/item/list`;
+    getItemDataById () {
+      // debugger
+      let url = `/bas/art/item/list`
       let data = {
         artId: this.masterRowSelection.id
-      };
-      let _self = this;
+      }
+      let _self = this
       request.post(url, data).then(res => {
-        //debugger
-        _self.tableFieldData = res;
-      });
+        // debugger
+        _self.tableFieldData = res
+      })
     },
-    //重写父类方法, 更新操作
-    handleUpdateEvent() {
+    // 重写父类方法, 更新操作
+    handleUpdateEvent () {
       // debugger;
-      this.getItemDataById();
+      this.getItemDataById()
     }
   }
-};
+}
 </script>
 
 <style></style>

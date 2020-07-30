@@ -1,0 +1,140 @@
+
+/**
+ * @desc index 描述 所有.vue 公共方法 .vue 中 添加mixin:[name]
+ *
+ * 主要用于 系统模块 数据 操作
+ *
+ * @author Andy Huang
+ *
+ * @created 2020/06/22 17:08:28
+ */
+import request from '@/libs/request'
+export default {
+  data () {
+    return {
+        actionLableName: '增加', // 当前操作行为的标题
+        actionSubtitle: '', // 副标题 当前操作页面 描述
+        splitModel: 0.5,
+        showEditWindow: false,
+        queryParams: {},
+        columns: [],
+        tableFieldColuns: [],
+        tableFieldData: [],
+        masterRowSelection: {},
+        formDetailData: {},
+        action: "add",
+        tableHeight: 0,
+        functionParams: { // 清酒基础路径
+          requestBaseUrl: '',
+          uniqueIdName: '',
+        },
+    }
+  },
+  computed: {
+    needToUpdate () {
+      return this.$store.state.app.updataSubItem
+    }
+
+  },
+  watch: {
+   
+  },
+  created () {
+    this.comptuedTableHeight();
+  },
+
+  mounted() {
+   
+  },
+  methods: {
+      getDataFromDictionaryBy (itemValue) {
+        // 获取数据字典数据列表
+        return new Promise((resolve, reject) => {
+          request.get('/common/sys/dic/childList/' + itemValue, {}, {
+            qt: 'pValue'
+          }).then(res => {
+            res.forEach(item => {
+              item.dicValue = parseInt(item.dicValue)
+            })
+            resolve(res)
+          })
+        })
+      },
+      getMasterSelectId() {
+        if (Object.keys(this.masterRowSelection).length == 0) {
+          this.$Message.warning("请选择需要操作的数据");
+          return false;
+        }
+        return this.masterRowSelection.id;
+      },
+      disabledAction(){
+        this.$Modal.confirm({
+          title: "禁用确认",
+          content: "确定要禁用当前选中数据吗？",
+          onOk: () => {
+            let url = `${this.functionParams.requestBaseUrl}/disabled?${this.functionParams.uniqueIdName}=${this.masterRowSelection.id}`;
+           let _self = this;
+            request.post(url).then(res => {
+              this.$Message.success("操作成功");
+              _self.search();
+            });
+          }
+        });
+      },
+      editAction() {
+        let selectionId = this.getMasterSelectId();
+        if (!selectionId) {
+          return;
+        }
+        //编辑窗口展示
+        this.showEditWindow = true;
+        this.action = "update";
+        this.detailAction();
+      },
+      detailAction() {
+        //加载详情数据
+        // let url = `${this.functionParams.requestBaseUrl}/detail?${this.functionParams.uniqueIdName}=${this.masterRowSelection.id}`;
+        // let _self = this;
+        // request.post(url).then(res => {
+        //   _self.formDetailData = res
+        // });
+        this.formDetailData =Object.assign({},this.masterRowSelection) 
+      },
+      addAction() {
+        //数据添加
+        // debugger;
+        this.action = "add";
+        this.formDetailData = [];
+        this.showEditWindow = true;
+      },
+      search() {
+        //表单搜索
+        this.$refs["master_list_table"].search(this.queryParams);
+      },
+      deleteAction() {
+        let selectionId = this.getMasterSelectId();
+        if (!selectionId) {
+          return;
+        }
+        this.$Modal.confirm({
+          title: "删除确认",
+          content: "确定要删除当前选中数据吗？",
+          onOk: () => {
+           // let url = `${this.functionParams.requestBaseUrl}/delete/${selectionId}`;
+            let url = `${this.functionParams.requestBaseUrl}/delete?${this.functionParams.uniqueIdName}=${selectionId}`;
+            let _self = this;
+            request.post(url).then(res => {
+              this.$Message.success("操作成功");
+              _self.search();
+            });
+          }
+        });
+      },
+     
+      comptuedTableHeight() {
+        //计算table高度
+        let height = document.body.offsetHeight;
+        this.tableHeight = height - (46 + 40 + 48 + 6 + 25);
+      }
+  }
+}

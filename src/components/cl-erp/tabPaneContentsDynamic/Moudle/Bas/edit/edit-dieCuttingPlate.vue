@@ -21,7 +21,11 @@
             <Row>
               <Col span="8">
                 <FormItem label="模切板编号" prop="dpNo">
-                  <referenceField v-model="formDataInfo.dpNo" maxlength="20" placeholder="请输入模切板编号"
+                  <referenceField
+                   ref='firstFocusInput'
+                  v-model="formDataInfo.dpNo"
+                  maxlength="20"
+                   placeholder="请输入模切板编号"
                   :form-name="frommastername"
                   :disabled="detailDisabled"
                   :id="formDataInfo.id">
@@ -144,70 +148,73 @@
               ></InputNumber>
             </FormItem>
           </Col>
+          <Col span="24">
+            <Row>
+              <Col span="8">
+                <FormItem label="产品" prop="bpNo">
+                  <popup
+                    @on-fill="addforceupdata"
+                    :popupClickValidator="clickValuedate"
+                    v-model="formDataInfo.bpNo"
+                    field-name="bpNo"
+                    :disabled="detailDisabled"
+                    popup-name="BasicProductSingleBox"
+                    :fill-model.sync="formDataInfo"
+                    render-fields="productId,bpNo,bpName"
+                    from-fields="id,bpNo,bpName"
+                    :suffix="true"
+                    :suffix-model="formDataInfo.bpName"
+                    :query-params="{custId:formDataInfo.custId}"
+                  />
+                </FormItem>
+              </Col>
 
-          <Col span="8">
-            <FormItem label="产品" prop="bpNo">
-              <popup
-                @on-fill="addforceupdata"
-                :popupClickValidator="clickValuedate"
-                v-model="formDataInfo.bpNo"
-                field-name="bpNo"
-                :disabled="detailDisabled"
-                popup-name="BasicProductSingleBox"
-                :fill-model.sync="formDataInfo"
-                render-fields="productId,bpNo,bpName"
-                from-fields="id,bpNo,bpName"
-                :suffix="true"
-                :suffix-model="formDataInfo.bpName"
-                :query-params="{custId:formDataInfo.custId}"
-              />
-            </FormItem>
+              <Col span="8">
+                <FormItem label="刀模规格长" prop="dpModelSizeL">
+                  <InputNumber
+                    v-model="formDataInfo.dpModelSizeL"
+                    :formatter="value => ` ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
+                    :parser="value => value.replace(/\$\s?|(,*)/g, '')"
+                    style="width:100%"
+                    :disabled="detailDisabled"
+                    maxlength="20"
+                    placeholder="请输入刀模规格长"
+                  ></InputNumber>
+                </FormItem>
+              </Col>
+              <Col span="8">
+                <FormItem label="刀模规格宽" prop="dpModelSizeW">
+                  <InputNumber
+                    v-model="formDataInfo.dpModelSizeW"
+                    :formatter="value => ` ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
+                    :parser="value => value.replace(/\$\s?|(,*)/g, '')"
+                    style="width:100%"
+                    maxlength="20"
+                    :disabled="detailDisabled"
+                    placeholder="请输入刀模规格宽"
+                  ></InputNumber>
+                </FormItem>
+              </Col>
+            </Row>
           </Col>
+              <Col span="8">
+                <FormItem label="公用" prop="iisPublicCompany">
+                  <Checkbox v-model="formDataInfo.iisPublicCompany" :disabled="detailDisabled" maxlength="20" placeholder></Checkbox>
+                </FormItem>
+              </Col>
+              <Col span="16">
+                <FormItem label="备注" prop="remark">
+                  <Input
+                    v-model="formDataInfo.remark"
+                    :disabled="detailDisabled"
+                    type="textarea"
+                    maxlength="100"
+                    :autosize="{ minRows: 2, maxRows: 5 }"
+                    placeholder="请输入备注..."
+                  ></Input>
+                </FormItem>
+              </Col>
 
-          <Col span="8">
-            <FormItem label="刀模规格长" prop="dpModelSizeL">
-              <InputNumber
-                v-model="formDataInfo.dpModelSizeL"
-                :formatter="value => ` ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
-                :parser="value => value.replace(/\$\s?|(,*)/g, '')"
-                style="width:100%"
-                :disabled="detailDisabled"
-                maxlength="20"
-                placeholder="请输入刀模规格长"
-              ></InputNumber>
-            </FormItem>
-          </Col>
-          <Col span="8">
-            <FormItem label="刀模规格宽" prop="dpModelSizeW">
-              <InputNumber
-                v-model="formDataInfo.dpModelSizeW"
-                :formatter="value => ` ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
-                :parser="value => value.replace(/\$\s?|(,*)/g, '')"
-                style="width:100%"
-                maxlength="20"
-                :disabled="detailDisabled"
-                placeholder="请输入刀模规格宽"
-              ></InputNumber>
-            </FormItem>
-          </Col>
-          <Col span="8">
-            <FormItem label="公用" prop="iisPublicCompany">
-              <Checkbox v-model="formDataInfo.iisPublicCompany" :disabled="detailDisabled" maxlength="20" placeholder></Checkbox>
-            </FormItem>
-          </Col>
-
-          <Col span="16">
-            <FormItem label="备注" prop="remark">
-              <Input
-                v-model="formDataInfo.remark"
-                :disabled="detailDisabled"
-                type="textarea"
-                maxlength="100"
-                :autosize="{ minRows: 2, maxRows: 5 }"
-                placeholder="请输入备注..."
-              ></Input>
-            </FormItem>
-          </Col>
         </Row>
       </Form>
     </editWindow>
@@ -229,157 +236,157 @@
  * @created 2019/11/20 17:07:54
  */
 import referenceField from '@/components/referenceField/referenceField'
-import popup from "@/components/popup/popup";
-import optionSearch from "../../components/optionSearch";
-import editBaseMixins from "../../mixins/edit";
-import { customValidator, uniqueValidator } from "@/libs/validator";
+import popup from '@/components/popup/popup'
+import optionSearch from '../../components/optionSearch'
+import editBaseMixins from '../../mixins/edit'
+import { customValidator, uniqueValidator } from '@/libs/validator'
 const default_formDataInfo = {
   boxId: 0,
-  boxName: "",
-  cusName: "",
-  cusCode: "", // 详细缺少字段
+  boxName: '',
+  cusName: '',
+  cusCode: '', // 详细缺少字段
   custId: 0,
   dpDieCuttingQty: 1,
-  dpImg: "",
+  dpImg: '',
   dpLengthInch: 0,
   dpLengthmm: 0,
   dpModelSizeL: 0,
   dpModelSizeW: 0,
-  dpNo: "",
+  dpNo: '',
   dpVerType: 0,
-  dpVerTypeText: "",
+  dpVerTypeText: '',
   dpWidthInch: 0,
   dpWidthmm: 0,
   productId: 0,
   productCode: 0, // 详细缺少字段
-  productName: "",
-  remark: ""
-};
+  productName: '',
+  remark: ''
+}
 export default {
-  name: "edit-dieCuttingPlate",
+  name: 'edit-dieCuttingPlate',
   mixins: [editBaseMixins],
-  components: { optionSearch, popup,referenceField },
-  data() {
+  components: { optionSearch, popup, referenceField },
+  data () {
     return {
-      frommastername:'dieCuttingPlateFm',
-      actionSubtitle:'模切板', // 当前操作副标题
-      requestBaseUrl: "/bas/dieCuttingPlate", // 请求 查询 操作的基础路径
+      frommastername: 'dieCuttingPlateFm',
+      actionSubtitle: '模切板', // 当前操作副标题
+      requestBaseUrl: '/bas/dieCuttingPlate', // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
         dpNo: [
-          { required: true, message: "模切板编码不能为空", trigger: "blur" },
+          { required: true, message: '模切板编码不能为空', trigger: 'blur' },
           {
             validator: customValidator,
-            trigger: "blur",
-            customRule: ["identifier"],
-            fieldDesc: "模切板编码"
+            trigger: 'blur',
+            customRule: ['identifier'],
+            fieldDesc: '模切板编码'
           },
           {
             validator: uniqueValidator,
-            trigger: "blur",
-            fieldDesc: "模切板编码",
+            trigger: 'blur',
+            fieldDesc: '模切板编码',
             params: {
-              fieldName: "dpNo",
-              formName: "dieCuttingPlateFm",
+              fieldName: 'dpNo',
+              formName: 'dieCuttingPlateFm',
               id: () => {
-                return this.formDataInfo.id;
+                return this.formDataInfo.id
               }
             }
           }
         ],
-        boxCode:[
-          { required: true, message: "盒式不能为空", trigger: "blur" },
+        boxCode: [
+          { required: true, message: '盒式不能为空', trigger: 'blur' }
         ],
-        cusCode:[
-          { required: true, message: "客户不能为空", trigger: "blur" },
+        cusCode: [
+          { required: true, message: '客户不能为空', trigger: 'blur' }
         ],
-        bpNo:[
-          { required: true, message: "产品不能为空", trigger: "blur" },
+        bpNo: [
+          { required: true, message: '产品不能为空', trigger: 'blur' }
         ],
         dpLengthInch: [
           {
             validator: customValidator,
-            trigger: "blur",
-            customRule: ["mustDouble"],
-            fieldDesc: "用纸规格(inch)宽"
+            trigger: 'blur',
+            customRule: ['mustDouble'],
+            fieldDesc: '用纸规格(inch)宽'
           }
         ],
         dpWidthInch: [
           {
             validator: customValidator,
-            trigger: "blur",
-            customRule: ["mustDouble"],
-            fieldDesc: "用纸规格(inch)长"
+            trigger: 'blur',
+            customRule: ['mustDouble'],
+            fieldDesc: '用纸规格(inch)长'
           }
         ],
         dpLengthmm: [
           {
             validator: customValidator,
-            trigger: "blur",
-            customRule: ["mustDouble"],
-            fieldDesc: "用纸规格(cm)宽"
+            trigger: 'blur',
+            customRule: ['mustDouble'],
+            fieldDesc: '用纸规格(cm)宽'
           }
         ],
         dpWidthmm: [
           {
             validator: customValidator,
-            trigger: "blur",
-            customRule: ["mustDouble"],
-            fieldDesc: "用纸规格(cm)长"
+            trigger: 'blur',
+            customRule: ['mustDouble'],
+            fieldDesc: '用纸规格(cm)长'
           }
         ],
         dpDieCuttingQty: [
           {
             validator: customValidator,
-            trigger: "blur",
-            customRule: ["mustDouble"],
-            fieldDesc: "模数"
+            trigger: 'blur',
+            customRule: ['mustDouble'],
+            fieldDesc: '模数'
           }
         ]
         // dpDieCuttingQty: [{ required: true, message: "", trigger: "blur" }]
       }
-    };
+    }
   },
 
   methods: {
-    //强制刷新
-    addforceupdata() {
-      debugger;
-      this.$forceUpdate();
+    // 强制刷新
+    addforceupdata () {
+      debugger
+      this.$forceUpdate()
     },
-    //判断主表客户弹框不能为空
-    clickValuedate() {
-      debugger;
-      if (!this.formDataInfo.cusName || this.formDataInfo.cusName == "") {
-        this.$Message.error("客户不能为空");
-        return false;
+    // 判断主表客户弹框不能为空
+    clickValuedate () {
+      debugger
+      if (!this.formDataInfo.cusName || this.formDataInfo.cusName == '') {
+        this.$Message.error('客户不能为空')
+        return false
       }
-      return true;
+      return true
     },
-    //1英寸(in)=2.54厘米(cm)
-    getdpWidthmm() {
-      let dpWidthmm = this.formDataInfo.dpWidthInch * 2.54;
-      this.formDataInfo.dpWidthmm = dpWidthmm.toFixed(2);
+    // 1英寸(in)=2.54厘米(cm)
+    getdpWidthmm () {
+      let dpWidthmm = this.formDataInfo.dpWidthInch * 2.54
+      this.formDataInfo.dpWidthmm = dpWidthmm.toFixed(2)
     },
-    getdpLengthmm() {
-      let dpLengthmm = this.formDataInfo.dpLengthInch * 2.54;
-      this.formDataInfo.dpLengthmm = dpLengthmm.toFixed(2);
+    getdpLengthmm () {
+      let dpLengthmm = this.formDataInfo.dpLengthInch * 2.54
+      this.formDataInfo.dpLengthmm = dpLengthmm.toFixed(2)
     },
-    getdpLengthInch() {
-      let dpLengthInch = this.formDataInfo.dpLengthmm / 2.54;
-      this.formDataInfo.dpLengthInch = dpLengthInch.toFixed(2);
+    getdpLengthInch () {
+      let dpLengthInch = this.formDataInfo.dpLengthmm / 2.54
+      this.formDataInfo.dpLengthInch = dpLengthInch.toFixed(2)
     },
-    getdpWidthInch() {
-      let dpWidthInch = this.formDataInfo.dpWidthmm / 2.54;
-      this.formDataInfo.dpWidthInch = dpWidthInch.toFixed(2);
+    getdpWidthInch () {
+      let dpWidthInch = this.formDataInfo.dpWidthmm / 2.54
+      this.formDataInfo.dpWidthInch = dpWidthInch.toFixed(2)
     },
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo() {
-      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    HandleFormDataInfo () {
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
     }
   }
-};
+}
 </script>
 
 <style>

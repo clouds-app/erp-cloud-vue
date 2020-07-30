@@ -8,7 +8,7 @@
       :queryParamsDefault="queryParamsDefault"
     >
     </htmlTemplate>
-    <div :style="{ height: tableHeight + 'px' }" v-if="formInitData.listView">
+    <div ref="contextMenuTarget" :style="{ height: tableHeight + 'px' }" v-if="formInitData.listView">
       <Row>
         <vTable
           :height="tableHeight / 3 + 90"
@@ -68,75 +68,76 @@
   </div>
 </template>
 <script>
-import vTable from "@/components/tables/vTable";
-import htmlTemplate from "../components/htmlTemplate";
-import listBaseMixins from "../mixins/list";
-import request from "@/libs/request";
+import vTable from '@/components/tables/vTable'
+import htmlTemplate from '../components/htmlTemplate'
+import listBaseMixins from '../mixins/list'
+import request from '@/libs/request'
 import editForm from './edit/edit-productSuite'
 export default {
   mixins: [listBaseMixins],
   components: {
     editForm,
     htmlTemplate,
-    vTable,
+    vTable
   },
-  data() {
+  data () {
     return {
-      tableDataList:[
-        {ref:'master_list_table',title:'纸箱产品套件主表'},
-        {ref:'slave_list_productUnionItemFm',title:'纸箱产品套件明细表'},
-        {ref:'sub_list_productUnionSubFm',title:'纸箱产品套件第三层表 '}
+      tableDataList: [
+        { ref: 'master_list_table', title: '纸箱产品套件主表' },
+        { ref: 'slave_list_productUnionItemFm', title: '纸箱产品套件明细表' },
+        { ref: 'sub_list_productUnionSubFm', title: '纸箱产品套件第三层表 ' }
       ],
       functionParams: {
-        requestBaseUrl: "/bas/productUnion",
-        uniqueId: "puId"
+        requestBaseUrl: '/bas/productUnion',
+        uniqueId: 'puId'
       },
       // 查询参数 ,注意格式
-       queryParamsDefault: [
+      queryParamsDefault: [
         {
-          title: "套件编号",
-          code: "puNo",
-          puNo: ""
+          title: '套件编号',
+          code: 'puNo',
+          puNo: ''
         },
         {
-          title: "套件名称",
-          name: "puName$like",
-          'puName$like': ""
+          title: '套件名称',
+          name: 'puName$like',
+          'puName$like': ''
         }
       ]
-    };
+    }
   },
   methods: {
-    masterTableRowClick(rowData, rowIndex){
-      this.masterRowSelection = rowData;
-      this.currrentRowItem.rowName = rowData.puNo + " " + rowData.puName;
-      this.$refs.slave_list_productUnionItemFm.search({puId:rowData.id});
+    masterTableRowClick (rowData, rowIndex) {
+      this.masterRowSelection = rowData
+      this.currrentRowItem.rowName = rowData.puNo + ' ' + rowData.puName
+      this.$refs.slave_list_productUnionItemFm.search({ puId: rowData.id })
     },
-    slaveProductUnionItemFmTableRowClick(rowData,rowIndex){
-      this.slaveRowselection = rowData;
-      this.$refs.sub_list_productUnionSubFm.search({puiId:rowData.id});
+    slaveProductUnionItemFmTableRowClick (rowData, rowIndex) {
+      this.slaveRowselection = rowData
+      this.$refs.sub_list_productUnionSubFm.search({ puiId: rowData.id })
     },
-    tableRowClick(rowData, rowIndex) {
-      this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
-      this.masterRowSelection = rowData;
+    tableRowClick (rowData, rowIndex) {
+      this.formDetailData = {} // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData
       if (rowData != null) {
-        //debugger
+        // debugger
         // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
 
       }
       if (this.masterRowSelection) {
-        this.getItemDataById();
+        this.getItemDataById()
       }
     },
-    //重写父类方法, 更新操作
-    handleUpdateEvent() {
-      this.getItemDataById();
+    // 重写父类方法, 更新操作
+    handleUpdateEvent () {
+      this.getItemDataById()
     }
-  },created() {
-    //加载页面初始数据
-    this.getFormInitData('productUnionFm');
+  },
+  created () {
+    // 加载页面初始数据
+    this.getFormInitData('productUnionFm')
   }
-};
+}
 </script>
 
 <style></style>

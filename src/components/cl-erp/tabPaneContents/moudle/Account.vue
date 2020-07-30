@@ -176,8 +176,14 @@
         <div class="reportTitleBg">
           <div class="reportTitle">报表</div>
           <div class="reportDataListBox cursorPointer">
-            <!-- <div @click="handleSubMenuEvent('purPaperPoAnalyz','purchase-purPaperPoAnalyz','纸板采购情况分析')" class="reportDataItem">纸板采购情况分析</div>
-                    -->
+            <div  class="reportDataItem" style="color: #bdb7b7;">应收对账查询</div>
+            <div  class="reportDataItem" style="color: #bdb7b7;">应收呆在查询</div>
+            <div  class="reportDataItem" style="color: #bdb7b7;">已收款查询</div>
+            <div  class="reportDataItem" style="color: #bdb7b7;">未收款查询</div>
+            <div  class="reportDataItem" style="color: #bdb7b7;">收款冲销查询</div>
+            <div  class="reportDataItem" style="color: #bdb7b7;">付款冲销查询</div>
+            <div  class="reportDataItem" style="color: #bdb7b7;">未做月结送货单</div>
+
           </div>
         </div>
       </div>
@@ -186,26 +192,26 @@
 </template>
 
 <script>
-import globleMixin from "@/mixins";
+import globleMixin from '@/mixins'
 export default {
   mixins: [globleMixin],
-  data() {
-    return {};
+  data () {
+    return {}
   },
   methods: {
     // 子页面 参数: 页面.vue,唯一区别ID,TAB 标签显示名称
-    handleSubMenuEvent(currentPage, uniqueKey, tabName) {
+    handleSubMenuEvent (currentPage, uniqueKey, tabName) {
       let params = {
-        menuName: "Account",
-        page: currentPage, //显示控件页面
+        menuName: 'Account',
+        page: currentPage, // 显示控件页面
         uniqueKey: uniqueKey,
         lable: tabName,
         isActive: true
-      };
-      this.handleMenuBaseEvent(params); // 调用MIXIN 共用方法
+      }
+      this.handleMenuBaseEvent(params) // 调用MIXIN 共用方法
     }
   }
-};
+}
 </script>
 
 <style lang="scss">
@@ -257,7 +263,7 @@ export default {
                   text-align: center;
                   line-height: 150px;
                 }
-            
+
               }
             }
             .customerInfoRowBox {

@@ -25,6 +25,9 @@ export default {
     currentSubMenuItem: {
       handler (n, o) {
         if (n) {
+          if (n.lable === '产品外发' || n.lable === '工序外发') {
+            this.$store.commit('setnowTableName', n.lable)
+          }
           // console.log('====currentSubMenuItem========'+JSON.stringify(n))
           try {
             const currentPage = n.page
@@ -71,7 +74,7 @@ export default {
     'sysForm': function (resolve) { // 组件的异步加载
       require(['./moudle/Sys/form/table/table.vue'], resolve)
     },
-      // 报表
+    // 报表
     'sysReport': function (resolve) { // 组件的异步加载
       require(['./moudle/Sys/report/sysReport.vue'], resolve)
     },
@@ -201,7 +204,7 @@ export default {
     'boxProductPrice': function (resolve) { // 组件的异步加载
       require(['./moudle/Sale/boxProductPrice.vue'], resolve)
     },
-     // 纸箱销售订单
+    // 纸箱销售订单
     'boxSalesOrder': function (resolve) { // 组件的异步加载
       require(['./moudle/Sale/boxSalesOrder.vue'], resolve)
     },
@@ -230,10 +233,18 @@ export default {
     'purPaperPoAnalyz': function (resolve) { // 组件的异步加载
       require(['./moudle/Purchase/purPaperPoAnalyz.vue'], resolve)
     },
-    //===================生产模块================
+    //= ==================生产模块================
     // 生产排程
     'boxprodplan': function (resolve) { // 组件的异步加载
       require(['./moudle/Mrp/boxprodplan.vue'], resolve)
+    },
+    // 产品外发
+    'prosendout': function (resolve) { // 组件的异步加载
+      require(['./moudle/Mrp/prosendout.vue'], resolve)
+    },
+    // 工序外发
+    'procedureout': function (resolve) { // 组件的异步加载
+      require(['./moudle/Mrp/procedureout.vue'], resolve)
     },
     //= ==================储运模块================
     // 纸板入库
@@ -260,27 +271,27 @@ export default {
     'boxLibIn': function (resolve) { // 组件的异步加载
       require(['./moudle/Stock/boxLibIn.vue'], resolve)
     },
-     // 纸箱出货
+    // 纸箱出货
     'boxDeli': function (resolve) { // 组件的异步加载
       require(['./moudle/Stock/boxDeli.vue'], resolve)
     },
-     // 纸箱退货
+    // 纸箱退货
     'boxRe': function (resolve) { // 组件的异步加载
       require(['./moudle/Stock/boxRe.vue'], resolve)
     },
-     // 纸板用料调整
+    // 纸板用料调整
     'boxUseAdjust': function (resolve) { // 组件的异步加载
       require(['./moudle/Stock/boxUseAdjust.vue'], resolve)
     },
-     // 纸箱初始入库
+    // 纸箱初始入库
     'boxLibInit': function (resolve) { // 组件的异步加载
       require(['./moudle/Stock/boxLibInit.vue'], resolve)
     },
-     // 纸箱成品报损
+    // 纸箱成品报损
     'boxLibLost': function (resolve) { // 组件的异步加载
       require(['./moudle/Stock/boxLibLost.vue'], resolve)
     },
-     // 纸箱库存调整
+    // 纸箱库存调整
     'boxLibCheck': function (resolve) { // 组件的异步加载
       require(['./moudle/Stock/boxLibCheck.vue'], resolve)
     },
@@ -297,8 +308,8 @@ export default {
       require(['./moudle/Stock/selectAnalyzer.vue'], resolve)
     },
     // ===================财务模块================
-    //-------应付-----------
-     // 供应商财务初始化
+    // -------应付-----------
+    // 供应商财务初始化
     'purinit': function (resolve) { // 组件的异步加载
       require(['./moudle/Account/purinit.vue'], resolve)
     },
@@ -306,24 +317,24 @@ export default {
     'otherPay': function (resolve) { // 组件的异步加载
       require(['./moudle/Account/otherPay.vue'], resolve)
     },
-      // 应付对账单
+    // 应付对账单
     'accPay': function (resolve) { // 组件的异步加载
       require(['./moudle/Account/accPay.vue'], resolve)
     },
-   // 应付呆账信息
+    // 应付呆账信息
     'payBadDebt': function (resolve) { // 组件的异步加载
       require(['./moudle/Account/payBadDebt.vue'], resolve)
     },
-     //应付冲销
-    'outWriteOff': function (resolve) { //组件的异步加载
-      require(['./moudle/Account/outWriteOff.vue'],resolve)
+    // 应付冲销
+    'outWriteOff': function (resolve) { // 组件的异步加载
+      require(['./moudle/Account/outWriteOff.vue'], resolve)
     },
-    //-------应收-----------
-     // 客户财务初始化
+    // -------应收-----------
+    // 客户财务初始化
     'custinit': function (resolve) { // 组件的异步加载
       require(['./moudle/Account/custinit.vue'], resolve)
-    }, 
-     // 应收对账单
+    },
+    // 应收对账单
     'accRece': function (resolve) { // 组件的异步加载
       require(['./moudle/Account/accRece.vue'], resolve)
     },
@@ -331,21 +342,21 @@ export default {
     'otherMoeny': function (resolve) { // 组件的异步加载
       require(['./moudle/Account/otherMoeny.vue'], resolve)
     },
-     // 应收呆账
+    // 应收呆账
     'snaddebt': function (resolve) { // 组件的异步加载
       require(['./moudle/Account/snaddebt.vue'], resolve)
     },
-     // 开票
+    // 开票
     'invoiceCheck': function (resolve) { // 组件的异步加载
       require(['./moudle/Account/invoiceCheck.vue'], resolve)
     },
-    //应收冲销
-    'writeOff': function (resolve) { //组件的异步加载
-      require(['./moudle/Account/writeOff.vue'],resolve)
+    // 应收冲销
+    'writeOff': function (resolve) { // 组件的异步加载
+      require(['./moudle/Account/writeOff.vue'], resolve)
     },
-    //已收款
-    'gathering': function (resolve) { //已收款组件的异步加载
-      require(['./moudle/Account/gathering.vue'],resolve)
+    // 已收款
+    'gathering': function (resolve) { // 已收款组件的异步加载
+      require(['./moudle/Account/gathering.vue'], resolve)
     },
     // 收票
     'vendInvoiceCheck': function (resolve) { // 组件的异步加载
@@ -354,7 +365,7 @@ export default {
     // 付款
     'payment': function (resolve) { // 组件的异步加载
       require(['./moudle/Account/payment.vue'], resolve)
-    },
+    }
   },
   data () {
     return {

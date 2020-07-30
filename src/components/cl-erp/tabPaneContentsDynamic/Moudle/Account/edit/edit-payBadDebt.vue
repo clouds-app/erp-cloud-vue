@@ -34,7 +34,7 @@
                <DatePicker
                     @on-change="onChange_bdDate"
                     transfer
-                    :value="formDataInfo.bdDate" 
+                    :value="formDataInfo.bdDate"
                     type="datetime"
                     format="yyyy-MM-dd"
                   ></DatePicker>
@@ -42,7 +42,7 @@
           </Col>
           <Col span="8">
             <FormItem label="供应商编号" prop="supplierCode">
-                  <popup 
+                  <popup
                     v-model="formDataInfo.supplierCode"
                     field-name="supplierCode"
                     :disabled="false"
@@ -60,7 +60,7 @@
                <DatePicker
                     @on-change="onChange_bdYm"
                     transfer
-                    :value="formDataInfo.bdYm" 
+                    :value="formDataInfo.bdYm"
                     type="month"
                     format="yyyyMM"
                   ></DatePicker>
@@ -90,7 +90,7 @@
           </Col>
           <Col span="8">
             <FormItem label="货币" prop="coinCode">
-                <popup 
+                <popup
                   v-model="formDataInfo.coinCode"
                   field-name="coinCode"
                   :disabled="false"
@@ -134,7 +134,7 @@
                 maxlength="20"
                 placeholder="关联单号"
               >
-               <Icon  @click="showProductList()" type="md-add" slot="suffix" />
+               <Icon  @click="showProductList()" type="md-add" slot="suffix" v-show="!detailDisabled"/>
               </Input>
             </FormItem>
           </Col>
@@ -196,37 +196,37 @@
  *
  * @created 2020/05/18
  */
-import dayjs from "dayjs"
-import optionSearch from "../../components/optionSearch";
+import dayjs from 'dayjs'
+import optionSearch from '../../components/optionSearch'
 import popup from '@/components/popup/popup'
-import editBaseMixins from "../../mixins/edit";
-import { deepCopy } from "view-design/src/utils/assist";
-import { customValidator, uniqueValidator } from "@/libs/validator";
-import editForm from "./edit-payBadDebtSlave";
-import referenceField from "@/components/referenceField/referenceField";
+import editBaseMixins from '../../mixins/edit'
+import { deepCopy } from 'view-design/src/utils/assist'
+import { customValidator, uniqueValidator } from '@/libs/validator'
+import editForm from './edit-payBadDebtSlave'
+import referenceField from '@/components/referenceField/referenceField'
 const default_formDataInfo = {
-	bdDate: "",
-	bdDesc: "",
-	bdIvAmt: 0,
-	bdNo: "",
-	bdNoGl: "",
-	bdNoIvAmt: 0,
-	bdYm: "",
-	bdZqAmt: 0,
-	coinCode: "",
-	coinId: 0,
-	coinName: "",
-	rate: 0, // 汇率 默认赋值
-	remark: "",
-	supplierCode: "",
-	supplierId: 0, // 供应商ID
-	supplierName: "",
-	taxRate: 0,
-	taxType: "",
-	taxTypeText: "",
-};
+  bdDate: '',
+  bdDesc: '',
+  bdIvAmt: 0,
+  bdNo: '',
+  bdNoGl: '',
+  bdNoIvAmt: 0,
+  bdYm: '',
+  bdZqAmt: 0,
+  coinCode: '',
+  coinId: 0,
+  coinName: '',
+  rate: 0, // 汇率 默认赋值
+  remark: '',
+  supplierCode: '',
+  supplierId: 0, // 供应商ID
+  supplierName: '',
+  taxRate: 0,
+  taxType: '',
+  taxTypeText: ''
+}
 export default {
-  name: "edit-payBadDebt",
+  name: 'edit-payBadDebt',
   mixins: [editBaseMixins],
   components: {
     editForm,
@@ -235,66 +235,65 @@ export default {
     referenceField
   },
 
-  data() {
+  data () {
     return {
-       searchParams:{},//传递查询参数 
-      disabledSubmitBtn:false,// 是否禁用提交按钮
+      searchParams: {}, // 传递查询参数
+      disabledSubmitBtn: false, // 是否禁用提交按钮
       salveWindow: {
         isLoaddingDone: false, // 窗口是否加载完成
         showEditWindow: false, // 是否显示edit-boxSalesOrderSlave 编辑窗口
-        action: "add", // 当前操作功能 添加/编辑
+        action: 'add' // 当前操作功能 添加/编辑
       },
-      actionSubtitle: "应付呆账", // 当前操作副标题
-      requestBaseUrl: "/account/payBadDebt", // 请求 查询 操作的基础路径
+      actionSubtitle: '应付呆账', // 当前操作副标题
+      requestBaseUrl: '/account/payBadDebt', // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
         supplierCode: [
-          { required: true, message: "供应商编号不能为空", trigger: "blur" }
+          { required: true, message: '供应商编号不能为空', trigger: 'blur' }
         ],
         bdDate: [
-          { required: true,type:'date',message: "呆账日期不能为空", trigger: "blur" }
+          { required: true, type: 'date', message: '呆账日期不能为空', trigger: 'blur' }
         ],
         bdYm: [
-          { required: true,type:'date',message: "会计月份不能为空", trigger: "blur" }
-        ],
+          { required: true, type: 'date', message: '会计月份不能为空', trigger: 'blur' }
+        ]
       }
-    };
+    }
   },
   watch: {
-     showWindow:function(n,o){
-        if(n){
-          let _self = this
-          this.$nextTick(()=>{
-             // 延迟赋值,不然数据还没有正确返回的情况下,无法绑定默认值
-           setTimeout(() => {
-               this.setDefaultData()
-           }, 1000);
-            
-          })
-        }
-      },
-},
+    showWindow: function (n, o) {
+      if (n) {
+        let _self = this
+        this.$nextTick(() => {
+          // 延迟赋值,不然数据还没有正确返回的情况下,无法绑定默认值
+          setTimeout(() => {
+            this.setDefaultData()
+          }, 1000)
+        })
+      }
+    }
+  },
   methods: {
-     // 弹框==确认==回调事件,返回选择的数据
-     onSubmitEditForm(data){
-       this.formDataInfo.bdNoGl = data
-     },
-     // 弹框==取消==回调事件
-     onCancelEditForm(){
-
-     },
-    // 显示关联单号窗口列表
-    showProductList(){
-       this.searchParams = {
-         custId:this.formDataInfo.supplierId,// 供应商id
-        // filterList:this.selectedList,//(过滤已选的工单号集合,多个都好隔开)
-       }
-       if(this.popupClickValidator()){
-          this.salveWindow.showEditWindow = true
-       }
+    // 弹框==确认==回调事件,返回选择的数据
+    onSubmitEditForm (data) {
+      this.formDataInfo.bdNoGl = data
     },
-         // 验证产品编号选择前 
+    // 弹框==取消==回调事件
+    onCancelEditForm () {
+
+    },
+    // 显示关联单号窗口列表
+    showProductList () {
+      this.searchParams = {
+        custId: this.formDataInfo.supplierId// 供应商id
+        // filterList:this.selectedList,//(过滤已选的工单号集合,多个都好隔开)
+      }
+      if (this.popupClickValidator()) {
+        this.salveWindow.showEditWindow = true
+      }
+    },
+    // 验证产品编号选择前
     popupClickValidator () {
       if (!this.formDataInfo.supplierCode || this.formDataInfo.supplierCode == '') {
         this.$Message.error('请先选择供应商编号')
@@ -302,68 +301,68 @@ export default {
       }
       return true
     },
-    // 应付金额 修改触发事件() 
-    onChange_bdZqAmt(){
-       //新增时，未开票金额=应付金额 在已开票金额未写入值时，单据可以修改和删除
-       //修改时：未开票金额=应付金额 已开票金额一旦写入值时，单据不能修改/不能删除
-        this.formDataInfo.bdNoIvAmt = this.formDataInfo.bdZqAmt
+    // 应付金额 修改触发事件()
+    onChange_bdZqAmt () {
+      // 新增时，未开票金额=应付金额 在已开票金额未写入值时，单据可以修改和删除
+      // 修改时：未开票金额=应付金额 已开票金额一旦写入值时，单据不能修改/不能删除
+      this.formDataInfo.bdNoIvAmt = this.formDataInfo.bdZqAmt
     },
-     // 设置默认值
-    setDefaultData(){
-        this.disabledSubmitBtn = false
-        // 判断是否禁用提交按钮
-        if(this.action !='add' && this.formDataInfo.bdIvAmt!=null &&  Number(this.formDataInfo.bdIvAmt) >0){
-            this.disabledSubmitBtn = true
-        }
-        if(this.formDataInfo.taxType==''|| this.formDataInfo.taxType==null){
-            this.formDataInfo.taxType = '0'
-        }else{
-             this.formDataInfo.taxType =  this.formDataInfo.taxType+''
-        }
-        if(this.formDataInfo.bdDate==''|| this.formDataInfo.bdDate==null){
-            this.formDataInfo.bdDate = new Date(dayjs().format("YYYY-MM-DD"))
-        }else{
-            this.formDataInfo.bdDate = new Date(dayjs(this.formDataInfo.bdDate).format("YYYY-MM-DD"))
-        }
+    // 设置默认值
+    setDefaultData () {
+      this.disabledSubmitBtn = false
+      // 判断是否禁用提交按钮
+      if (this.action != 'add' && this.formDataInfo.bdIvAmt != null && Number(this.formDataInfo.bdIvAmt) > 0) {
+        this.disabledSubmitBtn = true
+      }
+      if (this.formDataInfo.taxType == '' || this.formDataInfo.taxType == null) {
+        this.formDataInfo.taxType = '0'
+      } else {
+        this.formDataInfo.taxType = this.formDataInfo.taxType + ''
+      }
+      if (this.formDataInfo.bdDate == '' || this.formDataInfo.bdDate == null) {
+        this.formDataInfo.bdDate = new Date(dayjs().format('YYYY-MM-DD'))
+      } else {
+        this.formDataInfo.bdDate = new Date(dayjs(this.formDataInfo.bdDate).format('YYYY-MM-DD'))
+      }
 
-        if(this.formDataInfo.bdYm==''|| this.formDataInfo.bdYm==null){
-            this.formDataInfo.bdYm = new Date(dayjs().format("YYYY-MM"))
-        }else{
-            this.formDataInfo.bdYm = new Date(dayjs(this.formDataInfo.bdYm).format("YYYY-MM"))
-        }
+      if (this.formDataInfo.bdYm == '' || this.formDataInfo.bdYm == null) {
+        this.formDataInfo.bdYm = new Date(dayjs().format('YYYY-MM'))
+      } else {
+        this.formDataInfo.bdYm = new Date(dayjs(this.formDataInfo.bdYm).format('YYYY-MM'))
+      }
     },
-    //呆账日期 变动日期
-    onChange_bdDate(item){
-       if(!_.isEmpty(item)){
-              this.formDataInfo.bdDate = new Date(item) 
-          }
+    // 呆账日期 变动日期
+    onChange_bdDate (item) {
+      if (!_.isEmpty(item)) {
+        this.formDataInfo.bdDate = new Date(item)
+      }
     },
-     //会计月份 变动日期
-    onChange_bdYm(item){
-       if(!_.isEmpty(item)){
-              this.formDataInfo.bdYm = new Date(dayjs(item).format("YYYY-MM")) 
-          }
+    // 会计月份 变动日期
+    onChange_bdYm (item) {
+      if (!_.isEmpty(item)) {
+        this.formDataInfo.bdYm = new Date(dayjs(item).format('YYYY-MM'))
+      }
     },
-      // 继承中修改,更新数据时,重置修改一些提交的数据
+    // 继承中修改,更新数据时,重置修改一些提交的数据
     resetformDataInfo (_data) {
-         _data.bdDate = dayjs(_data.bdDate).format("YYYY-MM-DD")
-         _data.bdYm = dayjs(_data.bdYm).format("YYYYMM")
+      _data.bdDate = dayjs(_data.bdDate).format('YYYY-MM-DD')
+      _data.bdYm = dayjs(_data.bdYm).format('YYYYMM')
       return _data
     },
-     // 继承中修改,添加数据时,重置修改一些提交的数据
+    // 继承中修改,添加数据时,重置修改一些提交的数据
     resetAddformDataInfo (_data) {
-         _data.bdDate = dayjs(_data.bdDate).format("YYYY-MM-DD")
-         _data.bdYm = dayjs(_data.bdYm).format("YYYYMM")
+      _data.bdDate = dayjs(_data.bdDate).format('YYYY-MM-DD')
+      _data.bdYm = dayjs(_data.bdYm).format('YYYYMM')
       return _data
     },
 
-      // 重写父类 关闭窗口时 触发事件
-    closeActionTigger() {
+    // 重写父类 关闭窗口时 触发事件
+    closeActionTigger () {
       // fix 清除上次的错误提示 formDataInfo 为表单ref名称
-      this.$refs["formDataInfo"].resetFields();
-      this.formDataInfo = Object.assign({}, default_formDataInfo);
-    },
-    
+      this.$refs['formDataInfo'].resetFields()
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
+    }
+
   }
 }
 </script>

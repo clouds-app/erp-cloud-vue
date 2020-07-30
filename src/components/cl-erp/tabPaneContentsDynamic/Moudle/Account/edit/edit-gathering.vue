@@ -5,7 +5,7 @@
       :title="actionLableName"
       v-model="showWindow"
       :fullscreen="false"
-      width="96%"
+      width="90%"
       :loading="!isLoaddingDone"
       :disabledSubmitBtn="disabledSubmitBtn"
       @on-ok="formDataSubmit()"
@@ -23,7 +23,7 @@
           <Col span="6">
             <FormItem label="收款单号" prop="gNo">
               <!-- <referenceField v-model="formDataInfo.initNo"
-               :disabled="true" 
+               :disabled="true"
                 maxlength="20"
                 placeholder="初始单号"
                 :form-name="frommastername"
@@ -159,7 +159,7 @@
                 v-model="formDataInfo.gAmt"
                 maxlength="20"
                 placeholder="收款金额"
-                @on-blur="changeInAmt()"
+                @on-change="changeInAmt()"
               ></InputNumber>
             </FormItem>
           </Col>
@@ -178,7 +178,7 @@
             <FormItem label="折扣(%)" prop="discount">
               <InputNumber
                 width="width:100%"
-                @on-blur="changeDiscount()"
+                @on-change="changeDiscount()"
                 :disabled="false"
                 type="number"
                 v-model="formDataInfo.discount"
@@ -277,43 +277,43 @@
  *
  * @created 2020/05/14
  */
-import dayjs from "dayjs";
-import optionSearch from "../../components/optionSearch";
-import popup from "@/components/popup/popup";
-import editBaseMixins from "../../mixins/edit";
-import { deepCopy } from "view-design/src/utils/assist";
-import { customValidator, uniqueValidator } from "@/libs/validator";
-import referenceField from "@/components/referenceField/referenceField";
-import InputNumber from "@/components/input-number";
+import dayjs from 'dayjs'
+import optionSearch from '../../components/optionSearch'
+import popup from '@/components/popup/popup'
+import editBaseMixins from '../../mixins/edit'
+import { deepCopy } from 'view-design/src/utils/assist'
+import { customValidator, uniqueValidator } from '@/libs/validator'
+import referenceField from '@/components/referenceField/referenceField'
+import InputNumber from '@/components/input-number'
 const default_formDataInfo = {
-  gYm: dayjs().format("YYYYMM"), //会计月份
-  coinCode: "",
+  gYm: dayjs().format('YYYYMM'), // 会计月份
+  coinCode: '',
   coinId: 0,
-  coinName: "",
-  //iisAudit: 0,
-  billNo: "",
-  gDate: dayjs().format("YYYY-MM-DD HH:mm:ss"), //初始化日期
-  gNo: "",
-  supplierId: "",
-  custCode: "",
-  purName: "",
-  remark: "",
+  coinName: '',
+  // iisAudit: 0,
+  billNo: '',
+  gDate: dayjs().format('YYYY-MM-DD HH:mm:ss'), // 初始化日期
+  gNo: '',
+  supplierId: '',
+  custCode: '',
+  purName: '',
+  remark: '',
   status: 1, // 禁用
   taxRat: 0,
-  gType: "0",
-  gatheringType: "",
+  gType: '0',
+  gatheringType: '',
   gAmt: 0,
   inAmt: 0,
   discount: 0,
   accAmt: 0,
-  billType: "0",
-  invNo: "",
+  billType: '0',
+  invNo: '',
   writeOffAmt: 0,
   noWriteOffAmtt: 0,
   rate: 0
-};
+}
 export default {
-  name: "edit-gathering",
+  name: 'edit-gathering',
   mixins: [editBaseMixins],
   components: {
     optionSearch,
@@ -322,54 +322,56 @@ export default {
     InputNumber
   },
 
-  data() {
+  data () {
     return {
-      disabledSubmitBtn: false, //是否禁用提交按钮
-      frommastername: "accountGatheringFm",
-      actionSubtitle: "已收款", // 当前操作副标题
-      requestBaseUrl: "/account/gathering", // 请求 查询 操作的基础路径
+      disabledSubmitBtn: false, // 是否禁用提交按钮
+      frommastername: 'accountGatheringFm',
+      actionSubtitle: '已收款', // 当前操作副标题
+      requestBaseUrl: '/account/gathering', // 请求 查询 操作的基础路径
       formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {
         custCode: [
-          { required: true, message: "客户编号不能为空", trigger: "blur" }
+          { required: true, message: '客户编号不能为空', trigger: 'blur' }
         ]
         // initDate: [
         //   { required: true,type:'date',message: "初始化日期不能为空", trigger: "blur" }
         // ],
       }
-    };
+    }
+  },
+  computed: {
+
   },
   watch: {
-    showWindow: function(n, o) {
-      //   //debugger
-      if (n) {
-        let _self = this;
-        this.$nextTick(() => {
-          // 延迟赋值,不然数据还没有正确返回的情况下,无法绑定默认值
-          setTimeout(() => {
-            this.setDefaultData();
-          }, 1000);
-        });
-      }
-    }
+    // showWindow: function(n, o) {
+    //   //   //debugger
+    //   if (n) {
+    //     let _self = this;
+    //     this.$nextTick(() => {
+    //       // 延迟赋值,不然数据还没有正确返回的情况下,无法绑定默认值
+    //       setTimeout(() => {
+    //         this.setDefaultData();
+    //       }, 1000);
+    //     });
+    //   }
+    // }
   },
   methods: {
     // 设置默认值
-    setDefaultData() {
-      debugger
-      this.disabledSubmitBtn = false;
-      // 判断是否禁用提交按钮
-      if (
-        this.action != "add" &&
-        this.formDataInfo.writeOffAmt != null &&
-        Number(this.formDataInfo.writeOffAmt) > 0
-      ) {
-        //已开票金额一旦写入值时，单据不能修改/不能删除
-        this.disabledSubmitBtn = true;
-      }
-    },
-    //初始化日期 变动日期
+    // setDefaultData() {
+    //   this.disabledSubmitBtn = false;
+    //   // 判断是否禁用提交按钮
+    //   if (
+    //     this.action != "add" &&
+    //     this.formDataInfo.writeOffAmt != null &&
+    //     Number(this.formDataInfo.writeOffAmt) > 0
+    //   ) {
+    //     //已开票金额一旦写入值时，单据不能修改/不能删除
+    //     this.disabledSubmitBtn = true;
+    //   }
+    // },
+    // 初始化日期 变动日期
     // onChange_gDate(item) {
     //   //debugger
     //   if (!_.isEmpty(item)) {
@@ -377,115 +379,115 @@ export default {
     //   }
     // },
     // 继承中修改,更新数据时,重置修改一些提交的数据
-    resetformDataInfo(_data) {
+    resetformDataInfo (_data) {
       if (_data.gDate) {
-        _data.gDate = dayjs(_data.gDate).format("YYYY-MM-DD HH:mm:ss");
+        _data.gDate = dayjs(_data.gDate).format('YYYY-MM-DD HH:mm:ss')
       }
       if (_data.indate) {
-        _data.indate = dayjs(_data.indate).format("YYYY-MM-DD");
+        _data.indate = dayjs(_data.indate).format('YYYY-MM-DD')
       }
-      return _data;
+      return _data
     },
     // 继承中修改,提交数据前 验证数据 ,默认 false 没有错误
     validateBeforePost (_data) {
-      //debugger
-      let gAmt = Number(this.formDataInfo.gAmt);
+      // debugger
+      let gAmt = Number(this.formDataInfo.gAmt)
       if (gAmt <= 0) {
-        this.$Message.warning("收款金额必须大于0");
-        return true;
+        this.$Message.warning('收款金额必须大于0')
+        return true
       }
       return false
     },
     // 继承中修改,添加数据时,重置修改一些提交的数据
-    resetAddformDataInfo(_data) {
-      //debugger
+    resetAddformDataInfo (_data) {
+      // debugger
       if (_data.gDate) {
-        _data.gDate = dayjs(_data.gDate).format("YYYY-MM-DD HH:mm:ss");
+        _data.gDate = dayjs(_data.gDate).format('YYYY-MM-DD HH:mm:ss')
       }
       if (_data.indate) {
-        _data.indate = dayjs(_data.indate).format("YYYY-MM-DD");
+        _data.indate = dayjs(_data.indate).format('YYYY-MM-DD')
       }
-      return _data;
+      return _data
     },
     // 重写父类,添加时候,清空数据
-    HandleFormDataInfo() {
-      //debugger
-      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    HandleFormDataInfo () {
+      // debugger
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
     },
     // 重写父类 关闭窗口时 触发事件
-    closeActionTigger() {
-      //debugger
+    closeActionTigger () {
+      // debugger
       // fix 清除上次的错误提示 formDataInfo 为表单ref名称
-      this.$refs["formDataInfo"].resetFields();
-      this.formDataInfo = Object.assign({}, default_formDataInfo);
+      this.$refs['formDataInfo'].resetFields()
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
     },
-    //判断一个值是数字
-    myIsNaN(value) {
-      return typeof value === "number" && !isNaN(value);
+    // 判断一个值是数字
+    myIsNaN (value) {
+      return typeof value === 'number' && !isNaN(value)
     },
-    //弹框值改变重新计算汇算金额
-    onFill() {
-      this.changeInAmt();
-      //单独校验客户编号
-      this.$refs["formDataInfo"].validateField("custCode", err => {});
+    // 弹框值改变重新计算汇算金额
+    onFill () {
+      this.changeInAmt()
+      // 单独校验客户编号
+      this.$refs['formDataInfo'].validateField('custCode', err => {})
     },
-    //计算汇算金额
-    changeInAmt() {
-      //debugger
-      let gAmtClone = this.formDataInfo.gAmt;
-      let isNumber = this.myIsNaN(Number(gAmtClone));
-      if (!isNumber || (gAmtClone + "").substr(0, 1) == "-") {
-        this.$Message.error("请输入正数");
-        return;
+    // 计算汇算金额
+    changeInAmt () {
+      // debugger
+      let gAmtClone = this.formDataInfo.gAmt
+      let isNumber = this.myIsNaN(Number(gAmtClone))
+      if (!isNumber || (gAmtClone + '').substr(0, 1) == '-') {
+        this.$Message.error('请输入正数')
+        return
       }
-      //汇算金额=收款金额*汇率
+      // 汇算金额=收款金额*汇率
       this.formDataInfo.inAmt = (
         Number(this.formDataInfo.gAmt) * Number(this.formDataInfo.rate)
-      ).toFixed(2);
-      //入账金额 = 汇算金额*折扣
+      ).toFixed(2)
+      // 入账金额 = 汇算金额*折扣
       this.formDataInfo.accAmt = (
         (Number(this.formDataInfo.inAmt) * Number(this.formDataInfo.discount)) /
         100
-      ).toFixed(2);
+      ).toFixed(2)
     },
     // 货币选择后回调事件 汇率change 计算汇算金额
-    coinCodeOnFillEvent(item) {
-      //货币改变
-      //debugger
-      this.$refs["formDataInfo"].validateField("coinCode", err => {});
-      this.changeInAmt();
-      this.changeDiscount();
+    coinCodeOnFillEvent (item) {
+      // 货币改变
+      // debugger
+      this.$refs['formDataInfo'].validateField('coinCode', err => {})
+      this.changeInAmt()
+      this.changeDiscount()
     },
-    //汇率change 计算汇算金额
-    changeRate() {
-      let rateClone = this.formDataInfo.rate;
-      let isNumber = this.myIsNaN(Number(rateClone));
-      if (!isNumber || (rateClone + "").substr(0, 1) == "-") {
-        this.$Message.error("请输入正数");
-        return;
+    // 汇率change 计算汇算金额
+    changeRate () {
+      let rateClone = this.formDataInfo.rate
+      let isNumber = this.myIsNaN(Number(rateClone))
+      if (!isNumber || (rateClone + '').substr(0, 1) == '-') {
+        this.$Message.error('请输入正数')
+        return
       }
-      //汇算金额=收款金额*汇率
+      // 汇算金额=收款金额*汇率
       this.formDataInfo.inAmt = (
         Number(this.formDataInfo.gAmt) * Number(this.formDataInfo.rate)
-      ).toFixed(2);
+      ).toFixed(2)
     },
-    //discount change 计算入账金额
-    changeDiscount() {
-      //debugger
-      let discountClone = this.formDataInfo.discount;
-      let isNumber = this.myIsNaN(Number(discountClone));
-      if (!isNumber || discountClone.substr(0, 1) == "-") {
-        this.$Message.error("请输入正数");
-        return;
-      }
-      //入账金额 = 汇算金额*折扣
+    // discount change 计算入账金额
+    changeDiscount () {
+      // debugger
+      // let discountClone = this.formDataInfo.discount;
+      // let isNumber = this.myIsNaN(Number(discountClone));
+      // if (!isNumber || discountClone.substr(0, 1) == "-") {
+      //   this.$Message.error("请输入正数");
+      //   return;
+      // }
+      // 入账金额 = 汇算金额*折扣
       this.formDataInfo.accAmt = (
         (Number(this.formDataInfo.inAmt) * Number(this.formDataInfo.discount)) /
         100
-      ).toFixed(2);
-    },
+      ).toFixed(2)
+    }
   }
-};
+}
 </script>
 
 <style>

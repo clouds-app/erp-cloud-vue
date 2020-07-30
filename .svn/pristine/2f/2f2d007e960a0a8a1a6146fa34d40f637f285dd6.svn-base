@@ -1,0 +1,599 @@
+<template>
+  <div>
+    <editWindow
+      id="cl-edit-salesOrder"
+      title="云纸箱平台订单导入"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="80%"
+      :loading="false"
+      :spinLoaddingText="spinLoaddingText"
+      @on-ok="submitFormDataEvent"
+    >
+        <Tabs @on-click="labelclick">
+          <!--  注意:eTable formDataInfo.wareHouseItems.defaultList  ===wareHouseItems=== 需要根据实际接口修改,其它不变-->
+          <TabPane label="未导入" name="cusList">
+            <eTable ref="slave_edit-purPaperPo"
+              :height="400"
+              :index-menu="true"
+              :col-start="0"
+              :width="200"
+              :row-init-data="WorkOrderNumber"
+              :data.sync="shownoterextendList"
+              :rules="tableFieldsValidator"
+            >
+              <template slot="head">
+                <tr>
+                  <th class="ivu-table-column-center" width="35">
+                    <div class="ivu-table-cell">
+                      <span class>选择</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="160">
+                    <div class="ivu-table-cell">
+                      <span class>纸箱订单编号</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="100">
+                    <div class="ivu-table-cell">
+                      <span class>买家</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="150">
+                    <div class="ivu-table-cell">
+                      <span class >产品编码</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="140">
+                    <div class="ivu-table-cell">
+                      <span class >产品名称</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="90">
+                    <div class="ivu-table-cell">
+                      <span class>数量</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="90">
+                    <div class="ivu-table-cell">
+                      <span class>单价</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="90">
+                    <div class="ivu-table-cell">
+                      <span class>金额</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="90">
+                    <div class="ivu-table-cell">
+                      <span class>状态</span>
+                    </div>
+                  </th>
+                </tr>
+              </template>
+              <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
+                <!-- 选择 -->
+                <td class="ivu-table-column-center" width="100">
+                  <Checkbox
+                    size="default"
+                    v-model="row.Choice"
+                    @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'Choice');
+                      }
+                    "
+                  ></Checkbox>
+                </td>
+                <!-- 纸箱订单编号 -->
+                <td class="ivu-table-column-left" width="100">
+                  <Input
+                    disabled
+                    v-model="row.orderCode"
+                    @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'orderCode');
+                        }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                <!-- 买家 -->
+                <td class="ivu-table-column-left" width="100">
+                  <Input
+                    disabled
+                    v-model="row.buyeruserName"
+                    @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'buyeruserName');
+                        }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                <!-- 产品编码-->
+                <td class="ivu-table-column-left" width="100">
+                  <Input
+                    disabled
+                    v-model="row.productid"
+                    @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'productid');
+                      }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                <!-- 产品名称-->
+                <td class="ivu-table-column-left" width="100">
+                  <Input
+                    disabled
+                    v-model="row.tradename"
+                    @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'tradename');
+                      }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                 <!-- 数量 -->
+                <td class="ivu-table-column-right" width="100">
+                  <Input
+                    v-model="row.productnumber"
+                    disabled
+                    @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'productnumber');
+                        }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                <!-- 单价-->
+                <td class="ivu-table-column-right" width="100">
+                  <Input
+                    disabled
+                    v-model="row.price"
+                    @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'price');
+                      }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                <!-- 金额-->
+                <td class="ivu-table-column-right" width="100">
+                  <Input
+                    disabled
+                    v-model="row.orderamount"
+                    @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'orderamount');
+                      }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                <!-- 状态-->
+                <td class="ivu-table-column-left" width="100">
+                  <Input
+                    disabled
+                    v-model="row.isimporterp"
+                    @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'isimporterp');
+                      }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+              </template>
+            </eTable>
+          </TabPane>
+
+          <TabPane label="已导入" name="extend">
+            <eTable ref="slave_edit-purPaperPo"
+              :height="400"
+              :index-menu="true"
+              :col-start="0"
+              :width="200"
+              :row-init-data="extendfieldList"
+              :data.sync="extendDataList"
+              :rules="tableFieldsValidator"
+            >
+              <template slot="head">
+                <tr>
+                  <th class="ivu-table-column-center" width="160">
+                    <div class="ivu-table-cell">
+                      <span class>纸箱订单编号</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="100">
+                    <div class="ivu-table-cell">
+                      <span class>买家</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="150">
+                    <div class="ivu-table-cell">
+                      <span class >产品编码</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="140">
+                    <div class="ivu-table-cell">
+                      <span class >产品名称</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="90">
+                    <div class="ivu-table-cell">
+                      <span class>数量</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="90">
+                    <div class="ivu-table-cell">
+                      <span class>单价</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="90">
+                    <div class="ivu-table-cell">
+                      <span class>金额</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="90">
+                    <div class="ivu-table-cell">
+                      <span class>状态</span>
+                    </div>
+                  </th>
+                </tr>
+              </template>
+              <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
+                <!-- 纸箱订单编号 -->
+                <td class="ivu-table-column-left" width="100">
+                  <Input
+                    disabled
+                    v-model="row.orderCode"
+                    @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'orderCode');
+                        }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                <!-- 买家 -->
+                <td class="ivu-table-column-left" width="100">
+                  <Input
+                    disabled
+                    v-model="row.buyeruserName"
+                    @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'buyeruserName');
+                        }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                <!-- 产品编码-->
+                <td class="ivu-table-column-left" width="100">
+                  <Input
+                    disabled
+                    v-model="row.productid"
+                    @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'productid');
+                      }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                <!-- 产品名称-->
+                <td class="ivu-table-column-left" width="100">
+                  <Input
+                    disabled
+                    v-model="row.tradename"
+                    @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'tradename');
+                      }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                 <!-- 数量 -->
+                <td class="ivu-table-column-right" width="100">
+                  <Input
+                    v-model="row.productnumber"
+                    disabled
+                    @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'productnumber');
+                        }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                <!-- 单价-->
+                <td class="ivu-table-column-right" width="100">
+                  <Input
+                    disabled
+                    v-model="row.price"
+                    @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'price');
+                      }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                <!-- 金额-->
+                <td class="ivu-table-column-right" width="100">
+                  <Input
+                    disabled
+                    v-model="row.orderamount"
+                    @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'orderamount');
+                      }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                <!-- 状态-->
+                <td class="ivu-table-column-left" width="90">
+                  <Input
+                    disabled
+                    v-model="row.isimporterp"
+                    @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'isimporterp');
+                      }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+              </template>
+            </eTable>
+          </TabPane>
+        </Tabs>
+        <Page 
+          v-if="currentTabName==='cusList'"
+          :total='page.total'
+          show-elevator 
+          :simple="true" 
+          @on-change="pagechange" 
+          :page-size='page.pagesize'
+          :current='page.current'
+        />
+        <Page 
+          v-else
+          :total='extendpage.total'
+          show-elevator 
+          :simple="true" 
+          @on-change="extendpagepagechange" 
+          :page-size='extendpage.pagesize'
+          :current='extendpage.current'
+        />
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:07:54
+ */
+import tableSelect from "@/components/table-select/table-select";
+import editWindow from "@/components/edit-window/edit-window";
+// import Form from '@/components/form/form'
+import eTable from "@/components/e-table/e-table";
+import request from "@/libs/request";
+import popup from "@/components/popup/popup";
+import editBaseMixins from "../../mixins/edit";
+import InputNumber from "@/components/input-number";
+import formControl from "@/components/form-control/form-control";
+import { customValidator } from "@/libs/validator";
+import calc from "@/libs/calc";
+import list from '../../mixins/list';
+import dayjs from "dayjs";
+import axios from '@/libs/api.request'
+export default {
+  name: "edit-purPaperPoSlave",
+  mixins: [editBaseMixins],
+  components: {
+    editWindow,
+    popup,
+    tableSelect,
+    eTable,
+    InputNumber,
+    formControl,
+  },
+  created() {
+    //debugger
+    // console.log(this.List)
+  },
+   props:{ 
+
+  },
+  data() {
+    return {
+      page:{//未导入分页数据
+        total:20,//总条数
+        pagesize:20,//每页显示条数
+        current:1//当前页
+      },
+      extendpage:{//已导入分页数据
+        total:1,
+        pagesize:20,
+        current:1
+      },
+      //已导入初始化字段
+      extendfieldList: {
+        orderCode:'',
+        buyeruserName:'',
+        cartonId:'',
+        productid:'',
+        tradename:'',
+        productnumber:'',
+        price:'',
+        orderamount:'',
+        isimporterp:'',
+      },
+      // 未导入初始化字段
+      WorkOrderNumber: {
+        orderCode:'',
+        buyeruserName:'',
+        cartonId:'',
+        productid:'',
+        tradename:'',
+        productnumber:'',
+        price:'',
+        orderamount:'',
+        isimporterp:'',
+      },  
+      currentTabName:'cusList',// 当前TABL名称
+      extendDataList:[],//存放已导入数据列表
+      productMDatasTableDataList: [], //存放未导入全部数据
+      shownoterextendList:[],//存储未导入显示数据
+      isCalAreaPricePur:true,
+      //actionSubtitle: "纸箱销售订单明细", // 当前操作副标
+      productSpecShow: false,
+      formDataInfo: {
+        // 主表 更改字段
+        master: {},
+        productMDatas: {
+          
+        },
+      }, // 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {},
+      tableFieldsValidator: {
+      },
+      timeoutId: 0,
+      requestCount: 0,
+      table:[], //存储子表全部对应的字段
+    };
+  },
+  computed: {
+  },
+  methods: {
+    // 显示数据状态处理
+    showdatastate(data){
+      let _self = this
+     data.forEach((item,index,arr)=>{
+        if (item.isimporterp==0) {
+            item.isimporterp='未导入'
+        }else{
+            item.isimporterp='已导入'
+        }
+      })
+      return data
+    },
+    // 处理未导入显示数据
+    getshownoterextendList(data){
+      this.page.total = data.list.length
+      let startnum = this.page.current //页码
+      let endnum = this.page.current*this.page.pagesize //每页条数
+      this.productMDatasTableDataList = this.showdatastate(data.list)
+      this.shownoterextendList = this.productMDatasTableDataList.slice(startnum-1,endnum)
+    },
+    //未导入页码改变的回调
+    pagechange(size){
+      if (size == 1) {
+        let startnum = size
+        let endnum = this.page.pagesize //每页条数
+        this.shownoterextendList = this.productMDatasTableDataList.slice(startnum-1,endnum)
+      }else{
+        let startnum = (size-1)*this.page.pagesize
+        let endnum = startnum+this.page.pagesize //每页条数
+        this.shownoterextendList = this.productMDatasTableDataList.slice(startnum,endnum)
+      }
+    },
+    // 已导入页码改变的回调
+    extendpagepagechange(size){
+      this.extendpage.current = size
+      this.getextendDataList()
+    },
+    //tabletitle切换回调
+    labelclick(name){
+      this.currentTabName = name
+      if (name==='cusList') {
+        return
+      }else{
+        this.getextendDataList()
+      }
+    },
+    // 获取已导入数据
+    getextendDataList(){
+       let parms = {
+        isImportERP:"1",
+        pageNo:this.extendpage.current,
+        pageSize:this.extendpage.pagesize
+      }
+      this.fullLoading();
+      request.post('/sale/boxCo/getEncryptParams',parms).then(res=>{
+          this.getmodalData(res).then(resdata=>{
+            this.extendDataList = this.showdatastate(resdata.data.data.list)
+            this.extendpage.total = resdata.data.data.pages
+            this.$Spin.hide();
+          })
+      }).catch(err=>{
+        this.$Spin.hide();
+        this.$Message.error(err)
+      })
+    },
+    getmodalData(val){
+      return axios.request({
+        url:'http://www.cartonyun.com/yzxdb/USER_ERPController/doImportCartonOrderInfo_ERP',
+        data:val,
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+    },
+    //表单数据提交事件
+    submitFormDataEvent() {
+      //表单数据提交事件
+      let yzxData = this.productMDatasTableDataList.filter(item => item.Choice)
+      request.post('/sale/boxCo/saveYzxData',{yzxData:yzxData}).then(res=>{
+        this.$Message.success('执行成功')
+        this.showWindow = false
+        this.$emit('searchfrom')
+      })
+    }
+  },
+};
+</script>
+<style >
+.ivu-form-item-text2 .ivu-form-item-content {
+  margin-left: 2.8125rem !important;
+}
+.ivu-table-column-right input{
+  text-align: right;
+}
+</style>

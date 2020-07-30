@@ -9,7 +9,7 @@
     >
     </htmlTemplate>
 
-    <div class="content-container" v-if="formInitData.listView" :style="{ height: tableHeight + 'px' }">
+    <div ref="contextMenuTarget" class="content-container" v-if="formInitData.listView" :style="{ height: tableHeight + 'px' }">
       <Split :v-model="splitModel" mode="vertical">
         <div slot="top" class="demo-split-pane" ref="contextMenuTarget">
           <vTable
@@ -60,15 +60,15 @@
   </div>
 </template>
 <script>
-// 应付冲销 
-import vTable from "@/components/tables/vTable";
-import htmlTemplate from "../components/htmlTemplate";
-import listBaseMixins from "../mixins/list";
-import request from "@/libs/request"
-import eTable from "@/components/e-table/e-table";
-import editWindow from "@/components/edit-window/edit-window";
-import formControl from "@/components/form-control/form-control";
-import dayjs from "dayjs"
+// 应付冲销
+import vTable from '@/components/tables/vTable'
+import htmlTemplate from '../components/htmlTemplate'
+import listBaseMixins from '../mixins/list'
+import request from '@/libs/request'
+import eTable from '@/components/e-table/e-table'
+import editWindow from '@/components/edit-window/edit-window'
+import formControl from '@/components/form-control/form-control'
+import dayjs from 'dayjs'
 export default {
   mixins: [listBaseMixins],
   components: {
@@ -76,50 +76,49 @@ export default {
     editWindow,
     formControl,
     dayjs,
-    'editForm':function(resolve) { //组件的异步加载
-                require(["./edit/edit-outWriteOff"], resolve);
-            },
-        
+    'editForm': function (resolve) { // 组件的异步加载
+      require(['./edit/edit-outWriteOff'], resolve)
+    },
+
     htmlTemplate,
-    vTable,
+    vTable
   },
-  data() {
+  data () {
     return {
       // 导出参数配置
-       tableDataList:[
-        {ref:'master_list_table',title:'应付冲销'},
-        {ref:'slave_list_table',title:'收票明细'},
-        {ref:'slave_writeOffOut_table',title:'付款明细'},
+      tableDataList: [
+        { ref: 'master_list_table', title: '应付冲销' },
+        { ref: 'slave_list_table', title: '收票明细' },
+        { ref: 'slave_writeOffOut_table', title: '付款明细' }
       ],
-      //数据查询修改等基本参数设置
+      // 数据查询修改等基本参数设置
       functionParams: {
-        formInitPreName: 'accountOutWriteOff', //  查询表格列头信息 前缀 例如: InFm/OutFm 	
-        requestBaseUrl: "/account/outWriteOff",
-        uniqueId: "owoId"
+        formInitPreName: 'accountOutWriteOff', //  查询表格列头信息 前缀 例如: InFm/OutFm
+        requestBaseUrl: '/account/outWriteOff',
+        uniqueId: 'owoId'
       },
       // 查询参数 ,注意格式
       queryParamsDefault: [
         {
-          title: "冲销单号",
-          code: "owoNo",
-          owoNo: ""
+          title: '冲销单号',
+          code: 'owoNo',
+          owoNo: ''
         },
         {
-          title: "客户名称",
-          name: "supplierName$like",
-          supplierName$like: ""
+          title: '客户名称',
+          name: 'supplierName$like',
+          supplierName$like: ''
         }
-      ],
-    };
+      ]
+    }
   },
-   
+
   created () {
     // 查询多个表格列表头数据
     // 无需变更,配置functionParams 参数即可
     if (this.functionParams.formInitPreName) {
       this.getFormInitData(`${this.functionParams.formInitPreName}Fm`)
     }
-     
   },
   methods: {
     // 主表点击事件,需要修改 查询参数:productPriceId 和 查询反馈内容  rowData.custCode + " " + rowData.custName 一般对应 queryParamsDefault 即可
@@ -130,7 +129,7 @@ export default {
       this.$refs['slave_writeOffOut_table'].search({ owoId: rowData.id })
     }
   }
-};
+}
 </script>
 
 <style></style>
