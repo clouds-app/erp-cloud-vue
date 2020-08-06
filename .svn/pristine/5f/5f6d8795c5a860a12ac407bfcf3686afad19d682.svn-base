@@ -1,0 +1,368 @@
+<template>
+  <div class="masterContainer bodyContent">
+    <div class="orderCardInfoBox">
+      <div class="orderCardItem orderCardInfo">
+        <div class="cardFlexBox">
+          <div class="cardFlexItem cardLeft">
+            <div class="cardTitle">今天接单</div>
+            <img class="cardIcon" :src="cardOrderIcon" />
+          </div>
+          <div class="cardFlexItem cardRight">
+            <div class="cardMoney">{{tadayDataInfo.sCoMoney}} 元</div>
+            <div class="cardArea">{{tadayDataInfo.sCoArea}} M²</div>
+          </div>
+        </div>
+      </div>   
+      <div class="orderCardItem saleCardInfo">
+        <div class="cardFlexBox">
+          <div class="cardFlexItem cardLeft">
+            <div class="cardTitle">今天销售</div>
+            <img class="cardIcon" :src="cardSaleIcon" />
+          </div>
+          <div class="cardFlexItem cardRight">
+            <div class="cardMoney">{{tadayDataInfo.sShMoney}} 元</div>
+            <div class="cardArea">{{tadayDataInfo.sShArea}} M²</div>
+          </div>
+        </div>
+      </div>
+      <div class="orderCardItem purchaseCardInfo">
+        <div class="cardFlexBox">
+          <div class="cardFlexItem cardLeft">
+            <div class="cardTitle">今天采购</div>
+            <img class="cardIcon" :src="cardPurchaseIcon" />
+          </div>
+          <div class="cardFlexItem cardRight">
+            <div class="cardMoney">{{tadayDataInfo.sPoMoney}} 元</div>
+            <div class="cardArea">{{tadayDataInfo.sPoArea}} M²</div>
+          </div>
+        </div>
+      </div>
+      <div class="orderCardItem stockCardInfo">
+        <div class="cardFlexBox">
+          <div class="cardFlexItem cardLeft">
+            <div class="cardTitle">今天入库</div>
+            <img class="cardIcon" :src="cardStockIcon" />
+          </div>
+          <div class="cardFlexItem cardRight">
+            <div class="cardMoney">{{tadayDataInfo.sJoinMoney}} 元</div>
+            <div class="cardArea">{{tadayDataInfo.sJoinArea}} M²</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="echartInfoBox">
+      <div class="echartItem leftEchartIcon">
+        <lineProductionLoss
+          @lineProductionLossEvent="lineProductionLossEvent"
+          style="height: 300px;"
+          :value="lineProductionLossList.curData"
+          text="生产损耗"
+        > </lineProductionLoss>
+         <!-- <Spin fix >
+            <Icon type="ios-loading" size=18 class="demo-spin-icon-load"></Icon>
+            <div>加载中...</div>
+         </Spin> -->
+      </div>
+      <div class="echartItem compassIconConfig">
+        <div class="compassTitle">经营罗盘</div>
+        <img class="compassIcon" :src="compassIcon" />
+      </div>
+      <div class="echartItem rightEchartIcon">
+        <div class="stockStatisticsOtherInfo"></div>
+        <barStockStatistics
+          @barStockStatisticsEvent="barStockStatisticsEvent"
+          style="height: 300px;"
+           :value="barStockStatisticsList.curData"
+          text="库存统计"
+        ></barStockStatistics>
+      </div>
+    </div>
+    <div class="echartOtherInfoBox">
+      <div class="echartOtherItem echartOtherConfig-one">
+        <lineSalesStatistics
+          @lineSalesStatisticsEvent="lineSalesStatisticsEvent"
+          style="height: 300px;"
+           :value="lineSalesStatisticsList.curData"
+          text="销售统计"
+        />
+      </div>
+      <div class="echartOtherItem echartOtherConfig-two">
+        <lineProductionEffectiveness
+          @lineProductionEffectivenessEvent="lineProductionEffectivenessEvent"
+          style="height: 300px;"
+           :value="lineProductionEffectivenessList.curData"
+          text="生产时效"
+        />
+      </div>
+      <div class="echartOtherItem echartOtherConfig-three">
+        <lineBusinessIndicators
+          @lineBusinessIndicatorsEvent="lineBusinessIndicatorsEvent"
+          style="height: 300px;"
+           :value="lineBusinessIndicatorsList.curData"
+          text="经营指标"
+        />
+      </div>
+      <div class="echartOtherItem echartOtherConfig-four">
+        <gaugeEquipmentOperationRate
+          @gaugeEquipmentOperationRateEvent="gaugeEquipmentOperationRateEvent"
+          style="height: 300px;"
+           :value="gaugeEquipmentOperationRateList.curData"
+          text="设备运转率"
+        />
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+// 新的主页
+import request from '@/libs/request'
+import {
+  gaugeEquipmentOperationRate,
+  lineProductionLoss,
+  barStockStatistics,
+  lineSalesStatistics,
+  lineBusinessIndicators,
+  lineProductionEffectiveness
+} from "_c/charts";
+import cardOrderIcon from "@/assets/images/page-design/master-page/card-order-icon.png";
+import cardPurchaseIcon from "@/assets/images/page-design/master-page/card-purchase-icon.png";
+import cardSaleIcon from "@/assets/images/page-design/master-page/card-sale-icon.png";
+import cardStockIcon from "@/assets/images/page-design/master-page/card-stock-icon.png";
+import compassIcon from "@/assets/images/page-design/master-page/compassIcon.gif";
+import { Switch } from 'view-design';
+export default {
+  components: {
+    lineProductionLoss,
+    barStockStatistics,
+    lineSalesStatistics,
+    lineBusinessIndicators,
+    lineProductionEffectiveness,
+    gaugeEquipmentOperationRate
+  },
+  data() {
+    return {
+      // 今日数据信息
+      tadayDataInfo:{
+        hasData:false,
+        sCoArea: "0.00", //接单金额
+        sCoMoney: "0.00", // 接单面积
+        sShArea: "0.00", // 销售面积
+        sShMoney: "0.00",// 销售金额
+        sPoArea: "0.00", // 采购面积
+        sPoMoney: "0.00",// 采购金额
+        sJoinArea: "0.00",// 入库面积
+        sJoinMoney: "0.00"// 入库金额
+      },
+      cardOrderIcon,
+      cardPurchaseIcon,
+      cardSaleIcon,
+      cardStockIcon,
+      compassIcon, // 经营罗盘 图片路径
+      barData: [
+        {
+          Mon: 13253,
+          Tue: 34235,
+          Wed: 26321,
+          Thu: 12340,
+          Fri: 24643,
+          Sat: 1322,
+          Sun: 1324
+        },
+        {
+          Mon: 10000,
+          Tue: 20000,
+          Wed: 30000,
+          Thu: 40000,
+          Fri: 50000,
+          Sat: 30000,
+          Sun: 10000
+        }
+      ],
+       // 生产时效
+     lineProductionEffectivenessList:{
+       type:'lineProductionEffectivenessList',
+       dayData:{},
+       monthData:{},
+       yearData:{},
+       curData:{}
+     },
+      // 销售统计
+    lineSalesStatisticsList:{
+      type:'lineSalesStatisticsList',
+        dayData:{},
+       monthData:{},
+       yearData:{},
+       curData:{}
+     },
+    // 生产损耗
+    lineProductionLossList:{
+        type:'lineProductionLossList',
+       dayData:{},
+       monthData:{},
+       yearData:{},
+       curData:{}
+     },
+      // 经营指标
+    lineBusinessIndicatorsList:{
+      type:'lineBusinessIndicatorsList',
+        dayData:{},
+       monthData:{},
+       yearData:{},
+       curData:{}
+     },
+      // 设备运转率
+    gaugeEquipmentOperationRateList:{
+       type:'gaugeEquipmentOperationRateList',
+        dayData:{},
+       monthData:{},
+       yearData:{},
+       curData:{}
+     },
+      // 库存统计
+    barStockStatisticsList:{
+       type:'barStockStatisticsList',
+        dayData:{},
+       monthData:{},
+       yearData:{},
+       curData:{}
+     },
+     
+    };
+  },
+  created(){
+    // 今日数据
+    this.loadTadayData()
+    // 生产时效
+    this.lineProductionEffectivenessEvent()
+    // 销售统计
+    this.lineSalesStatisticsEvent()
+    // 生产损耗
+    this.lineProductionLossEvent()
+     // 经营指标
+    this.lineBusinessIndicatorsEvent()
+     // 设备运转率
+    this.gaugeEquipmentOperationRateEvent()
+    // 库存统计
+    this.barStockStatisticsEvent()
+  },
+  methods: {
+    // 加载今日数据
+    loadTadayData(){
+      let url =`/report/home/getHeadTabData`
+      let params ={}
+      this.getDataByUrl(url,params).then(res=>{
+         this.tadayDataInfo = Object.assign({},this.tadayDataInfo,res)
+         this.tadayDataInfo.hasData = true
+      })
+    },
+    // 通用数据请求
+    getDataByUrl (_url, requestDataObj) {
+      return new Promise((resolve, reject) => {
+        request.post(_url, requestDataObj).then(res => {
+          resolve(res)
+        }).catch(err => {
+          reject(err)
+        })
+      })
+    },
+    // 千分符格式化
+    formatNumber(num) { 
+      if (isNaN(num)) { 
+        throw new TypeError("num is not a number"); 
+      } 
+      return ("" + num).replace(/(\d{1,3})(?=(\d{3})+(?:$|\.))/g, "$1,");  
+    },
+    // 生产时效
+    lineProductionEffectivenessEvent(type='month'){
+      // mode(报表统计类型(0生产损耗,1库存统计,2销售统计,3生产时效,4经营指标,5设备运转率) )
+       this.loadEchartDataList('lineProductionEffectivenessList',type,3)
+    },
+    // 销售统计
+    lineSalesStatisticsEvent(type='month'){
+      // mode(报表统计类型(0生产损耗,1库存统计,2销售统计,3生产时效,4经营指标,5设备运转率) )
+       this.loadEchartDataList('lineSalesStatisticsList',type,2)
+    },
+    // 生产损耗
+    lineProductionLossEvent(type='month'){
+       this.loadEchartDataList('lineProductionLossList',type,0)
+    },
+    // 经营指标
+    lineBusinessIndicatorsEvent(type='month'){
+        // mode(报表统计类型(0生产损耗,1库存统计,2销售统计,3生产时效,4经营指标,5设备运转率) )
+       this.loadEchartDataList('lineBusinessIndicatorsList',type,4)
+    },
+    // 设备运转率
+    gaugeEquipmentOperationRateEvent(type='month') {
+       // mode(报表统计类型(0生产损耗,1库存统计,2销售统计,3生产时效,4经营指标,5设备运转率) )
+       this.loadEchartDataList('gaugeEquipmentOperationRateList',type,5)
+    },
+    // 库存统计
+    barStockStatisticsEvent(type='month') {
+       // mode(报表统计类型(0生产损耗,1库存统计,2销售统计,3生产时效,4经营指标,5设备运转率) )
+       this.loadEchartDataList('barStockStatisticsList',type,1)
+    },
+    // 加载指定类型的图表数据
+    loadEchartDataList(name,type,mode){
+     // debugger
+      let testData = this.lineProductionLossList[type+'Data']
+      let curTypeData = this[name]
+      if(Object.keys(curTypeData[type+'Data']).length>0){
+        curTypeData.curData = curTypeData[type+'Data']
+        return
+      }
+      let _url='/report/home/getHomePageData'
+      let params = {
+        type,
+        mode
+       // 查询条件：type(类型,day(天),month(月),year(年)),
+       // mode(报表统计类型(0生产损耗,1库存统计,2销售统计,3生产时效,4经营指标,5设备运转率) )
+      }
+      this.getDataByUrl(_url,params).then(res=>{
+         this.assignDataToList(type,mode,res)
+      })
+
+    },
+    assignDataToList(type,mode,res){
+     // type(类型,day(天),month(月),year(年)),
+      switch (mode) {
+          case 0:
+            //0生产损耗
+           this.lineProductionLossList[type+'Data'] = res
+           this.lineProductionLossList.curData = this.lineProductionLossList[type+'Data']
+            break;
+          case 1:
+            //1库存统计
+              this.barStockStatisticsList[type+'Data'] = res
+               this.barStockStatisticsList.curData = this.barStockStatisticsList[type+'Data']
+            break;
+           case 2:
+            //2销售统计
+              this.lineSalesStatisticsList[type+'Data'] = res
+               this.lineSalesStatisticsList.curData = this.lineSalesStatisticsList[type+'Data']
+            break;
+           case 3:
+            //3生产时效
+              this.lineProductionEffectivenessList[type+'Data'] = res
+               this.lineProductionEffectivenessList.curData = this.lineProductionEffectivenessList[type+'Data']
+            break;
+           case 4:
+            //4经营指标
+              this.lineBusinessIndicatorsList[type+'Data'] = res
+               this.lineBusinessIndicatorsList.curData = this.lineBusinessIndicatorsList[type+'Data']
+            break;
+           case 5:
+            //5设备运转率
+              this.gaugeEquipmentOperationRateList[type+'Data'] = res
+               this.gaugeEquipmentOperationRateList.curData = this.gaugeEquipmentOperationRateList[type+'Data']
+            break;              
+          default:
+            break;
+        }
+    }
+
+  }
+};
+</script>
+
+<style></style>

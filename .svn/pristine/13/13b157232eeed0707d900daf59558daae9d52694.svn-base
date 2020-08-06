@@ -1,0 +1,304 @@
+<template>
+  <div class="masterContainer bodyContent">
+    <div class="orderCardInfoBox">
+      <div class="orderCardItem orderCardInfo">
+        <div class="cardFlexBox">
+          <div class="cardFlexItem cardLeft">
+            <div class="cardTitle">今天接单</div>
+            <img class="cardIcon" :src="cardOrderIcon" />
+          </div>
+          <div class="cardFlexItem cardRight">
+            <div class="cardMoney">23,800,00 元</div>
+            <div class="cardArea">13398 M</div>
+          </div>
+        </div>
+      </div>
+      <div class="orderCardItem saleCardInfo">
+        <div class="cardFlexBox">
+          <div class="cardFlexItem cardLeft">
+            <div class="cardTitle">今天销售</div>
+            <img class="cardIcon" :src="cardSaleIcon" />
+          </div>
+          <div class="cardFlexItem cardRight">
+            <div class="cardMoney">23,800,00 元</div>
+            <div class="cardArea">13398 M</div>
+          </div>
+        </div>
+      </div>
+      <div class="orderCardItem purchaseCardInfo">
+        <div class="cardFlexBox">
+          <div class="cardFlexItem cardLeft">
+            <div class="cardTitle">今天采购</div>
+            <img class="cardIcon" :src="cardPurchaseIcon" />
+          </div>
+          <div class="cardFlexItem cardRight">
+            <div class="cardMoney">23,800,00 元</div>
+            <div class="cardArea">13398 M</div>
+          </div>
+        </div>
+      </div>
+      <div class="orderCardItem stockCardInfo">
+        <div class="cardFlexBox">
+          <div class="cardFlexItem cardLeft">
+            <div class="cardTitle">今天入库</div>
+            <img class="cardIcon" :src="cardStockIcon" />
+          </div>
+          <div class="cardFlexItem cardRight">
+            <div class="cardMoney">23,800,00 元</div>
+            <div class="cardArea">13398 M</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="echartInfoBox">
+      <div class="echartItem leftEchartIcon">
+        <lineProductionLoss
+          @lineProductionLossEvent="lineProductionLossEvent"
+          style="height: 300px;"
+          :value="barData"
+          text="生产损耗"
+        ></lineProductionLoss>
+      </div>
+      <div class="echartItem compassIconConfig">
+        <div class="compassTitle">经营罗盘</div>
+        <img class="compassIcon" :src="compassIcon" />
+      </div>
+      <div class="echartItem rightEchartIcon">
+        <div class="stockStatisticsOtherInfo"></div>
+        <barStockStatistics
+          @barStockStatisticsEvent="barStockStatisticsEvent"
+          style="height: 300px;"
+          :value="barData"
+          text="库存统计"
+        ></barStockStatistics>
+      </div>
+    </div>
+    <div class="echartOtherInfoBox">
+      <div class="echartOtherItem echartOtherConfig-one">
+        <lineSalesStatistics
+          @lineSalesStatisticsEvent="lineSalesStatisticsEvent"
+          style="height: 300px;"
+          :value="barData"
+          text="销售统计"
+        />
+      </div>
+      <div class="echartOtherItem echartOtherConfig-two">
+        <lineProductionEffectiveness
+          @lineProductionEffectivenessEvent="lineProductionEffectivenessEvent"
+          style="height: 300px;"
+          :value="barData"
+          text="生产时效"
+        />
+      </div>
+      <div class="echartOtherItem echartOtherConfig-three">
+        <lineBusinessIndicators
+          @lineBusinessIndicatorsEvent="lineBusinessIndicatorsEvent"
+          style="height: 300px;"
+          :value="barData"
+          text="经营指标"
+        />
+      </div>
+      <div class="echartOtherItem echartOtherConfig-four">
+        <gaugeEquipmentOperationRate
+          @gaugeEquipmentOperationRateEvent="gaugeEquipmentOperationRateEvent"
+          style="height: 300px;"
+          :value="barData"
+          text="设备运转率"
+        />
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+// 新的主页
+import {
+  gaugeEquipmentOperationRate,
+  lineProductionLoss,
+  barStockStatistics,
+  lineSalesStatistics,
+  lineBusinessIndicators,
+  lineProductionEffectiveness
+} from "_c/charts";
+import cardOrderIcon from "@/assets/images/page-design/master-page/card-order-icon.png";
+import cardPurchaseIcon from "@/assets/images/page-design/master-page/card-purchase-icon.png";
+import cardSaleIcon from "@/assets/images/page-design/master-page/card-sale-icon.png";
+import cardStockIcon from "@/assets/images/page-design/master-page/card-stock-icon.png";
+import compassIcon from "@/assets/images/page-design/master-page/compassIcon.gif";
+export default {
+  components: {
+    lineProductionLoss,
+    barStockStatistics,
+    lineSalesStatistics,
+    lineBusinessIndicators,
+    lineProductionEffectiveness,
+    gaugeEquipmentOperationRate
+  },
+  data() {
+    return {
+      cardOrderIcon,
+      cardPurchaseIcon,
+      cardSaleIcon,
+      cardStockIcon,
+      compassIcon, // 图片路径
+      barData: [
+        {
+          Mon: 13253,
+          Tue: 34235,
+          Wed: 26321,
+          Thu: 12340,
+          Fri: 24643,
+          Sat: 1322,
+          Sun: 1324
+        },
+        {
+          Mon: 10000,
+          Tue: 20000,
+          Wed: 30000,
+          Thu: 40000,
+          Fri: 50000,
+          Sat: 30000,
+          Sun: 10000
+        }
+      ]
+    };
+  },
+  methods: {
+    lineProductionEffectivenessEvent(type){
+       this.barData = [
+         {
+          Mon: 11111,
+          Tue: 34235,
+          Wed: 26321,
+          Thu: 12340,
+          Fri: 24643,
+          Sat: 1322,
+          Sun: 1324
+        },
+        {
+          Mon: 10000,
+          Tue: 20000,
+          Wed: 30000,
+          Thu: 40000,
+          Fri: 50000,
+          Sat: 30000,
+          Sun: 10000
+        }
+      ];
+    },
+    lineSalesStatisticsEvent(type){
+       this.barData = [
+         {
+          Mon: 22222,
+          Tue: 34235,
+          Wed: 26321,
+          Thu: 12340,
+          Fri: 24643,
+          Sat: 1322,
+          Sun: 1324
+        },
+        {
+          Mon: 10000,
+          Tue: 20000,
+          Wed: 30000,
+          Thu: 40000,
+          Fri: 50000,
+          Sat: 30000,
+          Sun: 10000
+        }
+      ];
+    },
+    lineProductionLossEvent(type){
+       this.barData = [
+         {
+          Mon: 33333,
+          Tue: 34235,
+          Wed: 26321,
+          Thu: 12340,
+          Fri: 24643,
+          Sat: 1322,
+          Sun: 1324
+        },
+        {
+          Mon: 10000,
+          Tue: 20000,
+          Wed: 30000,
+          Thu: 40000,
+          Fri: 50000,
+          Sat: 30000,
+          Sun: 10000
+        }
+      ];
+    },
+    lineBusinessIndicatorsEvent(type){
+       this.barData = [
+         {
+          Mon: 44444,
+          Tue: 34235,
+          Wed: 26321,
+          Thu: 12340,
+          Fri: 24643,
+          Sat: 1322,
+          Sun: 1324
+        },
+        {
+          Mon: 10000,
+          Tue: 20000,
+          Wed: 30000,
+          Thu: 40000,
+          Fri: 50000,
+          Sat: 30000,
+          Sun: 10000
+        }
+      ];
+    },
+    gaugeEquipmentOperationRateEvent(type) {
+        this.barData = [
+         {
+          Mon: 55555,
+          Tue: 34235,
+          Wed: 26321,
+          Thu: 12340,
+          Fri: 24643,
+          Sat: 1322,
+          Sun: 1324
+        },
+        {
+          Mon: 10000,
+          Tue: 20000,
+          Wed: 30000,
+          Thu: 40000,
+          Fri: 50000,
+          Sat: 30000,
+          Sun: 10000
+        }
+      ];
+    },
+    barStockStatisticsEvent(type) {
+      // debugger
+      this.barData = [
+        {
+          Mon: 88888,
+          Tue: 55555,
+          Wed: 44444,
+          Thu: 33333,
+          Fri: 24643,
+          Sat: 55555,
+          Sun: 66666
+        },
+        {
+          Mon: 12312,
+          Tue: 28888,
+          Wed: 23232,
+          Thu: 40000,
+          Fri: 23411,
+          Sat: 32445,
+          Sun: 12319
+        }
+      ];
+    }
+  }
+};
+</script>
+
+<style></style>

@@ -1,0 +1,246 @@
+<template>
+  <div ref="dom" class="charts chart-bar"></div>
+</template>
+
+<script>
+import echartsBase from "./mixins";
+import echarts from "echarts";
+import tdTheme from "./theme.json";
+import { on, off } from "@/libs/tools";
+echarts.registerTheme("tdTheme", tdTheme);
+export default {
+  name: "lineProductionEffectiveness", // 生产时效
+  mixins: [echartsBase],
+  data () {
+    return {
+    
+    }
+  },
+  methods: {
+    // 继承中重写方法
+    initEchart() {
+       let xAxisData = this.value.xDatas;
+      let seriesData = this.value.yDataOnes;
+      let seriesTwoData = this.value.yDataTwos;
+      let cityName =  this.value.city;
+      let rankNo =  this.value.rankNo;
+      let _self = this;
+      let option = {
+        title: {
+          textStyle: {
+            color: "white",
+            fontSize: 14
+          },
+          left: 15,
+          top: 5,
+          text: this.text,
+          subtext: this.subtext,
+          x: "left"
+        },
+        tooltip: {
+          trigger: "axis",
+          confine: true, // 是否将 tooltip 框限制在图表的区域内。
+          transitionDuration: 0, // 提示框浮层的移动动画过渡时间，单位是 s，设置为 0 的时候会紧跟着鼠标移动。
+          axisPointer: {
+            type: "cross",
+            label: {
+              backgroundColor: "#6a7985"
+            }
+          },
+          // formatter: '{b0} <br />平均每单交货时间: {c0}'
+          formatter: function(params) {
+            // 格式化函数
+            // [{"componentType":"series","componentSubType":"line","componentIndex":0,"seriesType":"line","seriesIndex":0,"seriesId":"\u0000生产时效\u00000","seriesName":"生产时效","name":"Mon","dataIndex":0,"data":13253,"value":13253,"color":"#3F3096","dimensionNames":["x","y"],"encode":{"x":[0],"y":[1]},"marker":"<span style=\"display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:#3F3096;\"></span>","$vars":["seriesName","name","value"],"axisDim":"x","axisIndex":0,"axisType":"xAxis.category","axisId":"\u0000series\u00000\u00000","axisValue":"Mon","axisValueLabel":"Mon"}]
+            // console.log(JSON.stringify(params))
+            return (
+              params[0].marker +
+              params[0].name +
+              "<br />平均每单交货时间:" +
+              params[0].data.toLocaleString()
+            );
+          }
+        },
+        toolbox: {
+          showTitle: false, // 隐藏默认文字，否则两者位置会重叠
+          left: 90,
+          top: 5,
+          feature: {
+            iconStyle: {},
+            // 注意，自定义的工具名字，只能以 my 开头，例如下例中的 myTool1，myTool2：
+            myTool0: {
+              show: true,
+              title: '日',
+              icon:
+                `image://${_self.currentSelect==_self.dayButton.yes? _self.dayButton.yes:_self.dayButton.no}`,
+              onclick: function () {
+                _self.currentSelect = _self.dayButton.yes
+                _self.$emit(`${_self.$options.name}Event`,_self.dateType.day)
+              }
+            },
+            myTool1: {
+              show: true,
+              title: '月',
+              icon:
+                  `image://${_self.currentSelect==_self.monthButton.yes? _self.monthButton.yes:_self.monthButton.no}`,
+              onclick: function () {
+                 _self.currentSelect = _self.monthButton.yes
+                 _self.$emit(`${_self.$options.name}Event`,_self.dateType.month)
+              }
+            },
+            myTool2: {
+              show: true,
+              title: '年',
+              icon:
+                 `image://${_self.currentSelect==_self.yearButton.yes? _self.yearButton.yes:_self.yearButton.no}`,
+              onclick: function () {
+                _self.currentSelect = _self.yearButton.yes
+                _self.$emit(`${_self.$options.name}Event`,_self.dateType.year)
+              }
+            }
+          }
+        },
+        graphic: [
+          // 深圳区排名
+          {
+            type: "group",
+            right: "15%",
+            top: "4%",
+            children: [
+              {
+                type: "text",
+                z: 100,
+                left: "center",
+                top: "middle",
+                style: {
+                  fill: "white",
+                  textAlign: "right",
+                  text: cityName,
+                  font: "10px Microsoft YaHei"
+                }
+              }
+            ]
+          },
+          // NO.1
+          {
+            type: "group",
+            right: "5%",
+            top: "4.5%",
+            children: [
+              {
+                type: "text",
+                z: 100,
+                left: "center",
+                top: "middle",
+                style: {
+                  fill: "red",
+                  textAlign: "right",
+                  text: rankNo,
+                  font: "10px Microsoft YaHei"
+                }
+              }
+            ]
+          }
+        ],
+        grid: {
+          width: 220,
+          // show:true,
+          left: "20%",
+          bottom: "25%"
+        },
+        xAxis: [
+          {
+            // boundaryGap: false, // 是否从X轴起始点开始
+            axisLine: {
+              show: false,
+              lineStyle: {
+                color: "#01D7FB"
+              }
+            },
+            splitLine: {
+              show: false,
+              lineStyle: {
+                color: "purple"
+              }
+            },
+            type: "category",
+            data: xAxisData
+          }
+        ],
+        yAxis: [
+          {
+            // 第一根Y轴显示控制
+            name: "(时间)",
+            nameTextStyle: {
+              align: "right",
+              padding: [0, 5, 0, 0]
+            },
+            type: "value",
+            // show:false,
+            axisLine: {
+              show: false,
+              lineStyle: {
+                color: "#01D7FB"
+              }
+            },
+            splitLine: {
+              show: true,
+              lineStyle: {
+                // 使用深浅的间隔色
+                color: "purple",
+                type: "dotted",
+                opacity: 0.5
+              }
+            }
+          }
+        ],
+        series: [
+          {
+            smooth: false,
+            name: "生产时效",
+            yAxisIndex: 0,
+            // symbol: "none", // 是否显示小圆点
+            areaStyle: {
+              opacity: 0.5,
+              color: {
+                type: "linear",
+                x: 0,
+                y: 0,
+                x2: 0,
+                y2: 1,
+                colorStops: [
+                  {
+                    offset: 0,
+                    color: "#3F3096"
+                  },
+                  {
+                    offset: 0.5,
+                    color: "#3F3096"
+                  },
+                  {
+                    offset: 1,
+                    color: "rgba(88,160,253,0)"
+                  }
+                ]
+              }
+            },
+            itemStyle: {
+              color: "#3F3096"
+            },
+            data: seriesData,
+            type: "line"
+          }
+        ]
+      };
+      this.dom = echarts.init(this.$refs.dom, "tdTheme");
+      this.dom.setOption(option);
+      on(window, "resize", this.resize);
+    },
+    resize() {
+      this.dom.resize();
+    },
+    testAlert(type) {
+      alert(type);
+    }
+  }
+};
+</script>

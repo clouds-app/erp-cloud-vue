@@ -1,0 +1,565 @@
+<template>
+  <div class="acdountContent">
+    <!-- <Row>
+      <Col span="1">&nbsp;</Col>
+
+      <Col span="6" offset="1">
+        <Card>
+          <p slot="title">应收</p>
+          <br />
+          <p style="padding: 10px;">
+            <Button  @click="handleSubMenuEvent('custinit','account-custinit','客户财务初始化')" type="info">客户财务初始化</Button>
+          </p>
+          <p style="padding: 10px;">
+            <Button @click="handleSubMenuEvent('accRece','account-accRece','应收对账单')" type="info">应收对账单</Button>
+          </p>
+          <p style="padding: 10px;">
+            <Button @click="handleSubMenuEvent('otherMoeny','account-otherMoeny','客户其它应收')" type="info">客户其它应收</Button>
+          </p>
+          <p style="padding: 10px;">
+            <Button @click="handleSubMenuEvent('snaddebt','account-snaddebt','应收呆账')" type="info">应收呆账</Button>
+          </p>
+           <p style="padding: 10px;">
+            <Button @click="handleSubMenuEvent('invoiceCheck','account-invoiceCheck','开票')" type="info">开票</Button>
+          </p>
+          <p style="padding: 10px;">
+            <Button @click="handleSubMenuEvent('writeOff','account-writeOff','应收冲销')" type="info">应收冲销</Button>
+          </p>
+          <p style="padding: 10px;">
+            <Button @click="handleSubMenuEvent('gathering','account-gathering','已收款')" type="info">已收款</Button>
+          </p>
+        </Card>
+      </Col>
+      <Col span="6">
+        <Card>
+          <p slot="title">应付</p>
+          <br />
+          <p style="padding: 10px;">
+            <Button @click="handleSubMenuEvent('purinit','account-purinit','供应商财务初始化')" type="info">供应商财务初始化</Button>
+          </p>
+           <p style="padding: 10px;">
+            <Button @click="handleSubMenuEvent('otherPay','account-otherPay','其他应付')" type="info">其他应付</Button>
+          </p>
+            <p style="padding: 10px;">
+            <Button @click="handleSubMenuEvent('payBadDebt','account-payBadDebt','应付呆账')" type="info">应付呆账</Button>
+          </p>
+            <p style="padding: 10px;">
+            <Button @click="handleSubMenuEvent('accPay','account-accPay','应付对账单')" type="info">应付对账单</Button>
+          </p>
+          <p style="padding: 10px;">
+            <Button @click="handleSubMenuEvent('outWriteOff','account-outWriteOff','应付冲销')" type="info">应付冲销</Button>
+          </p>
+          <p style="padding: 10px;">
+            <Button @click="handleSubMenuEvent('vendInvoiceCheck','account-vendInvoiceCheck','收票')" type="info">收票</Button>
+          </p>
+           <p style="padding: 10px;">
+            <Button @click="handleSubMenuEvent('payment','account-payment','已付款')" type="info">已付款</Button>
+          </p>
+        </Card>
+      </Col>
+    </Row> -->
+    <div class="acdountItem leftItem">
+      <div class="contentHeightBox">
+        <div class="contentHeightBoxItem customerInfoWidth">
+          <div class="customerInfoConfig">
+            <div class="customerInfoBg">
+              <div class="customerInfoBgTitle">客户</div>
+            </div>
+          </div>
+          <div class="customerInfoRowBox">
+               <div class="customerInfoRowItem upSide">
+                    <div  @click="handleSubMenuEvent('custinit','account-custinit','客户财务初始化')" class="upSideItem AccountInitialization cursorPointer">
+                       <div class="AccountInitializationTitle">账务初始化</div>
+                    </div>
+                    <div @click="handleSubMenuEvent('accRece','account-accRece','应收对账单')"  class="upSideItem AccountsReceivable cursorPointer">
+                      <div class="AccountsReceivableTitle">应收对账单</div>
+                    </div>
+               </div>
+               <div class="customerInfoRowItem downSide">
+                    <div @click="handleSubMenuEvent('otherMoeny','account-otherMoeny','客户其它应收')" class="downSide OtherReceivables cursorPointer">
+                        <div class="OtherReceivablesTitle">其它应收</div>
+                    </div>
+                     <div @click="handleSubMenuEvent('snaddebt','account-snaddebt','应收呆账')"  class="downSide BadDebtsReceivable cursorPointer">
+                         <div class="BadDebtsReceivableTitle">应收呆账</div>
+                     </div>
+               </div>
+          </div>
+        </div>
+        <div class="contentHeightBoxItem arrowRightConfig">
+            <div class="arrowRightIcon"></div>
+        </div>
+        <div class="contentHeightBoxItem InvoiceBox">
+           <div @click="handleSubMenuEvent('invoiceCheck','account-invoiceCheck','开票')" class="InvoiceItem cursorPointer">
+               <div class="InvoiceTitle">开 票</div>
+           </div>
+        </div>
+         <div class="contentHeightBoxItem arrowRightConfig">
+            <div class="arrowRightIcon"></div>
+        </div>
+        <div class="contentHeightBoxItem WriteOffReceivableBox">
+            <div @click="handleSubMenuEvent('writeOff','account-writeOff','应收冲销')" class="WriteOffReceivableItem cursorPointer">
+               <div class="WriteOffReceivableTitle">应收冲销</div>
+           </div>
+        </div>
+        <div class="contentHeightBoxItem arrowLeftConfig">
+            <div class="arrowLeftIcon"></div>
+        </div>
+        <div class="contentHeightBoxItem CollectionBox">
+            <div @click="handleSubMenuEvent('gathering','account-gathering','已收款')" class="CollectionItem cursorPointer">
+              <div class="CollectionTitle">收 款</div>
+            </div>
+        </div>
+      </div>
+      <div class="contentHeightBox">
+        <!-- <div class="contentHeightBoxItem customerInfoWidth">
+          <div class="customerInfoConfig">
+            <div class="customerInfoBg">
+              <div class="customerInfoBgTitle">供应商</div>
+            </div>
+          </div>
+          <div class="customerInfoRowBox">
+               <div class="customerInfoRowItem upSide">
+                    <div @click="handleSubMenuEvent('purinit','account-purinit','供应商财务初始化')" class="upSideItem AccountInitialization cursorPointer">
+                       <div class="AccountInitializationTitle">账务初始化</div>
+                    </div>
+                    <div @click="handleSubMenuEvent('accPay','account-accPay','应付对账单')" class="upSideItem AccountsReceivable cursorPointer">
+                      <div class="AccountsReceivableTitle">应付对账单</div>
+                    </div>
+               </div>
+               <div class="customerInfoRowItem downSide">
+                    <div @click="handleSubMenuEvent('otherPay','account-otherPay','其他应付')" class="downSide OtherReceivables cursorPointer">
+                        <div class="OtherReceivablesTitle">其它应付</div>
+                    </div>
+                     <div @click="handleSubMenuEvent('payBadDebt','account-payBadDebt','应付呆账')" class="downSide BadDebtsReceivable cursorPointer">
+                         <div class="BadDebtsReceivableTitle">应付呆账</div>
+                     </div>
+               </div>
+          </div>
+        </div> -->
+        <div class="contentHeightBoxItem PaymentBox">
+            <div @click="handleSubMenuEvent('payment','account-payment','已付款')"  class="PaymentItem cursorPointer">
+              <div class="PaymentTitle">付 款</div>
+            </div>
+        </div>
+        <div class="contentHeightBoxItem arrowRightConfig">
+            <div class="arrowRightIcon"></div>
+        </div>
+        <!-- <div class="contentHeightBoxItem InvoiceBox">
+           <div @click="handleSubMenuEvent('vendInvoiceCheck','account-vendInvoiceCheck','收票')" class="InvoiceItem cursorPointer">
+               <div class="InvoiceTitle">收 票</div>
+           </div>
+        </div> -->
+         <div class="contentHeightBoxItem WriteOffReceivableBox">
+            <div @click="handleSubMenuEvent('outWriteOff','account-outWriteOff','应付冲销')"  class="WriteOffReceivableItem cursorPointer">
+               <div class="WriteOffReceivableTitle">应付冲销</div>
+           </div>
+        </div>
+        <div class="contentHeightBoxItem arrowLeftConfig">
+            <div class="arrowLeftIcon"></div>
+        </div>
+         <!-- <div class="contentHeightBoxItem arrowRightConfig">
+            <div class="arrowRightIcon"></div>
+        </div> -->
+        <!-- <div class="contentHeightBoxItem WriteOffReceivableBox">
+            <div @click="handleSubMenuEvent('outWriteOff','account-outWriteOff','应付冲销')"  class="WriteOffReceivableItem cursorPointer">
+               <div class="WriteOffReceivableTitle">应付冲销</div>
+           </div>
+        </div> -->
+        <div class="contentHeightBoxItem InvoiceBox">
+           <div @click="handleSubMenuEvent('vendInvoiceCheck','account-vendInvoiceCheck','收票')" class="InvoiceItem cursorPointer">
+               <div class="InvoiceTitle">收 票</div>
+           </div>
+        </div>
+        <div class="contentHeightBoxItem arrowLeftConfig">
+            <div class="arrowLeftIcon"></div>
+        </div>
+        <div class="contentHeightBoxItem customerInfoWidth">
+          <div class="customerInfoConfig">
+            <div class="customerInfoBg">
+              <div class="customerInfoBgTitle">供应商</div>
+            </div>
+          </div>
+          <div class="customerInfoRowBox">
+               <div class="customerInfoRowItem upSide">
+                    <div @click="handleSubMenuEvent('purinit','account-purinit','供应商财务初始化')" class="upSideItem AccountInitialization cursorPointer">
+                       <div class="AccountInitializationTitle">账务初始化</div>
+                    </div>
+                    <div @click="handleSubMenuEvent('accPay','account-accPay','应付对账单')" class="upSideItem AccountsReceivable cursorPointer">
+                      <div class="AccountsReceivableTitle">应付对账单</div>
+                    </div>
+               </div>
+               <div class="customerInfoRowItem downSide">
+                    <div @click="handleSubMenuEvent('otherPay','account-otherPay','其他应付')" class="downSide OtherReceivables cursorPointer">
+                        <div class="OtherReceivablesTitle">其它应付</div>
+                    </div>
+                     <div @click="handleSubMenuEvent('payBadDebt','account-payBadDebt','应付呆账')" class="downSide BadDebtsReceivable cursorPointer">
+                         <div class="BadDebtsReceivableTitle">应付呆账</div>
+                     </div>
+               </div>
+          </div>
+        </div>
+        <!-- <div class="contentHeightBoxItem PaymentBox">
+            <div @click="handleSubMenuEvent('payment','account-payment','已付款')"  class="PaymentItem cursorPointer">
+              <div class="PaymentTitle">付 款</div>
+            </div>
+        </div> -->
+      </div>
+    </div>
+    <div class="acdountItem rightItem">
+      <div class="leftContentItem">
+        <div class="moduleDataTitleBg">
+          <div class="moduleDataTitle">模块数据</div>
+          <div class="moduleDataListBox cursorPointer">
+            <!-- <div @click="handleSubMenuEvent('supplier','Purchase-supplier','供应商')" class="moduleDataItem">供应商</div>
+                     <div @click="handleSubMenuEvent('supplierArt','purchase-supplierArt','供应商纸质')" class="moduleDataItem">供应商纸质</div> -->
+          </div>
+        </div>
+      </div>
+      <div class="leftContentItem marginTop10">
+        <div class="reportTitleBg">
+          <div class="reportTitle">报表</div>
+          <div class="reportDataListBox cursorPointer">
+            <div  class="reportDataItem" style="color: #bdb7b7;">应收对账查询</div>
+            <div  class="reportDataItem" style="color: #bdb7b7;">应收呆在查询</div>
+            <div  class="reportDataItem" style="color: #bdb7b7;">已收款查询</div>
+            <div  class="reportDataItem" style="color: #bdb7b7;">未收款查询</div>
+            <div  class="reportDataItem" style="color: #bdb7b7;">收款冲销查询</div>
+            <div  class="reportDataItem" style="color: #bdb7b7;">付款冲销查询</div>
+            <div  class="reportDataItem" style="color: #bdb7b7;">未做月结送货单</div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import globleMixin from '@/mixins'
+export default {
+  mixins: [globleMixin],
+  data () {
+    return {}
+  },
+  methods: {
+    // 子页面 参数: 页面.vue,唯一区别ID,TAB 标签显示名称
+    handleSubMenuEvent (currentPage, uniqueKey, tabName) {
+      let params = {
+        menuName: 'Account',
+        page: currentPage, // 显示控件页面
+        uniqueKey: uniqueKey,
+        lable: tabName,
+        isActive: true
+      }
+      this.handleMenuBaseEvent(params) // 调用MIXIN 共用方法
+    }
+  }
+}
+</script>
+
+<style lang="scss">
+.acdountContent {
+  color: white;
+  min-height: 600px;
+  width: 100%;
+  display: flex;
+  display: -webkit-flex; /* Safari */
+  background: rgba(33, 46, 129, 1);
+  .acdountItem {
+    &.leftItem {
+      display: flex;
+      display: -webkit-flex; /* Safari */
+      flex-direction: column;
+      margin: 10px;
+      width: 80%;
+      border-radius: 5px;
+      box-shadow: 0px 0px 10px rgba(0, 222, 255, 1) inset;
+      .contentHeightBox {
+        height: 50%;
+        display: flex;
+        display: -webkit-flex; /* Safari */
+        flex-direction: row;
+
+       // border: 1px solid yellow;
+        .contentHeightBoxItem {
+          width: 17%; // 默认占用宽度百分比
+          //border: 1px solid gainsboro;
+          &.customerInfoWidth {
+            // width: 28.57%;
+            width: 22.57%;
+            position: relative;
+            .customerInfoConfig {
+              // width: 28.57%;
+              height: 100%;
+              display:flex;
+              display: -webkit-flex; /* Safari */
+              justify-content: center;
+              align-items: center;
+              .customerInfoBg {
+                width: 150px;
+                height: 150px;
+                background: rgba(17, 78, 253, 1);
+                //opacity:0.32;
+                border-radius: 50%;
+                .customerInfoBgTitle {
+                  font-size: 16px;
+                  font-weight: bold;
+                  text-align: center;
+                  line-height: 150px;
+                }
+
+              }
+            }
+            .customerInfoRowBox {
+               position: absolute;
+               top:0;
+               left:0;
+                height: 100%;
+                width: 100%;
+                //border:1px solid red;
+                 display: flex;
+                 display: -webkit-flex; /* Safari */
+                 flex-direction: column;
+                 .customerInfoRowItem{
+                   height:50%;
+                   //border:1px solid pink;
+                   &.upSide{
+                       display: flex;
+                       display: -webkit-flex; /* Safari */
+                       flex-direction: row;
+                       justify-content:center;
+                       align-items:center;
+                       .upSideItem{
+                          width:100px;
+                          height:100px;
+                          border-radius:50%;
+                          &.AccountInitialization{
+                              background:linear-gradient(90deg,rgba(4,152,101,1),rgba(3,199,160,1));
+                               border:2px solid rgba(0, 120, 81, 0.38);
+                               .AccountInitializationTitle{
+                                 text-align:center;
+                                 line-height: 100px;
+                               }
+                          }
+                          &.AccountsReceivable{
+                             margin-left:20px;
+                              background:linear-gradient(90deg,rgba(132,62,246,1),rgba(153,134,250,1));
+                              border:2px solid rgba(99, 30, 218, 0.38);
+                              .AccountsReceivableTitle{
+                                text-align:center;
+                                line-height:100px;
+                              }
+                          }
+                       }
+                   }
+                   &.downSide{
+                       display: flex;
+                       display: -webkit-flex; /* Safari */
+                       flex-direction: row;
+                       justify-content:center;
+                       align-items:center;
+                     .downSide{
+                          width:100px;
+                          height:100px;
+                          border-radius:50%;
+                          &.OtherReceivables{
+                                background:linear-gradient(90deg,rgba(17,78,253,1),rgba(125,159,255,1));
+                                border:2px solid rgba(5, 66, 243, 0.38);
+                               .OtherReceivablesTitle{
+                                 text-align:center;
+                                 line-height: 100px;
+                               }
+                          }
+                          &.BadDebtsReceivable{
+                             margin-left:20px;
+                             background:linear-gradient(90deg,rgba(252,84,135,1),rgba(254,133,170,1));
+                              border:2px solid rgba(255, 170, 222, 0.38);
+                              .BadDebtsReceivableTitle{
+                                text-align:center;
+                                line-height:100px;
+                              }
+                          }
+                     }
+                   }
+                 }
+            }
+          }
+          &.arrowRightConfig{
+                width: 7%; // 重置 = 占用宽度百分比
+                display: flex;
+                display: -webkit-flex; /* Safari */
+                flex-direction: column;
+                justify-content:center;
+                .arrowRightIcon{
+                    height: 100px;
+                   // background-image: url("../../../../assets/images/page-design/master-page/sale-arrow-icon.png");
+                     background: url("../../../../assets/images/svgIcon/arrow-right.svg");
+                     background-position: left center;
+                     background-repeat: no-repeat;
+                     background-size: 50px 100px;
+                }
+          }
+          &.arrowLeftConfig{
+                width: 7%; // 重置 = 占用宽度百分比
+                display: flex;
+                display: -webkit-flex; /* Safari */
+                flex-direction: column;
+                justify-content:center;
+                .arrowLeftIcon{
+                    height: 100px;
+                    //background-image: url("../../../../assets/images/page-design/master-page/sale-arrow-icon-left.png");
+                    background: url("../../../../assets/images/svgIcon/arrow-left.svg");
+                    background-position: center center;
+                    background-repeat: no-repeat;
+                    background-size: 50px 100px;
+                   // background-size: auto 16px;
+                }
+          }
+          &.InvoiceBox{
+              width: 17%; // 重置 = 占用宽度百分比
+              display: flex;
+              display: -webkit-flex; /* Safari */
+              justify-content: center;
+              align-items:center;
+              .InvoiceItem{
+                width:130px;
+                height:56px;
+                background:linear-gradient(90deg,rgba(11,73,251,1),rgba(61,111,254,1));
+                border-radius:6px;
+                .InvoiceTitle{
+                  text-align:center;
+                  line-height:56px;
+                }
+              }
+          }
+          &.WriteOffReceivableBox{
+              width: 17%; // 重置 = 占用宽度百分比
+              display: flex;
+              display: -webkit-flex; /* Safari */
+              justify-content: center;
+              align-items:center;
+              .WriteOffReceivableItem{
+                width:130px;
+                height:56px;
+                background:linear-gradient(90deg,rgba(11,73,251,1),rgba(61,111,254,1));
+                border-radius:6px;
+                .WriteOffReceivableTitle{
+                  text-align:center;
+                  line-height:56px;
+                }
+              }
+          }
+          &.CollectionBox{
+              width: 17%; // 重置 = 占用宽度百分比
+              display: flex;
+              display: -webkit-flex; /* Safari */
+              justify-content: center;
+              align-items:center;
+              .CollectionItem{
+                width:130px;
+                height:56px;
+                background:linear-gradient(90deg,rgba(254,122,59,1),rgba(255,173,133,1));
+                border:2px solid rgba(226, 115, 60, 0.38);
+                border-radius:23px;
+                .CollectionTitle{
+                  text-align:center;
+                  line-height:56px;
+                }
+              }
+          }
+          &.PaymentBox{
+              // width: 17%; // 重置 = 占用宽度百分比
+              width: 23%; // 重置 = 占用宽度百分比
+              display: flex;
+              display: -webkit-flex; /* Safari */
+              justify-content: center;
+              align-items:center;
+              .PaymentItem{
+                width:130px;
+                height:56px;
+                background:linear-gradient(90deg,rgba(4,152,101,1),rgba(3,199,160,1));
+                border:2px solid rgba(0, 120, 81, 0.38);
+                border-radius:23px;
+                .PaymentTitle{
+                  text-align:center;
+                  line-height:56px;
+                }
+              }
+          }
+        }
+      }
+    }
+    &.rightItem {
+      margin: 10px;
+      width: 20%;
+      border-radius: 5px;
+      box-shadow: 0px 0px 10px rgba(0, 222, 255, 1) inset;
+      display: flex;
+      display: -webkit-flex;
+      flex-direction: column;
+      .leftContentItem {
+        min-height: 100px;
+        // width: 100px;
+        //border:1px solid green;
+        .moduleDataTitleBg {
+          background-image: url("../../../../assets/images/page-design/master-page/icon-moduleData.png");
+          background-position: 10px top;
+          background-repeat: no-repeat;
+          background-size: auto 20px;
+          .moduleDataTitle {
+            color: #ffcc00;
+            margin-left: 35px;
+            margin-top: 10px;
+          }
+          .moduleDataListBox {
+            display: flex;
+            display: -webkit-flex;
+            flex-direction: column;
+            .moduleDataItem {
+              height: 20px;
+              margin-left: 35px;
+              // border:1px solid yellow;
+            }
+          }
+        }
+        .reportTitleBg {
+          background-image: url("../../../../assets/images/page-design/master-page/icon-report.png");
+          background-position: 10px top;
+          background-repeat: no-repeat;
+          background-size: auto 20px;
+          .reportTitle {
+            color: #18fa00;
+            margin-left: 35px;
+            margin-top: 10px;
+          }
+          .reportDataListBox {
+            display: flex;
+            display: -webkit-flex;
+            flex-direction: column;
+            .reportDataItem {
+              margin-left: 35px;
+              height: 20px;
+              // border-bottom:1px solid green;
+            }
+          }
+        }
+      }
+      .marginTop10 {
+        margin-top: 10px;
+      }
+    }
+    // 禁用 获取功能未实现 灰色 按钮
+    .diabledOrAccess {
+      -webkit-filter: grayscale(100%);
+      -moz-filter: grayscale(100%);
+      -ms-filter: grayscale(100%);
+      -o-filter: grayscale(100%);
+      filter: grayscale(100%);
+      filter: gray;
+    }
+    .cursorPointer {
+      cursor: pointer;
+    }
+  }
+}
+</style>

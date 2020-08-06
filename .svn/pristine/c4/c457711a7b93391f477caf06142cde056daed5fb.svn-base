@@ -1,0 +1,221 @@
+<template>
+  <div ref="dom" class="charts chart-bar"></div>
+</template>
+
+<script>
+import echartsBase from "./mixins";
+import echarts from "echarts";
+import liquidfill from "echarts-liquidfill";
+import tdTheme from "./theme.json";
+import { on, off } from "@/libs/tools";
+echarts.registerTheme("tdTheme", tdTheme);
+export default {
+  name: "gaugeEquipmentOperationRate", // 设备运转率
+  mixins: [echartsBase],
+  data () {
+    return {
+    
+    }
+  },
+  methods: {
+    // 继承中重写方法
+    initEchart() {
+       let xAxisData = this.value.xDatas;
+      let seriesData = this.value.yDataOnes;
+      let seriesTwoData = this.value.yDataTwos;
+      let cityName =  this.value.city;
+      let rankNo =  this.value.rankNo;
+      let _self = this;
+      let option = {
+        title: {
+          textStyle: {
+            color: "white",
+            fontSize: 14
+          },
+          left: 15,
+          top: 5,
+          text: this.text,
+          subtext: this.subtext,
+          x: "left"
+        },
+        legend: {
+          itemWidth: 15,
+          itemHeight: 6,
+          left: 30,
+          bottom: 100,
+          data: [
+            {
+              name: "机器001",
+              icon: "rect",
+              textStyle: {
+                color: "white"
+              }
+            },
+            {
+              name: "机器002",
+              icon: "rect",
+              textStyle: {
+                color: "white"
+              }
+            },
+            {
+              name: "机器003",
+              icon: "rect",
+              textStyle: {
+                color: "white"
+              }
+            }
+          ]
+        },
+        graphic: [
+          //深圳区排名
+          {
+            type: "group",
+            right: "15%",
+            top: "4%",
+            children: [
+              {
+                type: "text",
+                z: 100,
+                left: "center",
+                top: "middle",
+                style: {
+                  fill: "white",
+                  textAlign: "right",
+                  text: cityName,
+                  font: "10px Microsoft YaHei"
+                }
+              }
+            ]
+          },
+          //NO.1
+          {
+            type: "group",
+            right: "5%",
+            top: "4.5%",
+            children: [
+              {
+                type: "text",
+                z: 100,
+                left: "center",
+                top: "middle",
+                style: {
+                  fill: "red",
+                  textAlign: "right",
+                  text: rankNo,
+                  font: "10px Microsoft YaHei"
+                }
+              }
+            ]
+          }
+        ],
+        toolbox: {
+          showTitle: false, // 隐藏默认文字，否则两者位置会重叠
+          left: 90,
+          top: 5,
+          feature: {
+            iconStyle: {},
+            // 注意，自定义的工具名字，只能以 my 开头，例如下例中的 myTool1，myTool2：
+            myTool0: {
+              show: true,
+              title: '日',
+              icon:
+                `image://${_self.currentSelect==_self.dayButton.yes? _self.dayButton.yes:_self.dayButton.no}`,
+              onclick: function () {
+                 debugger
+                _self.currentSelect = _self.dayButton.yes
+                _self.$emit(`${_self.$options.name}Event`,_self.dateType.day)
+
+              }
+            },
+            myTool1: {
+              show: true,
+              title: '月',
+              icon:
+                  `image://${_self.currentSelect==_self.monthButton.yes? _self.monthButton.yes:_self.monthButton.no}`,
+              onclick: function () {
+                 _self.currentSelect = _self.monthButton.yes
+                 _self.$emit(`${_self.$options.name}Event`,_self.dateType.month)
+              }
+            },
+            myTool2: {
+              show: true,
+              title: '年',
+              icon:
+                 `image://${_self.currentSelect==_self.yearButton.yes? _self.yearButton.yes:_self.yearButton.no}`,
+              onclick: function () {
+                _self.currentSelect = _self.yearButton.yes
+                _self.$emit(`${_self.$options.name}Event`,_self.dateType.year)
+              }
+            }
+          }
+        },
+        series: [
+          {
+            name: "机器001",
+            type: "liquidFill",
+            outline: {
+              show: false
+            },
+            itemStyle: {
+              color: "#6184FD"
+            },
+            color: ["#6184FD"],
+            label: {
+              // show: true,
+              // color: '#294D99',
+              // insideColor: '#fff',
+              fontSize: 12
+              // fontWeight: 'bold',
+              // align: 'center',
+              // baseline: 'middle',
+              // position: 'inside'
+            },
+            data: [0.6, 0.5, 0.4, 0.3],
+            radius: "25%",
+            center: ["20%", "45%"]
+          },
+          {
+            name: "机器002",
+            type: "liquidFill",
+            outline: {
+              show: false
+            },
+            itemStyle: {
+              color: "#FF714E"
+            },
+            color: ["#FF714E"],
+            data: [0.6, 0.5, 0.4, 0.3],
+            label: {
+              fontSize: 12
+            },
+            radius: "25%",
+            center: ["50%", "45%"]
+          },
+          {
+            name: "机器003",
+            type: "liquidFill",
+            outline: {
+              show: false
+            },
+            itemStyle: {
+              color: "#8745F6"
+            },
+            color: ["#8745F6"],
+            label: {
+              fontSize: 12
+            },
+            //color: ['#195ba6'],
+            data: [0.6, 0.5, 0.4, 0.3],
+            radius: "25%",
+            center: ["80%", "45%"]
+          }
+        ]
+      };
+      this.dom = echarts.init(this.$refs.dom, "tdTheme");
+      this.dom.setOption(option);
+      on(window, "resize", this.resize);
+    }
+  }
+};
+</script>

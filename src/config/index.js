@@ -13,7 +13,7 @@ export default {
    * @description api请求基础路径
    */
   baseUrl: {
-    dev: 'http://erp.szclsoft.com/erp', // http://erp.szclsoft.com/erp
+    dev: '', // http://erp.szclsoft.com/erp
     pro: 'http://erp.szclsoft.com/erp'
     // http://192.168.0.5:8080
     // http://134.175.53.247/erp

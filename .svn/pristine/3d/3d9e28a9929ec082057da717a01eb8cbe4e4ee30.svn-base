@@ -1,0 +1,212 @@
+import {
+  getBreadCrumbList,
+  setTagNavListInLocalstorage,
+  getMenuByRouter,
+  getTagNavListFromLocalstorage,
+  getHomeRoute,
+  getNextRoute,
+  routeHasExist,
+  routeEqual,
+  getRouteTitleHandled,
+  localSave,
+  localRead
+} from '@/libs/util'
+import beforeClose from '@/router/before-close'
+import { saveErrorLogger } from '@/api/data'
+import router from '@/router'
+import routers from '@/router/routers'
+import config from '@/config'
+import * as type from '@/enum' // 菜单枚举
+const { homeName } = config
+const devfault_menu = {
+  Account: [], // 财务
+  Bas: [], // 基础数据
+  Mrp: [], // 生产
+  Purchase: [], // 采购
+  Report: [], // 报表中心
+  Sale: [], // 财务
+  Stock: [], // 储运
+  Sys: [], // 系统设置
+  SetPlatform: [] // 平台设置
+}
+const closePage = (state, route) => {
+  const nextRoute = getNextRoute(state.tagNavList, route)
+  state.tagNavList = state.tagNavList.filter(item => {
+    return !routeEqual(item, route)
+  })
+  router.push(nextRoute)
+}
+export default {
+  state: {
+    nowTableName: '', // 存储当前激活页面，只用于生产外发和工序外发
+    robStatusUrl: '', // 抢单状态,生产状态
+    btnAccessList: {}, // 每个小模块的对应 是否用 添加/修改/删除等权限
+    appSubMenuResource: Object.assign({}, devfault_menu),
+    updataSubItem: false, // 是否更新当前子表查询
+    currentPage: 'home', // 当前所在页面
+    currentTopMenu: '', // 当前选中主菜单 sale
+    contextMenuObj: null, // 当前页面右键菜单对象
+    operationConfig: { // 当前操作的菜单配置信息
+      isNew: false, // 在内存中已有的菜单
+      topMenu: '',
+      subMenu: '' //
+    },
+    userCode: '', // 登录用户名
+    currentSubMenu: {
+      Account: [], // 财务
+      Bas: [], // 基础数据
+      Mrp: [], // 生产
+      Purchase: [], // 采购
+      Report: [], // 报表中心
+      Sale: [], // 财务
+      Stock: [], // 储运
+      Sys: [], // 系统设置
+      SetPlatform: [] // 平台设置
+    }, // 当前选中子菜单
+    Secondaryauthority: {}, // 二级菜单权限
+    breadCrumbList: [],
+    tagNavList: [],
+    homeRoute: getHomeRoute(routers, homeName),
+    local: localRead('local'),
+    errorList: [],
+    hasReadErrorPage: false
+  },
+  getters: {
+    operationConfig_getter: state => state.operationConfig,
+    currentTopMenu_getter: state => state.currentTopMenu,
+    menuList: (state, getters, rootState) => getMenuByRouter(routers, rootState.user.access),
+    errorCount: state => state.errorList.length
+  },
+  mutations: {
+    // 设置>>抢单外发,生产外发，当前激活页面
+    setnowTableName (stata, data) {
+      // debugger
+      stata.nowTableName = data
+    },
+    // 设置>>抢单状态,生产状态
+    setRobStatusUrl (stata, data) {
+      // debugger
+      stata.robStatusUrl = data
+    },
+    // 设置>>缓存 二级菜单权限
+    setSecondaryauthority (stata, data) {
+      stata.Secondaryauthority[data.val] = data.dataList
+    },
+    // 设置>>缓存 每个小模块的对应 是否用 添加/修改/删除等权限
+    setBtnAccessList (state, data) {
+      state.btnAccessList[data.key] = Object.assign({}, data.data)
+    },
+    // 设置>>缓存二级菜单列表
+    setSubMenuResource (state, data) {
+      state.appSubMenuResource = data
+    },
+    // 重置清空二级菜单列表
+    reSetSubMenuResource (state, data) {
+      state.appSubMenuResource = Object.assign({}, devfault_menu)
+    },
+    // 设置>>当前一级菜单资源ID
+    setTopMenuResourceId (state, data) {
+      state.topMenuResourceId = data
+    },
+    // 设置>>当前二级菜单资源ID
+    setSubMenuResourceId (state, data) {
+      state.subMenuResourceId = data
+    },
+    // 设置>>当前用户登录名
+    setuserCode (state, data) {
+      state.userCode = data
+    },
+    // 设置>>当前页面的右键菜单对象
+    setContextMenuObj (state, data) {
+      state.contextMenuObj = data
+    },
+    // 设置>>是否当前菜单是否新加,主,子菜单信息
+    setOperationConfig (state, data) {
+      state.operationConfig = data
+    },
+    // 设置>>是否更新当前子表查询
+    setUpdataSubItem (state, data) {
+      state.updataSubItem = data
+    },
+    // 设置>>当前选中主菜单
+    setCurrentPage (state, data) {
+      state.currentPage = data
+    },
+    // 设置当前选中主菜单
+    setCurrentTopMenu (state, data) {
+      state.currentTopMenu = data
+    },
+    // 设置当前选中子菜单
+    setCurrentSubMenu (state, data) {
+      state.currentSubMenu = data
+    },
+    // setBreadCrumb (state, route) {
+    //   state.breadCrumbList = getBreadCrumbList(route, state.homeRoute)
+    // },
+    // setTagNavList (state, list) {
+    //   let tagList = []
+    //   if (list) {
+    //     tagList = [...list]
+    //   } else tagList = getTagNavListFromLocalstorage() || []
+    //   if (tagList[0] && tagList[0].name !== homeName) tagList.shift()
+    //   let homeTagIndex = tagList.findIndex(item => item.name === homeName)
+    //   if (homeTagIndex > 0) {
+    //     let homeTag = tagList.splice(homeTagIndex, 1)[0]
+    //     tagList.unshift(homeTag)
+    //   }
+    //   state.tagNavList = tagList
+    //   setTagNavListInLocalstorage([...tagList])
+    // },
+    // closeTag (state, route) {
+    //   let tag = state.tagNavList.filter(item => routeEqual(item, route))
+    //   route = tag[0] ? tag[0] : null
+    //   if (!route) return
+    //   if (route.meta && route.meta.beforeCloseName && route.meta.beforeCloseName in beforeClose) {
+    //     new Promise(beforeClose[route.meta.beforeCloseName]).then(close => {
+    //       if (close) {
+    //         closePage(state, route)
+    //       }
+    //     })
+    //   } else {
+    //     closePage(state, route)
+    //   }
+    // },
+    // addTag (state, { route, type = 'unshift' }) {
+    //   let router = getRouteTitleHandled(route)
+    //   if (!routeHasExist(state.tagNavList, router)) {
+    //     if (type === 'push') state.tagNavList.push(router)
+    //     else {
+    //       if (router.name === homeName) state.tagNavList.unshift(router)
+    //       else state.tagNavList.splice(1, 0, router)
+    //     }
+    //     setTagNavListInLocalstorage([...state.tagNavList])
+    //   }
+    // },
+    setLocal (state, lang) {
+      localSave('local', lang)
+      state.local = lang
+    },
+    addError (state, error) {
+      state.errorList.push(error)
+    },
+    setHasReadErrorLoggerStatus (state, status = true) {
+      state.hasReadErrorPage = status
+    }
+  },
+  actions: {
+    addErrorLog ({ commit, rootState }, info) {
+      if (!window.location.href.includes('error_logger_page')) commit('setHasReadErrorLoggerStatus', false)
+      const { user: { token, userId, userName } } = rootState
+      let data = {
+        ...info,
+        time: Date.parse(new Date()),
+        token,
+        userId,
+        userName
+      }
+      saveErrorLogger(info).then(() => {
+        commit('addError', data)
+      })
+    }
+  }
+}

@@ -1,0 +1,265 @@
+<template>
+  <div ref="dom" class="charts chart-bar"></div>
+</template>
+
+<script>
+import echartsBase from "./mixins";
+import echarts from "echarts";
+import tdTheme from "./theme.json";
+import { on, off } from "@/libs/tools";
+echarts.registerTheme("tdTheme", tdTheme);
+export default {
+  name: "lineSalesStatistics", // 销售统计\
+  mixins: [echartsBase],
+ data () {
+    return {
+    
+    }
+  },
+  methods: {
+    // 继承中重写方法
+    initEchart() {
+      let xAxisData = Object.keys(this.value[0]);
+      let seriesData = Object.values(this.value[0]);
+      let seriesTwoData = Object.values(this.value[1]);
+      let _self = this;
+      let option = {
+        title: {
+          textStyle: {
+            color: "white",
+            fontSize: 14
+          },
+          left: 15,
+          top: 5,
+          text: this.text,
+          subtext: this.subtext,
+          x: "left"
+        },
+        tooltip: {
+          trigger: "axis",
+          confine: true, // 是否将 tooltip 框限制在图表的区域内。
+          transitionDuration: 0, // 提示框浮层的移动动画过渡时间，单位是 s，设置为 0 的时候会紧跟着鼠标移动。
+          axisPointer: {
+            type: "cross",
+            label: {
+              backgroundColor: "#6a7985"
+            }
+          }
+        },
+        toolbox: {
+          showTitle: false, // 隐藏默认文字，否则两者位置会重叠
+          left: 90,
+          top: 5,
+           feature: {
+            iconStyle: {},
+            // 注意，自定义的工具名字，只能以 my 开头，例如下例中的 myTool1，myTool2：
+            myTool0: {
+              show: true,
+              title: '日',
+              icon:
+                `image://${_self.currentSelect==_self.dayButton.yes? _self.dayButton.yes:_self.dayButton.no}`,
+              onclick: function () {
+                _self.currentSelect = _self.dayButton.yes
+                _self.$emit(`${_self.$options.name}Event`,_self.dateType.day)
+              }
+            },
+            myTool1: {
+              show: true,
+              title: '月',
+              icon:
+                  `image://${_self.currentSelect==_self.monthButton.yes? _self.monthButton.yes:_self.monthButton.no}`,
+              onclick: function () {
+                 _self.currentSelect = _self.monthButton.yes
+                 _self.$emit(`${_self.$options.name}Event`,_self.dateType.month)
+              }
+            },
+            myTool2: {
+              show: true,
+              title: '年',
+              icon:
+                 `image://${_self.currentSelect==_self.yearButton.yes? _self.yearButton.yes:_self.yearButton.no}`,
+              onclick: function () {
+                _self.currentSelect = _self.yearButton.yes
+                _self.$emit(`${_self.$options.name}Event`,_self.dateType.yes)
+              }
+            }
+          }
+        },
+        legend: {
+          itemWidth: 20,
+          itemHeight: 6,
+          // right:120,
+          top: 28,
+          data: [
+            {
+              name: "销售金额",
+              icon: "rect",
+              textStyle: {
+                color: "white"
+              }
+            },
+            {
+              name: "销售平方米",
+              icon: "rect",
+              textStyle: {
+                color: "white"
+              }
+            }
+          ]
+        },
+        grid: {
+          width: 170,
+          // show:true,
+          left: "20%",
+          bottom: "25%"
+        },
+        xAxis: [
+          {
+            // boundaryGap: false, // 是否从X轴起始点开始
+            axisLine: {
+              show: true,
+              lineStyle: {
+                color: "#01D7FB"
+              }
+            },
+            splitLine: {
+              show: false,
+              lineStyle: {
+                color: "purple"
+              }
+            },
+            type: "category",
+            data: xAxisData
+          }
+        ],
+        yAxis: [
+          {
+            // 第一根Y轴显示控制
+            name: "(元)",
+            nameTextStyle: {
+              align: "right",
+              padding: [0, 5, 0, 0]
+            },
+            type: "value",
+            // show:false,
+            axisLine: {
+              show: true,
+              lineStyle: {
+                color: "#01D7FB"
+              }
+            },
+            splitLine: {
+              show: false,
+              lineStyle: {
+                // 使用深浅的间隔色
+                color: "purple",
+                type: "dotted",
+                opacity: 0.5
+              }
+            }
+          },
+          {
+            // 第二根Y轴显示控制
+            name: "(m²)",
+            nameTextStyle: {
+              align: "left",
+              padding: [0, 0, 0, 8]
+            },
+            type: "value",
+            axisLine: {
+              show: false,
+              lineStyle: {
+                color: "#01D7FB"
+              }
+            },
+            splitLine: {
+              show: false,
+              lineStyle: {
+                // 使用深浅的间隔色
+                color: "purple",
+                type: "dotted",
+                opacity: 0.5
+              }
+            }
+          }
+        ],
+        series: [
+          {
+            smooth: false,
+            name: "销售金额",
+            yAxisIndex: 0,
+            symbol: "none", // 是否显示小圆点
+            areaStyle: {
+              opacity: 0.2,
+              color: {
+                type: "linear",
+                x: 0,
+                y: 0,
+                x2: 0,
+                y2: 1,
+                colorStops: [
+                  {
+                    offset: 0,
+                    color: "#0FFFF6"
+                  },
+                  {
+                    offset: 0.5,
+                    color: "#0FFFF6"
+                  },
+                  {
+                    offset: 1,
+                    color: "rgba(88,160,253,0)"
+                  }
+                ]
+              }
+            },
+            itemStyle: {
+              color: "#0FFFF6"
+            },
+            data: seriesData,
+            type: "line"
+          },
+          {
+            name: "销售平方米",
+            smooth: false,
+            yAxisIndex: 1,
+            symbol: "none", // 是否显示小圆点
+            areaStyle: {
+              opacity: 0.2,
+              color: {
+                type: "linear",
+                x: 0,
+                y: 0,
+                x2: 0,
+                y2: 1,
+                colorStops: [
+                  {
+                    offset: 0,
+                    color: "#1DFE01"
+                  },
+                  {
+                    offset: 0.5,
+                    color: "#1DFE01"
+                  },
+                  {
+                    offset: 1,
+                    color: "rgba(88,160,253,0)"
+                  }
+                ]
+              }
+            },
+            itemStyle: {
+              color: "#1DFE01"
+            },
+            data: seriesTwoData,
+            type: "line"
+          }
+        ]
+      };
+      this.dom = echarts.init(this.$refs.dom, "tdTheme");
+      this.dom.setOption(option);
+      on(window, "resize", this.resize);
+    }
+  }
+};
+</script>

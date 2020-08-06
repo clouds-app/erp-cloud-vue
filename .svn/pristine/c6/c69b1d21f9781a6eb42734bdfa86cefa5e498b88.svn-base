@@ -1,0 +1,122 @@
+<template>
+  <div>
+    <editWindow
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="50%"
+      :loading="!isLoaddingDone"
+      @on-ok="formDataSubmit()"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-massage="false"
+        :model="formDataInfo"
+        :rules="ruleValidate"
+        :label-width="80"
+      >
+        <FormItem label="编号" prop="frCode">
+          <referenceField
+           ref='firstFocusInput'
+            v-model="formDataInfo.frCode"
+            maxlength="20"
+            placeholder="请输入编码"
+            :disabled="detailDisabled"
+            :form-name="formmastername"
+            :id="formDataInfo.id"
+          ></referenceField>
+        </FormItem>
+        <FormItem label="退货原因" prop="frName">
+          <Input
+            v-model="formDataInfo.frName"
+            maxlength="20"
+            :disabled="detailDisabled"
+            placeholder="请输入退货原因"
+          ></Input>
+        </FormItem>
+
+        <FormItem label="备注" prop="remark">
+          <Input
+            v-model="formDataInfo.remark"
+            maxlength="100"
+            :disabled="detailDisabled"
+            placeholder="请输入备注..."
+          ></Input>
+        </FormItem>
+      </Form>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:07:54
+ */
+import referenceField from '@/components/referenceField/referenceField'
+import editBaseMixins from '../../mixins/edit'
+import { customValidator, uniqueValidator } from '@/libs/validator'
+const default_formDataInfo = {
+  frCode: '',
+  frName: '',
+  remark: ''
+}
+export default {
+  name: 'edit-fadeReason',
+  mixins: [editBaseMixins],
+  components: {
+    referenceField
+  },
+  data () {
+    return {
+      formmastername: 'fadereasonFm',
+      actionSubtitle: '退货原因', // 当前操作副标题
+      requestBaseUrl: '/bas/fadeReason', // 请求 查询 操作的基础路径
+      formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {
+        frCode: [{ required: true, message: '编码不能为空', trigger: 'blur' },
+          { validator: customValidator,
+            trigger: 'blur',
+            customRule: ['identifier'],
+            fieldDesc: '编码' },
+          {
+            validator: uniqueValidator,
+            trigger: 'blur',
+            fieldDesc: '编码',
+            params: {
+              fieldName: 'frCode',
+              formName: 'fadereasonFm',
+              id: () => {
+                return this.formDataInfo.id
+              }
+            }
+          }
+
+        ]
+        // frName: [
+        //   { required: true, message: "退货原因不能为空", trigger: "blur" }
+        // ]
+      }
+    }
+  },
+
+  methods: {
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo () {
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
+    }
+  }
+}
+</script>
+
+<style></style>

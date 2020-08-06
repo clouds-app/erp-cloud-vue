@@ -1,0 +1,559 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-specPrice"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="70%"
+      :loading="!isLoaddingDone"
+      :spinLoaddingText="spinLoaddingText"
+      @on-ok="formTableDataSubmit()"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-message="true"
+        :model="formDataInfo"
+        :rules="ruleValidate"
+        :label-width="130"
+      >
+        <Row :gutter="16">
+          <Col span="24">
+            <Row>
+              <Col span="12">
+                <FormItem label="客户" prop="master.cusName">
+                    <popup
+                     ref='firstFocusInput'
+                      v-model="formDataInfo.master.cusCode"
+                      field-name="cusCode"
+                      :disabled="detailDisabled"
+                      popup-name="CustomerSingleBox"
+                      :fill-model.sync="formDataInfo.master"
+                      render-fields="custId,cusCode,cusName"
+                      from-fields="id,cusCode,cusName"
+                      :suffix="true"
+                      :suffix-model="formDataInfo.master.cusName"
+                      :query-params="{}"
+                    />
+                  </FormItem>
+
+              </Col>
+              <Col span="12">
+                <FormItem label="盒式" prop="master.boxName">
+                  <popup
+                    v-model="formDataInfo.master.boxCode"
+                    field-name="boxCode"
+                    :disabled="detailDisabled"
+                    popup-name="BoxSingleBox"
+                    :fill-model.sync="formDataInfo.master"
+                    render-fields="boxId,boxCode,boxName"
+                    from-fields="id,boxCode,boxName"
+                    :suffix="true"
+                    :suffix-model="formDataInfo.master.boxName"
+                    :query-params="{}"
+                  />
+
+                </FormItem>
+              </Col>
+            </Row>
+          </Col>
+
+          <Col span="12">
+            <FormItem label="英寸计价公式" prop="spInchExprMsg" v-if='flag'>
+              <Input
+                :disabled="detailDisabled"
+                v-model="formDataInfo.master.spInchExprMsg"
+                maxlength="20"
+                placeholder="请输入英寸计价公式说明"
+                icon="md-apps"
+                @on-click="showExpression('spInchExpr')"
+              ></Input>
+            </FormItem>
+          </Col>
+          <Col span="12">
+            <FormItem label="平米计价公式" prop="spCMExprMsg" v-if='flag'>
+              <Input
+                v-model="formDataInfo.master.spCMExprMsg"
+                :disabled="detailDisabled"
+                maxlength="20"
+                placeholder="请输入平米计价公式说明"
+                icon="md-apps"
+                @on-click="showExpression('spCMExpr')"
+              ></Input>
+            </FormItem>
+          </Col>
+        </Row>
+      </Form>
+
+      <Tabs>
+        <!--  注意:eTable formDataInfo.box.defaultList  ===box=== 需要根据实际接口修改,其它不变-->
+        <TabPane label="纸质规格" name="name1">
+          <eTable
+            ref="tableFields"
+            unqiue-mark="id"
+            :index-menu="true"
+            :col-start="0"
+            :width="300"
+            :row-init-data="tableInitData?tableInitData.specPriceItemFm:{}"
+            :data="formDataInfo.basSpecPriceItemSlaves.defaultList"
+            :rules="tableFieldsValidator"
+            :showContextMenu='!detailDisabled'
+          >
+            <template slot="head">
+              <tr>
+                <th class="ivu-table-column-center" width="80">
+                  <div class="ivu-table-cell">
+                    <span class>开料单双片</span>
+                  </div>
+                </th>
+
+                <th class="ivu-table-column-center" width="240">
+                  <div class="ivu-table-cell">
+                    <span class>单双片条件</span>
+                  </div>
+                </th>
+                <!-- <th class="ivu-table-column-center" width="150">
+                  <div class="ivu-table-cell">
+                    <span class="">单双片条件描述</span>
+                  </div>
+                </th>-->
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class>单双片值</span>
+                  </div>
+                </th>
+
+                <th class="ivu-table-column-center" width="240">
+                  <div class="ivu-table-cell">
+                    <span class>单片纸宽</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="240">
+                  <div class="ivu-table-cell">
+                    <span class>单片纸长</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="240">
+                  <div class="ivu-table-cell">
+                    <span class>单片纸宽压线</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="240">
+                  <div class="ivu-table-cell">
+                    <span class>单片开槽</span>
+                  </div>
+                </th>
+                 <th class="ivu-table-column-center" width="240">
+                  <div class="ivu-table-cell">
+                    <span class>双片纸宽</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="240">
+                  <div class="ivu-table-cell">
+                    <span class>双片纸长</span>
+                  </div>
+                </th>
+
+                <th class="ivu-table-column-center" width="240">
+                  <div class="ivu-table-cell">
+                    <span class>双片压线</span>
+                  </div>
+                </th>
+
+                <th class="ivu-table-column-center" width="240">
+                  <div class="ivu-table-cell">
+                    <span class>双片开槽</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="150">
+                  <div class="ivu-table-cell">
+                    <span class>备注</span>
+                  </div>
+                </th>
+              </tr>
+              </tr>
+            </template>
+            <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
+              <td class="ivu-table-column-center" width="150">
+                <Checkbox  size="default"
+                  v-model="row.boxCutMode"
+                  :disabled="detailDisabled"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'boxCutMode');
+                    }
+                  "
+                ></Checkbox>
+              </td>
+
+              <td class="ivu-table-column-center" width="200">
+                <Input
+                  v-model="row.boxIfExprMsg"
+                  disabled
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'boxIfExprMsg');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                  icon="md-apps"
+                  @on-click="showExpression('boxIfExpr',index)"
+                ></Input>
+              </td>
+
+              <td class="ivu-table-column-center" width="100">
+                <Input
+                  v-model="row.boxIfValue"
+                  :disabled="detailDisabled"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'boxIfValue');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+
+               <td class="ivu-table-column-center" width="100">
+                  <Input
+                    v-model="row.boxW1ExprMsg"
+                    disabled
+                    @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'boxW1ExprMsg');
+                      }
+                    "
+                    size="small"
+                    :maxlength="20"
+                    icon="md-apps"
+                    @on-click="showExpression('boxW1Expr',index)"
+                  ></Input>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                <Input
+                  v-model="row.boxL1ExprMsg"
+                  disabled
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'boxL1ExprMsg');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                  icon="md-apps"
+                  @on-click="showExpression('boxL1Expr',index)"
+                ></Input>
+              </td>
+
+              <td class="ivu-table-column-center" width="100">
+                <Input
+                  v-model="row.boxYS1ExprMsg"
+                  disabled
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'boxYS1ExprMsg');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                  icon="md-apps"
+                  @on-click="showExpression('boxYS1Expr',index)"
+                ></Input>
+              </td>
+               <td class="ivu-table-column-center" width="100">
+                <Input
+                  v-model="row.boxKC1ExprMsg"
+                  disabled
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'boxKC1ExprMsg');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                  icon="md-apps"
+                  @on-click="showExpression('boxKC1Expr',index)"
+                ></Input>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                <Input
+                  v-model="row.boxW2ExprMsg"
+                  disabled
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'boxW2ExprMsg');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                  icon="md-apps"
+                  @on-click="showExpression('boxW2Expr',index)"
+                ></Input>
+              </td>
+
+              <td class="ivu-table-column-center" width="100">
+                <Input
+                  v-model="row.boxL2ExprMsg"
+                  disabled
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'boxL2ExprMsg');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                  icon="md-apps"
+                  @on-click="showExpression('boxL2Expr',index)"
+                ></Input>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                <Input
+                  v-model="row.boxYS2ExprMsg"
+                  disabled
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'boxYS2ExprMsg');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                  icon="md-apps"
+                  @on-click="showExpression('boxYS2Expr',index)"
+                ></Input>
+              </td>
+              <td class="ivu-table-column-center" width="100">
+                <Input
+                  v-model="row.boxKC2ExprMsg"
+                  disabled
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'boxKC2ExprMsg');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                  icon="md-apps"
+                  @on-click="showExpression('boxKC2Expr',index)"
+                ></Input>
+              </td>
+
+              <td class="ivu-table-column-center" width="100">
+                <Input
+                  v-model="row.remark"
+                  :disabled="detailDisabled"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'remark');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+            </template>
+          </eTable>
+        </TabPane>
+      </Tabs>
+    </editWindow>
+    <boxExpression v-model="showBoxExpression" @expression-ok="expressionOk"></boxExpression>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:07:54
+ */
+import boxExpression from '@/components/box-expression/boxExpression'
+import optionSearch from '../../components/optionSearch'
+import editWindow from '@/components/edit-window/edit-window'
+// import Form from '@/components/form/form'
+import eTable from '@/components/e-table/e-table'
+import request from '@/libs/request'
+import editBaseMixins from '../../mixins/edit'
+import uploadImg from '@/components/cl-erp/uploadImg'
+import popup from '@/components/popup/popup'
+
+const default_formDataInfo = {
+  master: {
+    boxId: 0,
+    boxName: '',
+    custId: 0,
+    custName: '',
+    spAreaExpr: '',
+    spAreaExprJson: '',
+    spAreaExprMsg: '',
+    spCMExpr: '',
+    spCMExprJson: '',
+    spCMExprMsg: '',
+    spCubeExpr: '',
+    spCubeExprJson: '',
+    spCubeExprMsg: '',
+    spInchExpr: '',
+    spInchExprJson: '',
+    spInchExprMsg: '',
+    spWeightExpr: '',
+    spWeightExprJson: '',
+    spWeightExprMsg: '',
+    boxCWeightExprMsg: '',
+    remark: ''
+  },
+  // 子表 box 根据实际接口更改，其他不变
+  basSpecPriceItemSlaves: {
+    addList: [], // 添加列
+    defaultList: [{
+      boxCutMode: true,
+      boxIfExpr: '',
+      boxIfExprMsg: '',
+      boxIfValue: 0,
+      boxKC1Expr: '',
+      boxKC1ExprMsg: '',
+      boxKC2Expr: '',
+		  	boxKC2ExprMsg: '',
+      boxL1Expr: '',
+      boxL1ExprMsg: '',
+      boxL2Expr: '',
+      boxL2ExprMsg: '',
+      boxW1Expr: '',
+      boxW1ExprMsg: '',
+      boxW2Expr: '',
+      boxW2ExprMsg: '',
+      boxYS1Expr: '',
+      boxYS1ExprMsg: '',
+      boxYS2Expr: '',
+      boxYS2ExprMsg: '',
+      remark: '',
+      specPriceId: 0
+    }], // 默认列
+    deleteList: [], // 删除列
+    updateList: [] // 更新列
+  }
+}
+export default {
+  name: 'edit-specPrice',
+  mixins: [editBaseMixins],
+  components: {
+    boxExpression,
+    editWindow,
+    optionSearch,
+    uploadImg,
+    popup,
+    // Form,
+    eTable
+  },
+
+  data () {
+    return {
+      actionSubtitle: '客户化计价盒式', // 当前操作副标题
+      formName: 'specPriceFm',
+      currentExpressType: '', // 当前打开的盒式公式类型
+      showBoxExpression: false, // show express  or not...
+      requestBaseUrl: '/bas/specPrice', // 请求 查询 操作的基础路径
+      formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {
+        'master.cusName': [{ required: true, message: '客户不能为空', trigger: 'change' }],
+        'master.boxName': [{ required: true, message: '盒式不能为空', trigger: 'blur, change' }]
+        // boxName: [
+        //   { required: true, message: "盒式名称不能为空", trigger: "blur" }
+        // ],
+        // cusName: [
+        //   { required: true, message: "客户名称不能为空", trigger: "blur" }
+        // ]
+        // boxName: [
+        //   { required: true, message: "盒式名称不能为空", trigger: "blur" }
+        // ],
+        // boxIsBorder: [
+        //   { required: true, message: "纸宽废边不能为空", trigger: "blur" }
+        // ],
+        // boxIsLBorder: [
+        //   { required: true, message: "纸边废长不能为空", trigger: "blur" }
+        // ]
+      },
+      tableFieldsValidator: {},
+      subBoxClickIndex: -1,
+      flag: null
+    }
+  },
+
+  methods: {
+    // 打开编辑页面调用接口，判断英寸平米计价公式是否可修改
+    resetTitle () {
+      // debugger;
+      this.flag = this.$params.isCalAreaPriceSale
+      if (this.$params.isCalAreaPriceSale == '0') {
+        this.flag = false
+      } else {
+        this.flag = true
+      }
+    },
+    // 打开盒式计算公式，参数：当前类型：
+    showExpression (type, subBoxClickIndex) {
+      this.showBoxExpression = true
+      this.currentExpressType = type
+      this.subBoxClickIndex = -1
+      if (subBoxClickIndex >= 0) {
+        this.subBoxClickIndex = subBoxClickIndex
+      }
+    },
+    // 盒式公式的回调方式，返回参数
+    expressionOk (text, value, json) {
+      //  this.formDataInfo.master.currentExpressType = this.formDataInfo.master['currentExpressType']
+
+      if (this.subBoxClickIndex == -1) {
+        this.formDataInfo.master[this.currentExpressType + 'Msg'] = text
+        this.formDataInfo.master[this.currentExpressType + 'Json'] = json
+        this.formDataInfo.master[this.currentExpressType] = value
+      } else {
+        let data = {}
+        data[this.currentExpressType + 'Msg'] = text
+        data[this.currentExpressType ] = value
+        this.$refs.tableFields.set(data, this.subBoxClickIndex)
+      }
+    },
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo () {
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
+    },
+    // // 盒式图片一路径上传成功后 回调事件 返回图片地址
+    // uploadSuccessHeads(res) {
+    //   let picUrl = res.result;
+    //   if (!!picUrl) {
+    //     this.formDataInfo.idPhoto = picUrl;
+    //   }
+    // },
+    // //盒式图片二路径上传成功后 回调事件 返回图片地址
+    // uploadSuccessTails(res) {
+    //   let picUrl = res.result;
+    //   if (!!picUrl) {
+    //     this.formDataInfo.photo = picUrl;
+    //   }
+    // },
+
+    // 重写父类,修改提交数据
+    resetformDataInfo (_data) {
+      let tableData = this.$refs['tableFields'].getCategorizeData()
+      // debugger
+      this.formDataInfo.basSpecPriceItemSlaves = tableData
+      return this.formDataInfo
+    }
+  }
+}
+</script>
+
+<style>
+.cl-edit-specPrice .ivu-form-item {
+  margin-bottom: 12px !important;
+}
+</style>

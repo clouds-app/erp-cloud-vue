@@ -234,39 +234,20 @@
         :show="contextMenuVisible"
         :hasClick="contextMenuHasClick"
         @update:show="(show) => contextMenuShow(show)">
-        <ul style="list-style:none;">
-          <li>
-            <clButton
-                :disabled="disabled_btnWhenLoadding|| enumActionType.iisAdd"
-                iconColor="#0cb05b"
-                icon="md-add-circle"
-                type="customer"
-                size="small"
-                @click="showEditWindow()"
-              >增加</clButton></li>
-               <li>
-                   <clButton
-               :disabled="disabled_btnWhenLoadding|| enumActionType.iisEdit"
-                iconColor="#0cb05b"
-                icon="md-create"
-                type="customer"
-                size="small"
-                v-show="editShow"
-                @click="editAction()"
-              >修改</clButton>
-              </li>
-
-                 <clButton
-               :disabled="disabled_btnWhenLoadding"
-                iconColor="#e16205"
-                icon="md-bulb"
-                type="customer"
-                size="small"
-                @click="detailAction()"
-              >详情</clButton>
-              </li>
-
+        <ul class="ContextMenuBox">
+           <li @click="showEditWindow()" v-if="!enumActionType.iisAdd" class="ContextMenuItem"><Icon color="#0cb05b" type="md-add" /><span class="menuTitle">增加(N)</span><span class="hotKeyCode">F4</span></li>
+           <li @click="editAction()" v-if="!enumActionType.iisEdit" class="ContextMenuItem"><Icon color="#0cb05b" type="md-create" /><span class="menuTitle">修改(E)</span><span class="hotKeyCode">F8</span></li>
+            <li @click="deleteAction()" v-if="!enumActionType.iisDel" class="ContextMenuItem"><Icon color="#e16205" type="md-remove" /><span class="menuTitle">删除(D)</span></li>
+           <li @click="refreshAction()"  class="ContextMenuItem"><Icon color="#0cb05b" type="md-sync" /><span class="menuTitle">刷新(R)</span><span class="hotKeyCode">F5</span></li>
+           <li  @click="detailAction()"  class="ContextMenuItem"><Icon color="#e16205" type="md-bulb" /><span class="menuTitle">详情(D)</span></li>
+            <li @click="auditAction()" v-if="!enumActionType.iisAudit" class="ContextMenuItem"><Icon color="#0e67b7" type="md-redo" /><span class="menuTitle">审核(A)</span></li>
+           <li @click="antiAuditAction()" v-if="!enumActionType.iisNotAudit" class="ContextMenuItem"><Icon color="#0e67b7" type="md-undo" /><span class="menuTitle">反审(N)</span></li>
+            <li  @click="disabledAction()" v-if="!enumActionType.iisDisabled" class="ContextMenuItem"><Icon color="#e16205" type="md-warning" /><span class="menuTitle">禁用(D)</span></li>
+           <li  @click="importAction()" v-if="!enumActionType.iisImport&& false" class="ContextMenuItem"><Icon color="#57c5f7" type="md-cloud-upload" /><span class="menuTitle">导入(I)</span></li>
+            <li  @click="showChoiceModal()" v-if="!enumActionType.iisExport" class="ContextMenuItem"><Icon color="#57c5f7" type="md-cloud-download" /><span class="menuTitle">导出(E)</span></li>
+           <li @click="printAction()" v-if="!enumActionType.iisPrint"  class="ContextMenuItem"><Icon color="#57c5f7" type="md-print" /><span class="menuTitle">打印(P)</span></li>
         </ul>
+    
     </ContextMenu>
     <!-- 从表导出选择框 -->
      <Modal
@@ -365,6 +346,7 @@
 <script>
 // import FileSaver from "file-saver"
 import XLSX from 'xlsx'
+import hotkeys from 'hotkeys-js'
 import { setToken, getToken } from '@/libs/util'
 import ContextMenu from '@/components/VueContextMenu'
 import clButton from '@/components/cl-erp/button'
@@ -465,6 +447,28 @@ export default {
   },
   data () {
     return {
+      // 快捷键 代码
+      keyCode:{
+					saveCode:'ctrl+s',
+					enterCode:13,
+					closeCode:27,
+					addCode:115, //F4
+					refreshCode:116,//F5
+					auditCode:117,//F6
+					noauditCode:118,//F7
+					editCode:119,//F8,
+					disabledCode:120,//F9
+					invalidCode:121,//F10
+					deleteCode:'ctrl+d',
+					searchCode:'ctrl+f',
+					importCode:'ctrl+i',
+					exportCode:'ctrl+e',
+					printCode:'ctrl+p',
+					upCode:38,
+					downCode:40,
+					leftCode:37,
+					rightCode:39
+			},
       printSpRow: 1, // 指定列印行数
       printStartRow: '2', // 开始列印行数
       printEndRow: '2', // 结束列印行数
@@ -516,12 +520,57 @@ export default {
       deep: true
     }
   },
+  created(){
+  
+  },
   mounted () {
     // 父类实列 初始化
     this._install = this.$parent.$parent.$parent.$parent.$parent
     this.getCurrentSubSelectedMenu()
+    this.initHotKey()
+    console.log('=======initHotKey========')
   },
   methods: {
+      // 初始化快捷键
+    initHotKey(){
+      //  hotkeys.unbind(this.keyCode.addCode);
+      //  hotkeys.unbind(this.keyCode.refreshCode);
+      //  hotkeys.unbind(this.keyCode.editCode);
+        // f4 添加
+        this.shortcuts(()=>{
+          this.showEditWindow()
+        },this.keyCode.addCode);
+        // f5 刷新
+        this.shortcuts(()=>{
+          this.refreshAction()
+        },this.keyCode.refreshCode);
+        // f8 编辑
+        this.shortcuts(()=>{
+          this.editAction()
+        },this.keyCode.editCode);
+    },
+    shortcuts:function(callback,key){
+				if(/^\d+$/.test(key)){
+					hotkeys('*',function(event,handler){
+						if(event.keyCode == key){
+							var result = callback(event);
+							if(result == undefined){
+								return false;
+							}
+							return result;
+							
+						}
+					});
+				}else{
+					hotkeys(key,function(event,handler){
+						var result = callback(event);
+						if(result == undefined){
+							return false;
+						}
+						return result;
+					});
+				}
+		},
     // 关闭打印窗体,重置默认设置
     printTableCancle () {
       this.printSpRow = 1// 指定列印行数
@@ -725,10 +774,6 @@ export default {
     },
     // 添加/编辑/删除等按钮,访问前权限检查
     checkRightBeforeAccess (actionType) {
-      // buttonList: [{id: "0", name: "添加", icon: null, flag: "iisAdd", routerUrl: null, disabled: false, sort: 0},…]
-      // expandList: []
-      // hasMoney: true
-      // reportList: [{id: "1277793268955967490", name: "纸箱送货单", paramsName: "bdId"}]
       let isDisabled = true
       if (this.buttonAccessList && this.buttonAccessList[this.currentSubMenu] && this.buttonAccessList[this.currentSubMenu].buttonList) {
         let rightList = this.buttonAccessList[this.currentSubMenu].buttonList
@@ -1176,17 +1221,46 @@ export default {
   }
 }
 </script>
-<style scope>
-/* .functionBtnListContent{
-  background: white;
-} */
-/* .butn-MenuDiv > .ivu-icon-md-add-circle:before
-{
-  color: red;
-} */
-/* .ivu-row{
-  margin-top:4px ;
-} */
+<style lang="scss" scope>
+/* 右键菜单样式设计 */
+.ContextMenuBox{
+  color:black;
+  background: #F2F2F2;
+  border:1px solid #ccc;
+  width: 200px;
+  display: flex;
+  flex-direction:column;
+  .ContextMenuItem{
+    list-style: none;
+    padding-left: 15px;
+    margin-left:5px;
+    height: 30px;
+    border-bottom: 1px dotted #ccc;
+     width: 185px;
+     //border:1px solid red;
+    display: flex;
+    align-items: center;
+    &:hover{
+      background: #D9D9D9;
+    }
+   .menuTitle{
+     padding-left: 10px;
+   }
+   .hotKeyCode{
+     padding-left: 70px;
+   }
+  
+  }
+  // 去掉最后一个,避免重复样式
+    li:last-child{
+       border-bottom:none;
+       margin-bottom: 5px;
+    }
+    li:first-child{
+       //border-bottom:none;
+       margin-top: 5px;
+    }
+}
 .butn-menuText {
   font-weight: bold;
   vertical-align: top;
