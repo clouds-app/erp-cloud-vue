@@ -686,12 +686,14 @@ export default {
       this.columnClickStatus[columnName] = status;
     },
     treeSelectEvent(a, b) {
+     // debugger
       this.treeSelectedId = b.id;
       this.getResourceExpand(b.id);
       this.getResourceReport(b.id);
     },
     // 获取资源对应的拓展功能
     getResourceExpand(resourceId) {
+     // debugger
       if (this.expandTableItem[resourceId]) {
         this.expandDataList = this.expandTableItem[resourceId];
         return;

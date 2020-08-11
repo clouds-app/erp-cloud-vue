@@ -1,0 +1,175 @@
+<template>
+  <div class="cl-dic">
+    <htmlTemplate 
+    :currrentRowItem="currrentRowItem" 
+    @isLoaddingDone="getLoaddingDone" 
+    :requestBaseUrl="functionParams.requestBaseUrl" 
+    :uniqueId="functionParams.uniqueId"
+    :queryParamsDefault="queryParamsDefault"
+    >
+    </htmlTemplate>
+    <div class="content-container" :style="{'height':tableHeight+6+'px'}" >
+         <Split v-model="splitWidth">
+            <div slot="left" class="left-split-pane">
+              <Scroll :height="tableHeight+6 ">
+                              <Tree @on-select-change="onSelectChange" :data="TreeData"></Tree>
+               </Scroll>
+            </div>
+            <div slot="right" class="right-split-pane">
+               <vTable :height="tableHeight+6 " ref="master_list_table" :columns="columns" :table-data="tableFieldData" :pagination="false" @row-click="tableRowClick"></vTable>
+            </div>
+        </Split>
+      
+    </div>
+    <editForm  
+   :isLoaddingDone="isLoaddingDone"
+   :form-detail-data="formDetailData"
+    :action="action"
+    :parentId="parentId"
+    @submit-success="search()" 
+    v-model="showEditWindow"/>
+  </div>
+</template>
+<script>
+import request from "@/libs/request"
+import vTable from '@/components/tables/vTable'
+import htmlTemplate from '../../components/htmlTemplate'
+import editForm from './edit-dic'
+import listBaseMixins from "../../mixins/list"
+const treeData_Default=[
+                    {
+                        title: '数据字典',
+                        children: [],
+                    }
+                ]
+export default {
+   mixins: [listBaseMixins],
+   components: {
+       htmlTemplate,vTable,editForm
+      },
+    data() {
+      return {
+        parentId:0,
+        splitWidth: 0.15, //面包分割大小
+        functionParams:{
+            requestBaseUrl: '/sys/dic',
+            uniqueId:'dicId'
+        },
+        TreeData: [...treeData_Default],// 获取默认值
+        tableFieldData:[],// 表格数据原
+        columns: [
+           {
+            title: '项名称',
+            key: 'dicLabel',
+            align: 'center'
+          },
+           {
+            title: '项值',
+            key: 'dicValue',
+            align: 'center'
+          },
+          {
+            title: '序号',
+            key: 'dicSort',
+            align: 'center'
+          },
+           {
+            title: '国际化',
+            key: 'dicI18n',
+            align: 'center'
+          },
+          
+        ],
+       
+      }
+    },
+    created(){
+      this.getTreeDataList()
+    },
+    methods: {
+      tableRowClick(rowData, rowIndex) {
+       this.parentId =rowData.id
+       this.formDetailData ={} // 清除上次缓存数据 增加体验良好
+       this.masterRowSelection = rowData;
+       if(rowData!=null){
+          // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
+          this.currrentRowItem.rowName=rowData.dicValue+' '+rowData.dicLabel
+       }
+     },
+     // 树形点击事件
+     onSelectChange(currentItem){
+      //  debugger
+       if(currentItem==null){
+         return
+       }
+       this.cleanSelectedItem() // 清除上次缓存数据 增加体验良好
+       this.parentId =currentItem[0].id
+       if(this.TreeData[0].children.length===0){
+            this.getTreeDataList()
+       }else{
+         this.getTableData(currentItem[0].children)
+       }
+       
+     },
+     // 添加/删除/修改后调用 方法
+     search(){
+        this.getTreeDataList()
+     },
+     // 获取树形结构数据
+     getTreeDataList(){
+        let _self= this
+        let url = `${this.functionParams.requestBaseUrl}/listTree`
+        let data ={}
+         request.post(url, data).then(res => {
+         _self.getTableData(res) // 表格数据
+         _self.$set(_self.TreeData[0], `children`, res) // 修改数组中对象的值
+         _self.$set(_self.TreeData[0], `expand`, true)  // 数据展开
+        // console.log('this.TreeData:'+ JSON.stringify(_self.TreeData))
+       })
+     },
+     // 获取表格数据源
+     getTableData(res){
+          this.tableFieldData = res.map(item=>{
+           return item.data
+         })
+     },
+      renderContent (h, { root, node, data }) {
+                return h('span', {
+                    style: {
+                        display: 'inline-block',
+                        width: '100%'
+                    }
+                }, [
+                    h('span', [
+                        h('Icon', {
+                            props: {
+                                type: 'ios-paper-outline'
+                            },
+                            style: {
+                                marginRight: '8px'
+                            }
+                        }),
+                        h('span', data.title)
+                    ]),
+                    h('span', {
+                        style: {
+                            display: 'inline-block',
+                            float: 'right',
+                            marginRight: '32px'
+                        }
+                    })
+                ]);
+            },
+    },
+   
+  }
+</script>
+
+<style>
+ .cl-dic .left-split-pane{
+        background: #f8f8f9;
+    }
+  .cl-dic .toolbar-container{
+    margin-bottom: 0px;
+  }
+</style>

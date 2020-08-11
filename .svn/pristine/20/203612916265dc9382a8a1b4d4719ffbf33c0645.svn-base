@@ -1,0 +1,132 @@
+<template>
+     <div class="cl-moudle productsBasInfoBox">
+        <Form class="productsBasInfoItem upSide" ref="masterForm" :show-message="true" :model="formDataInfo.master" :label-width="80">
+            <div class="formDataBox">
+                 <FormItem label="客户" class="formDataItem">
+                         <popup
+                            v-model="formDataInfo.master.cusCode"
+                            field-name="cusCode"
+                            :disabled="false"
+                            popup-name="CustomerSingleBox"
+                            :fill-model.sync="formDataInfo.master"
+                            render-fields="custId,cusCode,cusName"
+                            from-fields="id,cusCode,cusName"
+                            :suffix="true"
+                            :suffix-model="formDataInfo.master.cusName"
+                            :query-params="{}"
+                        />
+                </FormItem>
+                 <FormItem label="产品名称" class="formDataItem">
+                       <Input v-model.trim="formDataInfo.master.bpName" maxlength="80" placeholder="产品名称"></Input>
+                </FormItem>
+                  <FormItem label="产品编号" class="formDataItem">
+                     <Input v-model.trim="formDataInfo.master.bpNo" maxlength="80" placeholder="产品编号"></Input>
+                </FormItem>
+                    <FormItem class="formDataItem">
+                    <Button @click="loadProductsBasInfo()" type="primary">
+                        <Icon type="md-search" />搜索
+                    </Button>
+                  </FormItem>
+            </div>
+       </Form>
+       <div class="productsBasInfoItem downSide">
+         <Tabs :animated="false">
+          <TabPane label="产品基础资料" name="productbasedataInfoFm">
+            <vTable
+                :height="tableHeight-30"
+                :columns-url="functionParams.requestColBaseUrl + '/productbasedataInfoFm  '"
+                :table-data="tableData"
+                :pagination="false"
+                name="productbasedataInfoFm  "
+            ></vTable>
+        </TabPane>
+      </Tabs>
+       </div>
+     </div>
+</template>
+<script>
+import listBaseMixins from "../mixins/list";
+import vTable from "@/components/tables/vTable";
+import popup from "@/components/popup/popup";
+export default {
+    // 查询产品资料信息
+    name:'productsBasInfo',
+    mixins: [listBaseMixins],
+    components: {
+        popup,
+        vTable
+    },
+    data(){
+        return {
+             functionParams: {
+                requestBaseUrl: "/report/product/list",
+            },
+            tableData:[],
+             formDataInfo: {
+                // 主表 
+                master: {
+                         bpName:'',
+                         bpNo:'',
+                        custId:'',
+                        cusCode:'',
+                        cusName:''
+                  }
+          }, 
+        }
+    },
+    created(){
+        this.loadProductsBasInfo()
+    },
+    methods:{
+        loadProductsBasInfo(){
+            this.tableData=[]
+            let _url = this.functionParams.requestBaseUrl
+            let params = {
+                cusCode:this.formDataInfo.master.cusCode,
+                bpName:this.formDataInfo.master.bpName,
+                bpNo:this.formDataInfo.master.bpNo
+            }
+            this.getDataByUrl (_url, params).then(res=>{
+                this.tableData = res
+            })
+        }
+    }
+}
+</script>
+
+<style lang="scss">
+    .productsBasInfoBox{
+        background: white;
+       display: flex;
+       flex-direction: column;
+        min-height:600px;
+       .productsBasInfoItem{
+          // border:1px solid blue;
+           &.upSide{
+              // border:1px solid red;
+               height:35px;
+                 display: flex;
+                 align-items: center;  
+                 justify-content: center;  
+                 .formDataBox{
+                  width: 100%;
+                 // border:1px solid blue;
+                   height: 25px;
+                    display: flex;
+                    .formDataItem{
+                        width: 25%;
+                         //height: 25px;
+                        //border:1px solid red;
+                    }
+            }
+           }
+           &.downSide{
+               //border:1px solid blue;
+           }
+         
+    
+       }
+       
+    }
+    
+</style>

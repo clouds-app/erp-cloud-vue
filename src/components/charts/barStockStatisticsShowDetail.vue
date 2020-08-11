@@ -1,0 +1,113 @@
+<template>
+    <div>
+       <editWindow
+        :title="editWindowTitle"
+        :fullscreen="false"
+        v-model="showEchartWindow"
+        width="600">
+        <template slot="footer">
+        <div>
+           <Button  @click="submitEchartWindow()" type="primary">
+                <Icon type="ios-arrow-down" />
+                确 定
+            </Button>
+        </div>
+     </template>
+            <vTable
+                ref="StockStatistics_ref"
+                :columns="columns_StockStatistics" 
+                :table-data="data_StockStatistics"
+                name='StockStatisticsEchartTable'
+        ></vTable>
+          <Page v-show="pageConfig.total > pageConfig.pageSize" @on-change="searchDataBy" @on-page-size-change="searchDataBy" :disabled="pageConfig.disable_Paging" :current="pageConfig.pageNumber" :page-size="pageConfig.pageSize" :total="pageConfig.total" size="small" show-total show-elevator show-sizer />
+       </editWindow>
+    </div>
+</template>
+<script>
+import request from '@/libs/request'
+import vTable from '@/components/tables/vTable'
+import editWindow from '../edit-window/edit-window'
+export default {
+    name:'barStockStatisticsShowDetail',
+    components:{
+        editWindow,
+        vTable
+    },
+    props:{
+        dateType:{
+            type:String,
+            default:'sixty'
+        }
+    },
+    data(){
+        return {
+            pageConfig:{
+                disable_Paging:false,
+                pageNumber:1,
+                pageSize:10,
+                total:0
+            },
+           editWindowTitle:'60天内详情统计',
+           showEchartWindow:false, // 是否显示窗体
+           columns_StockStatistics:[
+                   {
+                        title: '客户名称',
+                        key: 'custName'
+                    },
+                   {
+                        title: '工单号',
+                        key: 'workNo'
+                    },
+                    {
+                        title: '产品编号',
+                        key: 'bpNo'
+                    },
+                    {
+                        title: '库存数',
+                        key: 'bsQty',
+                        align:'right'
+                    },
+                   {
+                        title: '最后入库日期',
+                        key: 'lastInDate'
+                    }
+           ],
+           data_StockStatistics:[],
+        }
+    },
+    watch:{
+        showEchartWindow(n,o){
+            if(!!n){
+                this.searchDataBy()
+            }
+        }
+    },
+    methods:{
+        submitEchartWindow(){
+            this.showEchartWindow= false
+        },
+        searchDataBy(){
+            if(this.dateType==='sixty'){
+                this.editWindowTitle = '60天内详情统计'
+            }else{
+                    this.editWindowTitle = '60天以上详情统计'
+            }
+            this.getEchartDetailByPage(this.dateType)
+        },
+        //库存统计，多少天内的详情统计，
+        getEchartDetailByPage(dateType){
+         this.data_StockStatistics =[]
+           let _url= `/report/home/pageHomeStoreData?pageNumber=${this.pageConfig.pageNumber}&pageSize=${this.pageConfig.pageSize}&type=${dateType=='sixty'?0:1}`
+        //    let params = {
+        //        pageNumber:this.pageConfig.pageNumber,
+        //        pageSize:this.pageConfig.pageSize,
+        //        type:dateType=='sixty'?0:1 // 查询类型：0(60天以内),1(60天以上)
+        //    } 
+            request.post(_url, {}).then(res => {
+              this.data_StockStatistics = res.records
+              this.pageConfig.total = Number(res.total) 
+            })
+        }
+    }
+}
+</script>

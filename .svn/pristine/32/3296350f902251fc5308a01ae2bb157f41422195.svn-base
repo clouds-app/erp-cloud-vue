@@ -1,0 +1,209 @@
+<template>
+  <!--用户功能，上下布局-->
+  <div>
+    <div class="toolbar-container" style="margin-bottom: 0px;">
+      <Card :bordered="false">
+        <Row>
+          <Col span="12">
+            <Row :gutter="10" type="flex" justify="start">
+              <Col span="2">
+                <Button type="customer" size="small" @click="addAction()">添加</Button>
+              </Col>
+              <Col span="2">
+                <Button type="customer" size="small" @click="updateAction()">编辑</Button>
+              </Col>
+              <Col span="2">
+                <Button type="customer" size="small" @click="deleteAction()">删除</Button>
+              </Col>
+              <Col span="3">
+                <Button type="customer" size="small" @click="userResourceAction">保存权限</Button>
+              </Col>
+            </Row>
+          </Col>
+
+          <Col span="12">
+            <Row :gutter="10" type="flex" justify="end">
+              <Col span="4">
+                <Input placeholder="请输入用户编码" v-model="queryParams.userCode" size="small" />
+              </Col>
+              <Col span="4">
+                <Input placeholder="请输入用户名" size="small" v-model="queryParams.userName" />
+              </Col>
+
+              <Col span="2" style="text-align: right;">
+                <Button type="info" size="small" @click="search()">搜索</Button>
+              </Col>
+            </Row>
+          </Col>
+        </Row>
+      </Card>
+    </div>
+    <div class="content-container">
+      <Row>
+        <Col span="24">
+          <vTable
+            :height="200"
+            ref="master_user_table"
+            :columns="userColumns"
+            url="/sys/user/list"
+            :pagination="false"
+            :upDownMove="true"
+            @row-click="userTableClick"
+            name="userTable"
+          ></vTable>
+        </Col>
+      </Row>
+    </div>
+    <userResource ref="userResource"  :selected-user-id="selectedUserId"></userResource>
+    <userEdit ref="userEdit" v-model="userEditModel" @submit-success="userEditSubmitSuccess()"></userEdit>
+  </div>
+</template>
+
+<script>
+import vTable from "@/components/tables/vTable";
+import Button from "@/components/cl-erp/button/button";
+import userResource from "./userResource";
+import form from "@/mixins/form";
+import request from "@/libs/request";
+import userEdit from "./user-edit";
+export default {
+  name: "user",
+  components: { vTable, userEdit, Button, userResource },
+  data() {
+    return {
+      userEditModel: false,
+      userColumns: [
+        {
+          title: "状态",
+          key: "status",
+          align: "center",
+          width: 40,
+          render: (h, params) => {
+            return params.row.status == 1
+              ? h("span", "启用")
+              : h(
+                  "span",
+                  {
+                    style: {
+                      color: "red"
+                    }
+                  },
+                  "禁用"
+                );
+          }
+        },
+        {
+          title: "用户编号",
+          key: "userCode"
+        },
+        {
+          title: "用户名称",
+          key: "userName"
+        },
+        {
+          title: "部门",
+          key: "deptName"
+        },
+        {
+          title: "登陆时间",
+          key: "loginTime"
+        },
+        {
+          title: "登陆IP",
+          key: "loginIpLast"
+        },
+        {
+          title: "创建人",
+          key: "createUser"
+        },
+        {
+          title: "创建时间",
+          key: "createTime"
+        },
+        {
+          title: "修改人",
+          key: "updateUser"
+        },
+        {
+          title: "修改时间",
+          key: "updateTime"
+        }
+      ],
+      masterRowSelection: {},
+      queryParams: {},
+      selectedUserId:''
+    };
+  },
+  methods: {
+    getMasterSelectionId() {
+      if (
+        Object.keys(this.masterRowSelection).length == 0 ||
+        !this.masterRowSelection.id
+      ) {
+        this.$Message.warning("请选择需要操作的数据");
+        return false;
+      }
+      return this.masterRowSelection.id;
+    },
+    addAction() {
+      this.$refs.userEdit.action = "add";
+      this.userEditModel = true;
+    },
+    updateAction() {
+      let id = this.getMasterSelectionId();
+      if (!id) {
+        return;
+      }
+      this.$refs.userEdit.getDetailData(id);
+      this.$refs.userEdit.action = "update";
+      this.userEditModel = true;
+    },
+    deleteAction() {
+      let id = this.getMasterSelectionId();
+      if (!id) {
+        return;
+      }
+      this.$Modal.confirm({
+        title: "删除确认",
+        content: "确定要删除当前选中数据吗？",
+        onOk: () => {
+          let _self = this;
+          let data = { id: id };
+          request.post("/sys/user/delete", data).then(res => {
+            this.userEditSubmitSuccess();
+          });
+        }
+      });
+    },
+    userTableClick(rowData, rowIndex) {
+      this.selectedUserId = rowData.id
+      //每次行点击的信息存储起来
+      this.masterRowSelection = rowData;
+      //加载角色对应的权限
+      this.$refs.userResource.getUserResourceList(rowData.id);
+    },
+    userResourceAction() {
+      //保存角色权限
+      let id = this.getMasterSelectionId();
+      if (!id) {
+        return;
+      }
+      let authData = this.$refs.userResource.getSubmitData();
+      request
+        .post("/sys/user/save-auth", authData)
+        .then(res => {
+          this.$Message.success("权限保存成功");
+        });
+    },
+    userEditSubmitSuccess() {
+      this.$refs.master_user_table.search();
+    },
+    search() {
+      this.$refs.master_user_table.search(this.queryParams);
+    }
+  }
+};
+</script>
+
+<style>
+</style>

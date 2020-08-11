@@ -31,6 +31,7 @@
     "sass": "^1.26.2",
     "simplemde": "^1.11.2",
     "sortablejs": "^1.7.0",
+    "store2": "^2.11.2",
     "v-contextmenu": "^2.9.0",
     "view-design": "^4.0.0",
     "vue": "^2.5.10",

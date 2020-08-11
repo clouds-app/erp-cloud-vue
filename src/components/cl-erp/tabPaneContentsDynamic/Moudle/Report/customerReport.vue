@@ -1,0 +1,160 @@
+<template>
+     <div class="cl-moudle customerReportBox">
+        <Form class="customerReportItem upSide" ref="masterForm" :show-message="true" :model="formDataInfo.master" :label-width="80">
+            <div class="formDataBox">
+                 <FormItem label="客户" class="formDataItem">
+                         <popup
+                            v-model="formDataInfo.master.cusCode"
+                            field-name="cusCode"
+                            :disabled="false"
+                            popup-name="CustomerSingleBox"
+                            :fill-model.sync="formDataInfo.master"
+                            render-fields="custId,cusCode,cusName"
+                            from-fields="id,cusCode,cusName"
+                            :suffix="true"
+                            :suffix-model="formDataInfo.master.cusName"
+                            :query-params="{}"
+                        />
+                </FormItem>
+                 <FormItem label="业务员" class="formDataItem">
+                         <!-- 控件特殊处理 跟单员 参数： workOptType  1---业务员    2--跟单员-->
+                          <popup 
+                            v-model="formDataInfo.master.bcSalerName"
+                            field-name="bcSalerName"
+                            :disabled="false"
+                            popup-name="WorkerSingleBox"
+                            :fill-model.sync="formDataInfo.master"
+                            render-fields="bcSalerId,bcSalerCode,bcSalerName"
+                            from-fields="id,workCode,workName"
+                            :suffix="false"
+                            :suffix-model="formDataInfo.master.bcSalerName"
+                            :query-params="{workOptType:1}"
+                            />
+                </FormItem>
+                  <FormItem label="跟单员" class="formDataItem">
+                         <!-- 控件特殊处理 跟单员 参数： workOptType  1---业务员    2--跟单员-->
+                            <popup 
+                            v-model="formDataInfo.master.bcFollowerName"
+                            field-name="bcFollowerName"
+                            :disabled="false"
+                            popup-name="WorkerSingleBox"
+                            :fill-model.sync="formDataInfo.master"
+                            render-fields="bcFollowerId,bcFollowerCode,bcFollowerName"
+                            from-fields="id,workCode,workName"
+                            :suffix="false"
+                            :suffix-model="formDataInfo.master.bcFollowerName"
+                            :query-params="{workOptType:2}"
+                            />
+                </FormItem>
+                    <FormItem class="formDataItem">
+                    <Button @click="loadCustomerReport()" type="primary">
+                        <Icon type="md-search" />搜索
+                    </Button>
+                  </FormItem>
+            </div>
+       </Form>
+       <div class="customerReportItem downSide">
+         <Tabs :animated="false">
+          <TabPane label="客户资料" name="storeTotalData">
+            <vTable
+                :height="tableHeight-30"
+                :columns-url="functionParams.requestColBaseUrl + '/CustomerInfoFm '"
+                :table-data="tableData"
+                :pagination="false"
+                name="CustomerInfoFm "
+            ></vTable>
+        </TabPane>
+      </Tabs>
+       </div>
+     </div>
+</template>
+<script>
+import listBaseMixins from "../mixins/list";
+import vTable from "@/components/tables/vTable";
+import popup from "@/components/popup/popup";
+export default {
+    // 客户资料查询
+    name:'customerReport',
+    mixins: [listBaseMixins],
+    components: {
+        popup,
+        vTable
+    },
+    data(){
+        return {
+             functionParams: {
+                requestBaseUrl: "/report/custInfo/list",
+            },
+            tableData:[],
+             formDataInfo: {
+                // 主表 
+                master: {
+                        bcFollowerId:'',
+                        bcFollowerCode:'',
+                        bcFollowerName:'',
+                        bcSalerId:'',
+                        bcSalerCode:'',
+                        bcSalerName:'',
+                        custId:'',
+                        cusCode:'',
+                        cusName:''
+                  }
+          }, 
+        }
+    },
+    created(){
+        this.loadCustomerReport()
+    },
+    methods:{
+        loadCustomerReport(){
+             this.tableData=[]
+            let _url = this.functionParams.requestBaseUrl
+            let params = {
+                cusCode:this.formDataInfo.master.cusCode,
+                salerCode:this.formDataInfo.master.bcSalerCode,
+                followerCode:this.formDataInfo.master.bcFollowerCode
+            }
+            this.getDataByUrl (_url, params).then(res=>{
+                this.tableData = res
+            })
+        }
+    }
+}
+</script>
+
+<style lang="scss">
+    .customerReportBox{
+        background: white;
+       display: flex;
+       flex-direction: column;
+        min-height:600px;
+       .customerReportItem{
+          // border:1px solid blue;
+           &.upSide{
+              // border:1px solid red;
+               height:35px;
+                 display: flex;
+                 align-items: center;  
+                 justify-content: center;  
+                 .formDataBox{
+                  width: 100%;
+                 // border:1px solid blue;
+                   height: 25px;
+                    display: flex;
+                    .formDataItem{
+                        width: 25%;
+                         //height: 25px;
+                        //border:1px solid red;
+                    }
+            }
+           }
+           &.downSide{
+               //border:1px solid blue;
+           }
+         
+    
+       }
+       
+    }
+    
+</style>
