@@ -1,0 +1,380 @@
+<template>
+  <div class="cl-moudle cl-analyzerNew">
+    <Form
+      ref="masterForm"
+      :show-message="true"
+      :model="formDataInfo.master"
+      :rules="ruleValidate"
+      :label-width="90"
+    >
+      <div class="edit-purPaperPoAnalyzSlave">
+        <Row >
+          <Col span="4">
+            <FormItem  label="供应商编号" prop="inPur">
+              <popup
+                @row-dblclick="showDetailswindow"
+                v-model="formDataInfo.master.inPur"
+                field-name="inPur"
+                :disabled="false"
+                popup-name="SupplierSingleBox"
+                :fill-model.sync="formDataInfo.master"
+                render-fields="supplierId,inPur,supplierName,taxRate,supplierType,discount,arpType"
+                from-fields="id,purCode,purName,taxRate,vType,discount,arpType"
+                :suffix="true"
+                :suffix-model="formDataInfo.master.supplierName"
+              />
+            </FormItem>
+          </Col>
+          <Col span="3">
+            <FormItem :label-width="45" label="纸质">
+              <Input v-model.trim="formDataInfo.master.inArtCode" maxlength="80" placeholder="纸质"></Input>
+            </FormItem>
+          </Col>
+          <Col span="4">
+            <FormItem :label-width="45" label="客户" prop="inCus">
+              <popup
+                v-model="formDataInfo.master.inCus"
+                field-name="inCus"
+                popup-name="BoxDeliCustomerSingBox"
+                :fill-model.sync="formDataInfo.master"
+                render-fields="custId,inCus,custName,taxRate,coinId,coinCode,coinName,rate"
+                from-fields="id,cusCode,cusName,taxRate,coinId,coinCode,coinName,coinRate"
+                :suffix="true"
+                :suffix-model="formDataInfo.master.custName"
+              />
+            </FormItem>
+          </Col>
+          <Col span="4">
+              <FormItem :label-width="75" label="订单日期">
+                <DatePicker
+                  type="date"
+                  format="yyyy-MM-dd"
+                  v-model="formDataInfo.master.startDate"
+                ></DatePicker>
+              </FormItem>
+        </Col>
+          <Col span="3">
+                    <FormItem :label-width="25"  label="--">
+                      <DatePicker
+                        type="date"
+                        format="yyyy-MM-dd"
+                        v-model="formDataInfo.master.endDate"
+                      ></DatePicker>
+                    </FormItem>
+           </Col>
+            <Col span="3">
+            <div style="margin-left:10px;margin-top:5px;">
+                <RadioGroup v-model="formDataInfo.master.isReach">
+                    <Radio label="0">全部</Radio>
+                    <Radio label="1">未到</Radio>
+                    <Radio label="2">已到</Radio>
+                  </RadioGroup>
+            </div>
+               
+           </Col>
+           <Col span="1" class="buttonMarginleft">
+                <FormItem>
+                  <Button @click="searchDataBy()" type="primary">
+                    <Icon type="md-search" />搜索
+                  </Button>
+                </FormItem>
+              </Col>
+        </Row>
+       
+      </div>
+    </Form>
+    <div slot="top">
+      <Tabs @on-click="TabsClickEvent" :animated="false">
+        <TabPane label="明细" name="storeTotalData">
+          <vTable
+            :height="tableHeight-20"
+            ref="master_list_table"
+            :columns-url="functionParams.requestColBaseUrl + '/paperPoItemAnalyzerFm'"
+            :table-data="tableBoxCoWorkProcData"
+            :pagination="false"
+            name="paperPoItemAnalyzeritemFm"
+          ></vTable>
+        </TabPane>
+
+        <TabPane label="供应商" name="paperPoSupAnalyzerFm">
+          <vTable
+           :height="tableHeight-20"
+            ref="tableFieldRef"
+            :table-data="tableBoxCoWorkProcData"
+            :columns-url="functionParams.requestColBaseUrl + '/paperPoSupAnalyzerFm'"
+            :pagination="false"
+            name="paperPoSupAnalyzeritemFm"
+          ></vTable>
+        </TabPane>
+
+        <TabPane label="客户" name="paperPoCusAnalyzerFm">
+          <vTable
+           :height="tableHeight-20"
+            ref="tableFieldRefCus"
+            :table-data="tableBoxCoWorkProcData"
+            :columns-url="functionParams.requestColBaseUrl + '/paperPoCusAnalyzerFm'"
+            :pagination="false"
+            name="paperPoCusAnalyzeritemFm"
+          ></vTable>
+        </TabPane>
+      </Tabs>
+    </div>
+
+  </div>
+</template>
+<script>
+import vTable from "@/components/tables/vTable";
+import eTable from "@/components/e-table/e-table";
+import htmlTemplate from "../components/htmlTemplate";
+import listBaseMixins from "../mixins/list";
+import request from "@/libs/request";
+import popup from "@/components/popup/popup";
+import dayjs from "dayjs";
+export default {
+  mixins: [listBaseMixins],
+  components: {
+    htmlTemplate,
+    vTable,
+    eTable,
+    popup
+  },
+  data() {
+    return {
+      tableFieldData: [], //供应商  数据
+      tableColTitleData: [], // 应收对账单向导 表头
+      tableBoxCoModelData: [], // 纸板规格 数据
+      productMDatasTableDataList: [], //存放处理过后的数据:[],
+      tableBoxCoWorkProcData: [], // 生产工序 数据
+      currentTabName: "orderTotalData", // 当前TABL名称
+      formDataInfo: {
+        // 主表 更改字段
+        master: {
+          inArtCode:"",
+          isReach: "0",
+          inMode: "0",
+          startDate: new Date(
+            dayjs()
+              .subtract(1, "month")
+              .format("YYYY-MM-DD")
+          ),
+          endDate: new Date(dayjs().format("YYYY-MM-DD")),
+          inPur: "",
+          inCus: ""
+        },
+        productMDatas: {}
+        // List:thsi.list
+      }, // 防止添加和更新数据提交发生冲突
+      ruleValidate: {},
+      tableFieldsValidator: {},
+      // 查询配置参数
+      functionParams: {
+        formInitPreName: "paperPoItemAnalyzerFm", // 查询表格列头信息 前缀 例如:boxco mainFm/itemFm/mdataFm
+        requestBaseUrl: "/purchase/purPaperPo/analyzerList", // 查询 表格行 数据 接口前缀地址
+        uniqueId: "boxCoMainId" // 查询详细的唯一ID,需要顶部查询中使用
+      }
+      // 分页查询接口获取字段, 查询参数配置 ,注意格式,一般为编码和名称
+      //   queryParamsDefault: [
+      //     {
+      //       title: '订单编号',
+      //       code: 'bcNo',
+      //       custCode: ''
+      //     },
+      //     {
+      //       title: '客户名称',
+      //       name: 'custName$like',
+      //       custName$like: ''
+      //     }
+      //   ]
+    };
+  },
+  methods: {
+    // tab 切换事件
+    TabsClickEvent(name) {
+      //debugger
+      this.currentTabName = name;
+      switch (name) {
+        case "storeTotalData": //0明细1产品2客户
+           this.formDataInfo.master.inMode = "0"
+           this.functionParams.formInitPreName = "storeTotalData"
+           this.LoadBoxCoWorkProcData(0);
+          break;
+        case "paperPoSupAnalyzerFm":
+          this.formDataInfo.master.inMode = 1
+          this.functionParams.formInitPreName = "paperPoSupAnalyzerFm"
+          this.LoadBoxCoWorkProcData(1);
+          break;
+        case "paperPoCusAnalyzerFm":
+          this.formDataInfo.master.inMode = 2
+          this.functionParams.formInitPreName = "paperPoCusAnalyzerFm"
+          this.LoadBoxCoWorkProcData(2);
+          break;
+        default:
+          break;
+      }
+    },
+    checkShowCol(colList) {
+      let exlistMdataFm = [
+        "supplierName",
+        "artCode",
+        "qty",
+        "ppoArea",
+        "ppoWeight",
+        "money",
+        "bMoney",
+        "jcount"
+      ];
+      let formInitPreName = this.functionParams.formInitPreName;
+      if (formInitPreName == "paperPoItemAnalyzerFm") {
+        exlistMdataFm = [];
+      }
+      if (colList && Array.isArray(colList) && colList.length > 0) {
+        colList = colList.filter(item => {
+          return !exlistMdataFm.includes(item.key);
+        });
+      }
+      return colList;
+    },
+    //加载数据
+    // LoadBoxCoModelData(inMode) {
+    //   debugger
+    //   // let url = `${this.functionParams.requestBaseUrl}/sub/boxCoModelData/list`;
+    //   let url = `/sale/boxCo/analyzerNew`;
+    //   let data = {
+    //     inMode: inMode,
+    //     inNotShQty: this.formDataInfo.master.inNotShQty ? 1 : 0,
+    //     inNotPlanQty: this.formDataInfo.master.inNotPlanQty ? 1 : 0,
+    //     inNotJoinQty: this.formDataInfo.master.inNotJoinQty ? 1 : 0
+    //   };
+    //   if (inMode == 1) {
+    //     //是客户汇总
+    //     data.inCustNo = this.formDataInfo.master.inCustNo;
+    //   }
+    //   if (inMode == 2) {
+    //     //产品汇总
+    //     data.inBpProNo = this.formDataInfo.master.inBpProNo;
+    //   }
+    //   if (inMode == 5) {
+    //     //箱型汇总
+    //     data.inBoxTyoe = this.formDataInfo.master.inBoxTyoe;
+    //   }
+    //   let _self = this;
+    //   request.post(url, data).then(res => {
+    //     debugger
+    //     _self.tableBoxCoModelData = res;
+    //   });
+    // },
+    // 加载列头数据(弹框签回表头)
+    loadColumsData(inMode = "0") {
+      //debugger
+      let formName = "";
+      switch (inMode) {
+        case "0":
+          formName = "paperPoItemAnalyzerFm";
+          this.functionParams.formInitPreName = "paperPoItemAnalyzerFm";
+          break;
+        case "1":
+          formName = "paperPoSupAnalyzerFm";
+          this.functionParams.formInitPreName = "paperPoSupAnalyzerFm";
+          break;
+        case "2":
+          formName = "paperPoCusAnalyzerFm";
+          this.functionParams.formInitPreName = "paperPoCusAnalyzerFm";
+          break;
+        default:
+          break;
+      }
+      //   if(inMode == 0)
+      //   let formName = "paperPoItemAnalyzerFm";
+      //   let url = `/sys/form/init/${formName}`;
+      //   request.get(url).then(res => {
+      //     debugger
+      //     if (res != null) {
+      //       this.tableColTitleData = res;
+      //     }
+      //   });
+    },
+    //加载 数据
+    LoadBoxCoWorkProcData(inMode = 0, isReach = 0) {
+      //debugger
+      //   let url = `${this.functionParams.requestBaseUrl}/sub/boxCoWorkProc/list`;
+      //(inCompanyId 单位id,inMode 0明细1供应商2客户inPur 供应商,inArtCode 纸质,inCus 客户,startDate起始时间,endDate结束时间,isReach 0全部1未到2已到
+      let url = `/purchase/purPaperPo/analyzerList`;
+      let inArtCodeC= this.formDataInfo.master.inArtCode
+      inArtCodeC=inArtCodeC.toUpperCase()
+      let data = {
+        inMode: inMode+"",
+        isReach: this.formDataInfo.master.isReach,
+        startDate: dayjs(this.formDataInfo.master.startDate).format(
+          "YYYY-MM-DD"
+        ),
+        endDate: dayjs(this.formDataInfo.master.endDate).format("YYYY-MM-DD"),
+        inPur: this.formDataInfo.master.inPur,
+        inArtCode: inArtCodeC,
+        inCus: this.formDataInfo.master.inCus
+      };
+      let _self = this;
+      request.post(url, data).then(res => {
+        //debugger
+        let totalMoney = 0; //总金额
+        for (let i = 0; i < res.length; i++) {
+          totalMoney += res[i].money;
+        }
+        //金额占比=金额/总金额×100%
+        res.forEach(item => {
+          item.bMoney = ((Number(item.money) / totalMoney) * 100).toFixed(2);
+        });
+          //  保留两位小数
+       for(let n=0;n<res.length;n++){
+         let value = res[n].ppoArea
+         if((value+"").indexOf('.')>0){
+           res[n].ppoArea = value.toFixed(2)
+         }        
+       }
+        // 延迟赋值,不然数据还没有正确返回的情况下,无法绑定默认值
+        setTimeout(() => {
+          _self.tableBoxCoWorkProcData = res;
+        }, 10);
+      });
+    },
+    // 通过参数查询数据列表
+    searchDataBy() {
+      //debugger
+      let inMode = this.formDataInfo.master.inMode;
+      let isReach = this.formDataInfo.master.isReach;
+      this.loadColumsData(inMode);
+      this.LoadBoxCoWorkProcData(inMode, isReach);
+    }
+  },
+  created() {
+    this.formDataInfo.master.isReach = "0";
+    this.formDataInfo.master.inMode = "0";
+    // this.loadColumsData();
+    this.LoadBoxCoWorkProcData();
+    // 查询多个表格列表头数据
+    // 无需变更,配置functionParams 参数即可
+    // if (this.functionParams.formInitPreName) {
+    //   this.getFormInitData(`${this.functionParams.formInitPreName}mainFm`);
+    // }
+  },
+  mounted() {}
+};
+</script>
+
+<style>
+.purPaperClass {
+  margin-left: -46%;
+}
+.purPaperPoAnalyClass {
+  width: 96%;
+  margin: 0 auto;
+}
+.purDataClass {
+  margin-left: 13%;
+}
+.edit-purPaperPoAnalyzSlave .ivu-col{
+  height:32px;
+}
+.buttonMarginleft .ivu-form-item-content{
+  margin-left: 36px !important;
+}
+</style>

@@ -1,0 +1,479 @@
+<template>
+  <div class="cl-moudle">
+    <htmlTemplate
+     ref="htmlTemplate"
+      :currrentRowItem="currrentRowItem"
+      @isLoaddingDone="getLoaddingDone"
+      :requestBaseUrl="functionParams.requestBaseUrl"
+      :uniqueId="functionParams.uniqueId"
+      :queryParamsDefault="queryParamsDefault"
+    >
+    </htmlTemplate>
+    <div ref="contextMenuTarget" class="content-container" v-if="formInitData.listView" :style="{ height: tableHeight + 'px' }">
+      <Split :v-model="splitModel" mode="vertical">
+        <div slot="top" class="demo-split-pane" ref="contextMenuTarget">
+          <vTable
+            @row-dblclick="showDetailswindow"
+            tabletitle="纸箱退货主表"
+            :height="tableHeight / 2"
+            ref="master_list_table"
+            :url="`${functionParams.requestBaseUrl}/page`"
+            :columns="formInitData.columns[`${functionParams.formInitPreName}Fm`].listColumns"
+            :pagination="true"
+            @row-click="master_list_tableRowClick"
+            :name="`${functionParams.formInitPreName}Fm`"
+          ></vTable>
+        </div>
+        <div slot="bottom" :style="{ 'padding-top': '6px' }">
+          <Tabs>
+            <TabPane label="纸箱退货明细" :name="`${functionParams.formInitPreName}itemFm`">
+              <vTable
+                tabletitle="纸箱退货明细"
+                :height="tableHeight / 2 - 37"
+                ref="tableFieldRef"
+                :url="`${functionParams.requestBaseUrl}/item/list`"
+                :columns="formInitData.columns[`${functionParams.formInitPreName}itemFm`].listColumns"
+                :pagination="false"
+                @row-click="slave_list_tableRowClick"
+                :name="`${functionParams.formInitPreName}itemFm`"
+              ></vTable>
+            </TabPane>
+          </Tabs>
+        </div>
+      </Split>
+    </div>
+      <editWindow
+        :title="customerActionTitle"
+        :fullscreen="false"
+        v-model="showEndDataBatchWindow"
+        width="90%"
+        :loading="false"
+     >
+     <template slot="footer">
+        <div>
+            <Button :disabled="disabled_endData_submitBtn" @click="endData_selectAll()" type="primary">
+                <Icon type="ios-apps" />
+                全 选
+            </Button>
+          <Button :disabled="disabled_endData_submitBtn" @click="endData_submit()" type="primary">
+                <Icon type="ios-arrow-down" />
+                确 定
+            </Button>
+
+           <Button @click="endData_cancel()">
+                <Icon color="red" type="md-close" />
+                取 消
+            </Button>
+        </div>
+     </template>
+     <div>
+        <Form
+            ref="formEndDataInfo"
+            :show-message="true"
+            :model="formEndDataInfo"
+            :label-width="80"
+        >
+           <Row>
+              <Col span="5">
+                  <FormItem label="退货单号" prop="bdNo">
+                      <Input v-model="formEndDataInfo.bdNo" maxlength="80" placeholder="退货单号"></Input>
+                  </FormItem>
+              </Col>
+             <Col span="8">
+                   <FormItem label="出货日期" prop="bdDate">
+                    <DatePicker
+                    :disabled="false"
+                    style="width: 115px"
+                    transfer
+                      v-model="formEndDataInfo.bdDate"
+                      type="date"
+                      format="yyyy-MM-dd"
+                    ></DatePicker>->
+                    <DatePicker
+                    :disabled="false"
+                    style="width: 115px"
+                    transfer
+                      v-model="formEndDataInfo.bdEndDate"
+                      type="date"
+                      format="yyyy-MM-dd"
+                    ></DatePicker>
+            </FormItem>
+               </Col>
+                <Col span="3">
+                <FormItem  :label-width="0">
+                   <Checkbox class="CheckboxItem" v-model="formEndDataInfo.biIsAcc">采用设定日期</Checkbox>
+                </FormItem>
+            </Col>
+             <Col span="4">
+                <FormItem :label-width="100" :label="customerActionInputTitle" prop="biIsAccDate">
+                  <DatePicker
+                  :disabled="!formEndDataInfo.biIsAcc"
+                  style="width: 115px"
+                  transfer
+                    v-model="formEndDataInfo.biIsAccDate"
+                    type="datetime"
+                    format="yyyy-MM-dd HH:mm:ss"
+                  ></DatePicker>
+
+              </FormItem>
+            </Col>
+             <Col span="1">
+               <FormItem>
+                   <Button :loading="isLoadingSearchBtn" @click="searchEndDateDataList()" type="primary">
+                     <Icon type="md-search" />
+                     搜索
+                     </Button>
+                </FormItem>
+              </Col>
+           </Row>
+         </Form>
+         <div v-if="tableColEndDateTitleData.columns">
+            <eTable
+            :showContextMenu="false"
+            :disabledAddRowWhenfocusNull="true"
+            :height="400"
+            ref="sub_list_table_boxremonthorbrdateFm"
+            unqiue-mark="id"
+            :index-menu="true"
+            :col-start="0"
+            :row-init-data="tableColEndDateTitleData.initData[`boxremonthorbrdateFm`]"
+            :data="tableEndDateDataList"
+          >
+                              <template slot="head">
+                                  <tr v-for="(columnGroup,index) in tableColEndDateTitleData.columns[`boxremonthorbrdateFm`].editGroups" :key="index">
+                                          <template  v-for="(column,index2) in columnGroup" >
+                                            <th v-if="excludeFiled('tableColEndDateTitleData',column.key)"
+                                                :key="index2" :class="`ivu-table-column-${column.titleAlign}`"
+                                                :width="column.editWidth"
+                                                :colspan="column.colSpan"
+                                                :rowspan="column.rowSpan"
+                                                :columnKey="column.key"
+                                                >
+                                              <div  class="ivu-table-cell">
+                                                <span class="">{{column.title}}</span>
+                                              </div>
+                                          </th>
+                                          </template>
+                                </tr>
+                              </template>
+                                <template
+                                  slot="body"
+                                  slot-scope="{ row, index, valueChangeAssign }"
+                                >
+                                    <template v-for="(column,subIndex) in tableColEndDateTitleData.columns[`boxremonthorbrdateFm`].editColumns">
+                                        <td :key="subIndex" :class="`ivu-table-column-${column.align}`" v-if="excludeFiled('tableColEndDateTitleData',column.key)" :width="column.editWidth">
+
+                                         <!-- 控件特殊处理 月结日期 -->
+                                         <template v-if="column.key =='brMonthDate'">
+                                              <DatePicker
+                                                  transfer
+                                                  :disabled="getCurType()"
+                                                  v-model="row[column.key]"
+                                                  :clearable="false"
+                                                  type="datetime"
+                                                  format="yyyy-MM-dd HH:mm:ss"
+                                                ></DatePicker>
+                                        </template>
+                                          <!-- 控件特殊处理 退货日期 -->
+                                         <template v-else-if="column.key =='brDate'">
+                                              <DatePicker
+                                                  transfer
+                                                  v-model="row[column.key]"
+                                                  :clearable="false"
+                                                   type="datetime"
+                                                    format="yyyy-MM-dd HH:mm:ss"
+                                                ></DatePicker>
+                                        </template>
+                                          <!--其它 控件-->
+                                        <template v-else>
+                                          <formControl :align="column.align" :control-type="column.controlType"
+                                            v-model="row[column.key]"
+                                            :disabled="column.readOnly"
+                                            @input="value => {valueChangeAssign(value, index, row,column.key)}"
+                                          ></formControl>
+                                        </template>
+                                      </td>
+                                    </template>
+
+                                </template>
+                            </eTable>
+         </div>
+
+     </div>
+
+     </editWindow>
+    <editForm
+      :isLoaddingDone="isLoaddingDone"
+      :form-detail-data="formDetailData"
+      :action="action"
+      @submit-success="search()"
+      v-model="showEditWindow"
+      :detailDisabled="detailDisabled"
+      :detailConvertUpdate="detailConvertUpdate"
+    />
+  </div>
+</template>
+<script>
+import vTable from '@/components/tables/vTable'
+import htmlTemplate from '../components/htmlTemplate'
+import listBaseMixins from '../mixins/list'
+import request from '@/libs/request'
+import eTable from '@/components/e-table/e-table'
+import editWindow from '@/components/edit-window/edit-window'
+import formControl from '@/components/form-control/form-control'
+import dayjs from 'dayjs'
+const formGetBack_default = {
+  bdNo: '',
+  bdDate: '',
+  bdEndDate: '',
+  bdCarNo: '',
+  bdBackDate: '',
+  bdBackDateText: '', // 格式化日期显示
+  biIsAcc: true, // 采用月结
+  biIsAccDate: ''// 月结日期
+}
+export default {
+  mixins: [listBaseMixins],
+  components: {
+    eTable,
+    editWindow,
+    formControl,
+    dayjs,
+    'editForm': function (resolve) { // 组件的异步加载
+      require(['./edit/edit-boxRe'], resolve)
+    },
+
+    htmlTemplate,
+    vTable
+  },
+  data () {
+    return {
+      // 数据查询修改等基本参数设置
+      functionParams: {
+        formInitPreName: 'stockboxre', //  查询表格列头信息 前缀 例如:stockboxre Fm/itemFm
+        requestBaseUrl: '/stock/boxRe',
+        uniqueId: 'brId'
+      },
+      customerActionType: 'batchUpdateMonthDate', // 当前操作的方法类型
+      customerActionTitle: '月结日期批量修改', // 当前操作的方法类型
+      customerActionInputTitle: '月结设置日期', // 当前操作的方法类型
+      isLoadingSearchBtn: false, // 月结查询按钮 加载中
+      formEndDataInfo: Object.assign({}, formGetBack_default),
+      tableColEndDateTitleData: [], // 月结日期功能界面 表头
+      tableEndDateDataList: [], // 月结日期功能界面 数据列表
+      showEndDataBatchWindow: false, // 批量修改月结日期 窗体 是否显示
+      // 查询参数 ,注意格式
+      queryParamsDefault: [
+        {
+          title: '请输入退货单号',
+          code: 'brNo',
+          brNo: ''
+        },
+        {
+          title: '请输入客户名称',
+          name: 'cusName$like',
+          cusName$like: ''
+        }
+      ]
+    }
+  },
+  computed: {
+    // 是否禁用月结 确定按钮
+    disabled_endData_submitBtn () {
+      if (this.tableEndDateDataList && this.tableEndDateDataList.length > 0) {
+        return false
+      } else {
+        return true
+      }
+    }
+  },
+  watch: {
+    // 监控月结窗体打开
+    showEndDataBatchWindow: function (n, o) {
+      if (n) {
+        let _self = this
+        this.$nextTick(() => {
+          // 初始化日期
+          _self.formEndDataInfo.bdNo = ''
+          _self.formEndDataInfo.bdDate = dayjs().subtract(10, 'day').format('YYYY-MM-DD')
+          _self.formEndDataInfo.bdEndDate = dayjs().format('YYYY-MM-DD')
+          _self.formEndDataInfo.biIsAccDate = dayjs().format('YYYY-MM-DD HH:mm:ss')
+          _self.searchEndDateDataList()
+        })
+      }
+    }
+  },
+  created () {
+    // 查询多个表格列表头数据
+    // 无需变更,配置functionParams 参数即可
+    if (this.functionParams.formInitPreName) {
+      this.getFormInitData(`${this.functionParams.formInitPreName}Fm`)
+    }
+    this.loadEndDateColumsData() // 纸箱出货月结日期功能界面 列表表头
+  },
+  methods: {
+    getCurType () {
+      if (this.customerActionType == 'batchUpdateBrDate') {
+        // 批量修改退货日期 路径
+        return true
+      } else {
+        return false
+      }
+    },
+    // 主表点击事件,需要修改 查询参数:productPriceId 和 查询反馈内容  rowData.custCode + " " + rowData.custName 一般对应 queryParamsDefault 即可
+    master_list_tableRowClick (rowData, rowIndex) {
+      this.masterRowSelection = rowData
+      this.currrentRowItem.rowName = rowData.brNo + ' ' + rowData.cusName
+      this.$refs['tableFieldRef'].search({ brId: rowData.id })
+    },
+    // 纸箱出货明细 行点击事件
+    slave_list_tableRowClick (rowData, rowIndex) {
+
+    },
+    // 加载列头数据(纸箱出货月结日期功能界面)
+    loadEndDateColumsData () {
+      let formName = 'boxremonthorbrdateFm'
+      let url = `/sys/form/init/${formName}`
+      request.get(url).then(res => {
+        if (res != null) {
+          this.tableColEndDateTitleData = res
+        }
+      })
+    },
+    // 获取需要修改月结日期的数据
+    searchEndDateDataList () {
+      this.tableEndDateDataList = []
+      let url = '/stock/boxRe/getMonthData'
+      if (this.customerActionType == 'batchUpdateBrDate') {
+        // 批量修改退货日期 路径
+        url = '/stock/boxRe/getUpdateBrDateData'
+      }
+      let params = {
+        // 获取需要修改月结日期的数据,brNo(退货单号),startDate(开始时间),endDate(结束时间)
+        brNo: this.formEndDataInfo.bdNo,
+        startDate: dayjs(this.formEndDataInfo.bdDate).format('YYYY-MM-DD'),
+        endDate: dayjs(this.formEndDataInfo.bdEndDate).format('YYYY-MM-DD')
+      }
+      this.getDataByUrl(url, params).then(res => {
+        if (res && res.length > 0) {
+          this.tableEndDateDataList = res
+        }
+      })
+    },
+    // 月结窗体 全选 事件
+    endData_selectAll () {
+      let selectAllData = this.tableEndDateDataList.map(item => {
+        if (!item.iisChose) {
+          item.iisChose = true
+        } else {
+          item.iisChose = false
+        }
+        return item
+      })
+      this.tableEndDateDataList = selectAllData
+    },
+    // 月结窗体 提交 事件
+    endData_submit () {
+      this.setMonthDateOrBrDate()
+    },
+    // 月结窗体 取消 事件
+    endData_cancel () {
+      this.showEndDataBatchWindow = false
+    },
+    // 月结or退货 提交数据
+    setMonthDateOrBrDate () {
+      // 批量修改月结日期,boxReList(选择的列表数据),dateFlag(采用设定日期),tempDate(月结设定日期)
+      let currentItem = this.masterRowSelection
+      // 批量修改月结日期 路径
+      let url = '/stock/boxRe/batchUpdateMonthDate'
+      if (this.customerActionType == 'batchUpdateBrDate') {
+        // 批量修改退货日期 路径
+        url = '/stock/boxRe/batchUpdateBrDate'
+      }
+      let params = {
+        boxReList: [],
+        dateFlag: this.formEndDataInfo.biIsAcc,
+        tempDate: dayjs(this.formEndDataInfo.biIsAccDate).format('YYYY-MM-DD')
+      }
+      let hasNullDate = false
+      // 后去勾选后的数据
+      let _self = this
+      let choseDataList = this.tableEndDateDataList.forEach(item => {
+        if (item.iisChose) {
+          if (!_self.formEndDataInfo.biIsAcc) {
+            if (this.customerActionType != 'batchUpdateBrDate') {
+              // 月结
+              if (item.brMonthDate == '' || item.brMonthDate == null) {
+                hasNullDate = true
+              }
+            } else {
+              // or退货
+              if (item.brDate == '' || item.brDate == null) {
+                hasNullDate = true
+              }
+            }
+          }
+          params.boxReList.push(item)
+        }
+      })
+
+      if (params.boxReList.length == 0) {
+        _self.$Message.warning('请选择需要操作的数据')
+        return
+      }
+      if (hasNullDate) {
+        _self.$Message.warning('勾选数据未填写月结日期')
+        return
+      }
+      _self.getDataByUrl(url, params).then(res => {
+        _self.$Message.success('执行成功')
+        _self.showEndDataBatchWindow = false
+        _self.refresh()// 刷新界面
+      })
+    },
+    // 排除不需要显示的字段
+    excludeFiled (type, key) {
+      type = this.customerActionType
+      let exListBrDate = ['returnDate'] // 月结时 batchUpdateMonthDate
+      let exListMonthDate = ['brDate'] // 退货时  需要隐藏字段
+      let exList = []
+      switch (type) {
+        case 'batchUpdateBrDate':
+          exList = exListBrDate
+          break
+        default:
+          exList = exListMonthDate
+          break
+      }
+      if (exList.includes(key)) {
+        return false
+      } else {
+        return true
+      }
+    },
+    customerAction (type, func) {
+      if (type !== 'stock-boxRe') {
+        return
+      }
+      this.customerActionType = func
+      switch (func) {
+        case 'batchUpdateMonthDate':
+          this.customerActionTitle = '批量修改月结日期'
+          this.customerActionInputTitle = '月结设定日期'
+          this.showEndDataBatchWindow = true
+          break
+        case 'batchUpdateBrDate':
+          this.customerActionTitle = '批量修改退货日期'
+          this.customerActionInputTitle = '退货设定日期'
+          this.showEndDataBatchWindow = true
+          break
+        default:
+          break
+      }
+    }
+
+  }
+}
+</script>
+
+<style></style>

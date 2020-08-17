@@ -1,0 +1,723 @@
+<template>
+  <div class="cl-moudle">
+    <htmlTemplate
+      :currrentRowItem="currrentRowItem"
+      @isLoaddingDone="getLoaddingDone"
+      :requestBaseUrl="functionParams.requestBaseUrl"
+      :uniqueId="functionParams.uniqueId"
+      :queryParamsDefault="queryParamsDefault"
+    >
+    </htmlTemplate>
+
+    <div
+      class="content-container"
+      v-if="formInitData.listView"
+      :style="{ height: tableHeight + 'px' }"
+    >
+      <Split :v-model="splitModel" mode="vertical">
+        <div slot="top" class="demo-split-pane" ref="contextMenuTarget">
+          <vTable
+            @row-dblclick="showDetailswindow"
+            :height="tableHeight / 2"
+            ref="master_list_table"
+            :url="`${functionParams.requestBaseUrl}/page`"
+            :columns="
+              formInitData.columns[`${functionParams.formInitPreName}Fm`]
+                .listColumns
+            "
+            :pagination="true"
+            @row-click="master_list_tableRowClick"
+            :name="`${functionParams.formInitPreName}Fm`"
+          ></vTable>
+        </div>
+        <div slot="bottom" :style="{ 'padding-top': '6px' }">
+          <Tabs>
+            <TabPane
+              label="应付对账单明细"
+              :name="`${functionParams.formInitPreName}itemFm`"
+            >
+              <vTable
+                :height="tableHeight / 2.3"
+                ref="slave_list_table"
+                :url="`${functionParams.requestBaseUrl}/item/list`"
+                :columns="
+                  formInitData.columns[
+                    `${functionParams.formInitPreName}itemFm`
+                  ].listColumns
+                "
+                :pagination="false"
+                @row-click="slave_list_tableRowClick"
+                :name="`${functionParams.formInitPreName}itemFm`"
+              ></vTable>
+            </TabPane>
+          </Tabs>
+        </div>
+      </Split>
+    </div>
+    <editForm
+      :isLoaddingDone="isLoaddingDone"
+      :form-detail-data="formDetailData"
+      :action="action"
+      @submit-success="search()"
+      v-model="showEditWindow"
+      :detailDisabled="detailDisabled"
+      :detailConvertUpdate="detailConvertUpdate"
+    />
+
+    <editWindow
+      title="应付对账单向导"
+      :fullscreen="false"
+      v-model="showMonthlySettlementWindow"
+      width="400"
+    >
+      <template slot="footer">
+        <div>
+          <Button :loading='loading_submit_accPayGuideTwo_btn' @click="nextStep_accPayGuide()" type="primary">
+            <Icon type="ios-arrow-forward" />下一步
+          </Button>
+
+          <Button @click="cancel_accPayGuide()">
+            <Icon color="red" type="md-close" />取 消
+          </Button>
+        </div>
+      </template>
+      <Form
+        :label-width="130"
+        ref="setGetBackWindow"
+        :model="formAccPayGuide"
+        :rules="{}"
+      >
+        <FormItem>
+          <Checkbox
+            @on-change="onChange_checkBox_iisAppend"
+            style="width: 200px"
+            transfer
+            class="CheckboxItem"
+            v-model="formAccPayGuide.iisAppend"
+          >
+            追加到当前立账单中
+          </Checkbox>
+        </FormItem>
+        <FormItem label="供应商类型">
+          <optionSearch
+            :disabled='formAccPayGuide.iisAppend'
+            style="width: 200px"
+            @onChange="OnChange_supplierType"
+            :defaultItem="formAccPayGuide.supplierType"
+            :loaddingDataWhen="showMonthlySettlementWindow"
+            formKey="supplierType"
+            query="vType"
+          />
+        </FormItem>
+        <FormItem label="供应商" prop="supplierCode">
+          <popup
+            style="width: 200px"
+            v-model="formAccPayGuide.supplierCode"
+            field-name="supplierCode"
+            :disabled='formAccPayGuide.iisAppend'
+            popup-name="SupplierMultiBox"
+            :fill-model.sync="formAccPayGuide"
+            render-fields="supplierId,supplierCode,supplierName"
+            from-fields="id,supplierCode,supplierName"
+            :suffix="false"
+            :suffix-model="formAccPayGuide.supplierName"
+            :query-params="{vType:formAccPayGuide.supplierType}"
+          />
+        </FormItem>
+        <FormItem label="立账日期" prop="apDate">
+          <DatePicker
+          :disabled='formAccPayGuide.iisAppend'
+            style="width: 200px"
+            transfer
+            v-model="formAccPayGuide.apDate"
+            type="date"
+            :clearable="false"
+            format="yyyy-MM-dd"
+          ></DatePicker>
+        </FormItem>
+        <FormItem label="月结月份" prop="apMonth">
+          <DatePicker
+          :disabled='formAccPayGuide.iisAppend'
+            style="width: 200px"
+            transfer
+            :clearable="false"
+            v-model="formAccPayGuide.apMonth"
+            type="month"
+            format="yyyyMM"
+          ></DatePicker>
+        </FormItem>
+         <FormItem label="月结终止日">
+          <Input
+            style="width: 200px"
+            transfer
+            type="number"
+            :disabled='formAccPayGuide.iisAppend'
+            v-model="formAccPayGuide.monthEnd"
+            placeholder="月结终止日"
+          ></Input>
+        </FormItem>
+        <FormItem label="月结方式">
+          <Checkbox
+            @on-change="onChange_checkBox_setBycustomer"
+            class="CheckboxItem"
+            v-model="formAccPayGuide.setBycustomer"
+          >
+            采用供应商资料中的设置
+          </Checkbox>
+        </FormItem>
+        <FormItem>
+          <optionSearch
+           :disabled="formAccPayGuide.setBycustomer"
+            style="width: 200px"
+            @onChange="OnChange_arpType"
+            :defaultItem="formAccPayGuide.arpType"
+            :loaddingDataWhen="showMonthlySettlementWindow"
+            formKey="arpType "
+            query="arpType "
+          />
+        </FormItem>
+        <FormItem label="起始日期" prop="startDate">
+          <DatePicker
+            @on-change="onChange_startDate"
+            style="width: 200px"
+            transfer
+            :disabled="formAccPayGuide.setBycustomer"
+            :value="formAccPayGuide.startDate"
+            type="date"
+            :clearable="false"
+            format="yyyy-MM-dd"
+          ></DatePicker>
+        </FormItem>
+        <FormItem label="结束日期" prop="endDate">
+          <DatePicker
+            :disabled="formAccPayGuide.setBycustomer"
+            @on-change="onChange_endDate"
+            style="width: 200px"
+            transfer
+            :value="formAccPayGuide.endDate"
+            type="date"
+            :clearable="false"
+            format="yyyy-MM-dd"
+          ></DatePicker>
+        </FormItem>
+        <FormItem label="贷款到期日" prop="arriveDate">
+          <DatePicker
+            :disabled="formAccPayGuide.setBycustomer"
+            @on-change="onChange_arriveDate"
+            style="width: 200px"
+            transfer
+            :value="formAccPayGuide.arriveDate"
+            type="date"
+            :clearable="false"
+            format="yyyy-MM-dd"
+          ></DatePicker>
+        </FormItem>
+        <FormItem label="税率" prop="taxRate">
+            <InputNumber
+                style="width: 200px"
+                  :disabled="formAccPayGuide.setBycustomer"
+                  placeholder="税率"
+                  maxlength="20"
+                  v-model="formAccPayGuide.taxRate"
+                />
+        </FormItem>
+        <FormItem label="折扣(%)" prop="discount">
+          <InputNumber
+              :disabled="formAccPayGuide.setBycustomer"
+               style="width: 200px"
+              placeholder="折扣(%)"
+              :min="0"
+              :max="100"
+              v-model="formAccPayGuide.discount"
+            />
+        </FormItem>
+      </Form>
+    </editWindow>
+<!-- 应付对账单向导 数据列表 -->
+    <editWindow
+      title="应收对账单向导"
+      :fullscreen="false"
+      v-model="showMonthlySettlementListWindow"
+      width="70%"
+      :loading="false"
+    >
+      <template slot="footer">
+        <div>
+          <!-- <Button
+            :disabled="disabled_button"
+            @click="selectAll_accPayGuideTwo()"
+            type="primary"
+          >
+            <Icon type="ios-apps" />全 选
+          </Button> -->
+          <Button @click="preStep_accPayGuideTwo()" type="primary">
+            <Icon type="ios-arrow-back" />上一步
+          </Button>
+          <Button
+            :loading ="loading_submit_accPayGuideTwo_btn"
+            :disabled="disabled_button"
+            @click="submit_accPayGuideTwo()"
+            type="primary"
+          >
+            <Icon type="ios-arrow-down" />完 成
+          </Button>
+
+          <Button @click="cancel_accPayGuideTwo()">
+            <Icon color="red" type="md-close" />取 消
+          </Button>
+        </div>
+      </template>
+      <div v-if="tableColTitleData.columns">
+         <eTable
+              ref="slave_list_table_edit"
+              unqiue-mark="id"
+              :height="500"
+              :index-menu="true"
+              :col-start="0"
+              :row-init-data="{}"
+              :data="accPayguideDataList"
+              :rules="{}"
+            >
+              <template slot="head">
+                <tr
+                  v-for="(columnGroup, index) in tableColTitleData.columns[
+                    `${functionParams.accPayGuideFormName}`
+                  ].editGroups"
+                  :key="index"
+                >
+                  <template v-for="(column, index2) in columnGroup">
+                    <th
+                      v-if="excludeFiled('accPayItemFm', column.key)"
+                      :key="index2"
+                      :class="`ivu-table-column-${column.titleAlign}`"
+                      :width="column.editWidth"
+                      :colspan="column.colSpan"
+                      :rowspan="column.rowSpan"
+                      :columnKey="column.key"
+                    >
+                      <div class="ivu-table-cell">
+                        <span class="">{{ column.title }}</span>
+                      </div>
+                    </th>
+                  </template>
+                </tr>
+              </template>
+              <template
+                slot="body"
+                slot-scope="{
+                  row,
+                  index,
+                  valueChangeAssign,
+                }"
+              >
+                <template
+                  v-for="(column, subIndex) in tableColTitleData.columns[
+                    `${functionParams.accPayGuideFormName}`
+                  ].editColumns"
+                >
+                  <td
+                    :key="subIndex"
+                    :class="`ivu-table-column-${column.align}`"
+                    v-if="excludeFiled('accPayItemFm', column.key)"
+                    :width="column.editWidth"
+                  >
+                   <!-- 单据类型-->
+                      <Select @on-change="value => {valueChangeAssign(value, index, row,column.key)}" :disabled="false" v-if="column.key == 'arpType'" v-model="row[column.key]" transfer>
+                        <Option v-for="(item,index) in arpTypeList" :key="index" :value="item.dicValue+''">{{item.dicLabel}}</Option>
+                      </Select>
+                    <!--其它 控件-->
+                    <template v-else>
+                      <formControl
+                        :align="column.align"
+                        :control-type="column.controlType"
+                        v-model="row[column.key]"
+                        :disabled="column.readOnly"
+                        @input="
+                          value => {
+                            valueChangeAssign(value, index, row, column.key);
+                          }
+                        "
+                      ></formControl>
+                    </template>
+                  </td>
+                </template>
+              </template>
+            </eTable>
+             <Page @on-change="searchDataBy" @on-page-size-change="searchDataBy" :disabled="!disable_Paging" :current="pageNumber" :page-size="pageSize" :total="accPayguideDataList.length" size="small" show-total show-elevator show-sizer />
+      </div>
+    </editWindow>
+  </div>
+</template>
+<script>
+// 应付对账单
+import optionSearch from "../components/optionSearch";
+import popup from "@/components/popup/popup";
+import vTable from "@/components/tables/vTable";
+import htmlTemplate from "../components/htmlTemplate";
+import listBaseMixins from "../mixins/list";
+import request from "@/libs/request";
+import eTable from "@/components/e-table/e-table";
+import editWindow from "@/components/edit-window/edit-window";
+import formControl from "@/components/form-control/form-control";
+import dayjs from "dayjs";
+const formAccPayGuide_default = {
+  iisAppend: false, // 追加到当前立账单中
+  setBycustomer: true, //采用客户数据中的设定
+  apDate: dayjs().format("YYYY-MM-DD"),
+  apMonth: dayjs().format("YYYY-MM-DD"),
+  arpType: "0",
+  arriveDate: '',//dayjs().format("YYYY-MM-DD"),
+  coinId: 0,
+  discount: null,
+  endDate: '',//结束日期 dayjs().format("YYYY-MM-DD"),
+  monthDays: null,
+  monthEnd: null,
+  startDate:'',// 起始日期
+  supplierCode: "",
+  supplierId: 0,
+  supplierName: "",
+  supplierType: "0",
+  taxRate: null,
+  taxType: ""
+};
+export default {
+  mixins: [listBaseMixins],
+  components: {
+    optionSearch,
+    popup,
+    eTable,
+    editWindow,
+    formControl,
+    dayjs,
+    editForm: function(resolve) {
+      //组件的异步加载
+      require(["./edit/edit-accPay"], resolve);
+    },
+
+    htmlTemplate,
+    vTable
+  },
+  data() {
+    return {
+      arpTypeList:[],// 月结类型
+      pageNumber:1,// 当前页码
+      pageSize:20,// 每页条数
+      loading_submit_accPayGuideTwo_btn:false,//完成按钮 是否 加载中 
+      tableColTitleData:[],// 应收对账单向导 表头
+      accPayguideDataList:[],// 应收对账单向导 数据列表
+      formAccPayGuide: Object.assign({}, formAccPayGuide_default),
+      showMonthlySettlementWindow: false, // 是否显示月结向导窗口
+      showMonthlySettlementListWindow:false,// 是否显示月结向导 数据列表窗口
+      //数据查询修改等基本参数设置
+      functionParams: {
+        accPayGuideFormName:'accpaysupplierdataFm',
+        formInitPreName: "accountaccpay", //  查询表格列头信息 前缀 例如:accountInvoiceCheck  Fm/itemFm
+        requestBaseUrl: "/account/accPay",
+        uniqueId: "apId"
+      },
+      // 查询参数 ,注意格式
+      queryParamsDefault: [
+        {
+          title: "请输入立帐单号",
+          code: "apNo",
+          apNo: ""
+        },
+        {
+          title: "请输入供应商简称",
+          name: "supplierName$like",
+          supplierName$like: ""
+        }
+      ]
+    };
+  },
+  watch:{
+    // 监控 是否显示月结向导窗口
+    showMonthlySettlementWindow(n,o){
+      if(!n){
+        // 退出时,清空预设 
+        if(!this.showMonthlySettlementListWindow){
+           this.formAccPayGuide = Object.assign({}, formAccPayGuide_default)
+        }
+      }
+    },
+    showMonthlySettlementListWindow(n,o){
+       if(!n && !this.showMonthlySettlementWindow){
+        // 退出时,清空预设 
+         this.formAccPayGuide = Object.assign({}, formAccPayGuide_default)
+      }
+    }
+  },
+  computed:{
+    // 是否 提交/全选 禁用
+    disabled_button(){
+      return !this.accPayguideDataList.length>0
+    },
+    // 是否禁用分页
+    disable_Paging(){
+      return this.accPayguideDataList.length > this.pageSize
+    }
+  },
+  created() {
+    // 查询多个表格列表头数据
+    // 无需变更,配置functionParams 参数即可
+    if (this.functionParams.formInitPreName) {
+      this.getFormInitData(`${this.functionParams.formInitPreName}Fm`);
+    }
+    this.loadColumsData()
+    this.getArpTypeList()
+  },
+  methods: {
+     // 重写父类方法,确认当前行 是否可以删除,默认true可以删除,false 返回false 不可以删除
+    canIDeleteRowItem(){
+      let canDelete = true
+      if(!!this.masterRowSelection){
+        // 已开票金额
+        let itemHasAmt = Number(this.masterRowSelection['invoicedAmt']) 
+        if(itemHasAmt>0){
+          canDelete = false
+        }
+      }
+      if(!canDelete){
+           let  message = "当前数据(已开票金额不为0),不可操作";
+           this.$Message.warning(message);
+           return false
+      }
+      return true
+    },
+     getArpTypeList(){
+          //获取  单据类型 
+        this.getDataFromDictionaryBy('arpType').then(res=>{
+          this.arpTypeList = res
+        })
+      },
+     // 追加到当前立账单中 
+    onChange_checkBox_iisAppend(item){
+      let tableDataItems = this.$refs['master_list_table'].tableDataItems
+      if(tableDataItems.length==0 && item){
+          // 判断当前主表是否有数据,没有数据时,当前数据列表为空,不可追加!
+          this.$Modal.warning({
+              title: "提示",
+              content: `当前数据列表为空,不可追加!?`,
+              onOk: () => {
+               this.formAccPayGuide.iisAppend = false 
+              }
+            })
+      }
+    },
+    // 采用供应商资料中的设置 勾选回调事件
+    onChange_checkBox_setBycustomer(item){
+      if(!item){
+        this.searchDataBy()
+      }else{
+        // 清空数据
+          this.assignValueToForm({})
+      }
+    },
+    // 采用供应商资料中的设置 取消勾选后  搜索回调事件
+    searchDataByCallBack(){
+      if(!this.formAccPayGuide.setBycustomer){
+         let dataList =  this.accPayguideDataList
+         if(dataList &&  dataList.length>0){
+           let item = dataList[0]
+           this.assignValueToForm(item)
+         }
+      }
+    },
+    // 赋值或清空数据form
+    assignValueToForm(item){
+      this.formAccPayGuide.startDate = !!!item.startDate?'':item.startDate
+      this.formAccPayGuide.endDate = !!!item.endDate?'':item.endDate
+      this.formAccPayGuide.arriveDate = !!!item.arriveDate?'':item.arriveDate
+      this.formAccPayGuide.taxRate = !!!item.taxRate?'':item.taxRate
+      this.formAccPayGuide.discount = !!!item.discount?'':item.discount
+    },
+    // 提交==>批量生成应付对账单
+    submit_accPayGuideTwo(){
+      let url = `${this.functionParams.requestBaseUrl}/batchSaveAccPay?apNo=${this.masterRowSelection.apNo}&iisAppend=${this.formAccPayGuide.iisAppend}`
+      let params = {
+        accPaySupplierList:this.accPayguideDataList, // 应付向导列表页的数据
+        // apNo:this.masterRowSelection.apNo,// 对账单号// 当前选择行的 对账单号
+        // iisAppend: this.formAccPayGuide.iisAppend // 追加到当前立账单中
+      }
+      this.getDataByUrl(url,params).then(res=>{
+          let hasPages = this.accPayguideDataList.length > this.pageSize
+          // 是否存在分页
+          if(hasPages){
+            this.$Modal.confirm({
+              title: "提示",
+              content: `执行成功,当前数据存在分页,是否继续操作?`,
+              onOk: () => {
+                // do something like page next pages
+                // 继承操作,不关闭窗口
+              },
+              onCancel: () => {
+                this.showMonthlySettlementListWindow=true// 是否显示月结向导 数据列表窗口
+                this.submitSuccess()
+              }
+            })
+          }else{
+            this.$Message.success('执行成功')
+            this.showMonthlySettlementListWindow=false// 是否显示月结向导 数据列表窗口
+            this.submitSuccess()
+          }
+          
+      }).catch(err=>{
+
+      })
+    },
+    cancel_accPayGuide(){
+       this.showMonthlySettlementWindow= false // 是否显示月结向导窗口
+    },
+    cancel_accPayGuideTwo(){
+       this.showMonthlySettlementListWindow=false// 是否显示月结向导 数据列表窗口
+    },
+     // 向导上一步
+    preStep_accPayGuideTwo(){
+       this.showMonthlySettlementWindow= true // 是否显示月结向导窗口
+      this.showMonthlySettlementListWindow=false// 是否显示月结向导 数据列表窗口
+    },
+    // 向导下一步
+    nextStep_accPayGuide(){
+      this.showMonthlySettlementWindow= false // 是否显示月结向导窗口
+      this.showMonthlySettlementListWindow=true// 是否显示月结向导 数据列表窗口
+      this.searchDataBy()
+    },
+      // 加载列头数据(弹框签回表头)
+    loadColumsData(){
+       //应收对账单向导
+        let formName="accpaysupplierdataFm"
+        let url = `/sys/form/init/${formName}`
+        request.get(url).then(res => {
+          if(res!=null){
+            this.tableColTitleData = res 
+          } 
+        })
+    },
+    // 通过参数查询数据列表
+    searchDataBy(pageSize) {
+        this.accPayguideDataList = [] // 重置数据列表
+        if(pageSize==null || pageSize==''){
+          pageSize = this.pageSize
+        }else{
+          this.pageSize =pageSize
+        }
+       // 参数包括：
+        let params = {
+          startDate: !!!this.formAccPayGuide.startDate?'': dayjs(this.formAccPayGuide.startDate).format("YYYY-MM-DD"), //(开始日期)
+          endDate: !!!this.formAccPayGuide.endDate?'':dayjs(this.formAccPayGuide.endDate).format("YYYY-MM-DD"), //(结束日期)
+          apDate: !!!this.formAccPayGuide.apDate?'':dayjs(this.formAccPayGuide.apDate).format("YYYY-MM-DD"), //((立账日期))
+          apMonth:!!!this.formAccPayGuide.apMonth?'': dayjs(this.formAccPayGuide.apMonth).format("YYYYMM"), //((月结月份))
+          monthEnd: this.formAccPayGuide.monthEnd, //((月结终止日))
+          mode:this.formAccPayGuide.setBycustomer?'1':'0', //(采用供应商资料中的设置:0,1)
+          supplierCodes: this.formAccPayGuide.supplierCode,// 供应商编号【多个用,隔开】
+          vType: this.formAccPayGuide.supplierType,// 供应商类型
+          arriveDate: !!!this.formAccPayGuide.arriveDate?'': dayjs(this.formAccPayGuide.arriveDate).format("YYYY-MM-DD"),// 货款到期日
+          discount: this.formAccPayGuide.discount,// discount
+          taxRate: this.formAccPayGuide.taxRate,// 税率
+          arpType: this.formAccPayGuide.arpType,// 月结类型
+        };
+        // 在startDate endDate 为空的情况下,mode 必须为1
+        if(!!!this.formAccPayGuide.startDate){
+          params.mode='1'
+        }
+        //勾选 追加到当前立账单中 数据采用 主表选择的
+        if(!!this.formAccPayGuide.iisAppend){
+           params.apDate= dayjs(this.masterRowSelection.apDate).format("YYYY-MM-DD")
+           params.apMonth= dayjs(this.formAccPayGuide.apMonth).format("YYYYMM")
+           params.supplierCodes= this.masterRowSelection.supplierCode
+        }
+        this.loading_submit_accPayGuideTwo_btn = true;
+        request
+          .post(
+            `${this.functionParams.requestBaseUrl}/getAccPaySupplierData?pageNumber=${this.pageNumber}&pageSize=${this.pageSize}`,
+            params
+          )
+          .then(res => {
+            if (res &&  res.records.length > 0) {
+              // 注意返回的数据的结构
+               this.accPayguideDataList = res.records
+               if(params.mode=='1'){
+                 // 为防止 上一步返回时,数据清空 特意只有MODE为1 采取覆盖数据
+                  this.searchDataByCallBack() // 回调绑定数据
+               }
+            }
+            this.loading_submit_accPayGuideTwo_btn = false;
+          })
+          .catch(err => {
+            this.loading_submit_accPayGuideTwo_btn = false;
+          });
+    },
+     // 排除不需要显示的字段
+    excludeFiled(type, key) {
+      let exListPrize = [];
+      let exList = [];
+      switch (type) {
+        case "accPayItemFm":
+          break;
+        default:
+          break;
+      }
+      if (exList.includes(key)) {
+        return false;
+      } else {
+        return true;
+      }
+    },
+    // 贷款到期日
+    onChange_arriveDate(date) {
+      this.formAccPayGuide.arriveDate = date
+    },
+    // 开始日期
+    onChange_startDate(date) {
+       this.formAccPayGuide.startDate = date
+    },
+    // 结束日期
+    onChange_endDate(date) {
+       this.formAccPayGuide.endDate = date
+    },
+    // 月结方式改变 回调时间
+    OnChange_arpType(item) {
+       this.formAccPayGuide.arpType = item.value
+    },
+    // 供应商类型改变 回调事件
+    OnChange_supplierType(item) {
+      this.formAccPayGuide.supplierType = item.value
+    },
+    // 主表点击事件,需要修改 查询参数:productPriceId 和 查询反馈内容  rowData.custCode + " " + rowData.custName 一般对应 queryParamsDefault 即可
+    master_list_tableRowClick(rowData, rowIndex) {
+      this.masterRowSelection = rowData;
+      this.currrentRowItem.rowName = rowData.apNo + " " + rowData.supplierName;
+      this.$refs["slave_list_table"].search({ apId: rowData.id });
+    },
+    // 纸箱出货明细 行点击事件
+    slave_list_tableRowClick(rowData, rowIndex) {},
+    //重写父类 自定义菜单功能,与functionBtnList.vue 页面绑定
+    customerAction(type, func) {
+      //type:当前菜单,func:功能名称
+      if (type !== "account-accPay") {
+        return;
+      }
+      switch (func) {
+        //月结向导
+        case "monthlySettlement":
+            this.showMonthlySettlementWindow = true;
+            // let tableDataItems = this.$refs['master_list_table'].tableDataItems
+            // if(tableDataItems.length==0){
+            //    // 判断当前主表是否有数据,没有数据时,不可以操作 月结向导 功能
+            //    this.$Message.warning(`请选择需要操作的数据`)
+            //    this.masterRowSelection =null
+            // }else{
+               
+            //     this.showMonthlySettlementWindow = true;
+            // }
+          break;
+        default:
+          break;
+      }
+    },
+   
+  }
+};
+</script>
+
+<style></style>

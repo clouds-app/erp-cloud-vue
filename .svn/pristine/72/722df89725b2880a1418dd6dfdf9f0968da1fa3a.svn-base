@@ -1,0 +1,212 @@
+import {
+  getBreadCrumbList,
+  setTagNavListInLocalstorage,
+  getMenuByRouter,
+  getTagNavListFromLocalstorage,
+  getHomeRoute,
+  getNextRoute,
+  routeHasExist,
+  routeEqual,
+  getRouteTitleHandled,
+  localSave,
+  localRead
+} from '@/libs/util'
+import beforeClose from '@/router/before-close'
+import { saveErrorLogger } from '@/api/data'
+import router from '@/router'
+import routers from '@/router/routers'
+import config from '@/config'
+import * as type from '@/enum' // 菜单枚举
+const { homeName } = config
+const devfault_menu = {
+  Account: [], // 财务
+  Bas: [], // 基础数据
+  Mrp: [], // 生产
+  Purchase: [], // 采购
+  Report: [], // 报表中心
+  Sale: [], // 财务
+  Stock: [], // 储运
+  Sys: [], // 系统设置
+  SetPlatform: [] // 平台设置
+}
+const closePage = (state, route) => {
+  const nextRoute = getNextRoute(state.tagNavList, route)
+  state.tagNavList = state.tagNavList.filter(item => {
+    return !routeEqual(item, route)
+  })
+  router.push(nextRoute)
+}
+export default {
+  state: {
+    currentActionType:'',// 当前页面操作类型 添加/修改/详细等 上一条/下一条 使用
+    detailConvertUpdate:false,// 是否可以从编辑状态变为修改 上一条/下一条 使用
+    currentPageRowId:'',///当前页面ROW ID 上一条/下一条 使用
+    currentDetailById:null,//当前页面请求数据路径详细内容 上一条/下一条 使用
+    currentPagePostUrl:'',// 当前页面请求数据路径URL,上一条/下一条 使用
+    currentPageDataList:[],// 当前页面列表ID数据,上一条/下一条 使用
+    preOrNextAction:'',// 类型 next pre 下一条/上一条 使用
+    nowTableName: '', // 存储当前激活页面，只用于生产外发和工序外发
+    robStatusUrl: '', // 抢单状态,生产状态
+    btnAccessList: {}, // 每个小模块的对应 是否用 添加/修改/删除等权限
+    appSubMenuResource: Object.assign({}, devfault_menu),
+    updataSubItem: false, // 是否更新当前子表查询
+    currentPage: 'home', // 当前所在页面
+    currentTopMenu: '', // 当前选中主菜单 sale
+    contextMenuObj: null, // 当前页面右键菜单对象
+    operationConfig: { // 当前操作的菜单配置信息
+      isNew: false, // 在内存中已有的菜单
+      topMenu: '',
+      subMenu: '' //
+    },
+    userCode: '', // 登录用户名
+    currentSubMenu: {
+      Account: [], // 财务
+      Bas: [], // 基础数据
+      Mrp: [], // 生产
+      Purchase: [], // 采购
+      Report: [], // 报表中心
+      Sale: [], // 财务
+      Stock: [], // 储运
+      Sys: [], // 系统设置
+      SetPlatform: [] // 平台设置
+    }, // 当前选中子菜单
+    Secondaryauthority: {}, // 二级菜单权限
+    breadCrumbList: [],
+    tagNavList: [],
+    homeRoute: getHomeRoute(routers, homeName),
+    local: localRead('local'),
+    errorList: [],
+    hasReadErrorPage: false
+  },
+  getters: {
+    operationConfig_getter: state => state.operationConfig,
+    currentTopMenu_getter: state => state.currentTopMenu,
+    menuList: (state, getters, rootState) => getMenuByRouter(routers, rootState.user.access),
+    errorCount: state => state.errorList.length
+  },
+  mutations: {
+      // 设置>>是否可以从编辑状态变为修改 上一条/下一条 使用
+      setCurrentActionType (stata, data) {
+        stata.currentActionType = data
+      },
+     // 设置>>是否可以从编辑状态变为修改 上一条/下一条 使用
+      setDetailConvertUpdate (stata, data) {
+        stata.detailConvertUpdate = data
+      },
+      // 设置>>当前页面请求数据路径详细内容 上一条/下一条 使用
+      setCurrentPageRowId (stata, data) {
+        stata.currentPageRowId = data
+      },
+     // 设置>>当前页面请求数据路径详细内容 上一条/下一条 使用
+     setCurrentDetailById (stata, data) {
+      stata.currentDetailById = data
+    },
+     // 设置>>当前页面请求数据路径URL 上一条/下一条 使用
+     setCurrentPagePostUrl (stata, data) {
+      stata.currentPagePostUrl = data
+    },
+     // 设置>>当前选中页面的ID 列表 上一条/下一条 使用
+     setCurrentPageDataList (stata, data) {
+      stata.currentPageDataList = data
+    },
+     // 设置>>信息详细的上一条/下一条
+     setPreOrNextAction (stata, data) {
+      // debugger
+      stata.preOrNextAction = data
+    },
+    // 设置>>抢单外发,生产外发，当前激活页面
+    setnowTableName (stata, data) {
+      // debugger
+      stata.nowTableName = data
+    },
+    // 设置>>抢单状态,生产状态
+    setRobStatusUrl (stata, data) {
+      // debugger
+      stata.robStatusUrl = data
+    },
+    // 设置>>缓存 二级菜单权限
+    setSecondaryauthority (stata, data) {
+      stata.Secondaryauthority[data.val] = data.dataList
+    },
+    // 设置>>缓存 每个小模块的对应 是否用 添加/修改/删除等权限
+    setBtnAccessList (state, data) {
+      state.btnAccessList[data.key] = Object.assign({}, data.data)
+    },
+    // 设置>>缓存二级菜单列表
+    setSubMenuResource (state, data) {
+      state.appSubMenuResource = data
+    },
+    // 重置清空二级菜单列表
+    reSetSubMenuResource (state, data) {
+      state.appSubMenuResource = Object.assign({}, devfault_menu)
+    },
+    // 设置>>当前一级菜单资源ID
+    setTopMenuResourceId (state, data) {
+      state.topMenuResourceId = data
+    },
+    // 设置>>当前二级菜单资源ID
+    setSubMenuResourceId (state, data) {
+      state.subMenuResourceId = data
+    },
+    // 设置>>当前用户登录名
+    setuserCode (state, data) {
+      state.userCode = data
+    },
+    // 设置>>当前页面的右键菜单对象
+    setContextMenuObj (state, data) {
+      state.contextMenuObj = data
+    },
+    // 设置>>是否当前菜单是否新加,主,子菜单信息
+    setOperationConfig (state, data) {
+      state.operationConfig = data
+    },
+    // 设置>>是否更新当前子表查询
+    setUpdataSubItem (state, data) {
+      state.updataSubItem = data
+    },
+    // 设置>>当前选中主菜单
+    setCurrentPage (state, data) {
+      state.currentPage = data
+    },
+    // 设置当前选中主菜单
+    setCurrentTopMenu (state, data) {
+      state.currentTopMenu = data
+    },
+    // 设置当前选中子菜单
+    setCurrentSubMenu (state, data) {
+      state.currentSubMenu = data
+    },
+   
+    setLocal (state, lang) {
+      localSave('local', lang)
+      state.local = lang
+    },
+    addError (state, error) {
+      state.errorList.push(error)
+    },
+    setHasReadErrorLoggerStatus (state, status = true) {
+      state.hasReadErrorPage = status
+    }
+  },
+  actions: {
+    // 异步提交TABL菜单当前选择项
+    setCurrentSubMenu_action({ commit }, data){
+      //debugger
+      commit('setCurrentSubMenu', data)
+    },
+    addErrorLog ({ commit, rootState }, info) {
+      if (!window.location.href.includes('error_logger_page')) commit('setHasReadErrorLoggerStatus', false)
+      const { user: { token, userId, userName } } = rootState
+      let data = {
+        ...info,
+        time: Date.parse(new Date()),
+        token,
+        userId,
+        userName
+      }
+      saveErrorLogger(info).then(() => {
+        commit('addError', data)
+      })
+    }
+  }
+}

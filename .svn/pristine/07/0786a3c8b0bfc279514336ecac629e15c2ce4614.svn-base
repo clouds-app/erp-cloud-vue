@@ -1,0 +1,101 @@
+<template>
+  <div class="cl-moudle">
+    <htmlTemplate
+     ref="htmlTemplate"
+      :currrentRowItem="currrentRowItem"
+      @isLoaddingDone="getLoaddingDone"
+      :requestBaseUrl="functionParams.requestBaseUrl"
+      :uniqueId="functionParams.uniqueId"
+      :queryParamsDefault="queryParamsDefault"
+    >
+    </htmlTemplate>
+    <div class="content-container" >
+      <vTable
+        :height="tableHeight+2"
+        ref="master_list_table"
+        :columns="columns"
+        url="/sys/code/list"
+        :pagination="false"
+        @row-click="tableRowClick"
+        name="sysCodeTable"
+      ></vTable>
+    </div>
+    <editForm
+      :isLoaddingDone="isLoaddingDone"
+      :form-detail-data="formDetailData"
+      :action="action"
+      @submit-success="search()"
+      v-model="showEditWindow"
+    />
+  </div>
+</template>
+<script>
+import request from "@/libs/request";
+import vTable from "@/components/tables/vTable";
+import htmlTemplate from "../../components/htmlTemplate";
+import editForm from "./edit-sysCode";
+import listBaseMixins from "../../mixins/list";
+export default {
+  name: "sysCode",
+  mixins: [listBaseMixins],
+  components: {
+    htmlTemplate,
+    vTable,
+    editForm
+  },
+  data() {
+    return {
+      functionParams: {
+        requestBaseUrl: "/sys/code",
+        uniqueId: "scId"
+      },
+      // 查询参数 ,注意格式
+      queryParamsDefault: [
+        {
+          title: "请输入编码编号",
+          code: "scCode",
+          scCode: ""
+        },
+        {
+          title: "请输入编码名称",
+          name: "scName",
+          scName: ""
+        }
+      ],
+      columns: [
+        {
+          title: "编码编号",
+          key: "scCode",
+          align: "center"
+        },
+        {
+          title: "编码名称",
+          key: "scName",
+          align: "center"
+        },
+        {
+          title: "流水号",
+          key: "scNo",
+          align: "center"
+        },
+
+        {
+          title: "初始值",
+          key: "scInitValue",
+          align: "center"
+        }
+      ]
+    };
+  },
+  methods: {
+    tableRowClick(rowData, rowIndex) {
+      this.formDetailData = {}; // 清除上次缓存数据 增加体验良好
+      this.masterRowSelection = rowData;
+      if (rowData != null) {
+        // 是否 确认 审核 反审核 删除 禁用等 提示标题 列数据
+        this.currrentRowItem.rowName = rowData.scCode + " " + rowData.scName;
+      }
+    }
+  }
+};
+</script>
