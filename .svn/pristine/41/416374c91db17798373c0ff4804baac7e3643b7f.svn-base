@@ -839,16 +839,12 @@ export default {
   methods: {
     // 关闭窗口时触发
     closeActionTigger () {
+      debugger
       this.masterareaIds = []
-       // fix 清除上次的错误提示 formDataInfo 为表单ref名称
-      let resetForm = this.$refs[this.formDataInfoName]
-      // 如果子表继承中,名称不一致 可以直接修改名称 his.formDataInfoName ='当前表单名称'
-      if (resetForm) {
-        resetForm.resetFields()
-      }
     },
     // 提交转换地区控件id
     restswitchareaIds () {
+      debugger
       // this.formDataInfo.master.areaIds = this.formDataInfo.master.areaIds.map(val => val).join(',');
       this.$refs['tableFields'].get().filter((item, index) => {
         if (item.areaIds) {
@@ -858,6 +854,7 @@ export default {
     },
     // 转换地区控件id
     switchareaIds () {
+      debugger
       let subareaIds = ''
       if (this.masterareaIds.length == 0) {
         this.masterareaIds = this.formDataInfo.master.areaIds.split(',')

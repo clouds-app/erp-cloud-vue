@@ -269,26 +269,7 @@ export default {
       // debugger
       this.formDataInfo.basWorkProcItemSlaves = tableData
       return this.formDataInfo
-    },
-      // 继承中修改,提交数据前 验证数据 ,默认 false 没有错误
-    validateBeforePost () {
-      let hasErr = false
-      let tableData = this.$refs['tableFields'].cloneData
-      let codeList =[]
-      if(tableData && tableData.length>0){
-        // wsCode 不可以重复
-        tableData.forEach(item=>{
-            codeList.push(item.wpiNo)
-        })
-        // 操作去重后和原有的长度 是否一致来确认是否有重复的wsCode
-        let uniqueCodeList = Array.from(new Set(codeList))
-        if(codeList.length != uniqueCodeList.length){
-            this.$Message.warning('工序编号不可以重复,请检查!')
-            hasErr = true
-        }
-      }
-      return hasErr
-    },
+    }
   }
 }
 </script>

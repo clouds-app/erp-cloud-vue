@@ -282,28 +282,10 @@ export default {
     // 重写父类,修改提交数据
     resetformDataInfo (_data) {
       let tableData = this.$refs['tableFields'].getCategorizeData()
+      // debugger
       this.formDataInfo.wareHouseItems = tableData
       return this.formDataInfo
-    },
-     // 继承中修改,提交数据前 验证数据 ,默认 false 没有错误
-    validateBeforePost () {
-      let hasErr = false
-      let tableData = this.$refs['tableFields'].cloneData
-      let wsCodeList =[]
-      if(tableData && tableData.length>0){
-        // wsCode 不可以重复
-        tableData.forEach(item=>{
-            wsCodeList.push(item.wsCode)
-        })
-        // 操作去重后和原有的长度 是否一致来确认是否有重复的wsCode
-        let uniqueWsCodeList = Array.from(new Set(wsCodeList))
-        if(wsCodeList.length != uniqueWsCodeList.length){
-            this.$Message.warning('仓位编号不可以重复,请检查!')
-            hasErr = true
-        }
-      }
-      return hasErr
-    },
+    }
   }
 }
 </script>
