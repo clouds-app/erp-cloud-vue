@@ -178,7 +178,7 @@ export default {
             return formatData
           })
           this.classBanList = resData
-						 console.log('===getClassBanListAction====:' + JSON.stringify((resData)))
+					//	 console.log('===getClassBanListAction====:' + JSON.stringify((resData)))
         }
       }).catch(err => {
         this.classBanList = []
@@ -202,7 +202,7 @@ export default {
             return formatData
           })
           this.lineSeparationList = resData
-						 console.log('===getClassBanListAction====:' + JSON.stringify((resData)))
+						// console.log('===getClassBanListAction====:' + JSON.stringify((resData)))
         }
       }).catch(err => {
         this.lineSeparationList = []

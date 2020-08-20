@@ -1,0 +1,141 @@
+<template>
+  <div class="table-page">
+    <Page :current="page.pageNumber" :total="page.total" :page-size="page.pageSize" simple @on-change="onPageNumberChange"/>
+  </div>
+</template>
+
+<script>
+  import {eventBus} from '../../main'
+  export default {
+    name:'page',
+    data(){
+      return {
+        page:{
+        	pageNumber:1,
+        	total:0,
+        	pageSize:15,
+          pages:0,//总页数
+        },
+        flag:''
+      }
+    },
+    computed:{
+        // 当前分页数据加载完毕
+        pageDataLoaddingDone(){
+          return this.$store.state.app.pageDataLoaddingDone
+        },
+       // 分页初始化信息
+        pageDataInit(){
+          return this.$store.state.app.pageDataInit
+        },
+        // 分页页码改变
+        pageNumberChange(){
+          return this.$store.state.app.pageNumberChange
+        },
+        // 所有分页配置信息
+        allPageConfig(){
+          return this.$store.state.app.allPageConfig
+        }
+    },
+    watch:{
+       // 当前分页数据加载完毕
+        pageDataLoaddingDone:{
+            deep:true,
+            handler(n,o){
+            // console.log('pageDataInit:'+JSON.stringify(n))
+             this.pageDataLoaddingDoneEvent(n)
+          }
+        },
+        // 分页初始化信息
+        pageDataInit:{
+            deep:true,
+            handler(n,o){
+            // console.log('pageDataInit:'+JSON.stringify(n))
+             this.pageDataInitEvent(n)
+          }
+        },
+         // 分页页码改变
+        // pageNumberChange:{
+        //     deep:true,
+        //     handler(n,o){
+        //     // console.log('pageNumberChange:'+JSON.stringify(n))
+        //      this.onPageNumberChange(n)
+        //   }
+        // },
+        // 所有分页配置信息
+        allPageConfig:{
+            deep:true,
+            handler(n,o){
+            // console.log('allPageConfig:'+JSON.stringify(n))
+              this.allPageConfigEvent(n)
+          }
+        }
+    },
+    methods:{
+      // 分页页码改变
+      onPageNumberChange(pageNumber){
+       // console.log('on-pagenumber-change 数据加载完毕 this.$emit')
+        //eventBus.$emit('on-pagenumber-change',pageNumber,this.flag);
+       //==============分页事件改变==================
+        let pageParams = {
+                  pageEvent:'on-pagenumber-change',
+                  pageFlag:this.flag,
+                  pageNumber:pageNumber
+                }
+        this.$store.commit('setPageNumberChange',pageParams)
+       //==============分页事件改变==================
+      },
+      // 分页初始化信息
+      pageDataInitEvent(pageInfo){
+         if(this.flag == ''){
+            //pageEvent:'page-data-init',
+            this.page = pageInfo.page;
+            this.flag = pageInfo.pageFlag;
+        }
+      },
+      // 所有分页配置信息
+      allPageConfigEvent(pageInfo){
+
+      },
+      // 当前分页数据加载完毕
+      pageDataLoaddingDoneEvent(pageInfo){
+        if(!!pageInfo.pageCount){
+          this.$emit('pageLoaddingDone',pageInfo.pageCount)
+          let pageDoneParams = {
+                 pageCount:'',
+                 pageFlag:this.flag,
+              }
+          this.$store.commit('setPageDataLoaddingDone',pageDoneParams) // 清空,确保下次触发
+        }
+      }
+    },created() {
+      // eventBus.$on('page-data-init',(page,flag) =>{
+      //   if(this.flag == ''){
+      //     this.page = page;
+      //     this.flag = flag;
+      //   }
+
+      // }),
+      // // 数据加载完毕
+      //  eventBus.$on('loadDataDone',(pageCount) =>{
+        
+      //   this.$emit('pageLoaddingDone',pageCount)
+      // })
+    }
+  }
+</script>
+
+<style>
+  .table-page,.ivu-page-prev,.ivu-page-next{
+    min-width:0.875rem !important;
+  }
+  .table-page,.ivu-page-simple .ivu-page-simple-pager{
+    margin-right: 0rem;
+  }
+  .table-page,.ivu-page-simple .ivu-page-simple-pager span{
+    padding:inherit !important;
+  }
+  .table-page,.ivu-page-simple .ivu-page-simple-pager input{
+    margin: 0;
+  }
+</style>

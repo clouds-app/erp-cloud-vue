@@ -1,0 +1,724 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-window"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="true"
+      width="66%"
+      :loading="!isLoaddingDone"
+      :spinLoaddingText="spinLoaddingText"
+      @on-ok="formTableDataSubmit()"
+      v-if="initData.columns"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-message="true"
+        :model="formDataInfo.master"
+        :rules="ruleValidate"
+        :label-width="100"
+      >
+        <Row>
+          <Col
+            span="8"
+            v-for="(columns,index) in initData.columns[`${formInitPreName}Fm`].editColumns"
+            :key="index"
+          >
+            <FormItem :label="columns.title" :prop="columns.key">
+              <!-- 控件特殊处理 供应商 -->
+              <popup
+                ref='firstFocusInput'
+                v-if="columns.key == 'purCode'"
+                v-model="formDataInfo.master.purCode"
+                field-name="purCode"
+                :disabled="detailDisabled || action == 'update'"
+                popup-name="SupplierSingleBox"
+                :fill-model.sync="formDataInfo.master"
+                render-fields="supplierId,purCode,purName"
+                from-fields="id,purCode,purName"
+                :suffix="false"
+                :suffix-model="formDataInfo.master.purName"
+                :query-params="{}"
+                @on-fill='purCodeOnFillEvent'
+              ></popup>
+              <formControl
+                v-else
+                :control-type="columns.controlType"
+                :disabled="detailDisabled||columns.readOnly"
+                :placeholder="columns.title"
+                v-model="formDataInfo.master[columns.key]"
+              ></formControl>
+            </FormItem>
+          </Col>
+        </Row>
+      </Form>
+
+      <div v-if="showWindow">
+        <Tabs>
+          <TabPane :label="initData.listView.purSupplierArtitemFm.tableDesc" name="name1">
+            <eTable
+              ref="slave_list_table_edit"
+              unqiue-mark="id"
+              :insertDirection="insertDirection"
+              :height="260"
+              :index-menu="true"
+              :col-start="0"
+              :width="200"
+              :row-init-data="initData.initData.purSupplierArtitemFm"
+              :data.sync="slavesForm.masterList"
+              :rules="tableFieldsValidator"
+              @row-click="slave_list_table_editRowClick"
+              @row-delete="slave_list_table_editRowDelete"
+              :showContextMenu="!detailDisabled"
+              v-if="showWindow"
+            >
+              <template slot="head">
+                <tr
+                  v-for="(columnGroup,index) in initData.columns.purSupplierArtitemFm.editGroups"
+                  :key="index"
+                >
+                  <th
+                    class="ivu-table-column-left"
+                    v-for="(column,index2) in columnGroup"
+                    :key="index2"
+                    :width="column.width"
+                    :colspan="column.colSpan"
+                    :rowspan="column.rowSpan"
+                    style="text-align:center;"
+                  >
+                    <div class="ivu-table-cell">
+                      <span class>{{column.title}}</span>
+                    </div>
+                  </th>
+                </tr>
+              </template>
+              <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
+                <td
+                  class="ivu-table-column-left"
+                  v-for="(column,columnIndex) in initData.columns[`${formInitPreName}itemFm`].editColumns"
+                  :key="columnIndex"
+                  :width="column.width"
+                >
+                  <!-- 控件特殊处理 本厂纸质  :blurFocusLoadData="false"-->
+                  <popup
+                    v-if="column.key == 'artCode'"
+                    v-model="row[column.key]"
+                    field-name="artCode"
+                    :disabled="detailDisabled"
+                    popup-name="SupplierArtMultiBox"
+                    :fill-model.sync="slavesForm.masterList"
+                    render-fields="artId,artCode,artCS"
+                    from-fields="id,artCode,artCS"
+                    :index="index"
+                    :init-data="initData.initData[`${formInitPreName}itemFm`]"
+                    :excludeParams="{'artCode$notIn':getartCode}"
+                    @on-fill="addpurSupplierArtPzSlaves"
+                    :popupClickValidator="clickValuedate"
+                    @input="value => {valueChangeAssign(value, index, row, 'artCode')}"
+                  ></popup>
+                  <formControl
+                    v-else
+                    :control-type="column.controlType"
+                    v-model="row[column.key]"
+                    :disabled="detailDisabled||column.readOnly"
+                    @input="value => {valueChangeAssign(value, index, row,column.key)}"
+                  ></formControl>
+                </td>
+              </template>
+            </eTable>
+          </TabPane>
+        </Tabs>
+
+        <Tabs>
+          <TabPane :label="initData.listView[`${formInitPreName}mdataFm`].tableDesc" name="name1">  
+            <eTable
+              ref="sub_list_table_edit"
+              unqiue-mark="id"
+              :height="260"
+              :insertDirection="insertDirection"
+              :index-menu="true"
+              :col-start="0"
+              :width="200"
+              @tableColTiggerEventCall="tableColTiggerEventCall"
+              :row-init-data="initData.initData[`${formInitPreName}mdataFm`]"
+              :data="slavesForm.SubList"
+              :rules="tableFieldsValidator1"
+              @row-click="purSupplierArtmdataFmRowClick"
+              :showContextMenu="false"
+              :disabled="true"
+            >
+              <template slot="head">
+                <tr
+                  v-for="(columnGroup,index) in initData.columns[`${formInitPreName}mdataFm`].editGroups"
+                  :key="index"
+                >
+                  <th
+                    class="ivu-table-column-left"
+                    v-for="(column,index2) in columnGroup"
+                    :key="index2"
+                    :width="column.editWidth"
+                    :colspan="column.colSpan"
+                    :rowspan="column.rowSpan"
+                    style="text-align:center;"
+                  >
+                    <div class="ivu-table-cell">
+                      <span class>{{column.title}}</span>
+                    </div>
+                  </th>
+                </tr>
+              </template>
+              <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
+                <td
+                  class="ivu-table-column-left"
+                  v-for="(column,subIndex) in initData.columns[`${formInitPreName}mdataFm`].editColumns"
+                  :key="subIndex"
+                  :width="column.editWidth"
+                >
+                  <!-- 控件特殊处理  原纸品明  maxlength="20"-->
+                  <template v-if="column.key ==='snName'">
+                    <Select  v-model="row[column.key]" :disabled="index == csInfo||detailDisabled" transfer >
+                      <Option
+                        :disabled="detailDisabled"
+                        v-for="(item,index) in pressingLineTypeList"
+                        :key="index"
+                        :value="item.dicValue"
+                      >{{item.dicLabel}}</Option>
+                    </Select>
+                  </template>
+                  <!--控件特殊处理 工单号  -->
+                <Input
+                  v-else-if="column.key == 'piGram'"
+                  v-model="row[column.key]"
+                  @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'piGram');
+                      }
+                    "
+                  size="small"
+                  :maxlength="3"
+                ></Input>
+                  <!-- 其它 不可以编辑-->
+                  <template v-else>
+                    <formControl
+                      :disabled="detailDisabled||index == csInfo||column.key == 'artCS'"
+                      :control-type="column.controlType"
+                      v-model="row[column.key]"
+                      @input="value => {valueChangeAssign(value, index, row,column.key)}"
+                    ></formControl>
+                  </template>
+                </td>
+              </template>
+            </eTable>
+          </TabPane>
+        </Tabs>
+      </div>
+    </editWindow>
+    <!-- 优惠方式 -->
+    <!-- <preferential v-model="showpreferential" @preferential-ok="preferentialOk"></preferential> -->
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-boxProductPrice 销售-产品报价 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2020/02/11 17:07:54
+ */
+import preferential from "@/components/preferential/preferential";
+import editWindow from "@/components/edit-window/edit-window";
+import optionSearch from "../../components/optionSearch";
+// import Form from '@/components/form/form'
+import eTable from "@/components/e-table/e-table";
+import request from "@/libs/request";
+import editBaseMixins from "../../mixins/edit";
+import dayjs from "dayjs";
+import formControl from "@/components/form-control/form-control";
+import popup from "@/components/popup/popup";
+import { customValidator, uniqueValidator } from "@/libs/validator";
+// eslint-disable-next-line camelcase
+const slavesForm_default = {
+  // 子表单
+  name: "supplierArtItemEditDTOS", // 子表单名称
+  ItemFmRowIndex: 0,
+  masterList: [],
+  SubList: [],
+  SubItems: {}
+};
+let defaultMasterData = {};
+export default {
+  name: "edit-supplierArt",
+  mixins: [editBaseMixins],
+  components: {
+    preferential,
+    editWindow,
+    optionSearch,
+    // Form,
+    eTable,
+    formControl,
+    popup
+  },
+  data() {
+    return {
+      artIdChackData:[],//二层弹框id防止重复请求清空数据
+      suppliersubList:[],//存储没次点击第二层表数据
+      insertDirection: "down",
+      getcustid: 0, // 上一次修改前的客户编号
+      actionSubtitle: "供应商纸质详情", // 当前操作副标题
+      formInitPreName: "purSupplierArt", // 初始化信息查询 前缀 字段
+      formName: "purSupplierArtFm", // 初始化信息查询 表单字段
+      requestBaseUrl: "/purchase/supplierArt", // 请求 查询 操作的基础路径
+      formDataInfo: {
+        // 主表单信息
+        master: {},
+        supplierArtItemEditDTOS: [
+          {
+            master: {},
+            supplierArtPzs: [{}]
+          }
+        ]
+      },
+      ruleValidate: {
+        purCode: [
+          { required: true, message: "供应商纸质编号不能为空", trigger: "blur" }
+        ]
+      }, // 需要验证的数据
+      tableFieldsValidator: {
+        artCode: [
+          { required: true, message: "本厂纸质不能为空", trigger: "blur" }
+        ],
+        // supplierArtName: [
+        //   { required: true, message: "供应商纸质不能为空", trigger: "blur" }
+        // ]
+      },
+      // 滴三层表校验
+      tableFieldsValidator1: {
+        piGram: [
+          { required: true, message: "克重不能为空", trigger: "blur"},
+          // {
+          //   pattern: /^[0-9]{1,3}$/,
+          //   trigger: "blur",
+          //   message: "克重不能大于三位数"
+          // }
+        ]
+      },
+      // 需要验证的数据表格
+      pressingLineTypeList: [], //原纸品名
+      csInfo: undefined,
+      slavesForm: JSON.parse(JSON.stringify(slavesForm_default)) // 深拷贝对象和数组,
+    };
+  },
+  watch: {
+    // 第一步执行 获取到 master 数据
+    initData: {
+      handler(n, o) {
+        if (n.initData) {
+          defaultMasterData = Object.assign({}, n.initData.master);
+          this.formDataInfo.master = n.initData.master;
+          this.setMasterDefaultData();
+        }
+      },
+      deep: true
+    }
+  },
+  computed: {
+    getartCode(){
+      let artCode = ''
+      if (!this.slavesForm.masterList.length) {
+        return  ''
+      }
+      this.slavesForm.masterList.filter(item=>{
+        if (!!item.artCode) {
+          artCode += item.artCode+','
+        }
+      })
+      return  artCode.substr(0, artCode.length - 1)
+    },
+    popUpExcludeParamsList() {
+      // eslint-disable-next-line no-tabs
+      // 获取产品编号	列表，转换为 "",""格式，用于弹出框排除数据
+      // 事件冲突,暂时屏蔽
+      let temp = [];
+      this.slavesForm.masterList.forEach((item, index) => {
+        // debugger
+        if (item && item.bpNo != null) {
+          // 注意:
+          // temp.push(item.bpNo) // 注意:
+        }
+      });
+      return temp.toString();
+    }
+  },
+  created() {
+    this.getPressingLineTypeList();
+  },
+  methods: {
+    // 主表供应商回调事件
+    purCodeOnFillEvent(){
+      this.$refs['formDataInfo'].validateField('purCode', err => {})
+    },
+    //获取原纸品名
+    getPressingLineTypeList() {
+      request
+        .get("/common/sys/dic/childList/snName", {}, { qt: "pValue" })
+        .then(res => {
+          this.pressingLineTypeList = res;
+        });
+    },
+    //判空供应商纸质
+    clickValuedate() {
+      // debugger
+      if (!this.formDataInfo.master.purCode) {
+        this.$Message.error("供应商编号不能为空");
+        return false;
+      }
+      this.getartIdChackData()
+      return true;
+    },
+    // 存储二层表弹框id,防止相同数据重复请求刷新数据
+    getartIdChackData(){
+       this.slavesForm.masterList.filter((item,index)=>{
+          this.artIdChackData[index] =JSON.parse(JSON.stringify(item.artId)) 
+        })
+    },
+    //选择本厂纸质，层数，添加第三层表数据
+    addpurSupplierArtPzSlaves(data) { 
+      //当前第二层表数据
+      let supplierArtItemEditDTOS = [];
+      this.csInfo = null
+      let _self = this
+      let lengthIndex= data[0].data.artCS
+        if (data[0].data.artId == this.artIdChackData[data[0].index]) {
+            return
+        }
+        if (data[0].data.artCS%2 === 0) {
+          lengthIndex = data[0].data.artCS+1
+          this.csInfo = 0; 
+        }
+        this.slavesForm.masterList[data[0].index].supplierArtName = JSON.parse(JSON.stringify(data[0].data.artCode))
+        for (let index = 0; index < lengthIndex; index++) {
+          supplierArtItemEditDTOS[index] = JSON.parse(JSON.stringify(this.initData.initData.purSupplierArtmdataFm))
+        }
+        supplierArtItemEditDTOS.filter((item,index)=>{
+          item.artCS = index+1
+        })
+        this.slavesForm.SubList = supplierArtItemEditDTOS
+        this.purSupplierArtmdataFmRowClick()
+        this.getartIdChackData()
+      },
+    
+    // 主表字段 默认值设置
+    setMasterDefaultData() {
+      this.formDataInfo.master["effectDate"] = dayjs().format(
+        "YYYY-MM-DD HH:mm:ss"
+      );
+    },
+    // 默认选择行数据
+    setDefaultSelectedRow() {
+      //debugger;
+      let slaveObj = this.$refs["slave_list_table_edit"];
+      if (slaveObj) {
+        slaveObj.rowClick(0, "row-click");
+      }
+    },
+    // 删除回调事件,选中上一行 数据
+    slave_list_table_editRowDelete(index, Item) {
+      // debugger
+      let slaveObj = this.$refs["slave_list_table_edit"];
+      let data = this.formDataInfo.supplierArtItemEditDTOS;
+      if (slaveObj) {
+        if (index === 0) {
+          slaveObj.rowClick(index + 1, "row-click");
+          if (this.action === "update") {
+            data[index].supplierArtPzs = data[index + 1].supplierArtPzs;
+            data.splice(data.length - 1, 1);
+          }
+        } else {
+          slaveObj.rowClick(0, "row-click");
+          if (this.action === "update") {
+            data.splice(index, 1);
+          }
+        }
+        return this.formDataInfo;
+      }
+    },
+    // 重写父类 关闭窗口时 触发事件
+    closeActionTigger() {
+      //debugger
+      // fix 清除上次的错误提示 formDataInfo 为表单ref名称
+      this.$refs["formDataInfo"].resetFields();
+      this.$refs["slave_list_table_edit"].reset();
+      this.$refs.sub_list_table_edit.cloneData = [];
+      this.formDataInfo.supplierArtItemEditDTOS = [
+        {
+          master: {},
+          supplierArtPzs: [{}]
+        }
+      ];
+    },
+    // 重写父类,打开更新操作时 触发事件
+    updateActionTiggerEvent() {
+      let _self = this;
+      setTimeout(function() {
+        _self.setDefaultSelectedRow();
+        _self.getartIdChackData();
+      }, 1000);
+    },
+    // 表格列值改变 回调事件处理event：{row, column, index, event}
+    tableColTiggerEventCall(obj) {
+      switch (obj.event) {
+        case "calQuotePrice":
+          this.calQuotePrice(obj);
+          break;
+        default:
+          break;
+      }
+    },
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo() {
+      this.formDataInfo.master = Object.assign({}, defaultMasterData); // 浅拷贝对象
+      this.slavesForm = JSON.parse(JSON.stringify(slavesForm_default)); // 深拷贝对象
+    },
+    // 重写父类,修改提交数据
+    resetformDataInfo() {
+      //  debugger;
+      //删除最后一条空数据
+      let ddat = this.formDataInfo.supplierArtItemEditDTOS;
+      let index = ddat.length - 1;
+      let numb = ddat[index].master.length;
+      if (numb === 0) {
+        let supplier = this.formDataInfo.supplierArtItemEditDTOS.splice(
+          this.formDataInfo.supplierArtItemEditDTOS.length - 1,
+          1
+        );
+      }
+      let data = {
+        master: this.formDataInfo.master,
+        supplierArtItemEditDTOS: this.formDataInfo.supplierArtItemEditDTOS
+      };
+      return data;
+    },
+    // 点击第二层表修改时调用
+    updatedEdit(index){
+      this.csInfo = null
+      this.slavesForm.ItemFmRowIndex = index
+      let Fromdata = this.formDataInfo.supplierArtItemEditDTOS;
+      if (index > Fromdata.length-1) {
+        this.slavesForm.SubList = []
+      }else{
+        this.slavesForm.SubList = this.formDataInfo.supplierArtItemEditDTOS[index].supplierArtPzs;
+        if (this.slavesForm.masterList[index].artCS%2 == 0) {
+          this.csInfo = 0
+        }
+      }
+    },
+    // 第二层表点击事件 显示第三层表的数据
+    slave_list_table_editRowClick(index) {
+      if (this.action !== "add") {
+        this.updatedEdit(index)
+        return
+      }
+      let data = this.formDataInfo;
+      this.slavesForm.ItemFmRowIndex = index;
+      //当前第二层表数据
+      let two = this.slavesForm.masterList;
+      // this.suppliersubList =JSON.parse(JSON.stringify(this.slavesForm.masterList[index])) 
+      this.suppliersubList = this.slavesForm.masterList.slice();  
+      //当前第三层表数据  this.$refs.sub_list_table_edit.cloneData; str
+      this.slavesForm.SubList =this.$refs.sub_list_table_edit.cloneData;
+      //判断是增加还是修改
+      // if (this.action != "add") {
+      //   this.slavesForm.SubList = [];
+      //   this.slavesForm.SubList =
+      //     data.supplierArtItemEditDTOS[index].supplierArtPzs;
+      // }
+      //修改时，根据第二层表层数是否禁用第三层表第一条数据
+      if (two[index].artCS % 2 == 0) {
+        this.csInfo = 0;
+      } else {
+        this.csInfo = undefined;
+      }
+      let supplierArtItemEditDTOS = [];
+      let supplierArtItemEditDTOS1 = [];
+      // debugger;
+
+      let aupArtDros = data.supplierArtItemEditDTOS;
+      //判断 第一层从表 supplierArtItemEditDTOS 中是否存在单击的这条数据
+      //aupArtDros[index].master.supplierArtName === undefined ||
+      if (
+        aupArtDros[index] === undefined ||
+        aupArtDros[index].supplierArtPzs.length < 2
+      ) {
+        if (
+          aupArtDros[index].master != two[index] ||
+          aupArtDros[index].supplierArtPzs != this.slavesForm.SubList
+        ) {
+          if (index >= 1 && index === aupArtDros.length - 1) {
+            if (
+              (aupArtDros[index - 1].supplierArtPzs = this.slavesForm.SubList)
+            ) {
+              this.slavesForm.SubList = [];
+            }
+          }
+          //如果没有，讲数据进行插入，
+          supplierArtItemEditDTOS.push({
+            master: two[index],
+            supplierArtPzs: this.slavesForm.SubList
+          });
+          //新增一条空数据
+          if (index === aupArtDros.length - 1) {
+            supplierArtItemEditDTOS1.push({
+              master: [],
+              supplierArtPzs: []
+            });
+
+            aupArtDros[index + 1] = supplierArtItemEditDTOS1[0];
+          }
+          aupArtDros[index] = supplierArtItemEditDTOS[0];
+          this.slavesForm.SubList = [];
+        }
+      }
+      //插入完成后将第三层数据清空
+      //如果有，根据点击的第几行（index）将第三层表数据取出，显示
+      if ((aupArtDros[index].master == two[index])) {
+        this.slavesForm.SubList = aupArtDros[index].supplierArtPzs;
+      }
+      return this.formDataInfo;
+      // console.log(this.formDataInfo);
+    },
+    //第三层表点击事件
+    purSupplierArtmdataFmRowClick(index) {
+      // if (this.action == "add") {
+        let supplierArtItemEditDTOS = [];
+        //获取当前全局的数据
+        let data = this.formDataInfo;
+        //获取第二层表的index
+        let indexstr = this.slavesForm.ItemFmRowIndex;
+        //当前第二层表数据
+        let two = this.slavesForm.masterList;
+        //当前第三层表数据
+        if (!!index) {
+          this.slavesForm.SubList = this.$refs.sub_list_table_edit.cloneData;
+        }
+        //将第二三层表数据插入对应的滴二层表中
+        supplierArtItemEditDTOS.push({
+          master: two[indexstr],
+          supplierArtPzs: this.slavesForm.SubList
+        });
+        data.supplierArtItemEditDTOS[indexstr] =supplierArtItemEditDTOS[0]
+    },
+    //第三层表点击事件 修改是调用
+    // updateArtmdataFmRowClick(index){
+      //   debugger
+      //    let supplierArtItemEditDTOS = [];
+      //     //获取当前全局的数据
+      //     let data = this.formDataInfo;
+      //     //获取第二层表的index
+      //     let indexstr = this.slavesForm.ItemFmRowIndex;
+      //     //当前第二层表数据
+      //     let two = this.slavesForm.masterList;
+      //     //当前第三层表数据
+      //     this.slavesForm.SubList = this.$refs.sub_list_table_edit.cloneData;
+      //     //将第二三层表数据插入对应的滴二层表中
+      //     supplierArtItemEditDTOS.push({
+      //       master: two[indexstr],
+      //       supplierArtPzs: this.slavesForm.SubList
+      //     });
+      //     this.formDataInfo.supplierArtItemEditDTOS[indexstr] = supplierArtItemEditDTOS[0];
+      // },
+    // 重写父类 数据初始化后 自动调用
+    formDetailDataCall() {
+      if (this.action != "add") {
+        this.getsupplierArtId = this.formDataInfo.master.supplierArtId;
+      }
+      // 数据初始化，把第二层表的master组装成一个List结构
+      this.slavesForm.masterList = [];
+      let _self = this;
+      this.formDataInfo[`${this.slavesForm.name}`].forEach((item, index) => {
+        _self.slavesForm.masterList.push(item.master);
+        _self.slavesForm.SubItems[item.master.bpNo] =
+          item[`supplierArtItemEditDTOS`];
+      });
+    },
+    // 重写父类 提交数据 三层表
+    formTableDataSubmit() {
+      //  debugger
+      let data = this.resetformDataInfo();
+      this.$refs["formDataInfo"].validate(valid => {
+        if (!valid) {
+          return;
+        }
+        let result = this.$refs["slave_list_table_edit"].validate();
+        if (result) {
+          return;
+        }
+        for (
+          let index = 0;
+          index < this.$refs["slave_list_table_edit"].cloneData.length;
+          index++
+        ) {
+          //拿到第二层表的层数
+          let artCS = this.$refs["slave_list_table_edit"].cloneData[index]
+            .artCS;
+          //判断是基数还是偶数
+          if (artCS % 2 == 0) {
+            for (let index2 = 0; index2 < artCS + 1; index2++) {
+              //偶数 跳过第三层表的第一层克重为空判断
+              if (index2 != 0) {
+                //拿到第三层表的克重
+                let piGram = this.formDataInfo.supplierArtItemEditDTOS[index]
+                  .supplierArtPzs[index2].piGram;
+                // 判断是否为空
+                if (piGram == "" || piGram == undefined) {
+                  this.$Message.error("克重不能为空");
+                  return;
+                }
+              }
+            }
+          } else {
+            for (let index3 = 0; index3 < artCS; index3++) {
+              //拿到第三层表的克重
+              let piGram = this.formDataInfo.supplierArtItemEditDTOS[index]
+                .supplierArtPzs[index3].piGram;
+              // 判断是否为空
+              if (piGram == "" || piGram == undefined) {
+                this.$Message.error("克重不能为空");
+                return;
+              }
+            }
+          }
+        }
+
+        request
+          .post(`${this.requestBaseUrl}/saveOrUpdate`, data)
+          .then(res => {
+            this.showWindow = false; // 关闭当前编辑页面
+            this.$Message.success("执行成功");
+            this.$emit("submit-success"); // 刷新主页面数据
+            // eslint-disable-next-line handle-callback-err
+          })
+          .catch(err => {
+            // this.$Message.error('执行失败')
+          });
+      });
+    }
+  }
+};
+</script>
+
+<style>
+.cl-edit-window .ivu-form-item {
+  margin-bottom: 5px !important;
+}
+
+.cl-edit-window .ivu-select-item {
+  display: block;
+}
+</style>
