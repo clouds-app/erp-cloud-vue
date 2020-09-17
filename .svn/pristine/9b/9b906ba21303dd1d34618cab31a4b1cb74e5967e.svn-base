@@ -1,0 +1,1043 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-warehouse"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="true"
+      width="80%"
+      :loading="!isLoaddingDone"
+      :spinLoaddingText="spinLoaddingText"
+      @on-ok="formTableDataSubmit()"
+      v-if="initData.columns"
+    >
+    <Form
+        ref="formDataInfo"
+        :show-message="true"
+        :model="formDataInfo.master"
+        :rules="ruleValidate"
+        :label-width="100"
+      >
+        <Row>
+          <Col span="24">
+            <Row>
+              <Col span="6"> <FormItem label="客户编号" prop="cusCode">
+                  <referenceField
+                   ref='firstFocusInput'
+                    :disabled="detailDisabled"
+                    v-model="formDataInfo.master.cusCode"
+                    maxlength="20"
+                    placeholder="请输入客户编号"
+                    :form-name="frommastername"
+                    :id="formDataInfo.master.id"
+                  ></referenceField>
+                 
+                </FormItem></Col>
+
+              <Col span="6"> <FormItem label="客户名称" prop="cusName">
+                  <Input
+                    @on-change="getrememberCode"
+                    :disabled="detailDisabled"
+                    v-model="formDataInfo.master.cusName"
+                    maxlength="20"
+                    placeholder="请输入客户名称"
+                  ></Input>
+                </FormItem></Col>
+                <Col span="6"> <FormItem label="简称" prop="shortName">
+                    <Input
+                      v-model="formDataInfo.master.shortName"
+                      :disabled="detailDisabled"
+                      maxlength="20"
+                      placeholder="请输入简称"
+                    ></Input>
+                  </FormItem></Col>
+                <Col span="6"><FormItem label="英文名称" prop="enName">
+                      <Input
+                        v-model="formDataInfo.master.enName"
+                        :disabled="detailDisabled"
+                        maxlength="20"
+                        placeholder="请输入英文名称"
+                      ></Input>
+                    </FormItem>
+                    </Col>
+              </Row>
+          </Col>
+          <Col span="6">
+                <FormItem label="助记码" prop="rememberCode">
+                      <Input
+                        v-model="formDataInfo.master.rememberCode"
+                        :disabled="detailDisabled"
+                        maxlength="20"
+                        placeholder="请输入助记码"
+                      ></Input>
+                </FormItem>
+          </Col>
+            <!-- areaIdsStr -->
+          <Col span="6" > <FormItem label="所属地区" prop="areaIds">
+                  <Cascader
+                    style="padding-top: 5px;"
+                    :data="cityCascader"
+                    :load-data="getCityCascader"
+                    :disabled="detailDisabled"
+                    :transfer='true'
+                    @on-change="getmasterareaIds"
+                    v-model="masterareaIds"
+                    maxlength="20"
+                    placeholder="请输入所属地区"
+                  ></Cascader>
+                </FormItem>
+          </Col>
+          <Col span="6"><FormItem label="详细地址" prop="addrDetail">
+                  <Input
+                    v-model="formDataInfo.master.addrDetail"
+                    :disabled="detailDisabled"
+                    maxlength="20"
+                    placeholder="请输入详细地址"
+                  ></Input>
+                </FormItem>
+          </Col>
+          <Col span="6"> <FormItem label="注册地址" prop="factName">
+                      <Input
+                        v-model="formDataInfo.master.factName"
+                        :disabled="detailDisabled"
+                        maxlength="20"
+                        placeholder="请输入注册地址"
+                      ></Input>
+                    </FormItem>
+          </Col>
+          <Col span="24">
+            <Row>
+              <Col span="6"><FormItem label="业务类型" prop="ctType">
+                  <optionSearch
+                      @onChange="optionOnChangeBy"
+                      :defaultItem="formDataInfo.master.ctType"
+                      :disabled="detailDisabled"
+                      :loaddingDataWhen="showWindow"
+                      formKey="ctType"
+                      query="ctType"
+                    />
+                </FormItem>
+              </Col>
+              <Col span="6">  <FormItem label="所属行业" prop="trade">
+                      <optionSearch
+                          @onChange="optionOnChangeBy"
+                          :disabled="detailDisabled"
+                          v-model="formDataInfo.master.trade"
+                          :loaddingDataWhen="showWindow"
+                          formKey="trade"
+                          query="trade"
+                        />
+                    </FormItem>
+                  </FormItem>
+              </Col>
+              <Col span="6">
+                  <FormItem label="客户等级" prop="ctLevel">
+                    <optionSearch
+                          @onChange="optionOnChangeBy"
+                          :disabled="detailDisabled"
+                          :defaultItem="formDataInfo.master.ctLevel"
+                          :loaddingDataWhen="showWindow"
+                          formKey="ctLevel"
+                          query="ctLevel"
+                        />
+                  </FormItem>
+                </Col>
+                <Col span="6"><FormItem label="折扣%" prop="discount">
+                    <Input
+                    type="number"
+                      v-model="formDataInfo.master.discount"
+                      :disabled="detailDisabled"
+                      maxlength="20"
+                      placeholder="请输入折扣%"
+                    ></Input>
+                  </FormItem>
+                </Col>
+            </Row>
+          </Col>
+          <Col span="6">
+            <FormItem label="开单单位" prop="bpUnit">
+              <optionSearch
+                @onChange="optionOnChangeBy"
+                :disabled="detailDisabled"
+                v-model="formDataInfo.master.bpUnit"
+                :loaddingDataWhen="showWindow"
+                formKey="bpUnit"
+                query="bpUnit"
+              />
+            </FormItem>
+          </Col>
+          <Col span="6"><FormItem label="月结方式" prop="arpType">
+              <optionSearch
+                      @onChange="optionOnChangeBy"
+                      :disabled="detailDisabled"
+                      v-model="formDataInfo.master.arpType"
+                      :loaddingDataWhen="showWindow"
+                      formKey="arpType"
+                      query="arpType"
+                    />
+              </FormItem>
+          </Col>
+          <Col span="6">  <FormItem label="月结终止日" prop="monthEnd">
+            <Input
+                type="number"
+                :disabled="detailDisabled"
+                v-model="formDataInfo.master.monthEnd"
+                maxlength="20"
+                placeholder="请输入月结终止日"
+              ></Input>
+            </FormItem>
+          </Col>
+          <Col span="6">
+              <FormItem label="结算货币" prop="coinCode">
+                  <popup
+                  v-model="formDataInfo.master.coinCode"
+                  field-name="coinCode"
+                  :disabled="detailDisabled"
+                  popup-name="CoinSingleBox"
+                  :fill-model.sync="formDataInfo.master"
+                  render-fields="coinId,coinCode,coinName"
+                  from-fields="id,coinCode,coinName"
+                  :suffix="true"
+                  :suffix-model="formDataInfo.master.coinName"
+                  :query-params="{}"
+                ></popup>
+              </FormItem>
+          </Col>
+          <Col span="6">  <FormItem label="单价小数位" prop="ctDot">
+                <Input
+                  type="number"
+                  :disabled="detailDisabled"
+                  v-model="formDataInfo.master.ctDot"
+                  maxlength="20"
+                  placeholder="请输入单价小数位"
+                ></Input>
+            </FormItem>
+          </Col>
+          <Col span="6"> <FormItem label="进位方式" prop="priceType">
+            <optionSearch
+                :disabled="detailDisabled"
+                @onChange="optionOnChangeBy"
+                v-model="formDataInfo.master.priceType"
+                :loaddingDataWhen="showWindow"
+                formKey="priceType"
+                query="priceType"
+              />
+            </FormItem>
+          </Col>
+          <Col span="6"><FormItem label="金额小数位" prop="amtDot">
+            <Input
+               type="number"
+                v-model="formDataInfo.master.amtDot"
+                :disabled="detailDisabled"
+                maxlength="20"
+                placeholder="请输入金额小数位"
+              ></Input>
+            </FormItem>
+          </Col>
+          <Col span="6"> <FormItem label="进位方式" prop="amtType">
+            <optionSearch
+              @onChange="optionOnChangeBy"
+              :disabled="detailDisabled"
+              v-model="formDataInfo.master.amtType"
+              :loaddingDataWhen="showWindow"
+              formKey="amtType"
+              query="amtType"
+            />
+            </FormItem>
+          </Col>
+          <Col span="24">
+            <Row>
+                <Col span="6"><FormItem label="税别" prop="taxTP">
+                  <optionSearch
+                        @onChange="optionOnChangeBy"
+                        :disabled="detailDisabled"
+                        :default-item="formDataInfo.master.taxTP"
+                        :loaddingDataWhen="showWindow"
+                        formKey="taxTP"
+                        query="taxTP"
+                      />
+                  </FormItem>
+                </Col>
+                <Col span="6"><FormItem label="税率%" prop="taxRate">
+                    <Input
+                    type="number"
+                    :disabled="detailDisabled"
+                      v-model="formDataInfo.master.taxRate"
+                      maxlength="20"
+                      placeholder="请输入税率"
+                    ></Input>
+                  </FormItem>
+                </Col>
+                <Col span="6"><FormItem label="付款方式" prop="payName">
+                  <popup
+                    v-model="formDataInfo.master.payCode"
+                    field-name="payCode"
+                    :disabled="detailDisabled"
+                    popup-name="PayTypeSingleBox"
+                    :fill-model.sync="formDataInfo.master"
+                    render-fields="payId,payCode,payName,monthDays"
+                    from-fields="id,payCode,payName,payDays"
+                    :suffix="true"
+                    :suffix-model="formDataInfo.master.payName"
+                    suffixModelName="payName"
+                    :query-params="{}"
+                  ></popup>
+                </FormItem></Col>
+                <Col span="6"><FormItem label="付款天数" prop="monthDays">
+                    <Input
+                      v-model="formDataInfo.master.monthDays"
+                      :disabled="detailDisabled"
+                      maxlength="20"
+                      placeholder="请输入付款天数"
+                    ></Input>
+                </FormItem></Col>
+            </Row>
+          </Col>
+          <Col span="6"><FormItem label="开户银行" prop="backName">
+              <Input
+                v-model="formDataInfo.master.backName"
+                :disabled="detailDisabled"
+                maxlength="20"
+                placeholder="请输入开户银行"
+              ></Input>
+            </FormItem></Col>
+          <Col span="6"><FormItem label="银行账号" prop="bankNo">
+                  <Input
+                  type="number"
+                    v-model="formDataInfo.master.bankNo"
+                    :disabled="detailDisabled"
+                    maxlength="20"
+                    placeholder="请输入银行账号"
+                  ></Input>
+                </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="跟单员" prop="followerCode">
+                  <popup
+                    v-model="formDataInfo.master.followerCode"
+                    field-name="followerCode"
+                    :disabled="detailDisabled"
+                    popup-name="WorkerSingleBox"
+                    :fill-model.sync="formDataInfo.master"
+                    render-fields="followerId,followerCode,followerName"
+                    from-fields="id,workCode,workName"
+                    :suffix="true"
+                    :suffix-model="formDataInfo.master.followerName"
+                    :query-params="{workOptType:1}"
+                  ></popup>
+                </FormItem>
+          </Col>
+          <Col span="6"> <FormItem label="业务员" prop="salerCode">
+               <popup
+                    v-model="formDataInfo.master.salerCode"
+                    field-name="salerCode"
+                    :disabled="detailDisabled"
+                    popup-name="WorkerSingleBox"
+                    :fill-model.sync="formDataInfo.master"
+                    render-fields="salerId,salerCode,salerName"
+                    from-fields="id,workCode,workName"
+                    :suffix="true"
+                    :suffix-model="formDataInfo.master.salerName"
+                    :query-params="{workOptType:2}"
+                  ></popup>
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <Row>
+               <Col span="8"> <FormItem label="列印重量" prop="printWeight">
+                 <Checkbox v-model="formDataInfo.master.printWeight" :disabled="detailDisabled" maxlength="20" placeholder></Checkbox>
+              </Input>
+            </FormItem></Col>
+              <Col span="8">
+              <FormItem label="送货单分PO" prop="poGroup">
+                  <Checkbox v-model="formDataInfo.master.poGroup" :disabled="detailDisabled" maxlength="20" placeholder></Checkbox>
+                </FormItem></Col>
+                <Col span="8"> <FormItem label="需回签" prop="signBack">
+              <Checkbox v-model="formDataInfo.master.signBack" maxlength="20" :disabled="detailDisabled" placeholder></Checkbox>
+            </FormItem></Col>
+            </Row>
+          </Col>
+          <Col span="6">
+            <Row>
+            <Col span="8"> <FormItem label="列印单价" prop="printPrice">
+                  <Checkbox v-model="formDataInfo.master.printPrice" maxlength="20" :disabled="detailDisabled" placeholder></Checkbox>
+                  </FormItem>
+                </Col>
+                <Col span="5"> <FormItem label="内径" prop="bpIsDiameter">
+                   <Checkbox v-model="formDataInfo.master.bpIsDiameter" maxlength="20" :disabled="detailDisabled" placeholder></Checkbox>
+                  </FormItem>
+               </Col>
+               <!-- 附件 -->
+            <Col span="8">
+                <FormItem label="附件" prop="attachment">
+                    <Upload action="//jsonplaceholder.typicode.com/posts/">
+                        <Button icon="ios-cloud-upload-outline" :disabled="detailDisabled">附件</Button>
+                    </Upload>
+                </FormItem>
+              </Col>
+            </Row>
+          </Col>
+          <Col span="6">
+                <FormItem label="接单控制" prop="orderControl">
+                  <optionSearch
+                      @onChange="optionOnChangeBy"
+                      :disabled="detailDisabled"
+                      v-model="formDataInfo.master.orderControl"
+                      :loaddingDataWhen="showWindow"
+                      formKey="orderControl"
+                      query="orderControl"
+                    />
+                </FormItem></Col>
+           <Col span="6"><FormItem label="最后订单" prop="lastOrderDate">
+                   <DatePicker
+                      disabled
+                      type="date"
+                      format="yyyy-MM-dd"
+                      :default-item="formDataInfo.master.lastOrderDate"
+                    ></DatePicker>
+                </FormItem>
+          </Col>
+          <Col span="24"> <FormItem label="备注" prop="remark">
+              <Input
+                v-model="formDataInfo.master.remark"
+                type="textarea"
+                :disabled="detailDisabled"
+                maxlength="100"
+                :autosize="{ minRows: 2, maxRows: 5 }"
+                placeholder="请输入备注..."
+              ></Input>
+            </FormItem>
+            </Col>
+        </Row>
+      </Form>
+    </Row>
+      <Tabs :animated="false">
+        <!--  注意:eTable formDataInfo.wareHoaddrSlaveFormDataDTOuseItems.defaultList  ===addrSlaveFormDataDTO=== 需要根据实际接口修改,其它不变-->
+        <TabPane label="客户联系人列表" name="cusList">
+          <eTable
+            ref="tableFields2"
+            unqiue-mark="id"
+            :index-menu="true"
+            :col-start="0"
+            :width="200"
+            :row-init-data="initData.initData.customerContactFm"
+            :data.sync="formDataInfo.contactSlaveFormDataDTO.defaultList"
+            :rules="tableFieldsValidator_cuslist"
+            :showContextMenu='!detailDisabled'
+          >
+            <template slot="head">
+              <tr>
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">职位</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">联系人</span>
+                  </div>
+                </th>
+                 <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">性别</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="150">
+                  <div class="ivu-table-cell">
+                    <span class="">联系人电话</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="150">
+                  <div class="ivu-table-cell">
+                    <span class="">联系邮件</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">传真号码</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">联系QQ</span>
+                  </div>
+                </th>
+                <th class="ivu-table-column-center" width="100">
+                  <div class="ivu-table-cell">
+                    <span class="">备注</span>
+                  </div>
+                </th>
+              </tr>
+            </template>
+            <template
+              slot="body"
+              slot-scope="{ row, index, valueChangeAssign }"
+              >
+               <!-- 职位 -->
+              <td class="ivu-table-column-left" width="100">
+                  <Select v-model="row.postType" :transfer='true'>
+                    <Option v-for="item in postTypeList" :value="item.value" :key="item.value">{{ item.name }}</Option>
+                  </Select>
+              </td>
+                <!-- 联系姓名 -->
+              <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.contactName"
+                  :disabled="detailDisabled"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'contactName');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+               <!-- 性别 -->
+              <td class="ivu-table-column-left" width="100">
+                  <Select v-model="row.sex" :transfer='true'>
+                    <Option v-for="item in sexList" :value="item.value" :key="item.value">{{ item.name }}</Option>
+                  </Select>
+              </td>
+              <!-- 联系电话 -->
+              <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.contactTel"
+                  :disabled="detailDisabled"
+                  type="number"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'contactTel');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+                <!-- 联系邮件 -->
+              <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.contactEmail"
+                  :disabled="detailDisabled"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'contactEmail');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+              <!-- 传真号码 -->
+              <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.contactFax"
+                  :disabled="detailDisabled"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'contactFax');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+              <!-- 联系qq -->
+              <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.contactQQ"
+                  :disabled="detailDisabled"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'contactQQ');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+
+              <td class="ivu-table-column-left" width="100">
+                <Input
+                  v-model="row.remark"
+                  :disabled="detailDisabled"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'remark');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+              </td>
+            </template>
+          </eTable>
+        </TabPane>
+        <TabPane label="附加地址列表" name="addrList">
+            <eTable
+              ref="tableFields"
+              unqiue-mark="id"
+              :index-menu="true"
+              :col-start="0"
+              :width="200"
+              :row-init-data="initData.initData.customerAddrFm"
+              :data="formDataInfo.addrSlaveFormDataDTO.defaultList"
+              :rules="tableFieldsValidator"
+              @row-click="rowClick"
+              :showContextMenu='!detailDisabled'
+            >
+            <template slot="head">
+              <tr
+                v-for="(columnGroup,index) in initData.columns.customerAddrFm.editGroups"
+                :key="index"
+              >
+                <th
+                  :class="`ivu-table-column-${column.titleAlign}`"
+                  v-for="(column,index2) in columnGroup"
+                  :key="index2"
+                  :width="column.editWidth"
+                  :colspan="column.colSpan"
+                  :rowspan="column.rowSpan"
+                  style="text-align:center;"
+                >
+                  <div class="ivu-table-cell">
+                    <span class>{{column.title}}</span>
+                  </div>
+                </th>
+              </tr>
+            </template>
+            <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
+              <td
+                :class="`ivu-table-column-${column.align}`"
+                v-for="(column,columnIndex) in initData.columns.customerAddrFm.editColumns"
+                :key="columnIndex"
+                :width="column.editWidth"
+                @contextmenu.prevent="show(index)"
+              >
+             <!-- 控件特殊处理 所属地区 -->
+                  <Cascader
+                    v-if="column.key == 'areaNames'"
+                    v-model="row['areaIds']"
+                    :data="cityCascader"
+                    :load-data="getCityCascader"
+                    @on-change="getsubareaIds"
+                    :disabled="detailDisabled"
+                    :transfer='true'
+                    @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'areaIds');
+                      }
+                    "
+                    size="small"
+                    :maxlength="20"
+                  ></Cascader >
+               <formControl
+                  v-else
+                  :control-type="column.controlType"
+                  v-model="row[column.key]"
+                  :disabled="detailDisabled||column.readOnly"
+                  @input="value => {valueChangeAssign(value, index, row,column.key)}"
+                ></formControl>
+              </td>
+            </template>
+            </eTable>
+          </TabPane>
+          <!--  注意:eTable formDataInfo.contactSlaveFormDataDTO.defaultList  ===contactSlaveFormDataDTO=== 需要根据实际接口修改,其它不变-->
+      </Tabs>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:07:54
+ */
+import formControl from '@/components/form-control/form-control'
+import editWindow from '@/components/edit-window/edit-window'
+import referenceField from '@/components/referenceField/referenceField'
+import { customValidator, uniqueValidator } from '@/libs/validator'
+// import Form from '@/components/form/form'
+import eTable from '@/components/e-table/e-table'
+import request from '@/libs/request'
+import editBaseMixins from '../../mixins/edit'
+import popup from '@/components/popup/popup'
+import optionSearch from '../../components/optionSearch'
+import { deepCopy } from 'view-design/src/utils/assist'
+import dayjs from 'dayjs'
+const default_formDataInfo = {
+  // 主表 更改字段
+  master: {
+    addrDetail: '',
+    amtDot: 2,
+    amtType: '0',
+    amtTypeText: '',
+    areaNames: '',
+    areaIds: '',
+    arpType: '0',
+    attachment: '',
+    auditTime: '',
+    auditUser: '',
+    backName: '',
+    bankNo: '',
+    bpIsDiameter: false,
+    bpUnit: '0',
+    monthEnd: '31',
+    bpUnitText: '',
+    coinCode: '',
+    coinId: '',
+    coinName: '',
+    createTime: '',
+    createUser: '',
+    ctDot: 2,
+    ctLevel: 'A',
+    ctLevelText: '',
+    ctType: '0',
+    ctTypeText: '',
+    cusCode: '',
+    cusName: '',
+    discount: '100',
+    enName: '',
+    factName: '',
+    followerCode: '',
+    followerId: '',
+    followerName: '',
+    iisAudit: '',
+    lastOrderDate: null,
+    monthDays: 0,
+    orderControl: '0',
+    orderControlText: '',
+    payCode: '',
+    payId: '',
+    payName: '',
+    poGroup: false,
+    pointj: '',
+    pointw: '',
+    priceType: '0',
+    priceTypeText: '',
+    printPrice: true,
+    printWeight: false,
+    remark: '',
+    rememberCode: '',
+    salerCode: '',
+    salerId: '',
+    salerName: '',
+    shortName: '',
+    signBack: false,
+    status: '',
+    taxRate: 0,
+    taxTP: 'I',
+    taxTPText: '',
+    trade: '0',
+    tradeText: '',
+    updateTime: '',
+    updateUser: ''
+
+    // updateTime: "",
+    // updateUser: ""
+  },
+  // 子表 附加地址列表
+  addrSlaveFormDataDTO: {
+    addList: [], // 添加列
+    defaultList: [], // 默认列
+    deleteList: [], // 删除列
+    updateList: [] // 更新列
+  },
+  // 子表 客户联系人列表
+  contactSlaveFormDataDTO: {
+    addList: [], // 添加列
+    defaultList: [], // 默认列
+    deleteList: [], // 删除列
+    updateList: [] // 更新列
+  }
+}
+export default {
+  name: 'edit-customerInfo',
+  mixins: [editBaseMixins],
+  components: {
+    editWindow,
+    popup,
+    optionSearch,
+    formControl,
+    // Form,
+    eTable,
+    referenceField
+  },
+  data () {
+    return {
+      subindex: 1, // 子表点击行
+      masterareaIds: [], // 主表地区控件
+      frommastername: 'customerFm',
+      actionSubtitle: '客户资料', // 当前操作副标题
+      formName: 'customerFm',
+      currentSubItemlength_addr: 0, // 当前子表数据个数
+      currentSubItemlength_contact: 0, // 当前子表数据个数
+      requestBaseUrl: '/sale/customer', // 请求 查询 操作的基础路径
+      // formDataInfo:Object.assign({},default_formDataInfo),// 防止添加和更新数据提交发生冲突
+      formDataInfo: deepCopy(default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      postTypeList: [], // 职位数据列表
+      sexList: [], // 性别数据列表
+      // 需要验证的数据
+      ruleValidate: {
+        cusCode: [
+          { required: true, message: '客户编号不能为空', trigger: 'blur' },
+          {
+            validator: uniqueValidator,
+            trigger: 'blur',
+            fieldDesc: '客户编号',
+            params: {
+              fieldName: 'cusCode',
+              formName: 'customerFm',
+              id: () => {
+                return this.formDataInfo.master.id
+              }
+            }
+          }
+        ],
+        payName: [
+          { required: true, message: '付款方式不能为空', trigger: 'blur' }
+        ],
+        cusName: [
+          { required: true, message: '客户不能为空', trigger: 'blur' }
+        ],
+        coinCode: [
+          { required: true, message: '计算货币不能为空', trigger: 'blur' }
+        ],
+        payCode: [
+          { required: true, message: '计算方式不能为空', trigger: 'blur' }
+        ],
+        areaIds: [
+          { required: true, message: '地区不能为空', trigger: 'blur,change' } //, type:'array'
+        ]
+      },
+      tableFieldsValidator: {
+
+      },
+      tableFieldsValidator_cuslist: {
+
+      },
+      cityCascader: [],
+      cityCascaderCount: 0
+    }
+  },
+  watch: {
+    'formDataInfo.addrSlaveFormDataDTO.defaultList' (n, o) {
+      if (this.action !== 'add') {
+        this.switchareaIds()
+      }
+    }
+  },
+  methods: {
+    // 关闭窗口时触发
+    closeActionTigger () {
+      this.masterareaIds = []
+       // fix 清除上次的错误提示 formDataInfo 为表单ref名称
+      let resetForm = this.$refs[this.formDataInfoName]
+      // 如果子表继承中,名称不一致 可以直接修改名称 his.formDataInfoName ='当前表单名称'
+      if (resetForm) {
+        resetForm.resetFields()
+      }
+    },
+    // 提交转换地区控件id
+    restswitchareaIds () {
+      // this.formDataInfo.master.areaIds = this.formDataInfo.master.areaIds.map(val => val).join(',');
+      this.$refs['tableFields'].get().filter((item, index) => {
+        if (item.areaIds) {
+          this.$refs['tableFields'].set({ areaIds: item.areaIds.map(val => val).join(',') }, index)
+        }
+      })
+    },
+    // 转换地区控件id
+    switchareaIds () {
+      let subareaIds = ''
+      if (this.masterareaIds.length == 0) {
+        this.masterareaIds = this.formDataInfo.master.areaIds.split(',')
+      }
+      this.formDataInfo.addrSlaveFormDataDTO.defaultList.filter((item, index) => {
+        debugger
+        if (typeof item.areaIds === 'string' && !!item.areaIds) {
+          item.areaIds = item.areaIds.split(',')
+        }
+        // this.$refs['tableFields'].set({areaIds:item.areaIds },index)
+      })
+    },
+    // 子表所属地区回调事件
+    getsubareaIds (value, selectedData) {
+      // this.$refs['tableFields'].set({areaIds:value.map(val => val).join(',')},this.subindex)
+      this.$refs['tableFields'].set({ areaNames: selectedData.map(o => o.label).join(',') }, this.subindex)
+    },
+    rowClick (index, data) {
+      this.subindex = index
+    },
+    // 主表所属地区回调事件
+    getmasterareaIds (value, selectedData) {
+      this.masterareaIds = value
+      this.formDataInfo.master.areaIds = value.map(val => val).join(',')
+      this.formDataInfo.master.areaNames = selectedData.map(o => o.label).join(',')
+    },
+    // 获取性别列表
+    getsexList () {
+      let resData
+      this.getDataFromDictionaryBy('sex').then(res => {
+        resData = res.map(item => {
+          let formatData = {
+            value: item.dicValue,
+            name: item.dicLabel
+          }
+          return formatData
+        })
+        this.sexList = resData
+      })
+    },
+    // 获取职位数据列表
+    getpostTypeList () {
+      let resData
+      this.getDataFromDictionaryBy('postType').then(res => {
+        resData = res.map(item => {
+          let formatData = {
+            value: item.dicValue,
+            name: item.dicLabel
+          }
+          return formatData
+        })
+        this.postTypeList = resData
+      })
+    },
+    getrememberCode (data) {
+      // debugger
+      request.post('/sale/customer/rememberCode', { str: this.formDataInfo.master.cusName }).then(res => {
+        this.formDataInfo.master.rememberCode = res.replace('STR', '')
+      })
+    },
+    getCityCascader (item, callback) {
+      item.loading = true
+      request.post('/bas/area/list', { pid: item.value, name: item.label }, { pid: item.value, name: item.label }).then(res => {
+        // this.cityCascaderCount++;
+        // console.log(this.cityCascaderCount)
+        if (res != null) {
+          /// ///debugger;
+          res.forEach(item => {
+            item['children'] = []
+          })
+          delete item.loading
+          item.children = res
+        }
+        item.loading = false
+        callback()
+      })
+    },
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo () {
+    // debugger
+      this.formDataInfo = deepCopy(default_formDataInfo)
+    },
+    // 判断 客户联系人列表 是否添加了数据
+    getCurrentSubItemlength_addr () {
+      let tableData = this.$refs['tableFields'].getCategorizeData()
+      this.currentSubItemlength_addr = 0
+      // 判断当前字表 添加/更新的 数据个数
+      if (this.action === 'add') {
+        if (tableData.addList.length > 0) {
+          this.currentSubItemlength_addr = Object.keys(tableData.addList[0]).length
+        }
+      } else {
+        if (tableData.updateList.length > 0) {
+          this.currentSubItemlength_addr = Object.keys(tableData.updateList[0]).length
+        }
+        if (tableData.addList.length > 0) {
+          this.currentSubItemlength_addr = Object.keys(tableData.addList[0]).length
+        }
+      }
+      return this.currentSubItemlength_addr
+    },
+    // 判断 附加地址列表 是否添加了数据
+    getCurrentSubItemlength_contact () {
+      let tableData2 = this.$refs['tableFields2'].getCategorizeData()
+      this.currentSubItemlength_contact = 0
+      // 判断当前字表 添加/更新的 数据个数
+      if (this.action === 'add') {
+        if (tableData2.addList.length > 0) {
+          this.currentSubItemlength_contact = Object.keys(tableData2.addList[0]).length
+        }
+      } else {
+        if (tableData2.updateList.length > 0) {
+          this.currentSubItemlength_contact = Object.keys(tableData2.updateList[0]).length
+        }
+        if (tableData2.addList.length > 0) {
+          this.currentSubItemlength_contact = Object.keys(tableData2.addList[0]).length
+        }
+      }
+      return this.currentSubItemlength_contact
+    },
+    // 重写父类,提交数据前 验证数据 ,默认TRUE
+    validateBeforePost () {
+      // debugger
+      this.getCurrentSubItemlength_addr()
+      this.getCurrentSubItemlength_contact()
+      let flag = false
+      if (this.currentSubItemlength_addr > 0) {
+        // 子表有数据后才验证是否必填数据
+        let subValidate = this.$refs['tableFields'].validate()
+        if (subValidate === true) {
+          flag = true
+        }
+      }
+      return flag
+    },
+    // 重写父类,修改提交数据
+    resetformDataInfo (_data) {
+      // 添加了数据才去获取数据
+      // debugger
+      this.restswitchareaIds()
+      if (this.currentSubItemlength_addr > 0) {
+        let tableData = this.$refs['tableFields'].getCategorizeData()
+        this.formDataInfo.addrSlaveFormDataDTO = tableData
+      }
+      if (this.currentSubItemlength_contact > 0) {
+        let tableData2 = this.$refs['tableFields2'].getCategorizeData()
+        this.formDataInfo.contactSlaveFormDataDTO = tableData2
+      }
+      if (_data.master.lastOrderDate) {
+        _data.master.lastOrderDate = dayjs(_data.master.lastOrderDate).format(
+          'YYYY-MM-DD HH:mm:ss'
+        )
+      }
+      let addrList = this.$refs['tableFields'].get()
+      // for (let index = 0; index < addrList.length; index++) {
+      //   if (addrList[index].areaIdsList==="") {
+      //     addrList[index].areaIdsList=[]
+      //   }
+      // }
+      return this.formDataInfo
+    }
+  },
+  created () {
+    request.post('/bas/area/list', { pid: 0 }, { pid: 0 }).then(res => {
+      res.forEach(item => {
+        item['children'] = []
+      })
+      this.cityCascader = res
+    })
+    this.getpostTypeList()
+    this.getsexList()
+  }
+}
+</script>
+
+<style>
+/* .cl-edit-warehouse .ivu-form-item {
+  margin-bottom: 5px !important;
+} */
+.cl-edit-warehouse .ivu-select-item {
+  display: block;
+}
+</style>

@@ -1,0 +1,269 @@
+<template>
+  <div class="purchaseContent">
+    <!-- <Row>
+      <Col span="1">&nbsp;</Col>
+
+      <Col span="6" offset="1">
+      <Card>
+        <p slot="title">
+        采购
+      </p>
+         <br/>
+        <p style="padding: 10px;">
+          <Button @click="handleSubMenuEvent('supplier','Purchase-supplier','供应商')" type="info">供应商</Button>
+        </p>
+        <p style="padding: 10px;">
+          <Button @click="handleSubMenuEvent('supplierArt','purchase-supplierArt','供应商纸质')" type="info">供应商纸质</Button>
+        </p>
+        <p style="padding: 10px;">
+          <Button @click="handleSubMenuEvent('paperPrice','purchase-paperPrice','纸板进价')" type="info">纸板进价</Button>
+        </p>
+        <p style="padding: 10px;">
+          <Button @click="handleSubMenuEvent('purPaperPo','purchase-purPaperPo','纸板采购')" type="info">纸板采购</Button>
+        </p>
+      </Card>
+      </Col>
+      <Col span="6">
+      <Card>
+        <p slot="title">查询</p>
+         <br/>
+        <p style="padding: 10px;">
+          <Button @click="handleSubMenuEvent('purPaperPoAnalyz','purchase-purPaperPoAnalyz','纸板采购情况分析')" type="info">纸板采购情况分析</Button>
+        </p>
+      </Card>
+      </Col>
+    </Row> -->
+    <div class="purchaseContentItem leftItem">
+      <div @click="handleSubMenuEvent('paperPrice','purchase-paperPrice','纸板进价',secondenum.paperPrice.val.disabled)" :class="[secondenum.paperPrice.val.disabled?'diabledOrAccess':'']"  class="circleBallItem purchaseAdvanced cursorPointer">
+        <div class="purchaseAdvancedIcon">
+          <div class="purchaseAdvancedTitle">纸板进价</div>
+        </div>
+      </div>
+      <div @click="handleSubMenuEvent('purPaperPo','purchase-purPaperPo','纸板采购',secondenum.purPaperPo.val.disabled)" :class="[secondenum.purPaperPo.val.disabled?'diabledOrAccess':'']" class="circleBallItem purchaseOrder cursorPointer">
+        <div class="purchaseOrderIcon">
+          <div class="purchaseOrderTitle">纸板采购</div>
+        </div>
+      </div>
+    </div>
+    <div class="purchaseContentItem rightItem">
+         <div class="leftContentItem">
+            <div class="moduleDataTitleBg">
+               <div class="moduleDataTitle">模块数据</div>
+                <div class="moduleDataListBox cursorPointer">
+                     <div @click="handleSubMenuEvent('supplier','Purchase-supplier','供应商',secondenum.supplier.val.disabled)" :class="[secondenum.supplier.val.disabled?'disabledColor':'']" class="moduleDataItem">供应商</div>
+                     <div @click="handleSubMenuEvent('supplierArt','purchase-supplierArt','供应商纸质',secondenum.supplierArt.val.disabled)" :class="[secondenum.supplierArt.val.disabled?'disabledColor':'']" class="moduleDataItem">供应商纸质</div>
+                </div>
+            </div>
+         </div>
+         <div class="leftContentItem marginTop10">
+           <div class="reportTitleBg">
+              <div class="reportTitle">报表</div>
+                <div class="reportDataListBox cursorPointer">
+                     <div @click="handleSubMenuEvent('purPaperPoAnalyz','purchase-purPaperPoAnalyz','纸板采购情况分析',secondenum.purPaperPoAnalyz.val.disabled)" :class="[secondenum.purPaperPoAnalyz.val.disabled?'disabledColor':'']" class="reportDataItem">纸板采购情况分析</div>
+                     <!-- <div class="reportDataItem disabledColor">纸板采购查询</div>
+                     <div class="reportDataItem disabledColor">原纸申购查询</div>
+                     <div class="reportDataItem disabledColor">原纸采购查询</div>
+                     <div class="reportDataItem disabledColor">辅料申购查询</div>
+                     <div class="reportDataItem disabledColor">辅料采购查询</div> -->
+
+                </div>
+           </div>
+         </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import globleMixin from '@/mixins'
+// import subMenuMixin from './mixins'
+export default {
+  mixins: [globleMixin],
+  data () {
+    return {}
+  },
+  activated () {
+    //console.log('---------Purchase---- activated---------')
+  },
+  created () {
+    //console.log('---------Purchase----- created---------')
+  },
+  computed: {
+    secondenum () {
+      let dataList = this.$store.state.app.Secondaryauthority.Purchase
+     // console.log(dataList)
+      return dataList
+    }
+  },
+  methods: {
+    // 子页面 参数: 页面.vue,唯一区别ID,TAB 标签显示名称
+    handleSubMenuEvent (currentPage, uniqueKey, tabName, flag) {
+      if (currentPage==="paperPrice") {
+        if (this.$params.isCalAreaPricePur==='0') {
+          this.$Message.warning('面积报价未开通,请联系管理员')
+          return
+        }
+      }
+      let params = {
+        menuName: 'Purchase',
+        page: currentPage, // 显示控件页面
+        uniqueKey: uniqueKey,
+        lable: tabName,
+        isActive: true
+      }
+      this.handleMenuBaseEvent(params) // 调用MIXIN 共用方法
+    }
+  }
+}
+</script>
+
+<style lang="scss">
+.disabledColor{
+  color: #bdb7b7;
+}
+.purchaseContent {
+  color: white;
+  min-height: 600px;
+  width: 100%;
+  display: flex;
+  display: -webkit-flex; /* Safari */
+  background: rgba(33, 46, 129, 1);
+  //border:1px solid rgba(0,222,255,1);
+  .purchaseContentItem {
+    //border: 1px solid red;
+    //height: 100px;
+
+    &.leftItem {
+      display: flex;
+      display: -webkit-flex; /* Safari */
+      flex-direction: row;
+      justify-content: space-around;
+      align-items: center;
+      margin: 10px;
+      width: 80%;
+      border-radius: 5px;
+      box-shadow: 0px 0px 10px rgba(0, 222, 255, 1) inset;
+      .circleBallItem {
+        width: 137px;
+        height: 137px;
+
+        border-radius: 50%;
+        &.purchaseAdvanced {
+          margin-left: 10%;
+          background: linear-gradient(
+            0deg,
+            rgba(14, 76, 253, 1),
+            rgba(106, 142, 255, 1)
+          );
+          .purchaseAdvancedIcon {
+            width: 140px;
+            height: 130px;
+            background-image: url("../../../../assets/images/page-design/master-page/Icon-purchaseAdvanced.png");
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-size: auto 60px;
+            .purchaseAdvancedTitle {
+              text-align: center;
+              line-height: 210px;
+            }
+          }
+        }
+        &.purchaseOrder {
+          margin-right: 10%;
+          background: linear-gradient(
+            0deg,
+            rgba(253, 113, 46, 1),
+            rgba(255, 166, 124, 1)
+          );
+          .purchaseOrderIcon {
+            width: 140px;
+            height: 130px;
+            background-image: url("../../../../assets/images/page-design/master-page/Icon-purchaseOrder.png");
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-size: auto 60px;
+            .purchaseOrderTitle {
+              text-align: center;
+              line-height: 210px;
+            }
+          }
+        }
+      }
+    }
+    &.rightItem {
+      margin: 10px;
+      width: 20%;
+      border-radius: 5px;
+      box-shadow: 0px 0px 10px rgba(0, 222, 255, 1) inset;
+      display: flex;
+      display: -webkit-flex;
+      flex-direction:column;
+      .leftContentItem{
+          min-height: 100px;
+          // width: 100px;
+          //border:1px solid green;
+          .moduleDataTitleBg{
+              background-image: url("../../../../assets/images/page-design/master-page/icon-moduleData.png");
+              background-position: 10px top;
+              background-repeat: no-repeat;
+              background-size: auto 20px;
+              .moduleDataTitle{
+                color: #FFCC00;
+                margin-left: 35px;
+                margin-top:10px;
+              }
+              .moduleDataListBox{
+                  display: flex;
+                  display: -webkit-flex;
+                  flex-direction:column;
+                  .moduleDataItem{
+                    margin-top: 10px;
+                    height: 20px;
+                    margin-left: 35px;
+                   // border:1px solid yellow;
+                  }
+
+              }
+          }
+          .reportTitleBg{
+              background-image: url("../../../../assets/images/page-design/master-page/icon-report.png");
+              background-position: 10px top;
+              background-repeat: no-repeat;
+              background-size: auto 20px;
+              .reportTitle{
+                color: #18FA00;
+                margin-left: 35px;
+                margin-top:10px;
+              }
+              .reportDataListBox{
+                   display: flex;
+                   display: -webkit-flex;
+                   flex-direction:column;
+                  .reportDataItem{
+                    margin-top: 10px;
+                     margin-left: 35px;
+                    height: 20px;
+                   // border-bottom:1px solid green;
+                  }
+              }
+          }
+      }
+      .marginTop10{
+        margin-top: 10px;
+      }
+
+    }
+     // 禁用 获取功能未实现 灰色 按钮
+    .diabledOrAccess{
+        -webkit-filter: grayscale(100%);
+        -moz-filter: grayscale(100%);
+        -ms-filter:grayscale(100%);
+        -o-filter: grayscale(100%);
+        filter: grayscale(100%);
+        filter:gray;
+    }
+    .cursorPointer{
+      cursor: pointer;
+    }
+  }
+}
+</style>

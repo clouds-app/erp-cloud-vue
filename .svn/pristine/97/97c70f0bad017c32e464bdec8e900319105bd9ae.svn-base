@@ -1,0 +1,319 @@
+<template>
+  <div class="cl-moudle">
+    <!-- 0. 无需变更,修改 functionParams 配置参数即可 -->
+    <htmlTemplate
+     ref="htmlTemplate"
+      :currrentRowItem="currrentRowItem"
+      @isLoaddingDone="getLoaddingDone"
+      :requestBaseUrl="functionParams.requestBaseUrl"
+      :uniqueId="functionParams.uniqueId"
+      :queryParamsDefault="queryParamsDefault"
+    >
+    </htmlTemplate>
+    <div ref="contextMenuTarget" :style="{ height: tableHeight + 'px' }" v-if="formInitData.listView">
+      <Row>
+        <!-- 1. 无需变更,修改 functionParams 配置参数即可 master_list_table 固定不变,不要修改-->
+      <vTable :upDownMove="true"
+          @row-dblclick="showDetailswindow"
+          name="boxcomainFm"
+          :height="tableHeight / 3"
+           ref="master_list_table"
+          :url="`${functionParams.requestBaseUrl}/page`"
+          :columns="formInitData.columns[`${functionParams.formInitPreName}mainFm`].listColumns"
+          :pageSize="formInitData.listView[`${functionParams.formInitPreName}mainFm`].pageSize"
+          :pagination="true"
+          @row-click="master_list_tableRowClick"
+        ></vTable>
+      </Row>
+      <Row>
+         <!-- 2. 变更 query-params 参数为详细查询唯一ID,其它修改functionParams配置参数即可 slave_list_table 固定不变,不要修改-->
+        <Tabs>
+          <TabPane label="订单明细" name="name1">
+            <vTable
+             name="boxcoitemFm"
+              :height="tableHeight / 3-50"
+              ref="slave_list_table"
+              :url="`${functionParams.requestBaseUrl}/item/list`"
+              :columns="formInitData.columns[`${functionParams.formInitPreName}itemFm`].listColumns"
+              :pagination="false"
+              @row-click="slave_list_tableRowClick"
+                :query-params="{boxCoMainId:-1}"
+            ></vTable>
+          </TabPane>
+        </Tabs>
+      </Row>
+      <Row>
+         <!-- 3. 变更 query-params 参数为详细查询唯一ID, 其它 修改functionParams配置参数即可 sub_list_table 固定不变,不要修改-->
+       <!-- :url="`${functionParams.requestBaseUrl}/sub/boxCoModelData/list`" -->
+        <Tabs @on-click="TabsClickEvent">
+          <TabPane label="纸板规格" name="boxCoModelData">
+            <vTable
+              name="boxcomdataFm"
+              :height="tableHeight / 3-10"
+              ref="sub_list_table"
+              :table-data="tableBoxCoModelData"
+              :columns="checkShowCol(formInitData.columns[`${functionParams.formInitPreName}mdataFm`].listColumns)"
+              :pagination="false"
+              :query-params="{boxCoItemId:-1}"
+            ></vTable>
+          </TabPane>
+           <!-- :url="`${functionParams.requestBaseUrl}/sub/boxCoWorkProc/list`" -->
+          <TabPane label="生产工序" name="boxCoWorkProc">
+            <vTable
+              name="boxcoworkprocFm"
+              :height="tableHeight / 3-10"
+              ref="sub_list_table2"
+              :table-data="tableBoxCoWorkProcData"
+              :columns="formInitData.columns[`${functionParams.formInitPreName}workprocFm`].listColumns"
+              :pagination="false"
+              :query-params="{boxCoItemId:-1}"
+            ></vTable>
+          </TabPane>
+        </Tabs>
+      </Row>
+    </div>
+    <!-- 添加: formInitData  属性,用于表单表格初始化数据,多用于三层表 -->
+    <editForm
+       ref="editForm"
+      :formInitData="formInitData"
+      :isLoaddingDone="isLoaddingDone"
+      :form-detail-data="formDetailData"
+      :action="action"
+      @submit-success="search()"
+      v-model="showEditWindow"
+      :detailDisabled="detailDisabled"
+      :detailConvertUpdate="detailConvertUpdate"
+    />
+    <boxSalesOrderextend
+      :isLoaddingDone="extendWindow.isLoaddingDone"
+      :formDetailData="extendWindow.formDetailData"
+      :action="extendWindow.action"
+      @searchfrom="search()"
+      v-model="extendWindow.showEditWindow"
+      ref="mychild"
+    />
+    <batchEndWindow @submit-success="refreshMasterData()" ref="batchEndWindow"></batchEndWindow>
+  </div>
+</template>
+<script>
+import batchEndWindow from './boxSalesOrderSlave.vue'
+import boxSalesOrderextend from './edit/edit-boxSalesOrderextend'
+import productList from './edit/edit-boxSalesProductsList'
+import vTable from '@/components/tables/vTable'
+import htmlTemplate from '../components/htmlTemplate'
+import listBaseMixins from '../mixins/list'
+import request from '@/libs/request'
+import axios from '@/libs/api.request'
+export default {
+  mixins: [listBaseMixins],
+  components: {
+    batchEndWindow,
+    productList,
+    boxSalesOrderextend,
+    editForm: function (resolve) {
+      // 组件的异步加载
+      require(['./edit/edit-boxSalesOrder'], resolve)
+    },
+    htmlTemplate,
+    vTable
+  },
+  data () {
+    return {
+      extendWindow: {// 扩展窗口配置
+        // Tips:"提示：此窗口只显示有供应商纸质/纸板进价的工单！",
+        isLoaddingDone: false, // 窗口是否加载完成
+        showEditWindow: false, // 是否显示edit-boxSalesOrderSlave 编辑窗口
+        action: null, // 当前操作功能 添加/编辑
+        formDetailData: {} // 当前表单的详细信息
+      },
+      tableDataList: [// 导出配置
+        { ref: 'master_list_table', title: '纸箱销售订单' },
+        { ref: 'slave_list_table', title: '订单明细' },
+        { ref: 'sub_list_table', title: '纸板规格' },
+        { ref: 'sub_list_table2', title: '生产工序' }
+      ],
+      tableBoxCoModelData: [], // 纸板规格 数据
+      tableBoxCoWorkProcData: [], // 生产工序 数据
+      currentTabName: 'boxCoModelData', // 当前TABL名称
+      // 查询配置参数
+      functionParams: {
+        formInitPreName: 'boxco', // 查询表格列头信息 前缀 例如:boxco mainFm/itemFm/mdataFm
+        requestBaseUrl: '/sale/boxCo', // 查询 表格行 数据 接口前缀地址
+        uniqueId: 'boxCoMainId' // 查询详细的唯一ID,需要顶部查询中使用
+      },
+      // 分页查询接口获取字段, 查询参数配置 ,注意格式,一般为编码和名称
+      queryParamsDefault: [
+        {
+          title: '订单编号',
+          code: 'bcNo',
+          custCode: ''
+        },
+        {
+          title: '客户名称',
+          name: 'custName$like',
+          custName$like: ''
+        }
+      ]
+    }
+  },
+  methods: {
+    // 自定义扩展功能
+    customerAction (type, func) {
+      if(type!=='sale-boxSalesOrder'){
+        return
+      }
+      switch (func) {
+        // 批量完结 
+        case 'setCloseCoItem':
+          this.setCloseCoItem()
+          break;
+        case 'setCloudboxOrder':
+          this.setCloudboxOrder()
+          break;
+        default:
+          break;
+      }
+    },
+    // 刷新主表页面数据
+    refreshMasterData(){
+       this.$refs['master_list_table'].search()
+    },
+    // 完结销售订单明细
+    setCloseCoItem(){
+      let batchEndWindowObj = this.$refs['batchEndWindow']
+      if(batchEndWindowObj && Object.keys(batchEndWindowObj).length>0){
+        batchEndWindowObj.showWindow = true
+      }
+      // if(!!this.slaveRowselection && Object.keys(this.slaveRowselection).length>0){
+      //     this.$Modal.confirm({
+      //     title: '提示',
+      //     content: `确定要完结当前选中工单号:[${this.slaveRowselection.biWorkNo}]数据吗？`,
+      //     onOk: () => {
+      //         let _url = `/sale/boxCo/closeCoItem?boxCoItemId=${this.slaveRowselection.id}`
+      //         let params = {
+      //           boxCoItemId: this.slaveRowselection.id
+      //         }
+      //         request.post(_url, {}).then(res => {
+      //           this.$Message.success('执行成功')
+      //            this.$refs['master_list_table'].search()
+      //         })
+      //     }
+      //   })
+      // }
+    },
+    // 云纸箱订单导入
+    setCloudboxOrder(){
+         let parms = {
+        isImportERP: '0', // 0未导入/1已导入
+        pageNo: 1,
+        pageSize: 20
+      }
+      let _self = this
+      request.post('/sale/boxCo/getEncryptParams', parms).then(res => {
+        this.fullLoading()
+        this.getmodalData(res).then(resdata => {
+          if (resdata.data.data.list.length !== 0) {
+            this.extendWindow.showEditWindow = true
+            this.extendWindow.isLoaddingDone = false
+            this.extendWindow.action = 'add'
+            this.$refs['mychild'].getshownoterextendList(resdata.data.data)
+            this.$Spin.hide()
+            return
+          }
+          _self.$Message.error('暂无数据')
+          this.$Spin.hide()
+        })
+      }).catch(err => {
+        this.$Spin.hide()
+        this.$Message.error(err)
+      })
+    },
+    getmodalData (val) {
+      return axios.request({
+        url: 'http://www.cartonyun.com/yzxdb/USER_ERPController/doImportCartonOrderInfo_ERP',
+        data: val,
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+    },
+    checkShowCol (colList) {
+      // 纸板规格中的用料规格宽，用料规格长，纸宽开，纸长开，总开数，双片，用料数量字段需要根据 isCalPaperWidth 参数来控制显示不显示
+      let exlistMdataFm = ['iisDoubleCut', 'bmSizeW', 'bmSizeL', 'bmKsW', 'bmKsL', 'bmKsTotal', 'bmQty']
+      let isCalPaperWidth = this.$params.isCalPaperWidth
+      if (isCalPaperWidth == '1') {
+        exlistMdataFm = []
+      }
+      if (colList && Array.isArray(colList) && colList.length > 0) {
+        colList = colList.filter(item => {
+          return !exlistMdataFm.includes(item.key)
+        })
+      }
+      return colList
+    },
+    // tab 切换事件
+    TabsClickEvent (name) {
+      this.currentTabName = name
+      if (this.masterRowSelection && this.masterRowSelection.id != null && this.masterRowSelection.id != '') {
+        if (name === 'boxCoModelData') {
+          this.LoadBoxCoModelData()
+        } else if (name === 'boxCoWorkProc') {
+          this.LoadBoxCoWorkProcData()
+        }
+      }
+    },
+    // 加载 纸板规格 数据
+    LoadBoxCoModelData () {
+      // debugger
+      let url = `${this.functionParams.requestBaseUrl}/sub/boxCoModelData/list`
+      let data = {
+        boxCoItemId: this.slaveRowselection.id
+      }
+      let _self = this
+      request.post(url, data).then(res => {
+        _self.tableBoxCoModelData = res
+      })
+    },
+    // 加载 生产工序 数据
+    LoadBoxCoWorkProcData () {
+      // debugger
+      let url = `${this.functionParams.requestBaseUrl}/sub/boxCoWorkProc/list`
+      let data = {
+        boxCoItemId: this.slaveRowselection.id
+      }
+      let _self = this
+      request.post(url, data).then(res => {
+        _self.tableBoxCoWorkProcData = res
+      })
+    },
+    // 主表点击事件,需要修改 查询参数:productPriceId 和 查询反馈内容  rowData.custCode + " " + rowData.custName 一般对应 queryParamsDefault 即可
+    master_list_tableRowClick (rowData, rowIndex) {
+      this.masterRowSelection = rowData
+      this.currrentRowItem.rowName = rowData.custCode + ' ' + rowData.custName
+      this.$refs['slave_list_table'].search({ boxCoMainId: rowData.id })
+      // 清空第三层表数据
+      this.$refs['sub_list_table'].reset()
+    },
+
+    // 从表点击事件,需要修改 查询参数:productPriceId
+    slave_list_tableRowClick (rowData, rowIndex) {
+      //console.log('从表点击事件,需要修改 查询参数:productPriceId')
+      this.slaveRowselection = rowData
+      this.$refs['sub_list_table'].search({ boxCoItemId: rowData.id })
+      if (this.slaveRowselection) {
+        this.TabsClickEvent(this.currentTabName)
+      }
+    }
+  },
+  created () {
+    // 查询多个表格列表头数据
+    // 无需变更,配置functionParams 参数即可
+    if (this.functionParams.formInitPreName) {
+      this.getFormInitData(`${this.functionParams.formInitPreName}mainFm`)
+    }
+  }
+}
+</script>
+
+<style></style>
