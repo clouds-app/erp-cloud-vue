@@ -1,6 +1,9 @@
 <template>
   <div>
     <editWindow
+     ref="editWindow"
+     :draggable="false"
+      :zindex="30"
       id="cl-edit-salesOrder"
       title="纸板入库选工单"
       v-model="showWindow"
@@ -9,6 +12,8 @@
       :loading="!isLoaddingDone"
       :spinLoaddingText="spinLoaddingText"
       @on-ok="submitFormDataEvent"
+       :showPageConfig="true"
+       @pageOnChange="pageOnChange"
     >
       <div v-if="formDataInfo.master">
         <Form
@@ -25,15 +30,15 @@
                   <Input v-model="multiValue" maxlength="20" :placeholder="title"></Input>
                 </FormItem>
               </Col>
-              <Col span="3">
-                <FormItem label :label-width='50'>
+              <Col span="5">
+                <FormItem label :label-width='80'>
                   <RadioGroup v-model="formDataInfo.master.flag">
                     <Radio label="0">模糊</Radio>
                     <Radio label="1">精准</Radio>
                   </RadioGroup>
                 </FormItem>
               </Col>
-              <Col span="11">
+              <Col span="9">
                 <Row>
                   <Col span="14" >
                     <FormItem label="订单日期">
@@ -57,7 +62,7 @@
               </Col>
               <Col span="2" :label-width='40'>
                 <FormItem label>
-                  <Button type="primary" @click="clickmaster()">搜索</Button>
+                  <Button type="primary" @click="clickmaster('search')">搜索</Button>
                 </FormItem>
               </Col>
             </Row>
@@ -516,6 +521,10 @@ export default {
     }
   },
   methods: {
+    pageOnChange(_pageNum){
+      this.pageConfig.pageNum = _pageNum
+      this.clickmaster()
+    },
     clicktable(){},
     // 获取最大本次入库数 = 采购数*（1+百分比）+退货数 ppoRQty-已入库数 ppoInQty
     getmaxstockQty(data){
@@ -537,29 +546,40 @@ export default {
       return ''
     },
     // 搜索点击事件
-    clickmaster () {
+    clickmaster (type) {
+      if(this.pageConfig.pageNum==1 || type=='search'){
+          this.resetPageConfig()
+          this.productMDatasTableDataList = []
+      }
       let ddata = this.formDataInfo
-      let one = {
+      let params = {
         ppoNo:this.getmultiValue('ppoNO'),//采购单号
         inProvider:this.inProvider,//主表供应商ID
         ppoGroupNo: this.getmultiValue('ppoGroupNo'),//工单号
         beginDate: dayjs(this.formDataInfo.master.beginDate).format("YYYY-MM-DD"),
         endDate: dayjs(this.formDataInfo.master.endDate).format("YYYY-MM-DD"),
         flag: this.formDataInfo.master.flag,
-        ppoGroupNoList: this.ppoGroupNoList
+        ppoGroupNoList: this.ppoGroupNoList,
+        pageNum:this.pageConfig.pageNum,//(当前页),
+        pageSize:this.pageConfig.pageSize,//(每页显示条数)
       }
       var _this = this
       request
-        .post(`/stock/paperJoin/getSpPaperPOToPaperJoin`, one)
+        .post(`/stock/paperJoin/getSpPaperPOToPaperJoin`, params)
         .then(res => {
-          if (res) {
+          if (res && res.records && res.records.length>0) {
+            this.pageConfig.total = res.total // 赋值总条数
             for (let i = 0; i < res.length; i++) {
-              if (res[i].ppoDate) { res[i].ppoDate = res[i].ppoDate.replace('T', ' ').replace('.000+0000', '') }
-              if (res[i].ppoDueDate) { res[i].ppoDueDate = res[i].ppoDueDate.replace('T', ' ').replace('.000+0000', '') }
+              if (res.records[i].ppoDate) { res.records[i].ppoDate = res.records[i].ppoDate.replace('T', ' ').replace('.000+0000', '') }
+              if (res.records[i].ppoDueDate) { res.records[i].ppoDueDate = res.records[i].ppoDueDate.replace('T', ' ').replace('.000+0000', '') }
             }
+             // debugger
+          // _this.$refs['slave_edit-purPaperPo'].cloneData = res.records
+             this.productMDatasTableDataList.push(...res.records)
           }
-          // debugger
-          _this.$refs['slave_edit-purPaperPo'].cloneData = res
+             this.pageConfig.total = res.total // 赋值总条数
+            this.$refs['editWindow'].pageConfig= this.pageConfig
+         
         })
     },
 
@@ -576,7 +596,12 @@ export default {
         endDate:dayjs().format("YYYY-MM-DD"),
         // ifAreaPrice:false,
       }
-      if (this.$refs['slave_edit-purPaperPo']) { this.$refs['slave_edit-purPaperPo'].cloneData = data }
+      if(data && data.records){
+        this.productMDatasTableDataList = data.records
+        this.pageConfig.total = data.total // 赋值总条数
+        this.$refs['editWindow'].pageConfig= this.pageConfig
+      }
+     //  if (this.$refs['slave_edit-purPaperPo']) { this.$refs['slave_edit-purPaperPo'].cloneData = data.records }
     },
 
     // 表单数据提交事件
@@ -604,7 +629,8 @@ export default {
     },
     // 重写父类 关闭窗口时 触发事件
     closeActionTigger () {
-      /// /debugger
+      this.resetPageConfig()
+      this.productMDatasTableDataList = []
       // fix 清除上次的错误提示 formDataInfo 为表单ref名称
       if (this.$refs['masterForm']) { this.$refs['masterForm'].resetFields() }
       if (this.$refs['slave_edit-purPaperPo']) { this.$refs['slave_edit-purPaperPo'].reset() }

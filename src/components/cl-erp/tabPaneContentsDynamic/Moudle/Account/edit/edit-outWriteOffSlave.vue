@@ -1,6 +1,8 @@
 <template>
   <div>
     <editWindow
+    :draggable="false"
+      :zindex="30"
       class="cl-edit-window-invoiceCheck"
       :title="editWindowTitle"
       v-model="showWindow"
@@ -19,7 +21,7 @@
           :rules="masterRuleValidate"
           :label-width="40"
         >
-          <Row>
+           <Row type="flex">
             <Col span="6">
               <FormItem
                 :label-width="100"
@@ -48,7 +50,7 @@
                   transfer
                   style="width: 120px"
                   v-model="formDataInfo.master.startDate"
-                  type="datetime"
+                  type="date"
                   format="yyyy-MM-dd"
                 ></DatePicker>
                 -
@@ -56,7 +58,7 @@
                   transfer
                   style="width: 120px"
                   v-model="formDataInfo.master.endDate"
-                  type="datetime"
+                  type="date"
                   format="yyyy-MM-dd"
                 ></DatePicker>
               </FormItem>
@@ -250,8 +252,8 @@ export default {
       outwriteoffoutFm:{},//付款明细 列头数据
       loadingData: false, // 查询中
       searchConfig: {
-        title: "供应商简称",
-        keyField: "supplierName"
+        title: "单据号",
+        keyField: "vicNo"
       }
     };
   },
@@ -289,12 +291,21 @@ export default {
       this.disabledSubmitBtn = true
       this.formDataInfo[this.searchParams.type].defaultList = [];
       //参数包括 :明细列表输入开票编号时带出开票明细信息的条件：likeFlag=0,icNo=xx,custId=xx
+      //参数包括：startDate(开始日期),endDate(结束日期),supplierId(供应商id),
+      //likeFlag(1模糊查询0精准查询),vicNo(收票编号),vicNoList(已选的收票编号集合，用逗号隔开)，
+     // 明细列表输入收票编号时带出收票明细信息的条件：likeFlag=0,vicNo=xx,supplierId=xx
       let params = {
-        startDate: dayjs(this.formDataInfo.master.startDate).format( "YYYY-MM-DD"), //(开始日期)
-        endDate: dayjs(this.formDataInfo.master.endDate).format("YYYY-MM-DD"), //(结束日期)
+        // startDate: dayjs(this.formDataInfo.master.startDate).format( "YYYY-MM-DD"), //(开始日期)
+        // endDate: dayjs(this.formDataInfo.master.endDate).format("YYYY-MM-DD"), //(结束日期)
         supplierId: this.searchParams.supplierId, //(客户id)
         likeFlag: this.formDataInfo.master.likeFlag, //(1模糊查询0精准查询)
       };
+      if(!!this.formDataInfo.master.startDate){
+        params.startDate = dayjs(this.formDataInfo.master.startDate).format( "YYYY-MM-DD")
+      }
+      if(!!this.formDataInfo.master.endDate){
+         params.endDate = dayjs(this.formDataInfo.master.endDate).format("YYYY-MM-DD")
+      }
       this.loadingData = true;
       let searchParams = 'getVendInvoiceInfoBoxData'
       if(this.searchParams.type ==='writeOffOutItems'){

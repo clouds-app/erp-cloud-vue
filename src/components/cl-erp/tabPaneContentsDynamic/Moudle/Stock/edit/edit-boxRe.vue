@@ -20,7 +20,7 @@
             :label-width="80"
             :disabled="detailDisabled"
         >
-            <Row>
+            <Row type="flex">
             <Col span="6">
                 <FormItem label="退货单号" prop="brNo">
                     <Input :disabled="true" v-model="formDataInfo.master.brNo" maxlength="80" placeholder="退货单号"></Input>
@@ -114,6 +114,7 @@
                       :fill-model.sync="formDataInfo.master"
                       render-fields="brReason"
                       from-fields="frName"
+                      :blurFocusLoadData='false'
                       :query-params="{}"
                     />
                 </FormItem>
@@ -526,7 +527,7 @@ export default {
         let newItemKeys = Object.keys(newItem)
         newItemKeys.forEach(itemKey => {
           newItem[itemKey] = null
-          if (oldItem[itemKey]) {
+         if (oldItem[itemKey] || oldItem[itemKey] ==0 || oldItem[itemKey]=='0') {
             newItem[itemKey] = oldItem[itemKey]
           }
         })
@@ -617,9 +618,9 @@ export default {
           return
         }
         if (this.selectedWorkNoList == '') {
-          this.selectedWorkNoList = item.biDeNo + '_' + item.workNo // (送货单号_工单号)
+          this.selectedWorkNoList = item.biDeNo + '_' + item.workNo+'_'+item.stationId // (送货单号_工单号_仓位id)
         } else {
-          this.selectedWorkNoList += ',' + item.biDeNo + '_' + item.workNo
+          this.selectedWorkNoList += ',' + item.biDeNo + '_' + item.workNo+'_'+item.stationId
         }
       })
       this.searchParams = {

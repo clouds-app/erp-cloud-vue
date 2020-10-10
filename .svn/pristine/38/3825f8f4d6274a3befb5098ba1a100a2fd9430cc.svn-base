@@ -1,0 +1,611 @@
+<template>
+  <div>
+    <editWindow
+     :draggable="false"
+      :zindex="10"
+      id="cl-edit-boxUseBackSlave"
+      title="用料退仓用料工单弹框"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="82%"
+      :loading="!isLoaddingDone"
+      :spinLoaddingText="spinLoaddingText"
+      @on-ok="submitFormDataEvent"
+    >
+      <div v-if="formDataInfo.master">
+        <Form
+          ref="formDataInfo"
+          :show-message="true"
+          :model="formDataInfo.master"
+          :rules="ruleValidate"
+          :label-width="104"
+        >
+          <div class="edit-boxUseBackSlave">
+            <Row>
+              <Col span="5" >
+                <FormItem :label="title" prop="propvalue">
+                  <Input v-model="formDataInfo.master.propvalue" maxlength="20" :placeholder="title"></Input>
+                </FormItem>
+              </Col>
+              <Col span="5">
+                <FormItem label >
+                  <RadioGroup v-model="formDataInfo.master.flag">
+                    <Radio label="0">模糊</Radio>
+                    <Radio label="1">精准</Radio>
+                  </RadioGroup>
+                </FormItem>
+              </Col>
+
+                  <Col span="5">
+                    <FormItem label="日期" :label-width='40'>
+                      <DatePicker
+                        :clearable='false'
+                        :editable='false'
+                        type="date"
+                        format="yyyy-MM-dd"
+                        v-model="formDataInfo.master.beginDate"
+                      ></DatePicker>
+                    </FormItem>
+                  </Col>
+                  <Col span="5" >
+                    <FormItem label="--" class="labelClass" :label-width='40'>
+                      <DatePicker
+                        :clearable='false'
+                        :editable='false'
+                        type="date"
+                        format="yyyy-MM-dd"
+                        v-model="formDataInfo.master.endDate"
+                      ></DatePicker>
+                    </FormItem>
+                  </Col>
+
+              <Col span="1">
+                <FormItem label >
+                  <Button type="primary" @click="clickmaster()">搜索</Button>
+                </FormItem>
+              </Col>
+            </Row>
+          </div>
+        </Form>
+
+        <Tabs>
+          <!--  注意:eTable formDataInfo.wareHouseItems.defaultList  ===wareHouseItems=== 需要根据实际接口修改,其它不变-->
+          <!-- :row-init-data="WorkOrderNumber" -->
+          <TabPane>
+            <eTable ref="slave_edit-boxUseBack"
+              :height="400"
+              :index-menu="true"
+              :col-start="0"
+              :width="200"
+              :data.sync="productMDatasTableDataList"
+              :rules="tableFieldsValidator"
+              :showContextMenu='false'
+            >
+              <template slot="head">
+                <tr>
+                  <th class="ivu-table-column-center" width="35">
+                    <div class="ivu-table-cell">
+                      <span class>选择</span>
+                    </div>
+                  </th>
+                  <!-- <th class="ivu-table-column-center" width="35">
+                    <div class="ivu-table-cell">
+                      <span class>急单</span>
+                    </div>
+                  </th> -->
+                  <th class="ivu-table-column-center" width="110">
+                    <div class="ivu-table-cell">
+                      <span class @click="purPaperPoClick('用料单号',1,'bmMateWorkNo')">用料单号</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="90">
+                    <div class="ivu-table-cell">
+                      <span class @click="purPaperPoClick('用料批次号',2,'BoxUseBatchOn')">用料批次号</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="100">
+                    <div class="ivu-table-cell">
+                      <span class @click="purPaperPoClick('工单号',3,'workNo')">工单号</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="70">
+                    <div class="ivu-table-cell">
+                      <span class>出库数</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="80">
+                    <div class="ivu-table-cell">
+                      <span class>已退仓数</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="80">
+                    <div class="ivu-table-cell">
+                      <span class>产品编号</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="80">
+                    <div class="ivu-table-cell">
+                      <span class>产品名称</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="60">
+                    <div class="ivu-table-cell">
+                      <span class>规格长</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="60">
+                    <div class="ivu-table-cell">
+                      <span class>规格宽</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="36">
+                    <div class="ivu-table-cell">
+                      <span class>纸质</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="36">
+                    <div class="ivu-table-cell">
+                      <span class>楞别</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="80">
+                    <div class="ivu-table-cell">
+                      <span class>仓位名称</span>
+                    </div>
+                  </th>
+                </tr>
+              </template>
+              <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
+                <!-- 选择 -->
+                <td class="ivu-table-column-center" width="32">
+                  <Checkbox
+                    size="default"
+                    v-model="row.Choice"
+                    @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'Choice');
+                      }
+                    "
+                  ></Checkbox>
+                </td>
+
+                <!-- 用料单号 -->
+                <td class="ivu-table-column-left" width="110">
+                  <Input
+                  disabled
+                    v-model="row.bmMateWorkNo"
+                    @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'bmMateWorkNo');
+                        }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                <!-- 用料批次号 -->
+                <td class="ivu-table-column-center" width="70">
+                   <Input
+                   disabled
+                    size="default"
+                    v-model="row.BoxUseBatchOn"
+                    @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'BoxUseBatchOn');
+                      }
+                    "
+                  ></Input>
+                </td>
+
+                <!-- 工单号 -->
+                <td class="ivu-table-column-left" width="100">
+                  <Input
+                  disabled
+                    v-model="row.workNo"
+                    @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'workNo');
+                        }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                <!-- 出库数 -->
+                <td class="ivu-table-column-left" width="70">
+                  <Input
+                  disabled
+                    v-model="row.psOQty"
+                    @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'psOQty');
+                        }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                <!-- 已退仓数		 -->
+                <td class="ivu-table-column-left" width="70">
+                  <Input
+                  disabled
+                    v-model="row.psBQty"
+                    @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'psBQty');
+                        }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                <!-- 产品编号	 -->
+                <td class="ivu-table-column-left" width="70">
+                  <Input
+                  disabled
+                    v-model="row.bpNo"
+                    @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'bpNo');
+                        }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                <!-- 产品名称	 -->
+                <td class="ivu-table-column-left" width="70">
+                  <Input
+                  disabled
+                    v-model="row.bpName"
+                    @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'bpName');
+                        }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                <!-- 规格长 -->
+                <td class="ivu-table-column-left" width="70">
+                  <Input
+                    disabled
+                    v-model="row.bmSSizeL"
+                    @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bmSSizeL');
+                      }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                <!-- 规格宽	 -->
+                <td class="ivu-table-column-left" width="70">
+                  <Input
+                    disabled
+                    v-model="row.bmSSizeW"
+                    @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'bmSSizeW');
+                      }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                <!-- 纸质 -->
+                <td class="ivu-table-column-left" width="70">
+                  <Input
+                  disabled
+                    v-model="row.psArt"
+                    @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'psArt');
+                      }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                <!-- 楞别 -->
+                <td class="ivu-table-column-left" width="70">
+                  <Input
+                    disabled
+                    v-model="row.psLB"
+                    @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'psLB');
+                      }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                <!-- 仓位名称 -->
+                <td class="ivu-table-column-left" width="70">
+                  <Input
+                  disabled
+                    v-model="row.wsName"
+                    @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'wsName');
+                      }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                <!-- 备注	-->
+                <!-- <td class="ivu-table-column-left" width="140">
+                  <Input
+                    v-model="row.remark"
+                    @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'remark');
+                      }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td> -->
+
+              </template>
+            </eTable>
+          </TabPane>
+        </Tabs>
+        <!-- <productSpec
+          v-model="productSpecShow"
+          ref="productSpec"
+
+          :bpMoCut="formDataInfo.master.bpMoCut"
+        ></productSpec> -->
+      </div>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author ming xing
+ *
+ * @created 2020/04/02 17:07:54
+ */
+import tableSelect from '@/components/table-select/table-select'
+import editWindow from '@/components/edit-window/edit-window'
+// import Form from '@/components/form/form'
+import eTable from '@/components/e-table/e-table'
+import request from '@/libs/request'
+import popup from '@/components/popup/popup'
+import editBaseMixins from '../../mixins/edit'
+import InputNumber from '@/components/input-number'
+import formControl from '@/components/form-control/form-control'
+import { customValidator } from '@/libs/validator'
+import calc from '@/libs/calc'
+import list from '../../mixins/list'
+import dayjs from 'dayjs'
+export default {
+  name: 'edit-boxUseBackSlave',
+  mixins: [editBaseMixins],
+  components: {
+    editWindow,
+    popup,
+    tableSelect,
+    eTable,
+    InputNumber,
+    formControl
+  },
+
+  mounted () {
+    // console.log(this.List)
+  },
+  props: {
+    batchNoList: {
+      type: String,
+      default: ''
+    },
+    inWsId: {
+      type: String,
+      default: ''
+    },
+    List: {
+      type: String,
+      default: ''
+    }
+  },
+  data () {
+    return {
+      actionSubtitle: '用料退仓', // 当前操作副标
+      productSpecShow: false,
+      formDataInfo: {
+        // 主表 更改字段
+        master: {},
+        productMDatas: {
+
+        }
+        // List:thsi.list
+      }, // 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {},
+      tableFieldsValidator: {
+
+      },
+      productMDatasTableDataList: [], // 存放处理过后的数据:[],
+      timeoutId: 0,
+      requestCount: 0,
+      table: [], // 存储子表全部对应的字段
+      title: '工单号',
+      propvalue: 'workNo', // 存储子表每个对应的字段\
+      inBatchOn: '',
+      mateWorkNo: '',
+      workNo: '',
+      beginDate: '',
+      endDate: ''
+    }
+  },
+  computed: {
+  },
+  methods: {
+    purPaperPoClick (data, index, value) {
+      // debugger
+      this.title = data
+      this.propvalue = value
+    },
+    // 搜索点击事件
+    clickmaster () {
+      // debugger
+      // let ddata = this.formDataInfo
+      // if (!!ddata.master.beginDate) {
+      //   ddata.master.beginDate = dayjs(ddata.master.beginDate).format(
+      //     "YYYY-MM-DD HH:mm:ss"
+      //   );
+      // }
+      // if (!!ddata.master.endDate) {
+      //   ddata.master.endDate = dayjs(ddata.master.endDate).format(
+      //     "YYYY-MM-DD HH:mm:ss"
+      //   );
+      // }
+    //  let bbiCoNo = this.formDataInfo.master.bbiCoNo
+    //   let flag = this.formDataInfo.master.flag
+      let beginDate = this.get7DaysBefore(1, this.formDataInfo.master.beginDate)
+      let endDate = this.get7DaysBefore(2, this.formDataInfo.master.endDate)
+      if (this.propvalue == 'bmMateWorkNo') {
+        this.mateWorkNo = this.formDataInfo.master.propvalue
+        this.workNo = ''
+        this.inBatchOn = ''
+      } else if (this.propvalue == 'workNo') {
+        this.workNo = this.formDataInfo.master.propvalue
+        this.mateWorkNo = ''
+        this.inBatchOn = ''
+      } else if (this.propvalue == 'BoxUseBatchOn') {
+        this.inBatchOn = this.formDataInfo.master.propvalue
+        this.mateWorkNo = ''
+        this.workNo = ''
+      } else {
+        this.workNo = ''
+        this.mateWorkNo = ''
+        this.inBatchOn == ''
+      }
+      let one = {
+        inWorkNo: this.workNo,
+        flag: this.formDataInfo.master.flag,
+        inMateWorkNo: this.mateWorkNo,
+        inBatchOn: this.inBatchOn,
+        beginDate: beginDate,
+        endDate: endDate,
+        inWsId: this.inWsId,
+        batchNoList: this.batchNoList,
+        isInput: 0
+      }
+      request.post(`/stock/boxUseBack/getBackWorkNo`, one).then(res => {
+        // debugger
+        this.$refs['slave_edit-boxUseBack'].cloneData = res
+      })
+    },
+
+    // 加载表单初始化数据
+    getFormInitDataObj (data) {
+      // 加载表单初始化数据
+      this.formDataInfo['master'] = {
+        bbiCoNo: '',
+        flag: '0',
+        beginDate: this.beginDate,
+        endDate: this.endDate
+      }
+      if (!data) {
+        let slaveObj = this.$refs['slave_edit-boxUseBack']
+        if(!!slaveObj){
+           slaveObj.cloneData = []
+        }
+        return
+      }
+      this.$refs['slave_edit-boxUseBack'].cloneData = data
+    },
+
+    // 表单数据提交事件
+    submitFormDataEvent () {
+      // debugger;
+      // 表单数据提交事件
+      // true就是有问题
+      let result = this.$refs['slave_edit-boxUseBack'].validate()
+      if (result) {
+        return
+      }
+      let parms = []
+      let submitDataObj = this.$refs['slave_edit-boxUseBack'].cloneData
+      for (let index = 0; index < submitDataObj.length; index++) {
+        let Choice = this.$refs['slave_edit-boxUseBack'].cloneData[index].Choice
+        if (Choice === true) {
+          parms.push(submitDataObj[index])
+        }
+      }
+      // 提交数据
+      // 向外暴露的方法:
+      this.$emit('closeMain', parms)
+      this.showWindow = false // 关闭当前窗口
+      // });
+    },
+    // 实现取任意时间前7天的时间||现在时间
+    get7DaysBefore (type, date) {
+      // debugger
+      if (date) {
+        return dayjs(date).format(
+          'YYYY-MM-DD'
+        )
+      } else {
+        var date = new Date(),
+          timestamp, newDate
+        if (!(date instanceof Date)) {
+          date = new Date(date.replace(/-/g, '/'))
+        }
+        // 前7天的时间
+        if (type == 1) {
+          timestamp = date.getTime()
+          newDate = new Date(timestamp - 7 * 24 * 3600 * 1000)
+          return newDate.getFullYear() + '-' + (newDate.getMonth() + 1) + '-' + newDate.getDate()
+        }
+        // 现在时间
+        if (type == 2) {
+          timestamp = date.getTime()
+          newDate = new Date(timestamp)
+          return newDate.getFullYear() + '-' + (newDate.getMonth() + 1) + '-' + newDate.getDate()
+        }
+      }
+    }
+  },
+  created () {
+    // 获取初始化数据
+    this.beginDate = this.get7DaysBefore(1)
+    this.endDate = this.get7DaysBefore(2)
+    this.getFormInitDataObj()
+  }
+  // updated() {
+  //   if (this.$refs.masterForm) {
+  //     let height = document.body.offsetHeight;
+  //     this.tableDefaultHeight =
+  //       height - (this.$refs.masterForm.$el.offsetHeight + 60 + 50 + 40);
+  //   }
+  // }
+}
+</script>
+<style >
+.ivu-form-item-text2 .ivu-form-item-content {
+  /* margin-left: 2.8125rem !important; */
+}
+.edit-table .ivu-input{
+ padding: 0 !important;
+ height: 24px;
+}
+.labelClass{
+  width: 280px;
+}
+</style>

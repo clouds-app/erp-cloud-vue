@@ -1,6 +1,8 @@
 <template>
   <div>
     <editWindow
+    :draggable="false"
+      :zindex="30"
       id="cl-edit-salesOrder"
       title="应收呆账关联单号"
       v-model="showWindow"
@@ -20,7 +22,7 @@
           :label-width="110"
         >
           <div class="edit-purPaperPoSlave">
-            <Row>
+             <Row type="flex">
               <Col span="5">
                 <FormItem label="单据类型" prop="billList">
                   <optionSearch
@@ -186,7 +188,6 @@ export default {
   },
   data() {
     return {
-      //actionSubtitle: "纸箱销售订单明细", // 当前操作副标
       snaddebtSpecShow: false,
       formDataInfo: {
         // 主表 更改字段

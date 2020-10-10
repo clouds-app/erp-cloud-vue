@@ -1,6 +1,8 @@
 <template>
   <div>
     <editWindow
+    :draggable="false"
+      :zindex="30"
       id="cl-edit-salesOrder"
       title="生产排程工单号弹出框"
       v-model="showWindow"

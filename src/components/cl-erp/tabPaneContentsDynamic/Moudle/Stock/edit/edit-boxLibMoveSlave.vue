@@ -1,15 +1,20 @@
 <template>
   <div>
     <editWindow
+     :draggable="false"
+      :zindex="30"
       id="cl-edit-boxLibMove"
-      :title="actionLableName"
+      title="调拨工单"
       v-model="showWindow"
       :fullscreen="false"
-      width="80%"
+      width="83%"
       :loading="!isLoaddingDone"
       :spinLoaddingText="spinLoaddingText"
       @on-ok="submitFormDataEvent"
       v-if="initData.columns"
+       ref="editWindow"
+      :showPageConfig="true"
+      @pageOnChange="pageOnChange"
     >
       <div v-if="formDataInfo.master">
         <Form
@@ -61,7 +66,7 @@
                   </Col>
               <Col span="1">
                 <FormItem label>
-                  <Button type="primary" @click="clickmaster()">搜索</Button>
+                  <Button type="primary" @click="clickmaster('search')">搜索</Button>
                 </FormItem>
               </Col>
             </Row>
@@ -218,7 +223,6 @@ export default {
   },
   data () {
     return {
-      // actionSubtitle: "纸箱销售订单明细", // 当前操作副标
       productSpecShow: false,
       formDataInfo: {
         // 主表 更改字段
@@ -308,9 +312,16 @@ export default {
       this.title = name
       this.propvalue = value
     },
+    pageOnChange(_pageNum){
+      this.pageConfig.pageNum = _pageNum
+      this.clickmaster()
+    },
     // 搜索点击事件
-    clickmaster () {
-      // debugger
+     clickmaster(type) {
+      if(this.pageConfig.pageNum==1 || type=='search'){
+          this.resetPageConfig()
+          this.productMDatasTableDataList = []
+      }
       let params = {
         // stationId: this.formDataInfo.master.sourceStationId,
         bpNo: this.formDataInfo.master.bpNo, // 调出产品编号
@@ -322,11 +333,18 @@ export default {
         bpCSizeW: this.formDataInfo.master.bpCSizeW,
         bpCSizeH: this.formDataInfo.master.bpCSizeH,
         stationId: this.stationId,
-        type: this.isSourceStation ? 0 : 1
+        type: this.isSourceStation ? 0 : 1,
+        pageNum:this.pageConfig.pageNum,//(当前页),
+        pageSize:this.pageConfig.pageSize,//(每页显示条数)
       }
 
       request.post(`/stock/boxLibMove/getMoveItemBoxData`, params).then(res => {
-        this.$refs['slave_edit-boxLibMove'].cloneData = res
+        //this.$refs['slave_edit-boxLibMove'].cloneData = res
+         if (res && res.records && res.records.length>0) {
+          this.productMDatasTableDataList.push(...res.records)
+         }
+         this.pageConfig.total = res.total // 赋值总条数
+         this.$refs['editWindow'].pageConfig= this.pageConfig
       })
     },
 
@@ -349,9 +367,19 @@ export default {
       if (data == '' || data == null) {
         return
       }
-      this.$refs['slave_edit-boxLibMove'].cloneData = data
+      this.productMDatasTableDataList = []
+       if(data && data.records){
+        this.productMDatasTableDataList = data.records
+        this.pageConfig.total = data.total // 赋值总条数
+        this.$refs['editWindow'].pageConfig= this.pageConfig
+      }
+      //this.$refs['slave_edit-boxLibMove'].cloneData = data
     },
-
+    // 重写父类 关闭窗口时 触发事件
+    closeActionTigger () {
+      this.resetPageConfig()
+      this.productMDatasTableDataList = []
+    },
     // 表单数据提交事件
     submitFormDataEvent () {
       // debugger;

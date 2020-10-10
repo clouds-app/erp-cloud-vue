@@ -27,6 +27,7 @@
           <Tabs>
             <TabPane label="纸箱出货明细" name="boxDeliItems">
               <vTable
+                :getDataByParams="true"
                 :height="tableHeight / 2 - 37"
                 ref="slave_list_table"
                 :url="`${functionParams.requestBaseUrl}/item/list`"
@@ -38,6 +39,7 @@
             </TabPane>
              <TabPane label="出货其他费用" name="boxDeliOtherFee">
               <vTable
+               :getDataByParams="true"
                 :height="tableHeight / 2.3"
                 ref="sub_list_table"
                 :url="`${functionParams.requestBaseUrl}/fee/list`"
@@ -258,6 +260,9 @@
         v-model="showSetGetBackGuideTwoWindow"
         width="90%"
         :loading="false"
+         ref="editWindow"
+        :showPageConfig="true"
+        @pageOnChange="pageOnChange"
      >
      <template slot="footer">
         <div>
@@ -354,6 +359,9 @@
         v-model="showEndDataBatchWindow"
         width="90%"
         :loading="false"
+        ref="editWindowBatch"
+        :showPageConfig="true"
+        @pageOnChange="pageOnChangBatch"
      >
      <template slot="footer">
         <div>
@@ -426,7 +434,7 @@
             </Col>
              <Col span="1">
                <FormItem>
-                   <Button :loading="isLoadingSearchBtn" @click="searchEndDateDataList()" type="primary">
+                   <Button :loading="isLoadingSearchBtn" @click="searchEndDateDataList('search')" type="primary">
                      <Icon type="md-search" />
                      搜索
                      </Button>
@@ -654,6 +662,12 @@ export default {
     }
   },
   watch: {
+    showSetGetBackGuideTwoWindow(n,o){
+      if(!n){
+        this.setGetBackGuideTwoWindowCloseEvent()
+      }
+    },
+   
     // 监控月结窗体打开
     showEndDataBatchWindow: function (n, o) {
       if (n) {
@@ -663,8 +677,10 @@ export default {
           _self.formEndDataInfo.bdDate = dayjs().subtract(10, 'day').format('YYYY-MM-DD')
           _self.formEndDataInfo.bdEndDate = dayjs().format('YYYY-MM-DD')
           _self.formEndDataInfo.biIsAccDate = dayjs().format('YYYY-MM-DD')
-          _self.searchEndDateDataList()
+          _self.searchEndDateDataList('search')
         })
+      }else{
+         this.batchWindowCloseEvent()
       }
     }
   },
@@ -679,6 +695,16 @@ export default {
     this.loadEndDateColumsData() // 纸箱出货月结日期功能界面 列表表头
   },
   methods: {
+     // 月结日期批量修改 触发事件
+    batchWindowCloseEvent(){
+       this.resetPageConfigTwo()
+       this.tableEndDateDataList = []
+    },
+    // 向导窗体关闭 触发事件
+    setGetBackGuideTwoWindowCloseEvent(){
+       this.resetPageConfig()
+       this.boxDeliBackPopupDataList = []
+    },
     // 批量回签出货
     setBatchBackData () {
       let url = '/stock/boxDeli/batchBackData'
@@ -702,9 +728,21 @@ export default {
         }
       })
     },
-    // 获取回签列表数据
-    searchGetBackDataList () {
-      this.boxDeliBackPopupDataList = []
+    pageOnChange(_pageNum){
+      this.pageConfig.pageNum = _pageNum
+      this.searchGetBackDataList()
+    },
+    pageOnChangBatch(_pageNum){
+      //debugger
+      this.pageConfigTwo.pageNum = _pageNum
+      this.searchEndDateDataList()
+    },
+    // 获取回签列表数据+分页
+    searchGetBackDataList (type) {
+      if(this.pageConfig.pageNum==1 || type=='search'){
+           this.resetPageConfig()
+           this.boxDeliBackPopupDataList = []
+      }
       let url = '/stock/boxDeli/getBackData'
       let params = {
         // 根据bdNo(出货单号),bdCarNo(车牌号),cusCode(客户编号)，startDate(开始日期),endDate(结束日期),bdBackType(回签类型)查询
@@ -713,28 +751,44 @@ export default {
         cusCode: this.formGuideOne.custCode,
         startDate: dayjs(this.formGuideOne.bdDate).format('YYYY-MM-DD'),
         endDate: dayjs(this.formGuideOne.bdEndDate).format('YYYY-MM-DD'),
-        bdBackType: this.formGuideOne.bdBackType
+        bdBackType: this.formGuideOne.bdBackType,
+        pageNum:this.pageConfig.pageNum,//(当前页),
+        pageSize:this.pageConfig.pageSize,//(每页显示条数)
       }
       this.getDataByUrl(url, params).then(res => {
-        if (res && res.length > 0) {
-          this.boxDeliBackPopupDataList = res
+         if (res && res.records && res.records.length>0) {
+           this.boxDeliBackPopupDataList.push(...res.records)
         }
+         this.pageConfig.total = res.total // 赋值总条数
+         this.$refs['editWindow'].pageConfig= this.pageConfig
       })
     },
     // 获取需要修改月结日期的数据
-    searchEndDateDataList () {
-      this.tableEndDateDataList = []
+    searchEndDateDataList (type) {
+     // debugger
+      if(this.pageConfigTwo.pageNum==1 || type=='search'){
+           this.resetPageConfigTwo()
+           this.tableEndDateDataList = []
+      }
       let url = '/stock/boxDeli/getMonthData'
       let params = {
         // 获取需要修改月结日期的数据,bdNo(送货单号),startDate(开始时间),endDate(结束时间)
         bdNo: this.formEndDataInfo.bdNo,
         startDate: dayjs(this.formEndDataInfo.bdDate).format('YYYY-MM-DD'),
-        endDate: dayjs(this.formEndDataInfo.bdEndDate).format('YYYY-MM-DD')
+        endDate: dayjs(this.formEndDataInfo.bdEndDate).format('YYYY-MM-DD'),
+        pageNum:this.pageConfigTwo.pageNum,//(当前页),
+        pageSize:this.pageConfigTwo.pageSize,//(每页显示条数)
       }
+      let _self = this
       this.getDataByUrl(url, params).then(res => {
-        if (res && res.length > 0) {
-          this.tableEndDateDataList = res
+        // if (res && res.length > 0) {
+        //   this.tableEndDateDataList = res
+        // }
+        if (res && res.records && res.records.length>0) {
+           _self.tableEndDateDataList.push(...res.records)
         }
+         _self.pageConfigTwo.total = res.total // 赋值总条数
+         _self.$refs['editWindowBatch'].pageConfig= _self.pageConfigTwo
       })
     },
     // 排除不需要显示的字段
@@ -827,7 +881,7 @@ export default {
     nextStep_guideOne () {
       this.showSetGetBackGuideOneWindow = false
       this.showSetGetBackGuideTwoWindow = true
-      this.searchGetBackDataList() // 获取回签列表数据
+      this.searchGetBackDataList('search') // 获取回签列表数据
     },
     // 向导一取消 事件
     cancel_guideOne () {

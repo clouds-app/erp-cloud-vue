@@ -1,6 +1,8 @@
 <template>
   <div>
     <editWindow
+     :draggable="false"
+      :zindex="30"
       id="cl-edit-boxUseRe"
       title="纸板退货选工单"
       v-model="showWindow"
@@ -10,6 +12,9 @@
       :spinLoaddingText="spinLoaddingText"
       @on-ok="submitFormDataEvent"
       v-if="initData.columns"
+      ref="editWindow"
+      :showPageConfig="true"
+      @pageOnChange="pageOnChange"
     >
       <div v-if="formDataInfo.master">
         <Form
@@ -62,7 +67,7 @@
               </Col>
               <Col span="1">
                 <FormItem label>
-                  <Button type="primary" @click="clickmaster()">搜索</Button>
+                  <Button type="primary" @click="clickmaster('search')">搜索</Button>
                 </FormItem>
               </Col>
             </Row>
@@ -191,7 +196,6 @@ export default {
   },
   data () {
     return {
-      // actionSubtitle: "纸箱销售订单明细", // 当前操作副标
       productSpecShow: false,
       formDataInfo: {
         // 主表 更改字段
@@ -222,6 +226,10 @@ export default {
   },
   computed: {},
   methods: {
+    pageOnChange(_pageNum){
+      this.pageConfig.pageNum = _pageNum
+      this.clickmaster()
+    },
     searchKeyType (keyField, keyTitle) {
       this.formDataInfo.master.inBiWorkNo = ''
       if (this.excludeFiled('workNo', keyField)) {
@@ -241,7 +249,6 @@ export default {
     },
     // 获取当前搜索类型的关键字
     getCurrentKeyTypeWords (field) {
-      debugger
       if (field == this.propvalue) {
         return this.formDataInfo.master.inBiWorkNo
       } else {
@@ -249,7 +256,11 @@ export default {
       }
     },
     // 搜索点击事件
-    clickmaster () {
+    clickmaster (type) {
+      if(this.pageConfig.pageNum==1 || type=='search'){
+          this.resetPageConfig()
+          this.productMDatasTableDataList = []
+      }
       let params = {
         flag: this.formDataInfo.master.flag,
         inWorkNo: this.getCurrentKeyTypeWords('workNo'), // 工单号
@@ -260,13 +271,24 @@ export default {
         batchNoList: this.batchNoList,
         endDate:dayjs(this.formDataInfo.master.endDate).format('YYYY-MM-DD'),
         startDate:dayjs(this.formDataInfo.master.startDate).format('YYYY-MM-DD'),
+        pageNum:this.pageConfig.pageNum,//(当前页),
+        pageSize:this.pageConfig.pageSize,//(每页显示条数)
       }
 
       request.post(`/stock/BoxUseRe/getWorkInStore`, params).then(res => {
-        this.$refs['slave_edit-boxUseRe'].cloneData = res
+       // this.$refs['slave_edit-boxUseRe'].cloneData = res
+         if (res && res.records && res.records.length>0) {
+          this.productMDatasTableDataList.push(...res.records)
+         }
+         this.pageConfig.total = res.total // 赋值总条数
+         this.$refs['editWindow'].pageConfig= this.pageConfig
       })
     },
-
+    // 重写父类 关闭窗口时 触发事件
+    closeActionTigger () {
+      this.resetPageConfig()
+      this.productMDatasTableDataList = []
+    },
     // 加载表单初始化数据
     getFormInitDataObj (data) {
       // 加载表单初始化数据
@@ -279,7 +301,12 @@ export default {
       if (data == '' || data == null) {
         return
       }
-      this.$refs['slave_edit-boxUseRe'].cloneData = data
+       if(data && data.records){
+        this.productMDatasTableDataList = data.records
+        this.pageConfig.total = data.total // 赋值总条数
+        this.$refs['editWindow'].pageConfig= this.pageConfig
+      }
+      //this.$refs['slave_edit-boxUseRe'].cloneData = data
     },
 
     // 表单数据提交事件

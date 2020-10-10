@@ -18,10 +18,21 @@ import Form from '@/components/form/form'
 import { getFormInitData } from './common'
 import InputNumber from '@/components/input-number'
 let _ = require('lodash')
-//let isMasterAndSlave=false// 是否主从表结构
+const  default_pageConfig = {
+  pageNum:1,//(当前页),
+  pageSize:2,//(每页显示条数)
+  total:0,// 总条数
+}
 export default {
   data () {
     return {
+      // 分页配置
+      pageConfig:Object.assign({},default_pageConfig),
+      // 金额格式化配置,默认从客户选择弹框读取
+      amountFormatConfig:{
+        decimalPls: 2 , // 保留小数位 最大6
+        carryMode:0 //进位方式:carryMode:0 四舍五入,1:只舍不进,2:只进不舍
+      },
       formDataInfoName:'formDataInfo',// 编辑宽主题名称
       editWindowBoxHeight:0,// 编辑弹框高度
       isMasterAndSlave:false,// 是否主从表结构
@@ -159,6 +170,7 @@ export default {
       this.cleanOrResetData()
       // 关闭窗口时触发事件n
       if (!n) {
+        this.closeActionTiggerMustDo()
         this.closeActionTigger()
       }
     },
@@ -200,6 +212,49 @@ export default {
     }
   },
   methods: {
+    // 重置页面信息
+    resetPageConfig(){
+      this.pageConfig = Object.assign({},default_pageConfig)
+    },
+      formatAmountByTypeWith(_amount){
+       let formatAmount= this.formatAmountByType(_amount,this.amountFormatConfig.decimalPls,this.amountFormatConfig.carryMode)
+       return formatAmount
+      },
+    // 金额 保留小数位&进位方式(从客户选择信息哪里获取)
+    // 进位方式:carryMode:0 四舍五入,1:只舍不进,2:只进不舍
+    // 保留小数 _decimalPls 最大保留6位
+    formatAmountByType(_amount,_decimalPls =2,_carryMode = 0){
+        if (isNaN(_amount) || _amount == undefined || _amount == null) 
+        { 
+          return 0
+        }
+        if (isNaN(_decimalPls) || _decimalPls == undefined || _decimalPls == null) {
+          _decimalPls = 2 
+        }
+        if (isNaN(_carryMode) || _carryMode == undefined || _carryMode == null) {
+          _carryMode = 0 
+        }
+       _decimalPls = Math.pow(10,Number(_decimalPls))
+      switch (Number(_carryMode)) {
+        // 四舍五入
+        case 0:
+          _amount = Math.round(_amount * _decimalPls)/_decimalPls 
+          break;
+        // 只舍不进 Math.floor(-0.5) ;  //向下取整 得-1
+        case 1:
+          _amount = Math.floor(_amount * _decimalPls)/_decimalPls 
+          break;
+        // 只进不舍 Math.ceil(2.1) ;	//向上取整 得 3
+        case 2:
+          _amount = Math.ceil(_amount * _decimalPls)/_decimalPls  
+          break;  
+        default:
+          _amount = Math.round(_amount * _decimalPls)/_decimalPls 
+          break;
+      }
+      return _amount
+    },
+    //
     calEditWindowBoxHeight(){
       this.$nextTick(()=>{
           // 获取总高度
@@ -305,6 +360,9 @@ export default {
     },
     // 继承中修改 关闭窗口时 触发事件
     closeActionTigger () {
+     
+    },
+    closeActionTiggerMustDo(){
       if (this.disableResetFields) {
         return
       }

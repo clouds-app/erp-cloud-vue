@@ -1,0 +1,290 @@
+<template>
+  <!--盒式公式-->
+  <div>
+    <div  >
+    <editWindow :width="400" :zindex="10" class="box-expression" v-model="showWindow" @on-ok="expressionOk"  :fullscreen="false" title="盒式公式">
+        <Row>
+          <Col span="24" >
+          <Input type="textarea" :disabled="true" v-model="boxExpressionTextComputed"/>
+          </Col>
+        </Row>
+        <Row>
+          <Col span="24" >
+            <span>输入固定值单位:MM</span>
+          </Col>
+        </Row>
+        <Row v-for="(item,index) in expressionText" :key="index" type="flex" justify="space-between">
+          <Col span="4" v-for="(item2,index2) in item" :key="index2" :style="{padding:index2 == 0 || index2 == item.length -1 ? '5px 0':'5px'}">
+          <Button size="default" class="expression-btn" :disabled="item2.text == ''" @click="btnClickCall(item2.text,item2.value,item2.type)">{{item2.text}}</Button>
+          </Col>
+        </Row>
+    </editWindow>
+    </div>
+  </div>
+</template>
+
+<script>
+  /**
+   * 将计算机上的按钮分类，分为 1.box 与盒子相关的
+   * 2.number 数字
+   * 3.oper 操作符，运算符
+   * 4.dot
+   * 5.left bracket 左括号
+   * 6.right bracket 右括号
+   */
+  import editWindow from '../edit-window/edit-window'
+  export default {
+    name: 'boxExpression',
+    components:{editWindow},
+    data() {
+      return {
+        showWindow:false,
+        expression: [],
+        expressionText: [
+          [{
+            text: '单价',
+            value: 'u',
+            type:'box'
+          }, {
+            text: '基重',
+            value: 'g',
+            type:'box'
+          }, {
+            text: '钉条',
+            value: 'd',
+            type:'box'
+          }, {
+            text: '清空',
+            value: 'clear'
+          }, {
+            text: '删除',
+            value: 'delete'
+          }],
+          [{
+            text: '加分',
+            value: 's',
+            type:'box'
+          }, {
+            text: '开口',
+            value: 'k',
+            type:'box'
+          }, {
+            text: '修边',
+            value: 'f',
+            type:'box'
+          }, {
+            text: '(',
+            value: '(',
+            type:'lBracket'
+          }, {
+            text: ')',
+            value: ')',
+            type:'rBracket'
+          }],
+          [{
+            text: '长',
+            value: 'l',
+            type:'box'
+          }, {
+            text: '7',
+            value: '7',
+            type:'number'
+          }, {
+            text: '8',
+            value: '8',
+            type:'number'
+          }, {
+            text: '9',
+            value: '9',
+            type:'number'
+          }, {
+            text: '/',
+            value: '/',
+            type:'oper'
+          }],
+          [{
+            text: '宽',
+            value: 'w',
+            type:'box'
+          }, {
+            text: '4',
+            value: '4',
+            type:'number'
+          }, {
+            text: '5',
+            value: '5',
+            type:'number'
+          }, {
+            text: '6',
+            value: '6',
+            type:'number'
+          }, {
+            text: '*',
+            value: '*',
+            type:'oper'
+          }],
+          [{
+            text: '高',
+            value: 'h',
+            type:'box'
+          }, {
+            text: '1',
+            value: '1',
+            type:'number'
+          }, {
+            text: '2',
+            value: '2',
+            type:'number'
+          }, {
+            text: '3',
+            value: '3',
+            type:'number'
+          }, {
+            text: '-',
+            value: '-',
+            type:'oper'
+          }],
+          [{
+            text: '厚',
+            value: 't',
+            type:'box'
+          }, {
+            text: '.',
+            value: '.',
+            type:'dot'
+          }, {
+            text: '0',
+            value: '0',
+            type:'number'
+          }, {
+            text: '',
+            value: '',
+            call: undefined
+          }, {
+            text: '+',
+            value: '+',
+            type:'oper'
+          }]
+        ]
+      }
+    },props:{
+      value:false,
+      baseWeightDisabled:{
+        type:Boolean,
+        value:()=>{
+          return true;
+        }
+      },
+      thicknessDisabled:{
+        type:Boolean,
+        value:()=>{
+          return true;
+        }
+      }
+    },watch:{
+      showWindow(n,o){
+        this.$emit('input',n);
+      },value(n,o){
+        this.showWindow = n;
+      }
+    },computed:{
+      boxExpressionTextComputed(){
+        let text = '';
+        this.expression.forEach((item,index)=>{
+          text += item.text;
+        })
+        return text;
+      }
+    },methods:{
+      btnClickCall(text,value,type){
+        if(value == 'clear'){
+          this.expression = [];
+        }else if(value == 'delete'){
+          this.expression.splice(this.expression.length-1,1);
+        }else{
+           this.expression.push({text:text,value:value,type:type});
+        }
+      },expressionOk(){
+        let success = this.expressionValidator();
+        //校验成功
+        if(success){
+          this.$emit('expression-ok',this.boxExpressionTextComputed,this.getExpressionValueText(),JSON.stringify(this.expression));
+          this.showWindow = false;
+          this.expression = [];
+        }
+      },
+      expressionValidator(){
+        //表达式校验
+        if(this.expression.length == 0){
+          return true;
+        }
+        //基本语法的校验
+        for(let i = 0;i < this.expression.length;i++){
+          let isLast = this.expression.length == (i +　1);
+          let value = this.expression[i].value;
+          let expression = this.expression[i];
+          let nextType = '';
+          if(!isLast){
+            nextType = this.expression[i+1].type;
+          }
+          //第一位和最后一位只要是. /*-+都是不对的
+          if(i == 0 || isLast){
+            if(expression.type == 'dot' || expression.type == 'oper' ){
+              this.$Message.error('公式语法错误');
+              return false;
+            }
+          }
+          //如果是盒子相关，下一个不是 /*-+和) 都是错误
+          if(!isLast && expression.type == 'box' && (nextType != 'oper' && nextType != 'rBracket' )){
+            this.$Message.error('公式语法错误');
+            return false;
+          }
+          //如果是. 下一个是不是数字都是错误
+          if(!isLast && expression.type == 'dot' && nextType != 'number'){
+            this.$Message.error('公式语法错误');
+            return false;
+          }
+          //如果是数字，下一个出现的box就是不对的
+          if(!isLast && expression.type == 'number' && nextType == 'box'){
+            this.$Message.error('公式语法错误');
+            return false;
+          }
+          //如果是运算符，下一个出现运算符或.都是不对
+          if(!isLast && expression.type == 'oper' && (nextType == 'oper' || nextType == 'dot')){
+            this.$Message.error('公式语法错误');
+            return false;
+          }
+        }
+        //上面的执行完了，基本的校验也完了，现在进行表达式计算，是否符合语法
+        let valueText = this.getExpressionValueText();
+        valueText = valueText.replace(/[a-z]+/g,'0');
+        try{
+          eval(valueText);
+        }catch(e){
+          this.$Message.error('公式语法错误');
+          return false;
+        }
+        return true;
+      },getExpressionValueText(){
+        let value = '';
+        this.expression.forEach((item,index)=>{
+          value += item.value;
+        })
+        return value;
+      }
+    }
+  }
+</script>
+
+<style>
+  .expression-btn{
+    width: 100%;
+  }
+  .box-expression .ivu-input[disabled], fieldset[disabled] .ivu-input{
+    color: #666666;
+  }
+  .box-expression .ivu-modal{
+    width: 26.4375rem;
+    min-width: 26.4375rem;
+  }
+</style>

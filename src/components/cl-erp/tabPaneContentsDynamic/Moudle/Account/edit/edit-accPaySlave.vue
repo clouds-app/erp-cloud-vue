@@ -1,6 +1,8 @@
 <template>
   <div>
     <editWindow
+    :draggable="false"
+      :zindex="30"
       class="cl-edit-window"
       title="应付对账单明细单据"
       v-model="showWindow"

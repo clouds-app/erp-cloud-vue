@@ -27,7 +27,7 @@
           :label-width="90"
           :disabled="detailDisabled"
         >
-          <Row>
+           <Row type="flex">
             <Col span="6">
               <FormItem label="立账单号" prop="apNo">
                 <Input
@@ -63,8 +63,8 @@
                   :disabled="false"
                   popup-name="SupplierSingleBox"
                   :fill-model.sync="formDataInfo.master"
-                  render-fields="supplierId,supplierCode,supplierName,taxRate,supplierType,discount,arpType"
-                  from-fields="id,purCode,purName,taxRate,vType,discount,arpType"
+                  render-fields="supplierId,supplierCode,supplierName,taxRate,supplierType,discount,arpType,coinId,coinCode,coinName,taxType"
+                  from-fields="id,purCode,purName,taxRate,vType,discount,arpType,coinId,coinCode,coinName,taxTP"
                   :suffix="true"
                   :suffix-model="formDataInfo.master.supplierName"
                   @on-fill="supplierCodeOnFillEvent"
@@ -83,6 +83,39 @@
                 />
               </FormItem>
             </Col>
+              <Col span="6">
+             <FormItem label="税别" prop="taxType">
+                  <optionSearch
+                   disabled
+                    maxlength="20"
+                    @onChange="optionOnChange"
+                    :defaultItem="formDataInfo.master.taxType+''"
+                    :loaddingDataWhen="showWindow"
+                    query="taxTP"
+                  />
+                </FormItem>
+            </Col>
+          <Col span="6">
+                <FormItem label="税率" prop="taxRate">
+                  <Input disabled type="number" v-model="formDataInfo.master.taxRate" maxlength="20" placeholder="税率"></Input>
+                </FormItem>
+              </Col>
+               <Col span="6">
+            <FormItem label="货币" prop="coinCode">
+              <popup
+                disabled
+                v-model="formDataInfo.master.coinCode"
+                field-name="coinCode"
+                popup-name="CoinSingleBox"
+                :fill-model.sync="formDataInfo.master"
+                render-fields="coinId,coinCode,coinName"
+                from-fields="id,coinCode,coinName"
+                :suffix="true"
+                :suffix-model="formDataInfo.master.coinName"
+                suffixModelName="coinName" 
+              />
+            </FormItem>
+          </Col>
             <Col span="6">
               <FormItem label="月结年月" prop="apMonth">
                 <DatePicker
@@ -173,7 +206,7 @@
                 />
               </FormItem>
             </Col>
-            <Col span="6">
+            <!-- <Col span="6">
               <FormItem label="税率" prop="taxRate">
                 <InputNumber
                  style="width:100%"
@@ -182,8 +215,8 @@
                   v-model="formDataInfo.master.taxRate"
                 />
               </FormItem>
-            </Col>
-            <Col span="12">
+            </Col> -->
+            <Col span="6">
               <FormItem label="备注" prop="remark">
                 <Input
                   v-model="formDataInfo.master.remark"
@@ -370,7 +403,11 @@ const default_formDataInfo = {
     supplierName: '',
     supplierType: '',
     supplierTypeText: '',
+    coinId:'',
+    coinCode:'',
+    coinName:'',
     taxRate: null,
+    taxType:'',
     arpType: ''// 自定义 月结方式
   },
   accPayItems: {
@@ -447,6 +484,10 @@ export default {
 
     // 通过参数查询数据列表
     searchDataBy () {
+      if(!!!this.formDataInfo.master.supplierCode){
+        // 修复需要点击两次才能选择
+        return
+      }
       this.accPayguideDataList = [] // 重置数据列表
       // 参数包括：
       let params = {
@@ -492,9 +533,14 @@ export default {
     },
     // 供应商选择后回调事件
     supplierCodeOnFillEvent (item) {
+      //debugger
       // 单独校验客户编号
       this.$refs['formDataInfo'].validateField('supplierCode', err => {})
       this.searchDataBy()
+       this.amountFormatConfig = {
+           decimalPls: item[0].orignData.amtDot , // 保留小数位 最大6
+           carryMode:0//Number(item[0].orignData.amtType) //进位方式:carryMode:0 四舍五入,1:只舍不进,2:只进不舍
+      }
     },
     // 弹框==确认==回调事件,返回选择的数据
     onSubmitEditForm (dataList) {
@@ -550,7 +596,7 @@ export default {
         let newItemKeys = Object.keys(newItem)
         newItemKeys.forEach(itemKey => {
           newItem[itemKey] = null
-          if (oldItem[itemKey]) {
+         if (oldItem[itemKey] || oldItem[itemKey] ==0 || oldItem[itemKey]=='0') {
             // itemKey in oldItem in右操作数必须是一个对象值
             //  var mycar = {make: "Honda", model: "Accord", year: 1998};
             // "make" in mycar  // 返回true
@@ -558,7 +604,9 @@ export default {
           }
         })
         // 应付对账单明细 折后金额= (金额 *	明细折扣(%)	)/100
-        newItem.disAmt = ((Number(oldItem.amt) * Number(oldItem.discount)) / 100).toFixed(2)
+        let temp_disAmt = ((Number(oldItem.amt) * Number(oldItem.discount)) / 100)
+        newItem.disAmt = this.formatAmountByTypeWith(temp_disAmt)
+
         //= ===== 额外需要转换的字段S=======
         // newItem.iciZk = oldItem.discount; // 折扣
         //= ===== 额外需要转换的字段E=======
@@ -599,6 +647,11 @@ export default {
     },
     // 初始值 设置
     setDefaultData () {
+      //debugger
+      this.amountFormatConfig = {
+           decimalPls: Number(this.formDataInfo.master.amtDot) , // 保留小数位 最大6
+           carryMode:0 //进位方式:carryMode:0 四舍五入,1:只舍不进,2:只进不舍
+      }
       this.disabledSubmitBtn = false
       let invoicedAmt = Number(this.formDataInfo.master.invoicedAmt)
       if (invoicedAmt > 0) {

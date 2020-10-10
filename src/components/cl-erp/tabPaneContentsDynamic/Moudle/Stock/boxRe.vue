@@ -28,6 +28,7 @@
           <Tabs>
             <TabPane label="纸箱退货明细" :name="`${functionParams.formInitPreName}itemFm`">
               <vTable
+               :getDataByParams="true"
                 tabletitle="纸箱退货明细"
                 :height="tableHeight / 2 - 37"
                 ref="tableFieldRef"
@@ -48,6 +49,9 @@
         v-model="showEndDataBatchWindow"
         width="90%"
         :loading="false"
+         ref="editWindow"
+       :showPageConfig="true"
+       @pageOnChange="pageOnChange"
      >
      <template slot="footer">
         <div>
@@ -119,7 +123,7 @@
             </Col>
              <Col span="1">
                <FormItem>
-                   <Button :loading="isLoadingSearchBtn" @click="searchEndDateDataList()" type="primary">
+                   <Button :loading="isLoadingSearchBtn" @click="searchEndDateDataList('search')" type="primary">
                      <Icon type="md-search" />
                      搜索
                      </Button>
@@ -299,8 +303,11 @@ export default {
           _self.formEndDataInfo.bdDate = dayjs().subtract(10, 'day').format('YYYY-MM-DD')
           _self.formEndDataInfo.bdEndDate = dayjs().format('YYYY-MM-DD')
           _self.formEndDataInfo.biIsAccDate = dayjs().format('YYYY-MM-DD HH:mm:ss')
-          _self.searchEndDateDataList()
+          _self.searchEndDateDataList('search')
         })
+      }else{
+          this.resetPageConfig()
+          this.tableEndDateDataList = []
       }
     }
   },
@@ -313,6 +320,10 @@ export default {
     this.loadEndDateColumsData() // 纸箱出货月结日期功能界面 列表表头
   },
   methods: {
+    pageOnChange(_pageNum){
+      this.pageConfig.pageNum = _pageNum
+      this.searchEndDateDataList()
+    },
     getCurType () {
       if (this.customerActionType == 'batchUpdateBrDate') {
         // 批量修改退货日期 路径
@@ -342,8 +353,11 @@ export default {
       })
     },
     // 获取需要修改月结日期的数据
-    searchEndDateDataList () {
-      this.tableEndDateDataList = []
+    searchEndDateDataList (type) {
+       if(this.pageConfig.pageNum==1 || type=='search'){
+          this.resetPageConfig()
+          this.tableEndDateDataList = []
+        }
       let url = '/stock/boxRe/getMonthData'
       if (this.customerActionType == 'batchUpdateBrDate') {
         // 批量修改退货日期 路径
@@ -353,12 +367,19 @@ export default {
         // 获取需要修改月结日期的数据,brNo(退货单号),startDate(开始时间),endDate(结束时间)
         brNo: this.formEndDataInfo.bdNo,
         startDate: dayjs(this.formEndDataInfo.bdDate).format('YYYY-MM-DD'),
-        endDate: dayjs(this.formEndDataInfo.bdEndDate).format('YYYY-MM-DD')
+        endDate: dayjs(this.formEndDataInfo.bdEndDate).format('YYYY-MM-DD'),
+        pageNum:this.pageConfig.pageNum,//(当前页),
+        pageSize:this.pageConfig.pageSize,//(每页显示条数)
       }
       this.getDataByUrl(url, params).then(res => {
-        if (res && res.length > 0) {
-          this.tableEndDateDataList = res
-        }
+        // if (res && res.length > 0) {
+        //   this.tableEndDateDataList = res
+        // }
+         if (res && res.records && res.records.length>0) {
+             this.tableEndDateDataList.push(...res.records)
+         }
+         this.pageConfig.total = res.total // 赋值总条数
+         this.$refs['editWindow'].pageConfig= this.pageConfig
       })
     },
     // 月结窗体 全选 事件

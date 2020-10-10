@@ -26,7 +26,7 @@
           :label-width="80"
           :disabled="detailDisabled"
         >
-          <Row>
+           <Row type="flex">
             <Col span="6">
               <FormItem label="开票单号" prop="brNo">
                 <Input
@@ -185,6 +185,7 @@
               :data="formDataInfo['invoiceCheckItems'].defaultList"
               :rules="slaveTableFieldsValidator"
               @row-delete="slave_list_table_edit_Delete"
+              @row-click="slave_list_table_editRowClick"
               @tableColTiggerEventCall="tableColTiggerEventCall"
             >
               <template slot="head">
@@ -231,11 +232,12 @@
                     v-if="excludeFiled('ItemFm', column.key)"
                     :width="column.editWidth"
                   >
-                    <!-- 控件特殊处理 工单号 -->
+                    <!-- 控件特殊处理 单据编号-->
                     <template v-if="column.key == 'iciArNo'">
                       <Input
+                       @on-blur="searchAndFillDataBy(row[column.key])"
                         v-model="row[column.key]"
-                        :disabled="detailDisabled||!!row[column.key]"
+                        :disabled="detailDisabled||!!row['iciNoTypeText']"
                         @input="
                           value => {
                             valueChangeAssign(value, index, row, column.key);
@@ -250,7 +252,36 @@
                         />
                       </Input>
                     </template>
-                    <!-- 发票金额-->
+                      <!-- 控件特殊处理 开票货币 -->
+                    <template v-else-if="column.key == 'coinName'">
+                       <popup
+                          @on-fill="coinRateOnFillEvent"
+                          v-model="row.coinName"
+                          field-name="coinName"
+                          popup-name="CoinSingleBox"
+                          :fill-model.sync="formDataInfo.invoiceCheckItems.defaultList"
+                          render-fields="coinId,coinCode,coinName,originCoinRate"
+                          from-fields="id,coinCode,coinName,coinRate"
+                          :index="index"
+                          :init-data="initData.initData[`${functionParams.formInitPreName}ItemFm`]"
+                      ></popup>
+                    </template>
+                    <!-- 汇率 coinRate-->
+                    <template v-else-if="column.key === 'coinRate'">
+                      <Input
+                        v-model="row[column.key]"
+                        @input="
+                          tableColTiggerEvent(
+                            row,
+                            column,
+                            index,
+                            'coinRateChangeEvent'
+                          )
+                        "
+                      >
+                      </Input>
+                    </template>
+                    <!-- 发票金额/开票金额 iciInvMoney-->
                     <template v-else-if="column.key === 'iciInvMoney'">
                       <Input
                         v-model="row[column.key]"
@@ -366,6 +397,9 @@ export default {
   },
   data () {
     return {
+      tableDefaultList:[],
+      currentIndex:0,// 当前表格选择行
+      dataFrom:'select',//search 查询, select 选择
       disabledSubmitBtn: false, // 是否禁用确认按钮
       formName: 'accountInvoiceCheckFm', // 重写父类 查询表单名称 stockboxreitemFm
       // 查询配置参数
@@ -374,7 +408,7 @@ export default {
         requestBaseUrl: '/account/invoiceCheck', // 查询 表格行 数据 接口前缀地址
         uniqueId: 'invoiceId' // 查询详细的唯一ID,需要顶部查询中使用
       },
-      actionSubtitle: '发票登记', // 重写父类 当前操作副标题
+      actionSubtitle: '开票登记', // 重写父类 当前操作副标题
       salveWindow: {
         isLoaddingDone: false, // 窗口是否加载完成
         showEditWindow: false, // 是否显示edit-invoiceCheckSlave 编辑窗口
@@ -411,14 +445,60 @@ export default {
   },
   created () {},
   methods: {
+    // 开票货币 回填触发事件 最大保留6位小数,不足六位>>不补零
+    coinRateOnFillEvent(item){
+     // debugger
+       let newCoinRate =(item[0].data.billCoinRate/item[0].orignData.coinRate)
+       newCoinRate =this.formatAmountByType(newCoinRate,6) //最大保留6位小数,不足六位>>不补零
+       let currentIciInvMoney = (item[0].data.iciInvMoney * newCoinRate) // 汇率金额 = 开票金额* 汇率
+       let newInvoiceCoinRate = (item[0].orignData.coinRate)// 开票货币 汇率
+       currentIciInvMoney  = this.formatAmountByTypeWith(currentIciInvMoney)
+        //计算 汇率金额
+       let newCoinAmt = item[0].data.billCoinRate
+       this.$refs['slave_list_table_edit'].set(
+                   { 
+                    coinRate: newCoinRate,
+                    invoiceCoinRate:newInvoiceCoinRate,// 开票货币 汇率
+                    //iciInvMoney: currentIciInvMoney,
+                    coinAmt: currentIciInvMoney,
+                    },
+                  this.currentIndex
+                )
+        this.sumTotalMoney()         
+    },
+  
+    // 查询并赋值到列表
+    searchAndFillDataBy(_keyWord){
+      if(!!!_keyWord || !this.popupClickValidator()){
+        return
+      }
+        let _url ='/account/invoiceCheck/getArNoPopup'
+        let params = {
+          inArNo:_keyWord,
+          inCustId:this.formDataInfo.master.custId,
+          inFlag:"0"
+        }
+         request
+        .post(_url, params)
+        .then(res => {
+          if (res && res.length > 0) {
+           this.dataFrom = 'search'
+           this.onSubmitEditForm(res)
+          }
+        })
+    },
+     // 工单列表行点击事件回调
+    slave_list_table_editRowClick(index) {
+      this.currentIndex = index
+    },
     // 弹框==确认==回调事件,返回选择的数据
     onSubmitEditForm (dataList) {
       if (dataList && Array.isArray(dataList) && dataList.length > 0) {
         this.disabledCustCode = true // 禁用客户选择
         dataList = this.itemAdapter(dataList)
         let defaultList = this.formDataInfo['invoiceCheckItems'].defaultList
-        if (defaultList[0].iciArNo == '') {
-          this.formDataInfo['invoiceCheckItems'].defaultList = dataList
+        if (this.dataFrom == 'search') {
+          this.formDataInfo['invoiceCheckItems'].defaultList[this.currentIndex] = dataList[0]
         } else {
           dataList.forEach(item => {
             if (!this.checkIsExistBy(item)) {
@@ -434,6 +514,7 @@ export default {
         }
       }
       this.sumTotalMoney()
+      this.dataFrom = 'select'
     },
     // 检查列表数据是否已经存在,避免重复添加
     checkIsExistBy (item) {
@@ -465,10 +546,11 @@ export default {
         let newItemKeys = Object.keys(newItem)
         newItemKeys.forEach(itemKey => {
           newItem[itemKey] = null
-          if (oldItem[itemKey]) {
+          if (oldItem[itemKey] || oldItem[itemKey] ==0 || oldItem[itemKey]=='0'){
             newItem[itemKey] = oldItem[itemKey]
           }
         })
+        //debugger
         // 发票金额 如何为空默认设置为0
         if (!oldItem.iciInvMoney) {
           newItem.iciInvMoney = 0
@@ -490,9 +572,20 @@ export default {
           newItem.iciInvMoney =
             Number(newItem.iciFactMoney) - Number(newItem.iciArMoney)
         }
+          // 	汇率金额 如何为空默认设置为0 汇率金额= 开票金额 * 汇率
+        if (!oldItem.coinAmt) {
+          newItem.coinAmt = Number(newItem.iciInvMoney) * 1 // 汇率初始化选择时,都为1
+        }
         //= ===== 额外需要转换的字段S=======
         newItem.iciZk = oldItem.discount // 折扣
         newItem.iciMoney = oldItem.icMoney // 单据金额
+         // 开票货币 如果为空默认设置为 单据货币
+          newItem.coinName = oldItem.billCoinName
+          newItem.coinCode = oldItem.billCoinCode
+          newItem.coinId = oldItem.billCoinId
+          newItem.coinRate = oldItem.billCoinRate // 转后货币后的汇率
+          newItem.invoiceCoinRate = oldItem.billCoinRate 
+          //newItem.originCoinRate = oldItem.billCoinRate // 自定义字段//当前开票货币汇率
         //= ===== 额外需要转换的字段E=======
         newDataList.push(newItem)
       })
@@ -525,6 +618,13 @@ export default {
 
     // 初始值 设置
     setDefaultData () {
+      // debugger
+      // this.tableDefaultList = deepCopy(this.formDataInfo['invoiceCheckItems'].defaultList)
+      // 格式化金额配置
+      this.amountFormatConfig = {
+           decimalPls: Number(this.formDataInfo.master.amtDot) , // 保留小数位 最大6
+           carryMode:Number(this.formDataInfo.master.amtType) //进位方式:carryMode:0 四舍五入,1:只舍不进,2:只进不舍
+      }
       this.disabledSubmitBtn = false
       let writeOffAmt = Number(this.formDataInfo.master.writeOffAmt)
       if (writeOffAmt > 0) {
@@ -556,20 +656,33 @@ export default {
     },
     // 表格列值改变 回调事件处理event：{row, column, index, event,config}
     tableColTiggerEventCall (obj) {
+          let iciInvMoney = Number(obj.row.iciInvMoney) // 开票金额 选择的货币
+          let iciNotArMoney = Number(obj.row.iciNotArMoney) // 未开发票金额  (人民币)
+          let currentIciInvMoney = (iciInvMoney *  Number(obj.row.coinRate)) //转换为相同货币后的最大开票金额
+           currentIciInvMoney = this.formatAmountByTypeWith(currentIciInvMoney)
       switch (obj.event) {
+        case `coinRateChangeEvent`:
+            this.$refs['slave_list_table_edit'].set(
+                  { 
+                 // iciInvMoney: currentIciInvMoney,
+                  coinAmt: currentIciInvMoney
+                  },
+                 obj.index
+              )
+            break
         case 'iciInvMoneyChangeEvent':
-          // 发票金额 不能大于 未开发票金额
-          let iciInvMoney = Number(obj.row.iciInvMoney) // 发票金额
-          let iciNotArMoney = Number(obj.row.iciNotArMoney) // 未开发票金额
+          // 开票金额 不能大于 未开发票金额
           if (iciInvMoney > iciNotArMoney) {
-            // this.$Message.warning('发票金额 不能大于 未开发票金额')
             this.$Modal.warning({
               width: '260',
               title: '警告',
-              content: `发票金额 不能大于 未开发票金额`,
+              content: `开票金额 不能大于 未开发票金额`,
               onOk: () => {
                 this.$refs['slave_list_table_edit'].set(
-                  { iciInvMoney: 0 },
+                  { 
+                    iciInvMoney: 0,
+                    coinAmt:0
+                     },
                   obj.index
                 )
               }
@@ -577,23 +690,29 @@ export default {
           } else {
             // 触发修改值 直接修改原始数据 无效
             this.$refs['slave_list_table_edit'].set(
-              { iciInvMoney: obj.row.iciInvMoney },
+                { 
+               // iciInvMoney: obj.row.iciInvMoney 
+                coinAmt: currentIciInvMoney
+                },
               obj.index
             )
           }
-          this.sumTotalMoney()
+          //this.sumTotalMoney()
           break
         default:
           break
       }
-    },
+         setTimeout(()=>{
+              this.sumTotalMoney()
+          },1000)
+   },
     // 汇总总金额
     sumTotalMoney () {
       let totolMoney = 0
       this.formDataInfo['invoiceCheckItems'].defaultList.forEach(
         (item, index) => {
           let currentRowMoney = Number(
-            (item.iciInvMoney = null ? 0 : item.iciInvMoney)
+            (item.coinAmt = null ? 0 : item.coinAmt)
           )
           totolMoney = totolMoney + currentRowMoney
         }
@@ -614,7 +733,7 @@ export default {
       }
       return true
     },
-    custCodeOnFillEvent () {
+    custCodeOnFillEvent(item) {
       // 单独校验客户编号
       this.$refs['formDataInfo'].validateField('custCode', err => {})
       // 切换用户,清除明细信息
@@ -624,6 +743,10 @@ export default {
           this.$refs['slave_list_table_edit'].deleteAllData() // 仅仅记录删除记录,
           this.formDataInfo['invoiceCheckItems'].defaultList = []
         }
+      }
+      this.amountFormatConfig = {
+           decimalPls: item[0].orignData.amtDot , // 保留小数位 最大6
+           carryMode:Number(item[0].orignData.amtType) //进位方式:carryMode:0 四舍五入,1:只舍不进,2:只进不舍
       }
     },
     // 排除不需要显示的字段
@@ -686,6 +809,7 @@ export default {
         'slave_list_table_edit'
       ].getCategorizeData()
       this.formDataInfo['invoiceCheckItems'] = invoiceCheckItems
+      //this.formDataInfo['invoiceCheckItems'].defaultList = []
       if (this.formDataInfo.master.fpDate) {
         this.formDataInfo.master.fpDate = dayjs(
           this.formDataInfo.master.fpDate
@@ -703,9 +827,29 @@ export default {
       }
       return this.formDataInfo
     },
+    //开票明细中的开票货币只能是同一种
+    checkAllCoinsAreDiff(){
+      //debugger
+      let dataList = this.formDataInfo['invoiceCheckItems'].defaultList
+      if(dataList && dataList.length>0){
+         let firstCoinCode = dataList[0].coinCode
+         let hasDiff = dataList.every(item=>{
+           return item.coinCode == firstCoinCode
+         })
+        // console.log('hasDiff:'+hasDiff)
+         return !hasDiff
+      }
+     
+      return false
 
+    },
     // 提交主从表数据
     formTableDataSubmit () {
+      if(this.checkAllCoinsAreDiff()){
+        this.$Message.warning('开票货币必须一致!')
+        return
+      }
+      let _self = this
       this.$refs['formDataInfo'].validate(valid => {
         if (!valid) {
           return
@@ -720,6 +864,9 @@ export default {
             this.showWindow = false // 关闭当前编辑页面
             this.$Message.success('执行成功')
             this.$emit('submit-success') // 刷新主页面数据
+          }).catch(err=>{
+            // debugger
+            // _self.formDataInfo['invoiceCheckItems'].defaultList = deepCopy(_self.tableDefaultList) 
           })
       })
     }

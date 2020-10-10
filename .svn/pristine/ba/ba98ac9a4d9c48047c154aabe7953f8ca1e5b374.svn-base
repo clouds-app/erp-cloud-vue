@@ -1,0 +1,572 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-box"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="85%"
+      :loading="!isLoaddingDone"
+      :spinLoaddingText="spinLoaddingText"
+      @on-ok="formTableDataSubmit()"
+       v-if="initData.columns"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-message="true"
+        :model="formDataInfo.master"
+        :rules="ruleValidate"
+        :label-width="140"
+      >
+        <Row :gutter="18">
+          <Col span="16">
+            <Row>
+              <Col span="24">
+                <Row>
+                  <Col span="12">
+                    <FormItem label="盒式编号" prop="boxCode">
+                      <referenceField
+                       ref='firstFocusInput'
+                        v-model="formDataInfo.master.boxCode"
+                        maxlength="20"
+                        placeholder="请输入盒式编号"
+                        :form-name="frommastername"
+                        :disabled="detailDisabled"
+                        :id="formDataInfo.master.id"
+                      ></referenceField>
+                    </FormItem>
+                  </Col>
+                  <Col span="12">
+                    <FormItem label="盒式名称" prop="boxName">
+                      <Input
+                        v-model="formDataInfo.master.boxName"
+                        :disabled="detailDisabled"
+                        maxlength="20"
+                        placeholder="请输入盒式名称"
+                      ></Input>
+                    </FormItem>
+                  </Col>
+                </Row>
+              </Col>
+              <Col span="12">
+              <!--  formDataInfo.master.boxInchExprJson-->
+                <FormItem label="英寸计价公式" prop="boxInchExprMsg" v-if="flag">
+                  <Input
+                    v-model="formDataInfo.master.boxInchExprMsg"
+                    :disabled="detailDisabled"
+                    maxlength="20"
+                    placeholder="请输入英寸计价公式说明"
+                    icon="md-apps"
+                    @on-click="showExpression('boxInchExpr',-1,formDataInfo.master.boxInchExpr)"
+                  ></Input>
+                </FormItem>
+              </Col>
+              <Col span="12">
+                <FormItem label="平米计价公式" prop="boxCMExprMsg" v-if="flag">
+                  <Input
+                    v-model="formDataInfo.master.boxCMExprMsg"
+                    :disabled="detailDisabled"
+                    maxlength="20"
+                    placeholder="请输入平米计价公式说明"
+                    icon="md-apps"
+                    @on-click="showExpression('boxCMExpr',-1,formDataInfo.master.boxCMExpr)"
+                  ></Input>
+                </FormItem>
+              </Col>
+            </Row>
+          </Col>
+          <Col span="8">
+            <Row :gutter="18">
+              <Col span="12">
+                <FormItem label="纸宽废边" prop="boxIsBorder">
+                  <Checkbox v-model="formDataInfo.master.boxIsBorder" :disabled="detailDisabled" maxlength="20" placeholder></Checkbox>
+                </FormItem>
+              </Col>
+              <Col span="12">
+                <FormItem label="纸长废边" prop="boxIsLBorder">
+                  <Checkbox v-model="formDataInfo.master.boxIsLBorder" :disabled="detailDisabled" maxlength="20" placeholder></Checkbox>
+                </FormItem>
+              </Col>
+            </Row>
+          </Col>
+          <Col span="16">
+            <Row :gutter="30">
+              <div>
+                <Col span="12" style="left:5%">
+                  图片上传
+                  <uploadImg
+                    moduleName="bas"
+                    :imgUrl="formDataInfo.master.boxImage"
+                    :disabled="detailDisabled"
+                    @uploadSuccess="uploadSuccessHeads"
+                    tipInfo="盒式图片一"
+                  />
+                </Col>
+                <Col span="12" style="left:5%">
+                  图片上传
+                  <uploadImg
+                    moduleName="bas"
+                    :disabled="detailDisabled"
+                    :imgUrl="formDataInfo.master.boxImage2"
+                    @uploadSuccess="uploadSuccessTails"
+                    tipInfo="盒式图片二"
+                  />
+                </Col>
+              </div>
+            </Row>
+          </Col>
+        </Row>
+      </Form>
+
+      <Tabs>
+        <!--  注意:eTable formDataInfo.box.defaultList  ===box=== 需要根据实际接口修改,其它不变-->
+        <TabPane label="纸质规格" name="name1">
+          <eTable
+            ref="tableFields"
+            unqiue-mark="id"
+            :index-menu="true"
+            :col-start="0"
+            :width="300"
+            :row-init-data="initData.initData.boxItemFm"
+            :data="formDataInfo.boxItemSlaves.defaultList"
+            :rules="tableFieldsValidator"
+            :showContextMenu='!detailDisabled'
+          >
+            <template slot="head">
+              <tr
+                v-for="(columnGroup,index) in initData.columns.boxItemFm.editGroups"
+                :key="index"
+              >
+                <th
+                  :class="`ivu-table-column-${column.titleAlign}`"
+                  v-for="(column,index2) in columnGroup"
+                  :key="index2"
+                  :width="column.editWidth"
+                  :colspan="column.colSpan"
+                  :rowspan="column.rowSpan"
+                  :columnKey="column.key"
+                  style="text-align:center;"
+                >
+                  <div class="ivu-table-cell">
+                    <span class>{{column.title}}</span>
+                  </div>
+                </th>
+              </tr>
+            </template>
+            <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
+              <td
+                class="ivu-table-column-left"
+                v-for="(column,columnIndex) in initData.columns.boxItemFm .editColumns"
+                :key="columnIndex"
+                :width="column.editWidth"
+              >
+                <!-- 开料单双片 -->
+                <Checkbox
+                  v-if="column.key == 'boxCutMode'"
+                  v-model="row[column.key]"
+                  :disabled="detailDisabled"
+                  size="small"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'boxCutMode');
+                    }
+                  "
+                ></Checkbox>
+                 <!-- 单双片条件 -->
+                <Input
+                  v-else-if="column.key == 'boxIfExprMsg'"
+                  v-model="row[column.key]"
+                  disabled
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'boxIfExprMsg');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                  icon="md-apps"
+                  @on-click="showExpression('boxIfExpr',index)"
+                ></Input>
+                <!-- 单双片值 -->
+                <Input
+                  v-else-if="column.key == 'boxIfValue'"
+                  v-model="row[column.key]"
+                  :disabled="detailDisabled"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'boxIfValue');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+                <!-- 单片纸宽 -->
+                <Input
+                  v-else-if="column.key == 'boxW1ExprMsg'"
+                  v-model="row[column.key]"
+                  disabled
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'boxW1ExprMsg');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                  icon="md-apps"
+                  @on-click="showExpression('boxW1Expr',index)"
+                ></Input>
+                 <!-- 单片纸长 -->
+                <Input
+                  v-else-if="column.key == 'boxL1ExprMsg'"
+                  v-model="row[column.key]"
+                  disabled
+                  @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'boxL1ExprMsg');
+                      }
+                    "
+                  size="small"
+                  :maxlength="20"
+                  icon="md-apps"
+                  @on-click="showExpression('boxL1Expr',index)"
+                ></Input>
+                 <!-- 单片纸宽压线 -->
+                <Input
+                  v-else-if="column.key == 'boxYS1ExprMsg'"
+                  v-model="row[column.key]"
+                  disabled
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'boxYS1ExprMsg');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                  icon="md-apps"
+                  @on-click="showExpression('boxYS1Expr',index)"
+                ></Input>
+                 <!-- 单片开槽 -->
+                <Input
+                  v-else-if="column.key == 'boxKC1ExprMsg'"
+                  v-model="row[column.key]"
+                  disabled
+                  @input="
+                    value => {  
+                      valueChangeAssign(value, index, row, 'boxKC1ExprMsg');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                  icon="md-apps"
+                  @on-click="showExpression('boxKC1Expr',index)"
+                ></Input>
+                <Input
+                  v-else-if="column.key == 'boxW2ExprMsg'"
+                  disabled
+                  v-model="row[column.key]"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'boxW2ExprMsg');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                  icon="md-apps"
+                  @on-click="showExpression('boxW2Expr',index)"
+                ></Input>
+                <Input
+                  v-else-if="column.key == 'boxL2ExprMsg'"
+                  v-model="row[column.key]"
+                  disabled
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'boxL2ExprMsg');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                  icon="md-apps"
+                  @on-click="showExpression('boxL2Expr',index)"
+                ></Input>
+                <Input
+                  v-else-if="column.key == 'boxYS2ExprMsg'"
+                  v-model="row[column.key]"
+                  disabled
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'boxYS2ExprMsg');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                  icon="md-apps"
+                  @on-click="showExpression('boxYS2Expr',index)"
+                ></Input>
+                <Input
+                  v-else-if="column.key == 'boxKC2ExprMsg'"
+                  v-model="row[column.key]"
+                  disabled
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'boxKC2ExprMsg');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                  icon="md-apps"
+                  @on-click="showExpression('boxKC2Expr',index)"
+                ></Input>
+               <formControl
+                  v-else
+                  :control-type="column.controlType"
+                  v-model="row[column.key]"
+                  :disabled="column.readOnly"
+                  @input="value => {valueChangeAssign(value, index, row,column.key)}"
+                ></formControl>
+              </td>
+            </template>
+
+
+
+
+         
+          </eTable>
+        </TabPane>
+      </Tabs>
+    </editWindow>
+    <boxExpression  :renderJsonStr="renderJsonStr" v-model="showBoxExpression" @expression-ok="expressionOk" ></boxExpression>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:07:54
+ */
+import formControl from '@/components/form-control/form-control'
+import referenceField from '@/components/referenceField/referenceField'
+import boxExpression from '@/components/box-expression/boxExpression'
+import optionSearch from '../../components/optionSearch'
+import editWindow from '@/components/edit-window/edit-window'
+// import Form from '@/components/form/form'
+import eTable from '@/components/e-table/e-table'
+import request from '@/libs/request'
+import editBaseMixins from '../../mixins/edit'
+import uploadImg from '@/components/cl-erp/uploadImg'
+import { customValidator, uniqueValidator } from '@/libs/validator'
+const default_formDataInfo = {
+  master: {
+    boxAreaExpr: '',
+    boxAreaExprJson: '',
+    boxAreaExprMsg: '',
+    boxCAreaExpr: '',
+    boxCAreaExprJson: '',
+    boxCAreaExprMsg: '',
+    boxCMExpr: '',
+    boxCMExprJson: '',
+    boxCMExprMsg: '',
+    boxCWeightExpr: '',
+    boxCWeightExprJson: '',
+    boxCWeightExprMsg: '',
+    boxCode: '',
+    boxCubeExpr: '',
+    boxCubeExprJson: '',
+    boxCubeExprMsg: '',
+    boxImage: '',
+    boxImage2: '',
+    boxInchExpr: '',
+    boxInchExprJson: '',
+    boxInchExprMsg: '',
+    boxIsBorder: true,
+    boxIsLBorder: true,
+    boxName: '',
+    boxWeightExpr: '',
+    boxWeightExprJson: '',
+    boxWeightExprMsg: '',
+    // hasDelete: true,
+    remark: ''
+    // boxCutMode: "0",
+  },
+  // 子表 box 根据实际接口更改，其他不变
+  boxItemSlaves: {
+    addList: [], // 添加列
+    defaultList: [], // 默认列
+    deleteList: [], // 删除列
+    updateList: [] // 更新列
+  }
+}
+export default {
+  name: 'edit-box',
+  mixins: [editBaseMixins],
+  components: {
+    boxExpression,
+    editWindow,
+    optionSearch,
+    uploadImg,
+    referenceField,
+    // Form,
+    eTable,
+    formControl
+  },
+
+  data () {
+    return {
+      renderJsonStr: "", // 回填盒式公式 字符串
+      frommastername: 'boxFm',
+      requestBaseUrl: '/bas/box', // 请求 查询 操作的基础路径
+      actionSubtitle: '盒式公式', // 当前操作副标题
+      formName: 'boxItemFm',
+      currentExpressType: '', // 当前打开的盒式公式类型
+      // showContextMenu: true,
+      showEditMenu: false,
+      showBoxExpression: false, // show express  or not...
+      formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {
+        boxCode: [
+          { required: true, message: '盒式编号不能为空', trigger: 'blur' },
+          {
+            validator: customValidator,
+            trigger: 'blur',
+            customRule: ['identifier'],
+            fieldDesc: '盒式编号'
+          },
+          {
+            validator: uniqueValidator,
+            trigger: 'blur',
+            fieldDesc: '盒式编号',
+            params: {
+              fieldName: 'boxCode',
+              formName: 'boxFm',
+              id: () => {
+                return this.formDataInfo.master.id
+              }
+            }
+          }
+        ],
+        boxName: [
+          { required: true, message: '盒式名称不能为空', trigger: 'blur' },
+          {
+            validator: customValidator,
+            trigger: 'blur',
+            customRule: ['toCDB', 'spaceStr'],
+            fieldDesc: '盒式名称'
+          }
+        ]
+      },
+      tableFieldsValidator: {},
+      subBoxClickIndex: -1,
+      flag: null
+    }
+  },
+  watch: {
+    showWindow(n,o){
+      if(n){
+        this.getFlag()
+      }
+    }
+  },
+  methods: {
+    // 打开编辑页面调用接口，判断英寸平米计价公式是否可修改
+    getFlag () {
+      this.flag = this.$params.isCalAreaPriceSale
+      if (this.$params.isCalAreaPriceSale == '0') {
+        this.flag = false
+      } else {
+        this.flag = true
+      }
+    },
+    // 打开盒式计算公式，参数：当前类型：
+    showExpression (type, subBoxClickIndex,jsonStr='') {
+      // debugger
+      this.showBoxExpression = true
+      this.currentExpressType = type
+      this.subBoxClickIndex = -1
+      if (subBoxClickIndex >= 0) {
+        this.subBoxClickIndex = subBoxClickIndex
+      }
+      this.retrunJsonDataToDisCount(type, subBoxClickIndex,jsonStr);
+    },
+     // 回填JSON数据到优惠方式控件
+    retrunJsonDataToDisCount(keyField, subBoxClickIndex,jsonStr) {
+       this.renderJsonStr =''
+          if(subBoxClickIndex>-1){
+              let slaveObj = this.$refs["tableFields"];
+              let tableData = slaveObj.get();
+              let renderJsonObj = tableData[subBoxClickIndex]
+              if(renderJsonObj && Object.keys(renderJsonObj).length>0){
+                    this.renderJsonStr = renderJsonObj[keyField]+''
+              }
+          }else{
+            this.renderJsonStr = jsonStr
+          }
+    },
+
+    // 盒式公式的回调方式，返回参数
+    expressionOk (text, value, json) {
+      //  this.formDataInfo.master.currentExpressType = this.formDataInfo.master['currentExpressType']
+      if (this.subBoxClickIndex == -1) {
+        this.formDataInfo.master[this.currentExpressType + 'Msg'] = text
+        this.formDataInfo.master[this.currentExpressType + 'Json'] = json
+        this.formDataInfo.master[this.currentExpressType] = value
+      } else {
+        let data = {}
+        data[this.currentExpressType + 'Msg'] = text
+        data[this.currentExpressType + 'Json'] = json
+        data[this.currentExpressType] = value
+        // debugger;
+        this.$refs.tableFields.set(data, this.subBoxClickIndex)
+      }
+    },
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo () {
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
+    },
+    // 盒式图片一路径上传成功后 回调事件 返回图片地址
+    uploadSuccessHeads (res) {
+      if (!res.success) {
+        this.$Message.error(res.message)
+        return
+      }
+      let picUrl = res.result
+      if (picUrl) {
+        this.formDataInfo.master.boxImage = picUrl
+      }
+    },
+    // 盒式图片二路径上传成功后 回调事件 返回图片地址
+    uploadSuccessTails (res) {
+      if (!res.success) {
+        this.$Message.error(res.message)
+        return
+      }
+      let picUrl = res.result
+      if (picUrl) {
+        this.formDataInfo.master.boxImage2 = picUrl
+      }
+    },
+
+    // 重写父类,修改提交数据
+    resetformDataInfo (_data) {
+      let tableData = this.$refs['tableFields'].getCategorizeData()
+      // //debugger
+      this.formDataInfo.boxItemSlaves = tableData
+      return this.formDataInfo
+    }
+  }
+}
+</script>
+
+<style>
+.cl-edit-box .ivu-form-item {
+  margin-bottom: 12px !important;
+}
+</style>

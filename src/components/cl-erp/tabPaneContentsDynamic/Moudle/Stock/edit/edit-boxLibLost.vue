@@ -43,9 +43,10 @@
               <Col span="12">
                 <FormItem label="报损人" prop="workCode">
                   <div>
-                    <!-- @on-fill="Initializationdata" -->
+                    <!--  -->
                     <popup
                       v-focus
+                      @on-fill="checkValData('workCode')"
                       ref='firstFocusInput'
                       v-model="formDataInfo.master.workCode"
                       field-name="workCode"
@@ -65,7 +66,7 @@
                 <FormItem label="仓位" prop="stationCode">
                   <div>
                     <popup
-                    @on-fill="Initializationdata"
+                      @on-fill="Initializationdata"
                       v-model="formDataInfo.master.stationCode"
                       field-name="stationCode"
                       :disabled="detailDisabled||action=='update'"
@@ -87,6 +88,7 @@
               <div>
                 <!-- @on-fill="Initializationdata" -->
                 <popup
+                  @on-fill="checkValData('teamCode')"
                   v-model="formDataInfo.master.teamCode"
                   field-name="teamCode"
                   :disabled="detailDisabled"
@@ -432,6 +434,10 @@ export default {
     this.getbiLostTypeList() // 报损类型
   },
   methods: {
+    // 主题弹框选中重新校验，防止校验信息没清空
+    checkValData(val){
+      this.$refs["formDataInfo"].validateField(val, err => {});
+    },
     // 获取报损类型
     getbiLostTypeList () {
       // debugger
@@ -643,7 +649,9 @@ export default {
           request
             .post(`/stock/boxLibLost/getBoxStoreData`, {
               stationId: this.formDataInfo.master.stationId,
-              workNoList
+              workNoList,
+              pageNum:this.pageConfig.pageNum,//(当前页),
+              pageSize:this.pageConfig.pageSize,//(每页显示条数)
             })
             .then(res => {
               this.WorkOrderNumber1 = res
@@ -669,7 +677,7 @@ export default {
     },
     // 当主表弹框改变时促发初始化子表数据
     Initializationdata (data) {
-      // debugger
+      this.$refs["formDataInfo"].validateField("stationCode", err => {});
       let tableData = this.$refs['tableFields'].getCategorizeData()
       if (this.formDataInfo.master.paAdujstorId) {
         if (this.formDataInfo.master.paAdujstorId != this.getbppClassId) {

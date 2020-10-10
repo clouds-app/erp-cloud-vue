@@ -1,6 +1,8 @@
 <template>
   <div>
     <editWindow
+     :draggable="false"
+      :zindex="30"
       id="cl-edit-boxUseBackSlave"
       title="用料退仓用料工单弹框"
       v-model="showWindow"
@@ -9,6 +11,9 @@
       :loading="!isLoaddingDone"
       :spinLoaddingText="spinLoaddingText"
       @on-ok="submitFormDataEvent"
+        ref="editWindow"
+       :showPageConfig="true"
+       @pageOnChange="pageOnChange"
     >
       <div v-if="formDataInfo.master">
         <Form
@@ -59,7 +64,7 @@
 
               <Col span="1">
                 <FormItem label >
-                  <Button type="primary" @click="clickmaster()">搜索</Button>
+                  <Button type="primary" @click="clickmaster('search')">搜索</Button>
                 </FormItem>
               </Col>
             </Row>
@@ -458,22 +463,16 @@ export default {
       this.title = data
       this.propvalue = value
     },
+    pageOnChange(_pageNum){
+      this.pageConfig.pageNum = _pageNum
+      this.clickmaster()
+    },
     // 搜索点击事件
-    clickmaster () {
-      // debugger
-      // let ddata = this.formDataInfo
-      // if (!!ddata.master.beginDate) {
-      //   ddata.master.beginDate = dayjs(ddata.master.beginDate).format(
-      //     "YYYY-MM-DD HH:mm:ss"
-      //   );
-      // }
-      // if (!!ddata.master.endDate) {
-      //   ddata.master.endDate = dayjs(ddata.master.endDate).format(
-      //     "YYYY-MM-DD HH:mm:ss"
-      //   );
-      // }
-    //  let bbiCoNo = this.formDataInfo.master.bbiCoNo
-    //   let flag = this.formDataInfo.master.flag
+    clickmaster (type) {
+      if(this.pageConfig.pageNum==1 || type=='search'){
+        this.resetPageConfig()
+        this.productMDatasTableDataList = []
+      }
       let beginDate = this.get7DaysBefore(1, this.formDataInfo.master.beginDate)
       let endDate = this.get7DaysBefore(2, this.formDataInfo.master.endDate)
       if (this.propvalue == 'bmMateWorkNo') {
@@ -493,7 +492,7 @@ export default {
         this.mateWorkNo = ''
         this.inBatchOn == ''
       }
-      let one = {
+      let params = {
         inWorkNo: this.workNo,
         flag: this.formDataInfo.master.flag,
         inMateWorkNo: this.mateWorkNo,
@@ -502,14 +501,25 @@ export default {
         endDate: endDate,
         inWsId: this.inWsId,
         batchNoList: this.batchNoList,
-        isInput: 0
+        isInput: 0,
+         pageNum:this.pageConfig.pageNum,//(当前页),
+         pageSize:this.pageConfig.pageSize,//(每页显示条数)
       }
-      request.post(`/stock/boxUseBack/getBackWorkNo`, one).then(res => {
+      request.post(`/stock/boxUseBack/getBackWorkNo`, params).then(res => {
         // debugger
-        this.$refs['slave_edit-boxUseBack'].cloneData = res
+        //this.$refs['slave_edit-boxUseBack'].cloneData = res
+         if (res && res.records && res.records.length>0) {
+             this.productMDatasTableDataList.push(...res.records)
+         }
+         this.pageConfig.total = res.total // 赋值总条数
+         this.$refs['editWindow'].pageConfig= this.pageConfig
       })
     },
-
+   // 重写父类 关闭窗口时 触发事件
+    closeActionTigger () {
+      this.resetPageConfig()
+      this.productMDatasTableDataList = []
+    },
     // 加载表单初始化数据
     getFormInitDataObj (data) {
       // 加载表单初始化数据
@@ -526,7 +536,12 @@ export default {
         }
         return
       }
-      this.$refs['slave_edit-boxUseBack'].cloneData = data
+       this.productMDatasTableDataList = []
+       if(data && data.records){
+        this.productMDatasTableDataList = data.records
+        this.pageConfig.total = data.total // 赋值总条数
+        this.$refs['editWindow'].pageConfig= this.pageConfig
+      }
     },
 
     // 表单数据提交事件

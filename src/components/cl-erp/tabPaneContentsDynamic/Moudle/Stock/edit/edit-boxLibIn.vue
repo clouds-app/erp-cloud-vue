@@ -568,7 +568,9 @@ export default {
         request
           .post(`/stock/boxLibIn/getBoxWorkInStoreData`, {
             issInput: 0,
-            workNoList
+            workNoList,
+            pageNum:this.pageConfig.pageNum,//(当前页),
+            pageSize:this.pageConfig.pageSize,//(每页显示条数)
           })
           .then(res => {
             this.WorkOrderNumber1 = res

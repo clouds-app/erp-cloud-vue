@@ -13,7 +13,6 @@
     >
       <div  @contextmenu.prevent ref="masterHeight" class="masterHeightClass" :style="{ height: getMasterheight() + '%' }" >
         <Form
-
             ref="formDataInfo"
             :show-message="true"
             :model="formDataInfo.master"
@@ -21,7 +20,7 @@
             :label-width="80"
             :disabled="detailDisabled"
         >
-            <Row>
+            <Row type="flex">
             <Col span="6">
                 <FormItem label="送货单号" prop="bdNo">
                     <Input :disabled="true" v-model="formDataInfo.master.bdNo" maxlength="80" placeholder="送货单号"></Input>
@@ -226,6 +225,16 @@
                   <InputNumber   :disabled="true" placeholder="体积" :min="0" v-model="formDataInfo.master.bdCube"/>
                 </FormItem>
             </Col>
+            <Col span="6">
+              <FormItem label="扣款" prop="bdDecAmount">
+                <InputNumber  placeholder="扣款" :min="0" v-model="formDataInfo.master.bdDecAmount"/>
+              </FormItem>
+            </Col>
+            <Col span="6">
+              <FormItem label="扣款原因" prop="bdDecReason">
+                <InputNumber  placeholder="扣款原因" :min="0" v-model="formDataInfo.master.bdDecReason"/>
+              </FormItem>
+            </Col>
             <Col span="3">
                 <FormItem label="重量" prop="bdWeight">
                   <InputNumber  :disabled="true"  placeholder="重量" :min="0" v-model="formDataInfo.master.bdWeight"/>
@@ -238,7 +247,7 @@
                   <Checkbox class="CheckboxItem" v-model="formDataInfo.master.bdIsSelf">自提</Checkbox>
                 </FormItem>
             </Col>
-            <Col span="12">
+            <Col span="6">
                 <FormItem label="备注" prop="remark">
                    <Input v-model="formDataInfo.master.remark" maxlength="80" placeholder="备注"></Input>
                 </FormItem>
@@ -356,11 +365,11 @@
              <template  v-for="(column,subIndex) in initData.columns[`${functionParams.formInitPreName}otherfeeFm`].editColumns">
                    <td :key="subIndex" :class="`ivu-table-column-${column.align}`" v-if="excludeFiled('otherfeeFm',column.key)" :width="column.editWidth">
                    <!-- 费用类型-->
-                   <Select @on-change="value => {valueChangeAssign(value, index, row,column.key)}" :disabled="column.readOnly" v-if="column.key == 'feeType'" v-model="row[column.key]" transfer>
+                   <Select @on-change="value => {valueChangeAssign(value, index, row,column.key)}" :disabled="column.readOnly||detailDisabled" v-if="column.key == 'feeType'" v-model="row[column.key]" transfer>
                      <Option v-for="(item,index) in feeTypeList" :key="index" :value="item.dicValue+''">{{item.dicLabel}}</Option>
                    </Select>
                    <!-- 费用类型-->
-                   <Select @on-change="value => {valueChangeAssign(value, index, row,column.key)}" :disabled="column.readOnly" v-else-if="column.key == 'priceType'" v-model="row[column.key]" transfer>
+                   <Select @on-change="value => {valueChangeAssign(value, index, row,column.key)}" :disabled="column.readOnly||detailDisabled" v-else-if="column.key == 'priceType'" v-model="row[column.key]" transfer>
                      <Option v-for="(item,index) in otherFee_priceTypeList" :key="index" :value="item.dicValue+''">{{item.dicLabel}}</Option>
                    </Select>
                     <template  v-else-if="column.key ==='unitPrice'">
@@ -372,7 +381,7 @@
                     <template v-else>
                         <formControl :align="column.align" :control-type="column.controlType"
                           v-model="row[column.key]"
-                          :disabled="column.readOnly"
+                          :disabled="column.readOnly||detailDisabled"
                           @input="value => {valueChangeAssign(value, index, row,column.key)}"
                         ></formControl>
                      </template>
@@ -715,6 +724,7 @@ export default {
     },
     // 弹框==确认==回调事件,返回选择的数据
     onSubmitEditForm (dataList) {
+      debugger
       if (dataList && Array.isArray(dataList) && dataList.length > 0) {
         this.disabledCustCode = true // 禁用客户选择
         dataList = JSON.parse(JSON.stringify(this.itemAdapter(dataList)))
@@ -745,11 +755,11 @@ export default {
         let newItemKeys = Object.keys(newItem)
         newItemKeys.forEach(itemKey => {
           newItem[itemKey] = null
-          if (oldItem[itemKey]) {
+          if (oldItem[itemKey] || oldItem[itemKey] ==0 || oldItem[itemKey]=='0') {
             newItem[itemKey] = oldItem[itemKey]
           }
         })
-
+       
         newItem.bpDelQty = newItem.bpDelQty == null ? 0 : newItem.bpDelQty //  已出货数 默认为0
         newItem.biQty = oldItem.deliQty // 送货数
         newItem.biPrepQty = oldItem.deliPrepQty // 备品数

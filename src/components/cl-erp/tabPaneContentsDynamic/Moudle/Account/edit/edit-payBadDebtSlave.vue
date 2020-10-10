@@ -1,6 +1,8 @@
 <template>
   <div>
     <editWindow
+    :draggable="false"
+      :zindex="30"
       class="cl-edit-window-boxRe"
       title="关联单号选择"
       v-model="showWindow"
@@ -20,7 +22,7 @@
             :rules="masterRuleValidate"
             :label-width="40"
         >
-            <Row>
+             <Row type="flex">
             <Col span="4">
                 <FormItem :label-width="80" label="单据类型">
                  <optionSearch
@@ -194,7 +196,7 @@ export default {
     return {
         // 查询配置参数
       functionParams: {
-        formInitPreName: 'sbadDebtNoDto', // 查询表格列头信息 前缀 例如:saleboxproductprice Fm/Fm/mdataFm
+        formInitPreName: 'paybaddebtdto', // 查询表格列头信息 前缀 例如:saleboxproductprice Fm/Fm/mdataFm
         requestBaseUrl: '/account/payBadDebt', // 查询 表格行 数据 接口前缀地址
         uniqueId: '' // 查询详细的唯一ID,需要顶部查询中使用
       },
@@ -285,7 +287,7 @@ export default {
       loadColumsData(){
         // 呆账关联单号弹框(虚拟) 
           let _self = this
-          let formName="sbadDebtNoDtoFm"
+          let formName="paybaddebtdtoFm"
           let url = `/sys/form/init/${formName}`
           request.get(url).then(res => {
             if(res!=null){

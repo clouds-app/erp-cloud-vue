@@ -5,7 +5,7 @@
       :title="actionLableName"
       v-model="showWindow"
       :fullscreen="false"
-      width="80%"
+      width="90%"
       :loading="!isLoaddingDone"
       :spinLoaddingText="spinLoaddingText"
       @on-ok="formTableDataSubmit()"
@@ -25,7 +25,7 @@
           :label-width="100"
           :disabled="detailDisabled"
         >
-          <Row>
+         <Row type="flex">
             <Col span="22">
               <Col span="8">
                 <FormItem label="冲销单号" prop="woNo">
@@ -758,7 +758,7 @@ export default {
         let newItemKeys = Object.keys(newItem)
         newItemKeys.forEach(itemKey => {
           newItem[itemKey] = null
-          if (oldItem[itemKey]) {
+          if (oldItem[itemKey] || oldItem[itemKey] ==0 || oldItem[itemKey]=='0') {
             newItem[itemKey] = oldItem[itemKey]
           }
         })
@@ -1030,12 +1030,36 @@ export default {
       }
       return this.formDataInfo
     },
+  //(开票明细/收款明细)中的 (开票货币/收款货币) 只能是同一种
+    checkAllCoinsAreDiff(){
+      let dataList = this.formDataInfo['writeOffInItems'].defaultList
+      let dataList_writeOffOutItems = this.formDataInfo['writeOffOutItems'].defaultList
+      let flag = false
+      if(dataList && dataList.length>0){
+         let firstCoinCode = dataList[0].coinCode
+         let hasDiff = dataList.every(item=>{
+           return item.coinCode == firstCoinCode
+         })
+         flag = !hasDiff
+         if(!flag && dataList_writeOffOutItems && dataList_writeOffOutItems.length>0){
+             // 如果开票明细已经有不一致,无需验证收款明细货币了,否则需要继续验证
+             hasDiff = dataList_writeOffOutItems.every(subItem=>{
+                return subItem.coinCode == firstCoinCode
+             })
+             flag = !hasDiff
+         }
+      }
+     
+      return flag
 
+    },
     // 提交主从表数据
     formTableDataSubmit () {
-      // debugger
+      if(this.checkAllCoinsAreDiff()){
+        this.$Message.warning('开票明细与收款明细里的货币必须一致!')
+        return
+      }
       // 防止出错,提交前再次 (重新计算体积/面积/金额等)
-      // this.sumMoneyAreaVolumeWeight();
       this.$refs['formDataInfo'].validate(valid => {
         if (!valid) {
           return

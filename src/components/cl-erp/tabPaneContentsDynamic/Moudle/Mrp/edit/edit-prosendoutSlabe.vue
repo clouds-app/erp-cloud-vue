@@ -1,6 +1,8 @@
 <template>
   <div>
     <editWindow
+    :draggable="false"
+      :zindex="30"
       id="cl-edit-salesOrder"
       title="纸箱产品外发工单弹框"
       v-model="showWindow"
@@ -192,7 +194,6 @@ export default {
   },
   data () {
     return {
-      // actionSubtitle: "纸箱销售订单明细", // 当前操作副标
       formDataInfo: {
         // 主表 更改字段
         master: {},
@@ -203,7 +204,6 @@ export default {
       // 需要验证的数据
       ruleValidate: {},
       tableFieldsValidator: {},
-      //   actionSubtitle: "纸箱成品入库工单", // 当前操作副标题
       title: '客户PO号',
       formName: 'prosendoutitemboxFm',
       propvalue: 'bcCustPo', // 存储子表每个对应的字段

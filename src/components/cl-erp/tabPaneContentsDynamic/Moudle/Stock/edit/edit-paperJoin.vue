@@ -64,6 +64,37 @@
             </FormItem>
           </Col>
                   <!-- @on-fill="Initializationdata('wareHouseItCode')" -->
+          <Col span="6">
+            <FormItem label="月结日期" prop="accDate">
+              <DatePicker
+                disabled
+                type="date"
+                format="yyyy-MM-dd HH:mm:ss"
+                v-model="formDataInfo.master.accDate"
+              ></DatePicker>
+            </FormItem>
+          </Col>
+          
+          <Col span="10">
+            <Row>
+              <Col span="12">
+                <FormItem label="数量" prop="qty">
+                  <Input v-model="formDataInfo.master.qty" maxlength="20" placeholder disabled></Input>
+                </FormItem>
+              </Col>
+              <Col span="11">
+                <FormItem label="金额" prop="money" :label-width="50">
+                  <InputNumber
+                    disabled
+                    v-model="formDataInfo.master.money"
+                    style="width:100%"
+                    maxlength="20"
+                    placeholder
+                  ></InputNumber>
+                </FormItem>
+              </Col>
+            </Row>
+          </Col>
           <Col span="7">
             <FormItem label="仓位" prop="wareHouseItCode">
               <div>
@@ -84,34 +115,6 @@
               </div>
             </FormItem>
           </Col>
-
-          <Col span="6">
-            <FormItem label="数量" prop="qty">
-              <Input v-model="formDataInfo.master.qty" maxlength="20" placeholder disabled></Input>
-            </FormItem>
-          </Col>
-          <Col span="6">
-            <FormItem label="金额" prop="money">
-              <InputNumber
-                disabled
-                v-model="formDataInfo.master.money"
-                style="width:100%"
-                maxlength="20"
-                placeholder
-              ></InputNumber>
-            </FormItem>
-          </Col>
-          <Col span="6">
-            <FormItem label="月结日期" prop="accDate">
-              <DatePicker
-                disabled
-                type="date"
-                format="yyyy-MM-dd HH:mm:ss"
-                v-model="formDataInfo.master.accDate"
-              ></DatePicker>
-            </FormItem>
-          </Col>
-
           <Col span="6">
             <Row>
               <Col span="6">
@@ -126,40 +129,44 @@
               </Col>
             </Row>
           </Col>
-
-          <Col span="6">
-            <FormItem label="送货单号" prop="shNumber">
-              <Input v-model="formDataInfo.master.shNumber" maxlength="20" placeholder ></Input>
-            </FormItem>
-          </Col>
-          <Col span="6">
-            <FormItem label="车牌" prop="carNo">
-              <div>
-                <popup
+          <Col span="24">
+            <Row>
+            <Col span="6">
+              <FormItem label="送货单号" prop="shNumber">
+                <Input :disabled="detailDisabled" v-model="formDataInfo.master.shNumber" maxlength="20" placeholder="请输入送货单号" ></Input>
+              </FormItem>
+            </Col>
+            <Col span="6">
+              <FormItem label="车牌" prop="carNo">
+                <div>
+                  <popup
+                    :disabled="detailDisabled"
+                    v-model="formDataInfo.master.carNo"
+                    field-name="carNo"
+                    popup-name="CarSingleBox"
+                    :fill-model.sync="formDataInfo.master"
+                    render-fields="carNo"
+                    from-fields="carNo"
+                    :suffix="false"
+                    :blur-focus-load-data="false"
+                  />
+                </div>
+              </FormItem>
+            </Col>
+            <Col span="12">
+              <FormItem label="备注">
+                <Input
                   :disabled="detailDisabled"
-                  v-model="formDataInfo.master.carNo"
-                  field-name="carNo"
-                  popup-name="CarSingleBox"
-                  :fill-model.sync="formDataInfo.master"
-                  render-fields="carNo"
-                  from-fields="carNo"
-                  :suffix="false"
+                  v-model="formDataInfo.master.remark"
+                  maxlength="20"
+                  placeholder="请输入备注..."
+                  size="small"
+                  :rows="1"
                 />
-              </div>
-            </FormItem>
-          </Col>
-          <Col span="12">
-            <FormItem label="备注">
-              <Input
-                :disabled="detailDisabled"
-                v-model="formDataInfo.master.remark"
-                maxlength="20"
-                placeholder="请输入备注..."
-                size="small"
-                :rows="1"
-              />
-            </FormItem>
-          </Col>
+              </FormItem>
+            </Col>
+          </Row>
+        </Col>
         </Row>
       </Form>
   </div>
@@ -631,20 +638,20 @@ export default {
         request
           .post(`/stock/paperJoin/getSpPaperPOToPaperJoin`, {
             inProvider: this.getsupplierId,
-            ppoGroupNoList
-            // inProvider: this.getsupplierCode
+            ppoGroupNoList,
+            pageNum:this.pageConfig.pageNum,//(当前页),
+            pageSize:this.pageConfig.pageSize,//(每页显示条数)
           })
           .then(res => {
-            // debugger
-            if (res) {
+             // 添加分页
+            if (res && res.records && res.records.length>0) {
               for (let i = 0; i < res.length; i++) {
-                // res[i].ppoDate = dayjs().format("YYYY-MM-DD HH:mm:ss")//ppoDate
-                if (res[i].ppoDate) { res[i].ppoDate = res[i].ppoDate.replace('T', ' ').replace('.000+0000', '') }
-                if (res[i].ppoDueDate) { res[i].ppoDueDate = res[i].ppoDueDate.replace('T', ' ').replace('.000+0000', '') }
-                // res[i].ppoDueDate = dayjs().format("YYYY-MM-DD HH:mm:ss")//ppoDueDate
+                if (res.records[i].ppoDate) { res.records[i].ppoDate = res.records[i].ppoDate.replace('T', ' ').replace('.000+0000', '') }
+                if (res.records[i].ppoDueDate) { res.records[i].ppoDueDate = res.records[i].ppoDueDate.replace('T', ' ').replace('.000+0000', '') }
               }
+              _this.$refs.mychild.getFormInitDataObj(res)
             }
-            _this.$refs.mychild.getFormInitDataObj(res)
+            
           })
       } else {
         this.salveWindow.showEditWindow = false

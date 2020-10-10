@@ -72,6 +72,7 @@
                       render-fields="carId,carNo,owner"
                       from-fields="id,carNo,owner"
                       :suffix="false"
+                      :blurFocusLoadData='false'
                     />
                   </div>
                 </FormItem>
@@ -115,6 +116,7 @@
                   :fill-model.sync="formDataInfo.master"
                   render-fields="reason,frCode"
                   from-fields="frName,frCode"
+                  :blurFocusLoadData='false'
                   :query-params="{}"
                 />
               </div>
@@ -502,14 +504,14 @@ export default {
     // 获取批次号过滤字段
     getbatchNoList (dataindex) {
       let batchNoList = ''
-      let tabData = this.$refs['tableFields'].get().filter((item, index, data) => {
-        if (item.boxUseBatchOn === undefined || item.boxUseBatchOn === '' || dataindex === index) {
-          return
-        }
-        if (index === 0) {
-          batchNoList += item.boxUseBatchOn
-        } else {
-          batchNoList += ',' + item.boxUseBatchOn
+      let dataList = this.formDataInfo.boxUseReItemSlave.defaultList
+       dataList.filter((item, index, data) => {
+        if(!!item.boxUseBatchOn){
+          if(!!!batchNoList){
+            batchNoList += item.boxUseBatchOn
+          }else{
+            batchNoList += ',' + item.boxUseBatchOn
+          }
         }
       })
 
@@ -532,7 +534,9 @@ export default {
           .post(`/stock/BoxUseRe/getWorkInStore`, {
             // inBatchOn: "",
             batchNoList,
-            inSupplierId: this.formDataInfo.master.supplierId
+            inSupplierId: this.formDataInfo.master.supplierId,
+            pageNum:this.pageConfig.pageNum,//(当前页),
+            pageSize:this.pageConfig.pageSize,//(每页显示条数)
           })
           .then(res => {
             this.WorkOrderNumber1 = res
@@ -553,7 +557,7 @@ export default {
     },
     // 当主表弹框改变时促发初始化子表数据
     Initializationdata (data,value) {
-      debugger;
+    //  debugger;
       this.$refs["formDataInfo"].validateField(value, err => {});
       let tableData = this.$refs['tableFields'].getCategorizeData()
       if (this.formDataInfo.master.workerId) {

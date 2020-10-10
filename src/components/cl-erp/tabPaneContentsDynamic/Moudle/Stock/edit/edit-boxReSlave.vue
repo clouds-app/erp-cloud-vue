@@ -1,6 +1,8 @@
 <template>
   <div>
     <editWindow
+     :draggable="false"
+      :zindex="30"
       class="cl-edit-window-boxRe"
       title="纸箱退货工单选择"
       v-model="showWindow"
@@ -11,6 +13,9 @@
       @on-ok="formTableDataSubmit()"
       v-if="initColData.columns"
       :disabledSubmitBtn="disabledSubmitBtn"
+      ref="editWindow"
+      :showPageConfig="true"
+      @pageOnChange="pageOnChange"
     >
       <div ref="masterHeight">  
        <Form
@@ -40,13 +45,13 @@
                    transfer
                    style="width: 120px"
                     v-model="formDataInfo.master.startDate" 
-                    type="datetime"
+                    type="date"
                     format="yyyy-MM-dd"
                   ></DatePicker> - <DatePicker
                    transfer
                    style="width: 120px"
                     v-model="formDataInfo.master.endDate" 
-                    type="datetime"
+                    type="date"
                     format="yyyy-MM-dd"
                   ></DatePicker>
                 </FormItem>
@@ -54,7 +59,7 @@
               
              <Col span="1">
                  <FormItem>
-                   <Button :loading="loadingData" @click="searchDataBy()" type="primary">
+                   <Button :loading="loadingData" @click="searchDataBy('search')" type="primary">
                      <Icon type="md-search" />
                      搜索
                      </Button>
@@ -237,6 +242,10 @@ export default {
     this.loadColumsData()
   },
   methods: {
+     pageOnChange(_pageNum){
+      this.pageConfig.pageNum = _pageNum
+      this.searchDataBy()
+     },
       // 工单row选择事件回调
       onChange_SlaveItemChcBox(index){
           // let rowItem = this.formDataInfo['boxDeliSlaveItems'].defaultList[index] 
@@ -255,10 +264,17 @@ export default {
           //    }
           //  })
       },
-
+        // 重写父类 关闭窗口时 触发事件
+      closeActionTigger () {
+        this.resetPageConfig()
+        this.formDataInfo['boxReItems'].defaultList = []
+      },
       // 通过参数查询数据列表
-      searchDataBy(){
-        this.formDataInfo['boxReItems'].defaultList =[]
+      searchDataBy(type){
+        if(this.pageConfig.pageNum==1 || type=='search'){
+          this.resetPageConfig()
+           this.formDataInfo['boxReItems'].defaultList = []
+        }
        //参数包括
         let params = {
           startDate:dayjs(this.formDataInfo.master.startDate).format("YYYY-MM-DD"),//(开始日期)
@@ -272,12 +288,16 @@ export default {
           workNo:this.getCurrentKeyTypeWords('workNo'),//(工单号)
           likeFlag:this.formDataInfo.master.likeFlag,//(1模糊查询0精准查询)
           workNoList:this.searchParams.workNoList,//(过滤已选的工单号集合)
+          pageNum:this.pageConfig.pageNum,//(当前页),
+          pageSize:this.pageConfig.pageSize,//(每页显示条数)
         }
         this.loadingData=true
          request.post(`${this.functionParams.requestBaseUrl}/getBoxDeliBoxData`, params).then(res => {
-          if(res && res.length>0){
-            this.formDataInfo['boxReItems'].defaultList =res
-          }
+              if (res && res.records && res.records.length>0) {
+                this.formDataInfo['boxReItems'].defaultList.push(...res.records)
+              }
+              this.pageConfig.total = res.total // 赋值总条数
+              this.$refs['editWindow'].pageConfig= this.pageConfig
           this.loadingData=false
         }).catch(err=>{
           this.loadingData=false

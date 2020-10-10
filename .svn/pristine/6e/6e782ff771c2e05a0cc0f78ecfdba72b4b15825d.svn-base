@@ -1,0 +1,455 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-payment"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="70%"
+      :loading="!isLoaddingDone"
+      :disabledSubmitBtn="disabledSubmitBtn"
+      @on-ok="formDataSubmit()"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-massage="true"
+        :model="formDataInfo"
+        :rules="ruleValidate"
+        :label-width="100"
+        :disabled="detailDisabled"
+        class="paymentClassPadding"
+      >
+       <Row type="flex">
+           <Col span="8">
+            <FormItem label="付款单号" prop="spNo">
+              <Input :disabled="true" v-model="formDataInfo.spNo" maxlength="80" placeholder="付款单号"></Input>
+            </FormItem>
+          </Col>
+           <Col span="8">
+            <FormItem label="付款日期" prop="spDate">
+              <DatePicker
+                transfer
+                :value="formDataInfo.spDate"
+                type="date"
+                format="yyyy-MM-dd HH:mm:ss"
+              ></DatePicker>
+            </FormItem>
+          </Col>
+           <Col span="8">
+            <FormItem label="供应商编号" prop="supplierCode">
+              <popup
+                  ref='firstFocusInput'
+                v-model="formDataInfo.supplierCode"
+                field-name="supplierCode"
+                :disabled="false"
+                popup-name="SupplierSingleBox"
+                :fill-model.sync="formDataInfo"
+                render-fields="supplierId,supplierCode,supplierName,coinId,coinCode,coinName,taxRat,taxTp,rate,discount"
+                from-fields="id,purCode,purName,coinId,coinCode,coinName,taxRate,taxTP,coinRate,discount"
+                :suffix="true"
+                :suffix-model="formDataInfo.supplierName"
+                @on-fill="onFill"
+              />
+            </FormItem>
+          </Col>
+           <Col span="8">
+            <FormItem label="会计月份" prop="spYm">
+              <DatePicker transfer :value="formDataInfo.spYm" type="month" format="yyyyMM"></DatePicker>
+            </FormItem>
+          </Col>
+           <Col span="8">
+            <FormItem label="收据单号" prop="spOrderNo">
+              <Input
+                :disabled="false"
+                v-model="formDataInfo.spOrderNo"
+                maxlength="20"
+                placeholder="收据单号"
+              ></Input>
+            </FormItem>
+          </Col>
+           <Col span="8">
+            <FormItem label="付款类型" prop="spOrderType">
+              <optionSearch
+                @onChange="optionOnChange"
+                :defaultItem="formDataInfo.spOrderType"
+                :loaddingDataWhen="showWindow"
+                query="spOrderType"
+                formKey="spOrderType"
+              />
+            </FormItem>
+          </Col>
+           <Col span="8">
+            <FormItem label="付款货币" prop="coinCode">
+              <popup
+                v-model="formDataInfo.coinCode"
+                field-name="coinCode"
+                :disabled="false"
+                popup-name="CoinSingleBox "
+                :fill-model.sync="formDataInfo"
+                render-fields="coinId,coinCode,coinName,rate"
+                from-fields="id,coinCode,coinName,coinRate"
+                :suffix="true"
+                :suffix-model="formDataInfo.coinName"
+                :query-params="{}"
+                @on-fill="coinCodeOnFillEvent"
+              />
+            </FormItem>
+          </Col>
+           <Col span="8">
+            <FormItem label="汇率" prop="rate">
+              <inputNumber
+                style="width:100%"
+                :disabled="false"
+                v-model="formDataInfo.rate"
+                maxlength="20"
+                placeholder="汇率"
+                @on-change="changeRate()"
+              ></inputNumber>
+            </FormItem>
+          </Col>
+           <Col span="8">
+            <FormItem label="税率" prop="taxRat">
+              <inputNumber
+                :disabled="false"
+                style="width:100%"
+                type="number"
+                v-model="formDataInfo.taxRat"
+                maxlength="20"
+                placeholder="税率"
+              ></inputNumber>
+            </FormItem>
+          </Col>
+           <Col span="8">
+            <FormItem label="付款金额" prop="spamt">
+              <inputNumber
+                :disabled="false"
+                style="width:100%"
+                type="number"
+                v-model="formDataInfo.spamt"
+                maxlength="20"
+                placeholder="付款金额"
+                @on-change="changeInAmt()"
+              ></inputNumber>
+            </FormItem>
+          </Col>
+          <!--  <Col span="8">
+            <FormItem label="汇算金额" prop="inAmt">
+              <inputNumber
+                style="width:100%"
+                :disabled="true"
+                type="number"
+                v-model="formDataInfo.inAmt"
+                maxlength="20"
+                placeholder="汇算金额"
+              ></inputNumber>
+            </FormItem>
+          </Col>
+           <Col span="8">
+            <FormItem label="折扣(%)" prop="discount">
+              <inputNumber
+                @on-blur="changeDiscount()"
+                style="width:100%"
+                :disabled="false"
+                type="number"
+                v-model="formDataInfo.discount"
+                min=0
+                max=100
+                placeholder="折扣(%)"
+              ></inputNumber>
+            </FormItem>
+          </Col> -->
+           <Col span="8">
+            <FormItem label="入账金额" prop="accAmt">
+              <Input
+                :disabled="true"
+                type="number"
+                v-model="formDataInfo.accAmt"
+                maxlength="20"
+                placeholder="入账金额"
+              ></Input>
+            </FormItem>
+          </Col>
+           <Col span="8">
+            <FormItem label="单据类型" prop="billType">
+              <optionSearch
+                @onChange="optionOnChange"
+                :defaultItem="formDataInfo.billType"
+                :loaddingDataWhen="showWindow"
+                query="gatheringBillType"
+                formKey="billType"
+              />
+            </FormItem>
+          </Col>
+           <Col span="8">
+            <FormItem label="票据单号" prop="spInvNo">
+              <Input
+                :disabled="false"
+                v-model="formDataInfo.spInvNo"
+                maxlength="20"
+                placeholder="票据单号"
+              ></Input>
+            </FormItem>
+          </Col>
+           <Col span="8">
+           <FormItem label="到账日期" prop="spInDate">
+              <DatePicker
+                transfer
+                :value="formDataInfo.spInDate"
+                type="date"
+                format="yyyy-MM-dd"
+              ></DatePicker>
+            </FormItem>
+          </Col>
+           <Col span="8">
+            <FormItem label="备注" prop="remark">
+              <Input
+                :disabled="false"
+                v-model="formDataInfo.remark"
+                maxlength="80"
+                placeholder="备注"
+              ></Input>
+            </FormItem>
+          </Col>
+           <Col span="8">
+            <FormItem label="已冲金额" prop="writeOffAmt">
+              <Input
+                :disabled="true"
+                type="number"
+                v-model="formDataInfo.writeOffAmt"
+                maxlength="20"
+                placeholder="已冲金额"
+              ></Input>
+            </FormItem>
+          </Col>
+           <Col span="8">
+            <FormItem label="未冲金额" prop="noWriteOffAmtt">
+              <Input
+                :disabled="true"
+                type="number"
+                v-model="formDataInfo.noWriteOffAmtt"
+                maxlength="20"
+                placeholder="未冲金额"
+              ></Input>
+            </FormItem>
+          </Col>
+        </Row>
+      </Form>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-payment 已付款 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author mingxing
+ *
+ * @created 2020/05/27
+ */
+import dayjs from 'dayjs'
+import inputNumber from '@/components/input-number'
+import optionSearch from '../../components/optionSearch'
+import popup from '@/components/popup/popup'
+import editBaseMixins from '../../mixins/edit'
+import { deepCopy } from 'view-design/src/utils/assist'
+import { customValidator, uniqueValidator } from '@/libs/validator'
+import referenceField from '@/components/referenceField/referenceField'
+const default_formDataInfo = {
+  spYm: dayjs().format('YYYYMM'), // 会计月份
+  coinCode: '',
+  coinId: 0,
+  coinName: '',
+  // iisAudit: 0,
+  spOrderNo: '',
+  spDate: dayjs().format('YYYY-MM-DD HH:mm:ss'), // 初始化日期
+  spInDate: dayjs().format('YYYY-MM-DD HH:mm:ss'), // 初始化日期
+  spNo: '',
+  supplierId: '',
+  supplierCode: '',
+  purName: '',
+  remark: '',
+  status: 1, // 禁用
+  taxRat: 0,
+  spOrderType: '0',
+  spOrderTypeText: '',
+  spamt: 0,
+  inAmt: 0,
+  discount: 0,
+  accAmt: 0,
+  billType: '0',
+  spInvNo: '',
+  writeOffAmt: 0,
+  noWriteOffAmtt: 0,
+  rate: 0
+}
+export default {
+  name: 'edit-payment',
+  mixins: [editBaseMixins],
+  components: {
+    optionSearch,
+    popup,
+    referenceField,
+    inputNumber
+  },
+
+  data () {
+    return {
+      disabledSubmitBtn: false, // 是否禁用提交按钮
+      frommastername: 'accountPaymentFm',
+      actionSubtitle: '已付款', // 当前操作副标题
+      requestBaseUrl: '/account/payment', // 请求 查询 操作的基础路径
+      formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      // writeOffAmtDisabled: false, //已冲金额不等于0禁用
+      // 需要验证的数据
+      ruleValidate: {
+        supplierCode: [
+          { required: true, message: '供应商编号不能为空', trigger: 'blur' }
+        ]
+        // initDate: [
+        //   { required: true,type:'date',message: "初始化日期不能为空", trigger: "blur" }
+        // ],
+      }
+    }
+  },
+  watch: {
+    showWindow: function (n, o) {
+      // debugger
+      if (n) {
+        let _self = this
+        this.$nextTick(() => {
+          // 延迟赋值,不然数据还没有正确返回的情况下,无法绑定默认值
+          setTimeout(() => {
+            this.setDefaultData()
+          }, 1000)
+        })
+      }
+    }
+  },
+  methods: {
+    // 设置默认值
+    setDefaultData () {
+      // debugger
+      this.disabledSubmitBtn = false
+      // 判断是否禁用提交按钮
+      if (this.action != 'add' && this.formDataInfo.writeOffAmt != null && Number(this.formDataInfo.writeOffAmt) > 0) {
+        // 已开票金额一旦写入值时，单据不能修改/不能删除
+        this.disabledSubmitBtn = true
+      }
+    },
+    // 初始化日期 变动日期
+    // onChange_spDate(item) {
+    //   //debugger
+    //   if (!_.isEmpty(item)) {
+    //     this.formDataInfo.spDate = new Date(item);
+    //   }
+    // },
+    // 继承中修改,提交数据前 验证数据 ,默认 false 没有错误
+    validateBeforePost () {
+      // debugger
+      let spamt = Number(this.formDataInfo.spamt)
+      if (spamt <= 0) {
+        this.$Message.warning('付款金额要大于0')
+        return true
+      }
+      return false
+    },
+    // 继承中修改,添加数据时,重置修改一些提交的数据
+    resetAddformDataInfo (_data) {
+      // debugger
+      if (_data.spDate) {
+        _data.spDate = dayjs(_data.spDate).format('YYYY-MM-DD HH:mm:ss')
+      }
+      if (_data.spInDate) {
+        _data.spInDate = dayjs(_data.spInDate).format('YYYY-MM-DD HH:mm:ss')
+      }
+      return _data
+    },
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo () {
+      // debugger
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
+    },
+    // 重写父类 关闭窗口时 触发事件
+    closeActionTigger () {
+      // debugger
+      // fix 清除上次的错误提示 formDataInfo 为表单ref名称
+      this.$refs['formDataInfo'].resetFields()
+      this.formDataInfo = Object.assign({}, default_formDataInfo)
+    },
+    // 判断一个值是数字
+    myIsNaN (value) {
+      return typeof value === 'number' && !isNaN(value)
+    },
+    // 弹框值改变重新计算汇算金额
+    onFill(item) {
+      //debugger
+     if(!!!item[0].orignData.purCode){
+        this.formDataInfo.rate = 0
+     }
+      this.$refs["formDataInfo"].validateField("supplierCode", err => {});
+      this.reCalAccAmt()
+    },
+    // 计算汇算金额
+    changeInAmt() {
+      let spamtClone = this.formDataInfo.spamt
+      let isNumber = this.myIsNaN(Number(spamtClone))
+      if (!isNumber || (spamtClone + '').substr(0, 1) == '-') {
+        this.$Message.error('请输入正数')
+        return
+      }
+      this.reCalAccAmt()
+    },
+    // 重新计算 入账金额
+    reCalAccAmt(){
+         this.formDataInfo.accAmt = (
+          Number(this.formDataInfo.spamt) * Number(this.formDataInfo.rate)
+          ).toFixed(2)
+          // 未冲金额等于入账金额
+         this.formDataInfo.noWriteOffAmtt = this.formDataInfo.accAmt
+    },
+    // 货币选择后回调事件 汇率change 计算汇算金额
+    coinCodeOnFillEvent (item) {
+      // 货币改变
+      this.$refs['formDataInfo'].validateField('coinCode', err => {})
+      this.changeInAmt()
+    },
+    // 汇率change 计算汇算金额
+    changeRate () {
+      let rateClone = this.formDataInfo.rate
+      let isNumber = this.myIsNaN(Number(rateClone))
+      if (!isNumber || (rateClone + '').substr(0, 1) == '-') {
+        this.$Message.error('请输入正数')
+        return
+      }
+      this.reCalAccAmt()
+    },
+
+  }
+}
+</script>
+
+<style>
+.cl-edit-payment .ivu-form-item-label {
+  text-align: right;
+  vertical-align: middle;
+  float: left;
+  font-size: 14px;
+  color: #515a6e;
+  line-height: 17px;
+  padding: 7px 12px 10px 0;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+.cl-edit-payment .right-text {
+  width: 160%;
+}
+.paymentClassPadding {
+  padding-bottom: 120px !important;
+}
+</style>

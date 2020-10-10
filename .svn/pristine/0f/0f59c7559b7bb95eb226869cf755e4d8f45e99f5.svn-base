@@ -1,0 +1,1149 @@
+<template>
+  <div class="basContent">
+    <!-- <div id="Bas_sun">
+      <div id="Bas_one">
+        <p>
+          <Button @click="handleSubMenuEvent('dept','bas-department','部门')" type="success">部门</Button>
+        </p>
+        <br />
+        <br />
+        <p>
+          <Button @click="handleSubMenuEvent('team','bas-team','班别')" type="success">班别</Button>
+        </p>
+        <br />
+        <br />
+        <p>
+          <Button @click="handleSubMenuEvent('position','bas-position','职位')" type="success">职位</Button>
+        </p>
+        <br />
+        <br />
+        <p>
+          <Button @click="handleSubMenuEvent('worker','bas-worker','人员')" type="success">人员</Button>
+        </p>
+
+        <br />
+        <br />
+      </div>
+
+      <div id="Bas_one">
+        <p>
+          <Button @click="handleSubMenuEvent('car','bas-car','车辆')" type="success">车辆</Button>
+        </p>
+
+        <br />
+        <br />
+        <p>
+          <Button @click="handleSubMenuEvent('warehouse','bas-warehouse','仓库')" type="success">仓库</Button>
+        </p>
+
+        <br />
+        <br />
+        <p>
+          <Button @click="handleSubMenuEvent('coin','bas-coin','货币')" type="success">货币</Button>
+        </p>
+        <br />
+        <br />
+        <p>
+          <Button @click="handleSubMenuEvent('bank','bas-bank','银行')" type="success">银行</Button>
+        </p>
+
+        <br />
+        <br />
+        <p>
+          <Button @click="handleSubMenuEvent('unit','bas-unit','计量单位')" type="success">计量单位</Button>
+        </p>
+        <br />
+        <br />
+      </div>
+
+      <div id="Bas_one">
+        <p>
+          <Button @click="handleSubMenuEvent('fadeReason','bas-fadeReason','退货原因')" type="success" >退货原因</Button>
+        </p>
+        <br />
+        <br />
+        <p>
+          <Button @click="handleSubMenuEvent('payType','bas-payType','付款方式')" type="success">付款方式</Button>
+        </p>
+        <br />
+        <br />
+        <p>
+          <Button @click="handleSubMenuEvent('resume','bas-resume','摘要说明')" type="success">摘要说明</Button>
+        </p>
+        <br />
+        <br />
+        <p>
+          <Button @click="handleSubMenuEvent('machine','bas-machine','机台')" type="success">机台</Button>
+        </p>
+        <br />
+        <br />
+
+      </div>
+      <div id="Bas_one">
+        <p>
+          <Button @click="handleSubMenuEvent('paperLimit','Bas-paperLimit','纸宽')" type="success">纸宽</Button>
+        </p>
+        <br />
+        <br />
+        <p>
+          <Button @click="handleSubMenuEvent('art','bas-art','纸质')" type="success">纸质</Button>
+        </p>
+        <br />
+        <br />
+        <p>
+          <Button @click="handleSubMenuEvent('leng','bas-leng','楞别')" type="success">楞别</Button>
+        </p>
+
+        <br />
+        <br />
+        <p>
+          <Button @click="handleSubMenuEvent('box','bas-box','盒式公式')" type="success">盒式公式</Button>
+        </p>
+        <br />
+        <br />
+        <p>
+          <Button
+            @click="handleSubMenuEvent('specPrice','bas-specPrice','客户化计价盒式')"
+            type="success"
+          >客户化计价盒式</Button>
+        </p>
+        <br />
+        <br />
+      </div>
+
+      <div id="Bas_one">
+        <p>
+          <Button
+            @click="handleSubMenuEvent('boxSizeSet','bas-boxSizeSet','纸箱内外径设置')" type="success">纸箱内外径设置</Button>
+        </p>
+        <br />
+        <br />
+        <p>
+          <Button @click="handleSubMenuEvent('product','bas-product','产品资料')" type="info">产品资料</Button>
+        </p>
+        <br />
+        <br />
+
+        <p>
+          <Button
+            @click="handleSubMenuEvent('productSuite','bas-productSuite','纸箱产品套件')" type="info">纸箱产品套件</Button>
+        </p>
+        <br />
+        <br />
+        <p>
+          <Button @click="handleSubMenuEvent('color','bas-color','颜色')" type="success">颜色</Button>
+        </p>
+        <br />
+        <br />
+      </div>
+      <div id="Bas_one">
+        <p>
+          <Button @click="handleSubMenuEvent('printMarks','bas-printMarks','印唛')" type="success">印唛</Button>
+        </p>
+        <br />
+        <br />
+        <p>
+          <Button @click="handleSubMenuEvent('print','bas-print','印版')" type="success">印版</Button>
+        </p>
+        <br />
+        <br />
+        <p>
+          <Button
+            @click="handleSubMenuEvent('dieCuttingPlate','bas-dieCuttingPlate','模切板')" type="success">模切板</Button>
+        </p>
+        <br />
+        <br />
+        <p>
+          <Button @click="handleSubMenuEvent('workPro','bas-workPro','工序资料')" type="success">工序资料</Button>
+        </p>
+      </div>
+    </div> -->
+     <div class="basContentBox">
+         <div class="basItem upSideBox">
+             <div class="upSideItem upSideItem-left flexRowBox">
+                <div class="flexRowBoxItem itemTitleIcon">
+                </div>
+                <div class="flexRowBoxItem itemTitle">产品技术</div>
+                <!-- //背景箭头图层1 one -->
+                <div class="upSideArrowBox-one">
+                </div>
+                <!-- //背景箭头图层2 tow -->
+                <div class="upSideArrowBox-two">
+                    <div class="upSideArrowBoxTwo-Box">
+                          <div class="arrowTowBoxItem rowOne"></div>
+                          <div class="arrowTowBoxItem rowTwo"></div>
+                          <div class="arrowTowBoxItem rowThree">
+                              <div class="rowThreeItem rowThreeItem-one"></div>
+                              <div class="rowThreeItem rowThreeItem-two"></div>
+                          </div>
+                           <div class="arrowTowBoxItem rowFour"></div>
+                           <div class="arrowTowBoxItem rowFive"></div>
+                    </div>
+                </div>
+                  <!-- //背景箭头图层3 three -->
+                <div class="upSideArrowBox-three">
+                    <div class="upSideArrowBoxThree-Box">
+                       <div class="arrowThreeBoxItem arrowThreeBoxItem-one"></div>
+                    </div>
+                </div>
+                 <!-- //内容图层 layout one -->
+                <div class="contentLayout-oneBox">
+                    <div class="contentLayout-one-item contentColumn">
+                         <div class="columnItem oneColumn">
+                           <div @click="handleSubMenuEvent('leng','bas-leng','楞别',secondenum.leng.val.disabled)" class="oneColumnItem cursorPointer" :class="[secondenum.leng.val.disabled?'diabledOrAccess':'']">
+                               <div class="circleBallIconTitle">楞别</div>
+                           </div>
+                         </div>
+                         <div class="columnItem twoColumn">
+                             <div class="twoColumn-item rowOneBox">
+                                    <div @click="handleSubMenuEvent('art','bas-art','纸质',secondenum.art.val.disabled)" class="rowOneBoxItem paper cursorPointer" :class="[secondenum.art.val.disabled?'diabledOrAccess':'']">
+                                       <div class="circleBallIconTitle">纸质</div>
+                                    </div>
+                                    <div @click="handleSubMenuEvent('color','bas-color','颜色',secondenum.color.val.disabled)" :class="[secondenum.color.val.disabled?'diabledOrAccess':'']" class="rowOneBoxItem colour cursorPointer">
+                                       <div class="circleBallIconTitle">颜色</div>
+                                    </div>
+                             </div>
+                             <div class="twoColumn-item rowTwoBox">
+                                 <div @click="handleSubMenuEvent('productSuite','bas-productSuite','纸箱产品套件',secondenum.productSuite.val.disabled)" :class="[secondenum.productSuite.val.disabled?'diabledOrAccess':'']" class="rowTwoBoxItem suite cursorPointer">
+                                       <div class="circleBallIconTitle">套件</div>
+                                    </div>
+                                    <div @click="handleSubMenuEvent('product','bas-product','产品资料',secondenum.product.val.disabled)" :class="[secondenum.product.val.disabled?'diabledOrAccess':'']" class="rowTwoBoxItem products cursorPointer">
+                                       <div class="circleBallIconTitle">产品</div>
+                                    </div>
+                             </div>
+                             <div class="twoColumn-item rowThreeBox">
+                                   <div @click="handleSubMenuEvent('dieCuttingPlate','bas-dieCuttingPlate','模切板',secondenum.dieCuttingPlate.val.disabled)" :class="[secondenum.dieCuttingPlate.val.disabled?'diabledOrAccess':'']"   class="rowThreeBoxItem die-board cursorPointer">
+                                       <div class="circleBallIconTitle">模切板</div>
+                                    </div>
+                                    <div @click="handleSubMenuEvent('print','bas-print','印版',secondenum.print.val.disabled)" :class="[secondenum.print.val.disabled?'diabledOrAccess':'']" class="rowThreeBoxItem printing cursorPointer">
+                                       <div class="circleBallIconTitle">印版</div>
+                                    </div>
+                             </div>
+                         </div>
+                         <div class="columnItem threeColumn">
+                               <div @click="handleSubMenuEvent('workPro','bas-workPro','工序资料',secondenum.workPro.val.disabled)" :class="[secondenum.workPro.val.disabled?'diabledOrAccess':'']" class="threeColumnItem workingProcedure cursorPointer">
+                                   <div class="circleBallIconTitle">工序</div>
+                               </div>
+                                <div @click="handleSubMenuEvent('box','bas-box','盒式公式',secondenum.box.val.disabled)" :class="[secondenum.box.val.disabled?'diabledOrAccess':'']" class="threeColumnItem boxFormula cursorPointer">
+                                    <div class="circleBallIconTitle"> <span class="boxFormulaTitle">盒式公式</span> </div>
+                                </div>
+                                <div @click="handleSubMenuEvent('printMarks','bas-printMarks','印唛',secondenum.printMarks.val.disabled)" :class="[secondenum.printMarks.val.disabled?'diabledOrAccess':'']" class="threeColumnItem marking cursorPointer">
+                                    <div class="circleBallIconTitle">印唛</div>
+                                </div>
+                         </div>
+                         <div class="columnItem fourColumn">
+                             <div  @click="handleSubMenuEvent('specPrice','bas-specPrice','客户化计价盒式',secondenum.specPrice.val.disabled)" :class="[secondenum.specPrice.val.disabled?'diabledOrAccess':'']" class="fourColumnItem CustomizedPricingBox cursorPointer">
+                               <div class="CustomizedPricingBoxTitleBox">
+                                    <div class="title-one">客户化</div>
+                                    <div class="title-two">计价盒式</div>
+                               </div>
+                             </div>
+                             <div @click="handleSubMenuEvent('boxSizeSet','bas-boxSizeSet','纸箱内外径设置',secondenum.boxSizeSet.val.disabled)" :class="[secondenum.boxSizeSet.val.disabled?'diabledOrAccess':'']" class="fourColumnItem CartonOuterDiameterSetting cursorPointer">
+                                <div  class="CartonOuterDiameterSettingTitle">
+                                  <div class="title-one">纸箱外径</div>
+                                  <div class="title-two">设定</div>
+                                </div>
+                             </div>
+                         </div>
+                    </div>
+                </div>
+             </div>
+             <div class="upSideItem upSideItem-right flexRowBox">
+                <div class="flexRowBoxItem itemTitleIcon">
+                </div>
+                <div class="flexRowBoxItem itemTitle">生产</div>
+                <div class="ContentLayout-production">
+                    <div @click="handleSubMenuEvent('machine','bas-machine','机台',secondenum.machine.val.disabled)" :class="[secondenum.machine.val.disabled?'diabledOrAccess':'']"  class="productionItem production-one cursorPointer">
+                        <div class="production-one-title">机台</div>
+                    </div>
+                    <div @click="handleSubMenuEvent('paperLimit','Bas-paperLimit','纸宽',secondenum.paperLimit.val.disabled)" :class="[secondenum.paperLimit.val.disabled?'diabledOrAccess':'']" class="productionItem production-two cursorPointer">
+                       <div class="production-two-title">纸宽(宽幅)</div>
+                    </div>
+                </div>
+             </div>
+
+        </div>
+
+         <div class="basItem downSideBox">
+            <div class="downSideItem administration flexRowBox">
+                <div class="flexRowBoxItem itemTitleIcon">
+                </div>
+                <div class="flexRowBoxItem itemTitle">行政相关</div>
+                <!-- //行政相关 箭头背景图层 -1 -->
+                <div class="contentLayout-administration-arrowIcon">
+                    <div class="arrowIconItem arrowIconOne"></div>
+                     <div class="arrowIconItem arrowIconTwo">
+                          <div class="arrowIconTwoItem"></div>
+                     </div>
+                      <div class="arrowIconItem arrowIconThree"></div>
+                       <!-- <div class="arrowIconItem arrowIconFour"></div> -->
+                </div>
+                <!-- //行政相关 内容按钮图层 -2 -->
+                 <div class="contentLayout-administration">
+                       <div class="administrationRowItem department">
+                          <div @click="handleSubMenuEvent('dept','bas-dept','部门',secondenum.dept.val.disabled)" :class="[secondenum.dept.val.disabled?'diabledOrAccess':'']" class="departmentCircleBg cursorPointer" >
+                              <div class="departmentIcon">
+                                  <div class="administrationTitle">部门</div>
+                              </div>
+                          </div>
+
+                       </div>
+                        <div class="administrationRowItem teamGroup">
+                           <div @click="handleSubMenuEvent('team','bas-team','班别',secondenum.team.val.disabled)" :class="[secondenum.team.val.disabled?'diabledOrAccess':'']" class="teamGroupItem team cursorPointer">
+                                <div class="teamIcon">
+                                   <div class="administrationTitle">班别</div>
+                                </div>
+                           </div>
+                           <div @click="handleSubMenuEvent('position','bas-position','职位',secondenum.position.val.disabled)" :class="[secondenum.position.val.disabled?'diabledOrAccess':'']" class="teamGroupItem position cursorPointer">
+                              <div class="positionIcon">
+                                    <div class="administrationTitle">职位</div>
+                                 </div>
+                           </div>
+                        </div>
+                         <div class="administrationRowItem personnel">
+                             <div @click="handleSubMenuEvent('worker','bas-worker','人员',secondenum.worker.val.disabled)" :class="[secondenum.worker.val.disabled?'diabledOrAccess':'']" class="personnelCircleBg cursorPointer">
+                              <div class="personnelIcon">
+                                  <div class="administrationTitle">人员</div>
+                              </div>
+                          </div>
+                         </div>
+                          <!-- <div class="administrationRowItem archives">
+                              <div class="archivesCircleBg diabledOrAccess">
+                              <div class="archivesIcon">
+                                  <div class="administrationTitle">档案</div>
+                              </div>
+                          </div>
+                          </div> -->
+                </div>
+            </div>
+              <div class="downSideItem finance flexRowBox">
+                   <!-- // 财务--背景图层 1-->
+                 <div class="flexRowBoxItem itemTitleIcon">
+                </div>
+                <div class="flexRowBoxItem itemTitle">财务</div>
+                <!-- // 财务--内容图层 2-->
+                <div class="contentLayout-finance">
+                     <div class="financeConentBox">
+                         <div @click="handleSubMenuEvent('unit','bas-unit','计量单位',secondenum.unit.val.disabled)" :class="[secondenum.unit.val.disabled?'diabledOrAccess':'']" class="financeConentItem unitOfMeasurement cursorPointer">
+                            <div class="financeTitle">计量单位</div>
+                         </div>
+                         <div @click="handleSubMenuEvent('bank','bas-bank','银行',secondenum.bank.val.disabled)" :class="[secondenum.bank.val.disabled?'diabledOrAccess':'']" class="financeConentItem bank cursorPointer">
+                            <div class="financeTitle">银行</div>
+                         </div>
+                     </div>
+                      <div class="financeConentBox">
+                         <div @click="handleSubMenuEvent('coin','bas-coin','货币',secondenum.coin.val.disabled)" :class="[secondenum.coin.val.disabled?'diabledOrAccess':'']" class="financeConentItem currency cursorPointer">
+                            <div class="financeTitle">货币</div>
+                         </div>
+                         <div @click="handleSubMenuEvent('payType','bas-payType','付款方式',secondenum.payType.val.disabled)" :class="[secondenum.payType.val.disabled?'diabledOrAccess':'']" class="financeConentItem paymentMethod cursorPointer">
+                            <div class="financeTitle">付款方式 </div>
+                         </div>
+                      </div>
+                </div>
+              </div>
+                <div class="downSideItem stock flexRowBox">
+                    <div class="flexRowBoxItem itemTitleIcon">
+                    </div>
+                    <div class="flexRowBoxItem itemTitle">储运</div>
+                    <div class="contentLayout-stock">
+                         <div @click="handleSubMenuEvent('warehouse','bas-warehouse','仓库',secondenum.warehouse.val.disabled)" :class="[secondenum.warehouse.val.disabled?'diabledOrAccess':'']" class="stockItem warehouse cursorPointer">
+                             <div class="financeTitle">仓库</div>
+                           </div>
+                         <!-- <div class="stockItem region diabledOrAccess">
+                            <div class="financeTitle">地区</div>
+                         </div> -->
+                         <div @click="handleSubMenuEvent('car','bas-car','车辆',secondenum.car.val.disabled)" :class="[secondenum.car.val.disabled?'diabledOrAccess':'']"  class="stockItem vehicle cursorPointer">
+                            <div class="financeTitle">车辆</div>
+                         </div>
+                    </div>
+                </div>
+                  <div class="downSideItem other flexRowBox">
+                     <div class="flexRowBoxItem itemTitleIcon">
+                      </div>
+                      <div class="flexRowBoxItem itemTitle">其它 </div>
+                      <div class="contentLayout-other">
+                          <div @click="handleSubMenuEvent('resume','bas-resume','摘要说明',secondenum.resume.val.disabled)" :class="[secondenum.resume.val.disabled?'diabledOrAccess':'']" class="otherItem summaryDescription cursorPointer">
+                            <div class="financeTitle">摘要说明</div>
+                          </div>
+                          <div @click="handleSubMenuEvent('fadeReason','bas-fadeReason','退货原因',secondenum.fadeReason.val.disabled)" :class="[secondenum.fadeReason.val.disabled?'diabledOrAccess':'']"  class="otherItem reasonForReturn cursorPointer">
+                             <div class="financeTitle">退货原因</div>
+                          </div>
+                      </div>
+                 </div>
+        </div>
+     </div>
+
+  </div>
+</template>
+
+<script>
+import globleMixin from '@/mixins'
+// import subMenuMixin from './mixins'
+export default {
+  mixins: [globleMixin],
+  data () {
+    return {}
+  },
+  computed: {
+    secondenum () {
+      let dataList = this.$store.state.app.Secondaryauthority.Bas
+     // console.log(dataList)
+      return dataList
+    }
+  },
+  methods: {
+    // 子页面 参数: 页面.vue,唯一区别ID,TAB 标签显示名称
+    handleSubMenuEvent (currentPage, uniqueKey, tabName, flag) {
+      if (flag) {
+        this.$Message.warning('暂无权限,请与管理员联系!')
+        return
+      }
+      let params = {
+        menuName: 'Bas',
+        page: currentPage, // 显示控件页面
+        uniqueKey: uniqueKey,
+        lable: tabName,
+        isActive: true
+      }
+      this.handleMenuBaseEvent(params) // 调用MIXIN 共用方法
+    }
+  }
+}
+</script>
+
+<style lang="scss">
+ @mixin setFlexBox($direction:none) {
+   @if $direction==none{
+        display: flex;
+        display: -webkit-flex;
+        flex-direction: row;
+	}@else{
+      display: flex;
+      display: -webkit-flex;
+      flex-direction: column;
+  }
+ }
+ @mixin circleBallSetting{
+    width:57px;
+    height:57px;
+    border-radius:50%;
+ }
+ .basContent{
+    color: white;
+    min-height: 600px;
+    width: 100%;
+    display: flex;
+    display: -webkit-flex; /* Safari */
+    background: rgba(33, 46, 129, 1);
+    .basContentBox{
+
+        margin: 10px;
+        width: 100%;
+        border-radius: 5px;
+        box-shadow: 0px 0px 10px rgba(0, 222, 255, 1) inset;
+        display: flex;
+        display: -webkit-flex;
+        flex-direction: column;
+        .basItem{
+
+         // height: 50%;
+         // border:1px solid yellow;
+          &.upSideBox{
+
+                 height: 60%;
+                display: flex;
+                display: -webkit-flex;
+                flex-direction: row;
+             .upSideItem{
+
+                background:#3e3692;
+                //border:1px solid yellow;
+                border-radius:10px;
+                &.upSideItem-left{
+                  position: relative;
+                   margin: 20px 10px 20px 20px;
+                   width: 85%;
+                }
+                 &.upSideItem-right{
+                   position: relative;
+                   margin: 20px 20px 20px 10px;
+                   width: 15%;
+                }
+                  .upSideArrowBox-one{
+                    z-index: 1;
+                    position:absolute;
+                    top:0;
+                    left:0;
+                    //height: 100%;
+                    width: 100%;
+                    //border:10px solid pink;
+                    // background-image: url("../../../../assets/images/page-design/master-page/sale-arrow-icon.png");
+                    // background-position: 23% 15%;
+                    // background-repeat: no-repeat;
+                    // background-size: auto 10px;
+                      height: 100px;
+                    //  background: url("../../../../assets/images/svgIcon/arrow-right.svg");
+                     background: url("../../../../assets/images/right-4.png");
+                     background-position: 20% center;
+                     background-repeat: no-repeat;
+                     background-size: 120px 12px;
+                  }
+                  .upSideArrowBox-two{
+                    z-index: 2;
+                    position:absolute;
+                    top:0;
+                    left:0;
+                    height: 100%;
+                    width: 100%;
+                   // border:1px solid pink;
+                    .upSideArrowBoxTwo-Box{
+                       @include setFlexBox(column);
+                       //border:1px solid red;
+                       width: 89%;
+                       align-items: center;
+                       height: 100%;
+                       .arrowTowBoxItem{
+                         width: 25%;
+                         height: 20%;
+
+                         &.rowOne{
+                           height: 23%;
+                            margin-top: 25px;
+                            border:1px solid #ccc;
+                            border-top: 0px;
+
+                         }
+                         &.rowTwo{
+                                height: 23px;
+                                // background: url("../../../../assets/images/svgIcon/arrow-down.svg");
+                                background: url("../../../../assets/images/down.png");
+                                background-position: center center;
+                                background-repeat: no-repeat;
+                                // background-size: 23px 100px;
+                                background-size: 10px 25px;
+                         }
+                         &.rowThree{
+                              height: 10%;
+                             width: 600px; // 重新定义宽度
+                            @include setFlexBox();
+                            .rowThreeItem{
+                              width: 100%;
+                              height: 40px;
+                              //border:1px solid blue;
+                              &.rowThreeItem-one{
+                                  // background-image: url("../../../../assets/images/page-design/master-page/sale-arrow-icon-left-long.png");
+                                  background-image: url("../../../../assets/images/left-3.png");
+                                  background-position: 92% 78%;
+                                  background-repeat: no-repeat;
+                                  // background-size:  130px 6px;
+                                  background-size:  110px 13px;
+                              }
+                              &.rowThreeItem-two{
+                                margin-left:50px;
+                                  // background-image: url("../../../../assets/images/page-design/master-page/sale-arrow-icon-left-long.png");
+                                  background-image: url("../../../../assets/images/left-3.png");
+                                  background-position: 50% 78%;
+                                  background-repeat: no-repeat;
+                                  // background-size:  250px 6px; ;
+                                  background-size:  150px 12px; 
+                              }
+                            }
+                            // border:1px solid yellow;
+                         }
+                         &.rowFour{
+                             //margin-top:15px;
+                              // height:10%;
+                              // background-image: url("../../../../assets/images/page-design/master-page/sale-arrow-icon-up.png");
+                              // background-position: center bottom;
+                              // background-repeat: no-repeat;
+                              // background-size: 8px 20px ;
+                                height:20%;
+                                // background: url("../../../../assets/images/svgIcon/arrow-up.svg");
+                                background: url("../../../../assets/images/up-3.png");
+                                background-position: center bottom;
+                                background-repeat: no-repeat;
+                                background-size: 10px 35px;
+                         }
+                         &.rowFive{
+                            margin-bottom: 25px;
+                            border:1px solid #ccc;
+                            border-bottom: 0px;
+
+                         }
+                       }
+
+                    }
+                  }
+                   .upSideArrowBox-three{
+                    z-index: 3;
+                    position:absolute;
+                    top:0;
+                    left:0;
+                    height: 100%;
+                    width: 100%;
+                    .upSideArrowBoxThree-Box{
+                       @include setFlexBox();
+                        height: 100%;
+                        width:76%;
+                        justify-content: flex-end;
+                        align-items: center;
+                       .arrowThreeBoxItem{
+                        &.arrowThreeBoxItem-one{
+                             width: 10%;
+                             height: 65%;
+                            border:1px solid #ccc;
+                             border-right: 0px;
+                        }
+                      }
+                    }
+
+                  }
+                  .contentLayout-oneBox{
+                    z-index: 4;
+                    position:absolute;
+                    top:0;
+                    left:0;
+                    height: 100%;
+                    width: 100%;
+                   // background: chocolate;
+                    @include setFlexBox();
+                    .contentLayout-one-item{
+                      height: 100%;
+                     &.contentColumn{
+                       @include setFlexBox();
+                       width: 100%;
+                       //border: 1px solid yellow;
+                       .columnItem{
+                         //width: 25%;
+                         //border: 1px solid purple;
+                         &.oneColumn{
+                             width: 15%;
+                             @include setFlexBox(column);
+                              align-items: flex-end;
+                             .oneColumnItem{
+                                @include circleBallSetting;
+                                margin-top:20px;
+                                background:linear-gradient(90deg,rgba(11,73,251,1),rgba(101,141,255,1));
+                                border:1px solid rgba(78, 124, 255, 0.67);
+                             }
+                         }
+                          &.twoColumn{
+                             width: 50%;
+                             padding-left: 100px;
+                             @include setFlexBox(column);
+                             .twoColumn-item{
+                               height: 33.33%;
+                              // border:1px solid gold;
+                               &.rowOneBox{
+                                  @include setFlexBox();
+                                   justify-content:center;
+                                   align-items:center;
+                                  .rowOneBoxItem{
+                                    @include circleBallSetting;
+                                    background:linear-gradient(90deg,rgba(4,152,101,1),rgba(3,199,160,1));
+                                    border:1px solid rgba(2, 132, 89, 0.38);
+                                    &.paper{
+
+                                    }
+                                    &.colour{
+                                      margin-left: 200px;
+                                    }
+                                  }
+                               }
+                               &.rowTwoBox{
+                                    @include setFlexBox();
+                                   //justify-content:center;
+                                   //padding-right:110px;
+                                   padding-bottom: 10px;
+                                   align-items:center;
+                                  .rowTwoBoxItem{
+                                    @include circleBallSetting;
+                                    background:linear-gradient(90deg,rgba(254,122,59,1),rgba(255,173,133,1));
+                                    border:1px solid rgba(224, 91, 27, 0.38);
+                                    &.suite{
+
+                                    }
+                                    &.products{
+                                      margin-left: 33%;
+                                    }
+                                  }
+                               }
+                                &.rowThreeBox{
+                                  @include setFlexBox();
+                                   justify-content:center;
+                                   align-items:center;
+                                  .rowThreeBoxItem{
+                                    @include circleBallSetting;
+                                   background:linear-gradient(90deg,rgba(122,45,252,1),rgba(157,101,252,1));
+                                    border:1px solid rgba(102, 31, 223, 0.67);
+                                    &.die-board{
+
+                                    }
+                                    &.printing{
+                                      margin-left: 200px;
+                                    }
+                                  }
+                               }
+                             }
+                         }
+                          &.threeColumn{
+                               width: 20%;
+                              @include setFlexBox(column);
+                              justify-content:center;
+                              align-items:center;
+                              .threeColumnItem{
+                                  @include circleBallSetting;
+                                  background:linear-gradient(90deg,rgba(11,73,251,1),rgba(101,141,255,1));
+                                  border:1px solid rgba(78, 124, 255, 0.67);
+                                  &.workingProcedure{
+
+                                  }
+                                  &.boxFormula{
+                                    .boxFormulaTitle{
+                                      font-size: 12px;
+                                    }
+                                    margin-top:45px;
+
+                                  }
+                                  &.marking{
+                                    margin-top:45px;
+                                  }
+                              }
+                         }
+                          &.fourColumn{
+                             width: 15%;
+                             @include setFlexBox(column);
+                             justify-content: center;
+                             align-items: center;
+                             .fourColumnItem{
+                                width:100px;
+                                height:50px;
+                                background:linear-gradient(90deg,rgba(11,73,251,1),rgba(61,111,254,1));
+                                border-radius:5px;
+                             &.CustomizedPricingBox{
+                               .CustomizedPricingBoxTitleBox{
+                                 text-align: center;
+                                 line-height: 25px;
+                               }
+                             }
+                             &.CartonOuterDiameterSetting{
+                               margin-top:20px;
+                               .CartonOuterDiameterSettingTitle{
+                                 text-align: center;
+                                 line-height: 25px;
+                               }
+                             }
+                             }
+
+                         }
+                       }
+                      }
+
+                    }
+
+                  }
+                  .ContentLayout-production{
+                      z-index: 1;
+                      position:absolute;
+                      top:0;
+                      left:0;
+                      height: 100%;
+                      width: 100%;
+                     // border:1px solid pink;
+                      @include setFlexBox(column);
+                      justify-content: center;
+                      align-items:center;
+                      .productionItem{
+                          width:100px;
+                          height:40px;
+                          border-radius:18px;
+                          &.production-one{
+                               background:linear-gradient(90deg,rgba(17,78,253,1),rgba(125,159,255,1));
+                              border:2px solid rgba(5, 66, 243, 0.38);
+                              .production-one-title{
+                                text-align: center;
+                                line-height: 40px;
+                              }
+                          }
+                          &.production-two{
+                             margin-top:40px;
+                             background:linear-gradient(90deg,rgba(4,152,101,1),rgba(3,199,160,1));
+                              border:2px solid rgba(2, 132, 89, 0.38);
+                              .production-two-title{
+                                text-align: center;
+                                line-height: 40px;
+                              }
+                          }
+                      }
+                  }
+
+             }
+
+          }
+          &.downSideBox{
+             height: 40%;
+              display: flex;
+              display: -webkit-flex;
+              flex-direction: row;
+             .downSideItem{
+                background:#3e3692;
+                border-radius:10px;
+                //border:1px solid yellow;
+                &.administration{
+                    margin: 0px 10px 20px 20px;
+                    width: 43%;
+                    position: relative;
+                }
+                &.finance{
+                  // 财务 背景图标
+                   position: relative;
+                     margin: 0px 10px 20px 10px;
+                     width: 24%;
+
+                }
+                .contentLayout-finance{
+                  // 财务  内容图层
+                   position:absolute;
+                  left:0;
+                  top:0;
+                  // border:1px solid purple;
+                   width: 100%;
+                   height: 100%;
+                   @include setFlexBox();
+                   .financeConentBox{
+                     width: 50%;
+                     //border:1px solid yellow;
+                     @include setFlexBox(column);
+                     justify-content:center;
+                     align-items:center;
+                     .financeConentItem{
+                        width:100px;
+                        height:40px;
+                        border-radius:18px;
+                        &.unitOfMeasurement{
+                            background:linear-gradient(90deg,rgba(132,62,246,1),rgba(153,134,250,1));
+                             border:2px solid rgba(77, 14, 185, 0.38);
+                        }
+                        &.bank{
+                          margin-top:20px;
+                          background:linear-gradient(90deg,rgba(4,152,101,1),rgba(3,199,160,1));
+                            border:2px solid rgba(2, 132, 89, 0.38);
+                        }
+                        &.currency{
+                          background:linear-gradient(90deg,rgba(4,152,101,1),rgba(3,199,160,1));
+                            border:2px solid rgba(2, 132, 89, 0.38);
+                        }
+                         &.paymentMethod{
+                          margin-top:20px;
+                          background:linear-gradient(90deg,rgba(17,78,253,1),rgba(125,159,255,1));
+                          border:2px solid rgba(5, 66, 243, 0.38);
+                        }
+                     }
+                   }
+
+                }
+                &.stock{
+                  // 储运
+                   margin: 0px 10px 20px 10px;
+                   width: 15%;
+                      position: relative;
+                }
+                .contentLayout-stock{
+                  // 储运 内容图层
+                   position:absolute;
+                    left:0;
+                    top:0;
+                    //border:1px solid purple;
+                    width: 100%;
+                    height: 100%;
+                    @include setFlexBox(column);
+                    justify-content:center;
+                    align-items:center;
+                    .stockItem{
+                        width:100px;
+                        height:40px;
+                        border-radius:18px;
+                        &.warehouse{
+                          // 仓库
+                            background:linear-gradient(90deg,rgba(4,152,101,1),rgba(3,199,160,1));
+                            border:2px solid rgba(2, 132, 89, 0.38);
+                        }
+                        &.region{
+                          margin-top:10px;
+                          // 地区
+                          background:linear-gradient(90deg,rgba(17,78,253,1),rgba(125,159,255,1));
+                          border:2px solid rgba(5, 66, 243, 0.38);
+                        }
+                        &.vehicle{
+                          // 车俩
+                           margin-top:10px;
+                          background:linear-gradient(90deg,rgba(132,62,246,1),rgba(153,134,250,1));
+                          border:2px solid rgba(77, 14, 185, 0.38);
+                        }
+                    }
+
+                }
+                &.other{
+                   margin: 0px 20px 20px 10px;
+                   width: 15%;
+                    position: relative;
+                }
+                .contentLayout-other{
+                    position:absolute;
+                    left:0;
+                    top:0;
+                    //border:1px solid purple;
+                    width: 100%;
+                    height: 100%;
+                    @include setFlexBox(column);
+                    justify-content:center;
+                    align-items:center;
+                    .otherItem{
+                        width:100px;
+                        height:40px;
+                        border-radius:18px;
+                        &.summaryDescription{
+                          // 摘要说明
+                           background:linear-gradient(90deg,rgba(132,62,246,1),rgba(153,134,250,1));
+                            border:2px solid rgba(77, 14, 185, 0.38);
+                        }
+                        &.reasonForReturn{
+                          // 退货原因
+                          margin-top:20px;
+                          background:linear-gradient(90deg,rgba(17,78,253,1),rgba(125,159,255,1));
+                          border:2px solid rgba(5, 66, 243, 0.38);
+                        }
+                    }
+
+                }
+                .contentLayout-administration-arrowIcon{
+                    position:absolute;
+                    left:0;
+                    top:0;
+                    //border:1px solid pink;
+                    width: 100%;
+                    height: 100%;
+                    z-index: 1;
+                   @include setFlexBox();
+                    .arrowIconItem{
+                      //border:1px solid yellow;
+                      &.arrowIconOne{
+                         //padding-left:10px;
+                          width: 30%;
+                          // background-image: url("../../../../assets/images/page-design/master-page/sale-arrow-icon.png");
+                          // background-position: right 30%;
+                          // background-repeat: no-repeat;
+                          // background-size: auto 10px;
+                            height: 140px;
+                            background: url("../../../../assets/images/right-4.png");
+                            background-position: 100% center;
+                            background-repeat: no-repeat;
+                            // background-size: 50px 100px;
+                            background-size: 70px 13px;
+                      }
+                       &.arrowIconTwo{
+                          width: 25%;
+                          @include setFlexBox();
+                          justify-content: flex-end;
+                          align-items: center;
+                          .arrowIconTwoItem{
+                           // margin-left: 20px;
+                            width: 90px;
+                            height: 90px;
+                            border:1px solid #ccc;
+                            border-left: 0;
+                          }
+                      }
+                        &.arrowIconThree{
+                           width: 23%;
+                          //   background-image: url("../../../../assets/images/page-design/master-page/sale-arrow-icon.png");
+                          // background-position: left center;
+                          // background-repeat: no-repeat;
+                          // background-size: auto 10px;
+                            //height: 100px;
+                            // background: url("../../../../assets/images/svgIcon/arrow-right.svg");
+                            background: url("../../../../assets/images/right-4.png");
+                            background-position: left center;
+                            background-repeat: no-repeat;
+                            background-size: 55px 13px;
+                      }
+                       &.arrowIconFour{
+                        width: 23%;
+                          //   background-image: url("../../../../assets/images/page-design/master-page/sale-arrow-icon.png");
+                          // background-position: left center;
+                          // background-repeat: no-repeat;
+                          // background-size: auto 10px;
+                          //  background: url("../../../../assets/images/svgIcon/arrow-right.svg");
+                           background: url("../../../../assets/images/right-4.png");
+                            background-position: left center;
+                            background-repeat: no-repeat;
+                            background-size: 60px 13px;
+                      }
+
+                    }
+                }
+                .contentLayout-administration{
+                  position:absolute;
+                  left:0;
+                  top:0;
+                  //background: chocolate;
+                  width: 100%;
+                  height: 100%;
+                   z-index: 2;
+                  @include setFlexBox();
+                   .administrationRowItem{
+                     width: 25%;
+                   //  border:1px solid purple;
+                     &.department{
+                         @include setFlexBox(column);
+                         //justify-content: center;
+                         align-items: center;
+                        // 部门
+                        .departmentCircleBg{
+                           margin-top:25%;
+                            @include circleBallSetting;
+                            background:linear-gradient(90deg,rgba(11,73,251,1),rgba(101,141,255,1));
+                            border:1px solid rgba(78, 124, 255, 0.67);
+                            .departmentIcon{
+                                width: 100%;
+                                height: 100%;
+                                background-image: url("../../../../assets/images/page-design/master-page/icon-deparment.png");
+                                background-position: center 20%;
+                                background-repeat: no-repeat;
+                                background-size: auto 25px;
+                            }
+                        }
+                     }
+                     &.teamGroup{
+                       // 班组
+                       @include setFlexBox(column);
+                       justify-content: center;
+                       align-items: center;
+                       .teamGroupItem{
+                           @include circleBallSetting;
+                          &.team{
+                                 background:linear-gradient(90deg,rgba(122,45,252,1),rgba(157,101,252,1));
+                                 border:1px solid rgba(102, 31, 223, 0.67);
+                                 .teamIcon{
+                                     // 班组 ICON
+                                      width: 100%;
+                                      height: 100%;
+                                      background-image: url("../../../../assets/images/page-design/master-page/icon-team.png");
+                                      background-position: center 20%;
+                                      background-repeat: no-repeat;
+                                      background-size: auto 25px;
+                                 }
+                          }
+                          &.position{
+                              margin-top:20px;
+                              background:linear-gradient(90deg,rgba(4,152,101,1),rgba(3,199,160,1));
+                              border:1px solid rgba(2, 132, 89, 0.38);
+                              .positionIcon{
+                                    // 职位 ICON
+                                      width: 100%;
+                                      height: 100%;
+                                      background-image: url("../../../../assets/images/page-design/master-page/icon-position.png");
+                                      background-position: center 20%;
+                                      background-repeat: no-repeat;
+                                      background-size: auto 25px;
+                              }
+                          }
+                       }
+
+                     }
+                     &.personnel{
+                       // 人员
+                       @include setFlexBox(column);
+                       justify-content: center;
+                       align-items: flex-end;
+                       .personnelCircleBg{
+                            @include circleBallSetting;
+                           background:linear-gradient(90deg,rgba(4,152,101,1),rgba(3,199,160,1));
+                            border:1px solid rgba(2, 132, 89, 0.38);
+                            .personnelIcon{
+                                width: 100%;
+                                height: 100%;
+                                background-image: url("../../../../assets/images/page-design/master-page/icon-personnel.png");
+                                background-position: center 20%;
+                                background-repeat: no-repeat;
+                                background-size: auto 25px;
+                            }
+                        }
+                     }
+                     &.archives{
+                       // 档案
+                        @include setFlexBox(column);
+                       justify-content: center;
+                       align-items: flex-end;
+                       margin-right:5px;
+                       .archivesCircleBg{
+                            @include circleBallSetting;
+                           background:linear-gradient(90deg,rgba(11,73,251,1),rgba(101,141,255,1));
+                          border:1px solid rgba(78, 124, 255, 0.67);
+                            .archivesIcon{
+                                width: 100%;
+                                height: 100%;
+                                background-image: url("../../../../assets/images/page-design/master-page/icon-archives.png");
+                                background-position: center 20%;
+                                background-repeat: no-repeat;
+                                background-size: auto 25px;
+                            }
+                        }
+                     }
+                    .administrationTitle{
+                              text-align: center;
+                              line-height: 85px;
+                            }
+                   }
+                }
+             }
+          }
+
+        }
+           // 禁用 获取功能未实现 灰色 按钮
+          .diabledOrAccess {
+            -webkit-filter: grayscale(100%);
+            -moz-filter: grayscale(100%);
+            -ms-filter: grayscale(100%);
+            -o-filter: grayscale(100%);
+            filter: grayscale(100%);
+            filter: gray;
+          }
+          .cursorPointer {
+            cursor: pointer;
+          }
+        // 通用 BOX
+        .flexRowBox{
+          display: flex;
+          display: -webkit-flex;
+          flex-direction: row;
+        }
+        // 通用 ITEM
+        .flexRowBoxItem{
+           // 文字和ICON 共用
+           &.itemTitleIcon{
+              margin-top:13px;
+              background: #2E68EA;
+              margin-left:10px;
+              width:5px;
+              height:15px;
+           }
+           &.itemTitle{
+              margin-top:10px;
+                margin-left:5px;
+                height:20px;
+           }
+        }
+         //通用 圆球 图标 标题
+         .circleBallIconTitle{
+          text-align: center;
+          line-height: 57px;
+        }
+        .financeTitle{
+            text-align: center;
+          line-height: 40px;
+        }
+    }
+
+ }
+</style>

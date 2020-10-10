@@ -1,6 +1,8 @@
 <template>
   <div>
     <editWindow
+    :draggable="false"
+      :zindex="30"
       id="cl-edit-salesOrder"
       :title="actionLableName"
       v-model="showWindow"
@@ -194,7 +196,6 @@ export default {
       // 需要验证的数据
       ruleValidate: {},
       tableFieldsValidator: {},
-      //   actionSubtitle: "纸箱成品入库工单", // 当前操作副标题
       title: '工单号',
       formName: 'wproSendOutItemBoxFm',
       propvalue: 'workNo', // 存储子表每个对应的字段

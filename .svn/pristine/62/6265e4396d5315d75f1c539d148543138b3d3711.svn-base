@@ -1,0 +1,410 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-otherMoeny"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="80%"
+      :loading="!isLoaddingDone"
+      :disabledSubmitBtn="disabledSubmitBtn"
+      @on-ok="formDataSubmit()"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-massage="true"
+        :model="formDataInfo"
+        :rules="ruleValidate"
+        :label-width="100"
+        :disabled="detailDisabled"
+      >
+        <Row type="flex">
+          <Col span="8">
+            <FormItem label="其他应收单号" prop="omNo">
+              <Input
+                :disabled="true"
+                v-model="formDataInfo.omNo"
+                maxlength="80"
+                placeholder="其他应收单号"
+              ></Input>
+            </FormItem>
+          </Col>
+          <Col span="8">
+            <FormItem label="单据日期" prop="omDate">
+              <DatePicker
+                @on-change="onChange_omDate"
+                transfer
+                :value="formDataInfo.omDate"
+                type="datetime"
+                format="yyyy-MM-dd HH:mm:ss"
+              ></DatePicker>
+            </FormItem>
+          </Col>
+          <Col span="8">
+            <FormItem label="客户编号" prop="custCode">
+              <popup
+              ref='firstFocusInput'
+                v-model="formDataInfo.custCode"
+                field-name="custCode"
+                :disabled="false"
+                popup-name="CustomerCommonSingleBox"
+                :fill-model.sync="formDataInfo"
+                render-fields="custId,custCode,custName,curyId,coinCode,coinName,taxRat,workName,omDiscount,rate,taxTp"
+                from-fields="id,cusCode,cusName,coinId,coinCode,coinName,taxRate,saleName,discount,coinRate,taxTP"
+                :suffix="true"
+                :suffix-model="formDataInfo.custName"
+                @on-fill="custCodeOnFillEvent"
+              />
+            </FormItem>
+          </Col>
+          <Col span="8">
+            <FormItem label="会计月份" prop="omYm">
+              <DatePicker
+                @on-change="onChange_omYm"
+                transfer
+                :value="formDataInfo.omYm"
+                type="month"
+                format="yyyyMM"
+              ></DatePicker>
+            </FormItem>
+          </Col>
+          <Col span="8">
+            <FormItem label="未开票金额" prop="omNoIvAmt">
+              <Input
+                :disabled="true"
+                type="number"
+                v-model="formDataInfo.omNoIvAmt"
+                maxlength="20"
+                placeholder="未开票金额"
+              ></Input>
+            </FormItem>
+          </Col>
+          <Col span="8">
+            <FormItem label="已开票金额" prop="omIvAmt">
+              <Input
+                :disabled="true"
+                type="number"
+                v-model="formDataInfo.omIvAmt"
+                maxlength="20"
+                placeholder="已开票金额"
+              ></Input>
+            </FormItem>
+          </Col>
+          <Col span="8">
+            <FormItem label="货币" prop="coinName">
+              <popup
+               :disabled="true"
+                v-model="formDataInfo.coinCode"
+                field-name="coinCode"
+                popup-name="CoinSingleBox "
+                :fill-model.sync="formDataInfo"
+                render-fields="curyId,coinCode,coinName"
+                from-fields="id,coinCode,coinName"
+                :suffix="true"
+                :suffix-model="formDataInfo.coinName"
+                :query-params="{}"
+              />
+            </FormItem>
+          </Col>
+          <Col span="8">
+            <FormItem label="税率" prop="taxRat">
+                <InputNumber
+                style="width:100%"
+                  :disabled="true"
+                  placeholder="税率"
+                  maxlength="20"
+                  v-model="formDataInfo.taxRat"
+                />
+            </FormItem>
+          </Col>
+          <Col span="8">
+            <FormItem label="应收金额" prop="omZqAmt">
+              <Input
+                @on-change="onChange_omDiscount"
+                :disabled="false"
+                type="number"
+                v-model="formDataInfo.omZqAmt"
+                maxlength="20"
+                placeholder="应收金额"
+              ></Input>
+            </FormItem>
+          </Col>
+          <Col span="8">
+            <FormItem label="折扣(%)" prop="omDiscount">
+             
+                <InputNumber
+                  @on-change="onChange_omDiscount"
+                  :disabled="false"
+                  style="width:100%"
+                  placeholder="折扣(%)" 
+                  :min="0"
+                  :max="100"
+                  v-model="formDataInfo.omDiscount"
+                />
+            </FormItem>
+          </Col>
+          <Col span="8">
+            <FormItem label="折后金额" prop="omAmt">
+              <Input
+                :disabled="true"
+                type="number"
+                v-model="formDataInfo.omAmt"
+                maxlength="20"
+                placeholder="折后金额"
+              ></Input>
+            </FormItem>
+          </Col>
+          <Col span="8">
+            <FormItem label="税别" prop="taxTp">
+              <optionSearch
+                :disabled="true"
+                @onChange="optionOnChange"
+                :defaultItem="formDataInfo.taxTp+''"
+                :loaddingDataWhen="showWindow"
+                formKey="taxTp"
+                query="taxTp"
+              />
+            </FormItem>
+          </Col>
+          <!--  参数： workOptType  1---业务员 -->
+          <Col span="8">
+            <FormItem label="业务员" prop="workName">
+              <Input
+                :disabled="true"
+                v-model="formDataInfo.workName"
+                maxlength="20"
+                placeholder="业务员"
+              ></Input>
+            </FormItem>
+          </Col>
+          <!-- <Col span="4">
+            <FormItem label="汇率" prop="rate">
+              <Input
+                :disabled="false"
+                type="number"
+                v-model="formDataInfo.rate"
+                maxlength="20"
+                placeholder="汇率"
+              ></Input>
+            </FormItem>
+          </Col> -->
+          <Col span="16">
+            <FormItem label="备注" prop="remark">
+              <Input
+                :disabled="false"
+                v-model="formDataInfo.remark"
+                maxlength="80"
+                placeholder="备注"
+              ></Input>
+            </FormItem>
+          </Col>
+        </Row>
+      </Form>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-otherMoeny 其他应收 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2020/04/27
+ */
+import dayjs from "dayjs";
+import optionSearch from "../../components/optionSearch";
+import popup from "@/components/popup/popup";
+import editBaseMixins from "../../mixins/edit";
+import { deepCopy } from "view-design/src/utils/assist";
+import { customValidator, uniqueValidator } from "@/libs/validator";
+import referenceField from "@/components/referenceField/referenceField";
+const default_formDataInfo = {
+  curyId: 0,
+  custCode: "",
+  coinCode: "",
+  coinName: "",
+  custId: 0,
+  custName: "",
+  hasDelete: false,
+  omAmt: 0,
+  omDate: new Date(dayjs().format("YYYY-MM-DD HH:mm:ss")), // 单据日期
+  omDiscount: 100,
+  omIvAmt: 0,
+  omNo: "",
+  omNoIvAmt: 0,
+  omYm: new Date(dayjs().format("YYYY-MM")), // 会计月份
+  omZqAmt: 0,
+  rate: 0,
+  remark: "",
+  status: 1, // 是否禁用
+  taxRat: 0,
+  taxTp: "0",
+  taxTypeText: ""
+};
+export default {
+  name: "edit-purinit",
+  mixins: [editBaseMixins],
+  components: {
+    optionSearch,
+    popup,
+    referenceField
+  },
+
+  data() {
+    return {
+      disabledSubmitBtn: false, // 是否禁用提交按钮
+      actionSubtitle: "其他应收", // 当前操作副标题
+      requestBaseUrl: "/account/otherMoeny", // 请求 查询 操作的基础路径
+      formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {
+        custCode: [
+          { required: true, message: "客户编号不能为空", trigger: "blur" }
+        ],
+        omDate: [
+          {
+            required: true,
+            type: "date",
+            message: "单据日期不能为空",
+            trigger: "blur"
+          }
+        ],
+        omYm: [
+          {
+            required: true,
+            type: "date",
+            message: "会计月份不能为空",
+            trigger: "blur"
+          }
+        ]
+      }
+    };
+  },
+  watch: {
+    showWindow: function(n, o) {
+      if (n) {
+        let _self = this;
+        this.$nextTick(() => {
+          // 延迟赋值,不然数据还没有正确返回的情况下,无法绑定默认值
+          setTimeout(() => {
+            this.setDefaultData();
+          }, 1000);
+        });
+      }
+    }
+  },
+  methods: {
+    // 客户选择 回调 ,并单独验证 
+    custCodeOnFillEvent(item){
+      let itemObj = item[0].data
+      if(itemObj && !!!itemObj.omDiscount){
+        // 防止清空,重新赋值
+        this.formDataInfo.omDiscount = 100
+        this.formDataInfo.taxRat = 0
+        this.formDataInfo.rate = 0
+      }
+        //单独校验客户编号
+      this.$refs["formDataInfo"].validateField("custCode", err => {});
+    },
+    // 折扣 触发事件
+    onChange_omDiscount() {
+      //折后金额=应收金额*（折扣/100)
+      let moneyAfterDis =
+        Number(this.formDataInfo.omZqAmt) *
+        (this.formDataInfo.omDiscount / 100);
+      this.formDataInfo.omAmt = moneyAfterDis.toFixed(2);
+      this.formDataInfo.omNoIvAmt = moneyAfterDis.toFixed(2);
+    },
+    // 设置默认值
+    setDefaultData() {
+      this.disabledSubmitBtn = false;
+      // 判断是否禁用提交按钮
+      if (
+        this.action != "add" &&
+        this.formDataInfo.omIvAmt != null &&
+        Number(this.formDataInfo.omIvAmt) > 0
+      ) {
+        //已开票金额一旦写入值时，单据不能修改/不能删除
+        this.disabledSubmitBtn = true;
+      }
+      if (this.formDataInfo.taxTp == "" || this.formDataInfo.taxTp == null) {
+        this.formDataInfo.taxTp = "0";
+      } else {
+        this.formDataInfo.taxTp = this.formDataInfo.taxTp + "";
+      }
+      if (this.formDataInfo.omDate == "" || this.formDataInfo.omDate == null) {
+        this.formDataInfo.omDate = new Date(
+          dayjs().format("YYYY-MM-DD HH:mm:ss")
+        );
+      } else {
+        this.formDataInfo.omDate = new Date(
+          dayjs(this.formDataInfo.omDate).format("YYYY-MM-DD HH:mm:ss")
+        );
+      }
+
+      if (this.formDataInfo.omYm == "" || this.formDataInfo.omYm == null) {
+        this.formDataInfo.omYm = new Date(dayjs().format("YYYY-MM"));
+      } else {
+        this.formDataInfo.omYm = new Date(
+          dayjs(this.formDataInfo.omYm).format("YYYY-MM")
+        );
+      }
+    },
+    //单据日期 变动日期
+    onChange_omDate(item) {
+      if (!_.isEmpty(item)) {
+        this.formDataInfo.omDate = new Date(item);
+      }
+    },
+    //会计月份 变动日期
+    onChange_omYm(item) {
+      if (!_.isEmpty(item)) {
+        this.formDataInfo.omYm = new Date(dayjs(item).format("YYYY-MM"));
+      }
+    },
+    // 继承中修改,更新数据时,重置修改一些提交的数据
+    resetformDataInfo(_data) {
+      _data.omDate = dayjs(_data.omDate).format("YYYY-MM-DD HH:mm:ss");
+      _data.omYm = dayjs(_data.omYm).format("YYYYMM");
+      return _data;
+    },
+    // 继承中修改,添加数据时,重置修改一些提交的数据
+    resetAddformDataInfo(_data) {
+      _data.omDate = dayjs(_data.omDate).format("YYYY-MM-DD HH:mm:ss");
+      _data.omYm = dayjs(_data.omYm).format("YYYYMM");
+      return _data;
+    },
+
+    // 重写父类 关闭窗口时 触发事件
+    closeActionTigger() {
+      // fix 清除上次的错误提示 formDataInfo 为表单ref名称
+      this.$refs["formDataInfo"].resetFields();
+      this.formDataInfo = Object.assign({}, default_formDataInfo);
+    }
+  }
+};
+</script>
+
+<style>
+.cl-edit-otherMoeny .ivu-form-item-label {
+  text-align: right;
+  vertical-align: middle;
+  float: left;
+  font-size: 14px;
+  color: #515a6e;
+  line-height: 17px;
+  padding: 7px 12px 10px 0;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+.cl-edit-otherMoeny .right-text {
+  width: 160%;
+}
+</style>

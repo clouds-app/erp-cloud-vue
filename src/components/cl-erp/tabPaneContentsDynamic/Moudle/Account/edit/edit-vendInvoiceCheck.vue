@@ -21,7 +21,7 @@
           :label-width="100"
           :disabled="detailDisabled"
       >
-          <Row>
+           <Row type="flex">
             <Col span="6">
                 <FormItem label="收票单号" prop="vicNo">
                     <Input :disabled="true" v-model="formDataInfo.master.vicNo" maxlength="80" placeholder="收票单号"></Input>
@@ -45,7 +45,7 @@
                   ref='firstFocusInput'
                     v-model="formDataInfo.master.supplierCode"
                     field-name="supplierCode"
-                    :disabled="false"
+                   :disabled="detailDisabled"
                     popup-name="SupplierSingleBox"
                     :fill-model.sync="formDataInfo.master"
                     render-fields="supplierId,supplierCode,supplierName,coinCode,coinId"
@@ -143,6 +143,7 @@
                 :data="formDataInfo['vicItems'].defaultList"
                 :rules="slaveTableFieldsValidator"
                 @row-delete='slave_list_table_edit_Delete'
+                @row-click="slave_list_table_editRowClick"
                 @tableColTiggerEventCall="tableColTiggerEventCall"
             >
             <template slot="head">
@@ -178,6 +179,35 @@
                       <Select @on-change="value => {valueChangeAssign(value, index, row,column.key)}" :disabled="true" v-else-if="column.key == 'billType'" v-model="row[column.key]" transfer>
                         <Option v-for="(item,index) in accPayItemBillTypeList" :key="index" :value="item.dicValue+''">{{item.dicLabel}}</Option>
                       </Select>
+                        <!-- 控件特殊处理 开票货币 -->
+                    <template v-else-if="column.key == 'coinName'">
+                       <popup
+                          @on-fill="coinRateOnFillEvent"
+                          v-model="row.coinName"
+                          field-name="coinName"
+                          popup-name="CoinSingleBox"
+                          :fill-model.sync="formDataInfo['vicItems'].defaultList"
+                          render-fields="coinId,coinCode,coinName,originCoinRate"
+                          from-fields="id,coinCode,coinName,coinRate"
+                          :index="index"
+                          :init-data="initData.initData[`${functionParams.formInitPreName}itemFm`]"
+                      ></popup>
+                    </template>
+                    <!-- 汇率 coinRate-->
+                    <template v-else-if="column.key === 'coinRate'">
+                      <Input
+                        v-model="row[column.key]"
+                        @input="
+                          tableColTiggerEvent(
+                            row,
+                            column,
+                            index,
+                            'coinRateChangeEvent'
+                          )
+                        "
+                      >
+                      </Input>
+                    </template>
                       <!-- 发票金额-->
                      <template  v-else-if="column.key ==='icAmt'">
                         <Input v-model="row[column.key]"   @input="tableColTiggerEvent(row,column,index,'icAmtChangeEvent')">
@@ -277,6 +307,7 @@ export default {
   },
   data () {
     return {
+      currentIndex:0,// 当前表格选择行
       accPayItemBillTypeList: [], // 单据类型
       disabledSubmitBtn: false, // 是否禁用确认按钮
       formName: 'accountvendinvoicecheckFm', // 重写父类 查询表单名称 accountvendinvoicecheckFm
@@ -286,7 +317,7 @@ export default {
         requestBaseUrl: '/account/vendInvoiceCheck', // 查询 表格行 数据 接口前缀地址
         uniqueId: 'vicId' // 查询详细的唯一ID,需要顶部查询中使用
       },
-      actionSubtitle: '收票', // 重写父类 当前操作副标题
+      actionSubtitle: '收票登记', // 重写父类 当前操作副标题
       salveWindow: {
         isLoaddingDone: false, // 窗口是否加载完成
         showEditWindow: false, // 是否显示edit-invoiceCheckSlave 编辑窗口
@@ -313,24 +344,47 @@ export default {
     }
   },
   watch: {
-    //  showWindow:function(n,o){
-    //     if(n){
-    //       let _self = this
-    //       this.$nextTick(()=>{
-    //          this.registerEvent()
-    //          this.pageResize()
-    //            // 延迟赋值,不然数据还没有正确返回的情况下,无法绑定默认值
-    //           setTimeout(() => {
-    //               this.setDefaultData()
-    //           }, 1000);
-    //       })
-    //     }
-    //   },
+     showWindow:function(n,o){
+        if(n){
+          let _self = this
+          this.$nextTick(()=>{
+            //  this.registerEvent()
+            //  this.pageResize()
+               // 延迟赋值,不然数据还没有正确返回的情况下,无法绑定默认值
+              setTimeout(() => {
+                  this.setDefaultData()
+              }, 1000);
+          })
+        }
+      },
   },
   created () {
     this.getItemBillTypeList()
   },
   methods: {
+     // 开票货币 回填触发事件 最大保留6位小数,不足六位>>不补零
+    coinRateOnFillEvent(item){
+     // debugger
+       let newCoinRate = (item[0].data.billCoinRate/item[0].orignData.coinRate)
+       newCoinRate =this.formatAmountByType(newCoinRate,6) //最大保留6位小数,不足六位>>不补零 
+       let currentIciInvMoney = (Number(item[0].data.icAmt) * newCoinRate) // 未开票金额 * 汇率
+       let newInvoiceCoinRate = (item[0].orignData.coinRate)// 开票货币 汇率 
+       currentIciInvMoney  = this.formatAmountByTypeWith(currentIciInvMoney)
+       this.$refs['slave_list_table_edit'].set(
+                   { 
+                    coinRate: newCoinRate,
+                    invoiceCoinRate:newInvoiceCoinRate,// 开票货币 汇率
+                    //icAmt: currentIciInvMoney,
+                    coinAmt:currentIciInvMoney,
+                    },
+                  item[0].index
+                )
+        this.sumTotalMoney()         
+    },
+      // 工单列表行点击事件回调
+    slave_list_table_editRowClick(index) {
+      this.currentIndex = index
+    },
     // 打开编辑框调用
     openActionTigger () {
       if (this.action === 'update') {
@@ -393,7 +447,7 @@ export default {
         let newItemKeys = Object.keys(newItem)
         newItemKeys.forEach(itemKey => {
           newItem[itemKey] = null
-          if (oldItem[itemKey]) {
+          if (oldItem[itemKey] || oldItem[itemKey] ==0 || oldItem[itemKey]=='0'){
             newItem[itemKey] = oldItem[itemKey]
           }
         })
@@ -421,10 +475,20 @@ export default {
         // if(Number(oldItem.invoicedAmt)==0){
         //   newItem.invoicedAmt = oldItem.notInvoicedAmt
         // }
-
+           // 	汇率金额 如何为空默认设置为0 汇率金额= 开票金额 * 汇率
+        if (!oldItem.coinAmt) {
+         // debugger
+          newItem.coinAmt = Number(newItem.icAmt) * Number(newItem.billCoinRate)
+        }
         //= ===== 额外需要转换的字段S=======
         newItem.iciZk = oldItem.discount // 折扣
         newItem.iciMoney = oldItem.vicAmt // 单据金额
+
+          newItem.coinName = oldItem.billCoinName
+          newItem.coinCode = oldItem.billCoinCode
+          newItem.coinId = oldItem.billCoinId
+          newItem.coinRate = oldItem.billCoinRate // 转后货币后的汇率
+          newItem.invoiceCoinRate = oldItem.billCoinRate 
         //= ===== 额外需要转换的字段E=======
         newDataList.push(newItem)
       })
@@ -460,21 +524,25 @@ export default {
     },
 
     // 初始值 设置
-    //   setDefaultData(){
-    //       //debugger
-    //     let writeOffAmt = Number(this.formDataInfo.master.writeOffAmt)
-    //     if(writeOffAmt>0){
-    //       this.disabledSubmitBtn = true
-    //     }else{
-    //       this.disabledSubmitBtn = false
-    //     }
-    //     if(!!!this.formDataInfo.master.invoiceType){
-    //       this.formDataInfo.master.invoiceType='01'
-    //     }
-    //     if(!!this.formDataInfo.master.vicDate){
-    //       this.formDataInfo.master.vicDate = new Date(dayjs(this.formDataInfo.master.vicDate).format("YYYY-MM-DD"))
-    //     }
-    //  },
+      setDefaultData(){
+          this.amountFormatConfig = {
+            decimalPls: Number(this.formDataInfo.master.amtDot) , // 保留小数位 最大6
+            carryMode:Number(this.formDataInfo.master.amtType) //进位方式:carryMode:0 四舍五入,1:只舍不进,2:只进不舍
+        }
+          //debugger
+        // let writeOffAmt = Number(this.formDataInfo.master.writeOffAmt)
+        // if(writeOffAmt>0){
+        //   this.disabledSubmitBtn = true
+        // }else{
+        //   this.disabledSubmitBtn = false
+        // }
+        // if(!!!this.formDataInfo.master.invoiceType){
+        //   this.formDataInfo.master.invoiceType='01'
+        // }
+        // if(!!this.formDataInfo.master.vicDate){
+        //   this.formDataInfo.master.vicDate = new Date(dayjs(this.formDataInfo.master.vicDate).format("YYYY-MM-DD"))
+        // }
+     },
     onChange_vicDate (item) {
       // debugger
       if (!_.isEmpty(item)) {
@@ -495,37 +563,52 @@ export default {
     },
     // 表格列值改变 回调事件处理event：{row, column, index, event,config}
     tableColTiggerEventCall (obj) {
+      debugger
+        // 发票金额 不能大于 未开发票金额
+      let icAmt = Number(obj.row.icAmt) // 发票金额
+      let notInvoicedAmt = Number(obj.row.notInvoicedAmt) // 未开发票金额
+      let currentIciInvMoney = (icAmt *  Number(obj.row.coinRate)) //转换为相同货币后的最大开票金额
+      currentIciInvMoney = this.formatAmountByTypeWith(currentIciInvMoney)
       switch (obj.event) {
+         case `coinRateChangeEvent`:
+            this.$refs['slave_list_table_edit'].set(
+                  { 
+                  coinAmt: currentIciInvMoney
+                  },
+                 obj.index
+              )
+            break
         case 'icAmtChangeEvent':
-          // 发票金额 不能大于 未开发票金额
-          let icAmt = Number(obj.row.icAmt) // 发票金额
-          let notInvoicedAmt = Number(obj.row.notInvoicedAmt) // 未开发票金额
+        
           if (icAmt > notInvoicedAmt) {
             // this.$Message.warning('发票金额 不能大于 未开发票金额')
             this.$Modal.warning({
               width: '360',
               title: '警告',
-              content: `发票金额 不能大于 未开发票金额`,
+              content: `发票金额 不能大于 未开票金额`,
               onOk: () => {
-                this.$refs['slave_list_table_edit'].set({ icAmt: 0 }, obj.index)
-                this.sumTotalMoney()
+                this.$refs['slave_list_table_edit'].set({ icAmt: 0,coinAmt:0 }, obj.index)
+                //this.sumTotalMoney()
               }
             })
           } else {
             // 触发修改值 直接修改原始数据 无效
-            this.$refs['slave_list_table_edit'].set({ icAmt: obj.row.icAmt }, obj.index)
+            this.$refs['slave_list_table_edit'].set({  icAmt:obj.row.icAmt,coinAmt: currentIciInvMoney }, obj.index)
           }
-          this.sumTotalMoney()
+        //  this.sumTotalMoney()
           break
         default:
           break
       }
+        setTimeout(()=>{
+              this.sumTotalMoney()
+          },1000)
     },
     // 汇总总金额
     sumTotalMoney () {
       let totolMoney = 0
       this.formDataInfo['vicItems'].defaultList.forEach((item, index) => {
-        let currentRowMoney = Number(item.icAmt = null ? 0 : item.icAmt)
+        let currentRowMoney = Number(item.coinAmt = null ? 0 : item.coinAmt)
         totolMoney = totolMoney + currentRowMoney
       })
       if ((totolMoney + '').indexOf('.') != -1) {
@@ -545,7 +628,7 @@ export default {
       }
       return true
     },
-    supplierCodeOnFillEvent () {
+    supplierCodeOnFillEvent (item) {
       // debugger
       // 切换用户,清除明细信息
       this.$refs["formDataInfo"].validateField("supplierCode", err => {});
@@ -555,6 +638,10 @@ export default {
           this.$refs['slave_list_table_edit'].deleteAllData() // 仅仅记录删除记录,
           this.formDataInfo['vicItems'].defaultList = []
         }
+      }
+     this.amountFormatConfig = {
+           decimalPls: item[0].orignData.amtDot , // 保留小数位 最大6
+           carryMode:Number(item[0].orignData.amtType) //进位方式:carryMode:0 四舍五入,1:只舍不进,2:只进不舍
       }
     },
     // 排除不需要显示的字段
@@ -627,10 +714,27 @@ export default {
       }
       return this.formDataInfo
     },
+    //开票明细中的开票货币只能是同一种
+    checkAllCoinsAreDiff(){
+      //debugger
+      let dataList = this.formDataInfo['vicItems'].defaultList
+      if(dataList && dataList.length>0){
+         let firstCoinCode = dataList[0].coinCode
+         let hasDiff = dataList.every(item=>{
+           return item.coinCode == firstCoinCode
+         })
+         return !hasDiff
+      }
+     
+      return false
 
+    },
     // 提交主从表数据
     formTableDataSubmit () {
-      // debugger
+       if(this.checkAllCoinsAreDiff()){
+        this.$Message.warning('开票货币必须一致!')
+        return
+      }
       this.$refs['formDataInfo'].validate(valid => {
         if (!valid) {
           return

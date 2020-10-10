@@ -402,18 +402,25 @@ export default {
     getbiBatchNoList (dataindex) {
       let workNoList = ''
       let _self = this
-      let tabData = this.$refs['tableFields'].get()
+      let tabData = this.formDataInfo.boxUseOutItemSlave.defaultList
       tabData.filter((item, index, data) => {
-        if (index !== dataindex) {
-          if (item.workNo === '') {
-            return
-          }
-          if (index === 0) {
-            workNoList += item.boxUseBatchNo
-          } else {
-            workNoList += ',' + item.boxUseBatchNo
-          }
+        if(item.workNo != ''){
+            if(!!!workNoList){
+              workNoList = item.boxUseBatchNo
+            }else{
+              workNoList += ',' + item.boxUseBatchNo
+            }
         }
+        // if (index !== dataindex) {
+        //   if (item.workNo === '') {
+        //     return
+        //   }
+        //   if (index === 0) {
+        //     workNoList += item.boxUseBatchNo
+        //   } else {
+        //     workNoList += ',' + item.boxUseBatchNo
+        //   }
+        // }
       })
       return workNoList
     },
@@ -529,24 +536,28 @@ export default {
         this.inWsId = this.formDataInfo.master.stationId
         let ppuer = this.salveWindow.showEditWindow
         this.salveWindow.isLoaddingDone = true
-        this.biBatchNoList = biBatchNoList
+        this.biBatchNoList = this.getbiBatchNoList(index)
         this.salveWindow.action = 'add'
-        var _this = this
+        var _self = this
         request
           .post(`/stock/boxUseOut/getBoiOutCo`, {
             inWsId: this.formDataInfo.master.stationId,
-            biBatchNoList: this.getbiBatchNoList(index)
-            // inProvider: this.getsupplierCode
+            biBatchNoList: this.getbiBatchNoList(index),
+            pageNum:this.pageConfig.pageNum,//(当前页),
+            pageSize:this.pageConfig.pageSize,//(每页显示条数)
           })
           .then(res => {
-            // _this.WorkOrderNumber = res;
             // 给领用数赋值
-            for (var i = 0; i < res.length; i++) {
-              if (res[i].bpStoreQty) {
-                res[i].bpOutStore = res[i].bpStoreQty
-              }
-            }
-            _this.$refs.mychild.getFormInitDataObj(res)
+            if (res && res.records && res.records.length>0) {
+                 for (var i = 0; i < res.records.length; i++) {
+                  if (res.records[i].bpStoreQty) {
+                    res.records[i].bpOutStore = res.records[i].bpStoreQty
+                  }
+                }
+                _self.$nextTick(()=>{
+                  _self.$refs.mychild.getFormInitDataObj(res)
+                }) 
+             }
           })
       } else {
         this.salveWindow.showEditWindow = false

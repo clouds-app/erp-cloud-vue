@@ -171,7 +171,6 @@
                   v-else-if="column.key == 'qty'"
                   v-model="row[column.key]"
                   :disabled="detailDisabled"
-                  :min=1
                   @on-blur="biInQtyChange(index)"
                   @input="
                       value => {
@@ -322,11 +321,11 @@ export default {
             trigger: 'blur',
             type: 'number'
           },
-          {
-            pattern: /^[1-9]\d*$/,
-            trigger: 'blur',
-            message: '盘点数量必须是正整数'
-          }
+          // {
+          //   pattern: /^[1-9]\d*$/,
+          //   trigger: 'blur',
+          //   message: '盘点数量必须是正整数'
+          // }
         ]
       },
       subBoxClickIndex: -1,
@@ -538,10 +537,15 @@ export default {
           let ppuer = this.salveWindow.showEditWindow
           this.salveWindow.action = 'add'
           this.salveWindow.isLoaddingDone = true
-          this.inBatchOnList = inBatchOnList
+          this.inBatchOnList = inBatchOnList,
           // issInput(1输入0查询)
           request
-            .post(`/stock/boxUseAdjust/getWorkInStore`, { whId: this.formDataInfo.master.paStationId, inBatchOnList })
+            .post(`/stock/boxUseAdjust/getWorkInStore`, { 
+            whId: this.formDataInfo.master.paStationId, 
+            inBatchOnList,
+            pageNum:this.pageConfig.pageNum,//(当前页),
+            pageSize:this.pageConfig.pageSize,//(每页显示条数)
+             })
             .then(res => {
               this.WorkOrderNumber1 = res
               this.$refs.mychild.getFormInitDataObj(res)

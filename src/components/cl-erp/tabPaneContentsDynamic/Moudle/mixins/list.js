@@ -13,9 +13,18 @@ import hotkeys from 'hotkeys-js'
 import '../mixins/common.css'
 import request from '@/libs/request'
 import { getFormInitData } from './common'
+const  default_pageConfig = {
+  pageNum:1,//(当前页),
+  pageSize:1,//(每页显示条数)
+  total:0,// 总条数
+}
 export default {
   data () {
     return {
+        // 分页配置
+      pageConfig:Object.assign({},default_pageConfig),
+      // 分页配置
+      pageConfigTwo:Object.assign({},default_pageConfig),
       dbclikTimer:null,//计时器
       who: '', // 动态指定编辑控件
       splitModel: 0.5,
@@ -100,6 +109,14 @@ export default {
     })
   },
   methods: {
+    // 重置页面信息
+    resetPageConfig(){
+      this.pageConfig = Object.assign({},default_pageConfig)
+    },
+      // 重置页面信息
+      resetPageConfigTwo(){
+        this.pageConfigTwo = Object.assign({},default_pageConfig)
+      },
     // 双击详情窗口
     showDetailswindow(rowData, rowIndex, column){
       // 直接使用 FunctionBtnList.vue 已有的功能,避免功能重复,维护困难
@@ -174,9 +191,9 @@ export default {
       }
     },
     // 通用数据请求
-    getDataByUrl (_url, requestDataObj) {
+    getDataByUrl (_url, requestDataObj,data) {
       return new Promise((resolve, reject) => {
-        request.post(_url, requestDataObj).then(res => {
+        request.post(_url, requestDataObj,data).then(res => {
           resolve(res)
         }).catch(err => {
           reject(err)

@@ -481,7 +481,9 @@ export default {
         batchNoList:this.batchNoList,
         beginDate:dayjs().subtract(7, 'day').format("YYYY-MM-DD"),
         endDate:dayjs().format("YYYY-MM-DD"),
-        inWsId:this.inWsId
+        inWsId:this.inWsId,
+         pageNum:this.pageConfig.pageNum,//(当前页),
+        pageSize:this.pageConfig.pageSize,//(每页显示条数)
       }
       this.salveWindow.showEditWindow = true
       this.salveWindow.isLoaddingDone = true

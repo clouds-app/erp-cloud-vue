@@ -1,6 +1,8 @@
 <template>
   <div>
     <editWindow
+     :draggable="false"
+      :zindex="30"
       id="cl-edit-salesOrder"
       title="用料库存盘点弹框"
       v-model="showWindow"
@@ -10,6 +12,9 @@
       :spinLoaddingText="spinLoaddingText"
       @on-ok="submitFormDataEvent"
       v-if="initData.columns"
+      ref="editWindow"
+      :showPageConfig="true"
+      @pageOnChange="pageOnChange"
     >
       <div v-if="formDataInfo.master">
         <Form
@@ -40,7 +45,7 @@
               </Col>
               <Col span="1">
                 <FormItem label>
-                  <Button type="primary" @click="clickmaster()">搜索</Button>
+                  <Button type="primary" @click="clickmaster('search')">搜索</Button>
                 </FormItem>
               </Col>
             </Row>
@@ -180,7 +185,6 @@ export default {
   },
   data() {
     return {
-      //actionSubtitle: "纸箱销售订单明细", // 当前操作副标
       productSpecShow: false,
       formDataInfo: {
         // 主表 更改字段
@@ -229,6 +233,10 @@ export default {
   },
   computed: {},
   methods: {
+     pageOnChange(_pageNum){
+      this.pageConfig.pageNum = _pageNum
+      this.clickmaster()
+    },
     purPaperPoClick(name, value) {
       // debugger
       this.formDataInfo.master.inBiWorkNo = ''
@@ -243,7 +251,11 @@ export default {
       return ''
     },
     //搜索点击事件
-    clickmaster() {
+    clickmaster(type) {
+      if(this.pageConfig.pageNum==1 || type=='search'){
+          this.resetPageConfig()
+          this.productMDatasTableDataList = []
+      }
       let ddata = this.formDataInfo;
       let params = {
         // flag:this.formDataInfo.master.flag,
@@ -252,24 +264,40 @@ export default {
         inBatchOn: this.getmasterValur('boxUseBatchOn'),//批次号
         flag:this.formDataInfo.master.likeFlag,
         whId:this.whId,
-        inBatchOnList:this.inBatchOnList
+        inBatchOnList:this.inBatchOnList,
+        pageNum:this.pageConfig.pageNum,//(当前页),
+        pageSize:this.pageConfig.pageSize,//(每页显示条数)
       };
       request.post(`/stock/boxUseAdjust/getWorkInStore`, params).then(res => {
-        this.$refs["slave_edit-boxUseAdjust"].cloneData = res;
+       // this.$refs["slave_edit-boxUseAdjust"].cloneData = res;
+        if (res && res.records && res.records.length>0) {
+          this.productMDatasTableDataList.push(...res.records)
+         }
+         this.pageConfig.total = res.total // 赋值总条数
+         this.$refs['editWindow'].pageConfig= this.pageConfig
       });
     },
 
     //加载表单初始化数据
     getFormInitDataObj(data) {
-      // debugger;
       //加载表单初始化数据
       this.formDataInfo["master"] = {
         inBiWorkNo: "",
         likeFlag: "0"
       };
-      this.$refs["slave_edit-boxUseAdjust"].cloneData = data;
+       this.productMDatasTableDataList = []
+       if(data && data.records){
+        this.productMDatasTableDataList = data.records
+        this.pageConfig.total = data.total // 赋值总条数
+        this.$refs['editWindow'].pageConfig= this.pageConfig
+      }
+     // this.$refs["slave_edit-boxUseAdjust"].cloneData = data;
     },
-
+   // 重写父类 关闭窗口时 触发事件
+    closeActionTigger () {
+      this.resetPageConfig()
+      this.productMDatasTableDataList = []
+    },
     //表单数据提交事件
     submitFormDataEvent() {
       //  debugger;

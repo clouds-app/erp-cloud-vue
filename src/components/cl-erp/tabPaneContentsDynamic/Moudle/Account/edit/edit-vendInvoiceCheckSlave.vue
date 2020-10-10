@@ -1,6 +1,8 @@
 <template>
   <div>
     <editWindow
+    :draggable="false"
+      :zindex="30"
       class="cl-edit-window-vendInvoiceCheck"
       title="收票选单据"
       v-model="showWindow"
@@ -20,7 +22,7 @@
             :rules="masterRuleValidate"
             :label-width="40"
         >
-            <Row>
+             <Row type="flex">
             <Col span="6">
                 <FormItem :label-width="80" :label="searchConfig.title" prop="keyWord">
                     <Input :clearable="true" maxlength="20" v-model="formDataInfo.master.keyWord" placeholder="单据编号"></Input>

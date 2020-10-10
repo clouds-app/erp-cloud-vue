@@ -1,0 +1,171 @@
+import axios from 'axios'
+import store from '@/store'
+import { Message,Modal } from 'view-design'
+import {getlocalStorage,setToken,getToken} from '@/libs/util'
+
+// const debounce= (fn, delay)=>{
+//   debugger
+//   let timer = null // 声明计时器
+//   return function() {
+//     let context = this
+//     let args = arguments
+//     clearTimeout(timer)
+//     timer = setTimeout(function () {
+//       fn.apply(context, args)
+//     }, delay)
+//   }
+// }
+
+const addErrorLog = errorInfo => {
+  const { statusText, status, request: { responseURL } } = errorInfo
+  let info = {
+    type: 'ajax',
+    code: status,
+    mes: statusText,
+    url: responseURL
+  }
+  if (!responseURL.includes('save_error_logger')) store.dispatch('addErrorLog', info)
+}
+
+class HttpRequest {
+  
+  constructor (baseUrl = baseURL) {
+    this.baseUrl = baseUrl
+    this.queue = {}
+    this.timer = null // 声明计时器
+  }
+  getInsideConfig () {
+    const config = {
+      baseURL: this.baseUrl,
+      headers: {
+        token:getToken()
+      }
+    }
+    return config
+  }
+  destroy (url) {
+    delete this.queue[url]
+    if (!Object.keys(this.queue).length) {
+      // Spin.hide()
+    }
+  }
+  interceptors (instance, url) {
+    // 请求拦截
+    instance.interceptors.request.use(config => {
+      // 添加全局的loading...
+      if (!Object.keys(this.queue).length) {
+        // Spin.show() // 不建议开启，因为界面不友好
+      }
+      this.queue[url] = true
+      return config
+    }, error => {
+      return Promise.reject(error)
+
+    })
+    // 响应拦截
+    instance.interceptors.response.use(res => {
+     // debugger
+      let LoginUserInfo = JSON.parse(getlocalStorage("loginUserInfo"));
+      let companyCode = LoginUserInfo.useTipsModel.code;
+      let currentUrl = window.location.href
+      if(!currentUrl.includes('login') && res.data.code == 400 || res.code == 400 || !!!res.data){
+        console.log('登陆超时,请重新登陆:400'+JSON.stringify(res))
+        setToken('');
+        let rediretUrl ='http://'+window.location.host+'/#/login'
+        // let rediretUrl ='http://'+window.location.host+'/#/login'
+        // window.location.href = rediretUrl
+        if(!!companyCode){
+          rediretUrl =  `#/login?companyCode=${companyCode}`;
+        }else{
+          rediretUrl = "#/login";
+        }
+        window.history.pushState(null,null,rediretUrl);
+        
+        setTimeout(()=>{
+            // 确认提示框 提示
+            Modal.warning({
+            title: '提示',
+            content: `登陆超时,请重新登陆!!`,
+            onOk: () => {
+              // 刷新界面清除缓存
+              window.location.reload()
+            }
+          });
+        },2000)
+         return;
+      }
+      this.destroy(url)
+      const { data, status } = res
+     // debugger
+      if(res.data.code != 400){
+        return { data, status }
+      }
+    }, error => {
+    //  debugger
+      this.destroy(url)
+     // addErrorLog(error.response)
+     // return Promise.reject(error)
+     if (error && error.statusCode) {
+      switch (error.statusCode) {
+        case 400:
+          error.errMsg = '错误请求'
+          break
+        case 401:
+          error.errMsg = '未授权，请重新登录'
+          break
+        case 403:
+          error.errMsg = '拒绝访问'
+          break
+        case 404:
+          error.errMsg = '请求错误,未找到该资源'
+          break
+        case 405:
+          error.errMsg = '请求方法未允许'
+          break
+        case 408:
+          error.errMsg = '请求超时'
+          break
+        case 500:
+          error.errMsg = '服务器端出错'
+          break
+        case 501:
+          error.errMsg = '网络未实现'
+          break
+        case 502:
+          error.errMsg = '网络错误'
+          break
+        case 503:
+          error.errMsg = '服务不可用'
+          break
+        case 504:
+          error.errMsg = '网络超时'
+          break
+        case 505:
+          error.errMsg = 'http版本不支持该请求'
+          break
+        default:
+          error.errMsg = `连接错误${error.response.status}`
+      }
+    } else {
+      error.errMsg = '连接到服务器失败'
+      error.statusCode=''
+    }
+    let errTip= error.errMsg + ' ' + error.statusCode + ' 请稍后重试!'
+   
+        clearTimeout(this.timer)
+        this.timer = setTimeout(function () {
+          Message.error(errTip)
+        }, 2000) // 避免多次同一时间弹出多条错误信息
+      // Message.error(errTip);
+     return Promise.reject(errTip);
+    
+    })
+  }
+  request (options) {
+    const instance = axios.create()
+    options = Object.assign(this.getInsideConfig(), options)
+    this.interceptors(instance, options.url)
+    return instance(options)
+  }
+}
+export default HttpRequest

@@ -1,11 +1,13 @@
 <template>
   <div>
     <editWindow
+     :draggable="false"
+      :zindex="30"
       class="cl-edit-window-invoiceCheck"
       title="开票选单据"
       v-model="showWindow"
       :fullscreen="false"
-      width="70%"
+      width="75%"
       :loading="false"
       :spinLoaddingText="spinLoaddingText"
       @on-ok="formTableDataSubmit()"
@@ -20,10 +22,22 @@
           :rules="masterRuleValidate"
           :label-width="40"
         >
-          <Row>
-            <Col span="6">
+           <Row type="flex">
+             <Col span="5">
+              <FormItem :label-width="80" label="单据类型">
+                <optionSearch
+                  :clearable="true"
+                  @onChange="optionOnChangeBy"
+                  :defaultItem="formDataInfo.master.iciNoType"
+                  :loaddingDataWhen="showWindow"
+                  formKey="iciNoType"
+                  query="iciNoType"
+                />
+              </FormItem>
+            </Col>
+            <Col span="5">
               <FormItem
-                :label-width="80"
+                :label-width="60"
                 :label="searchConfig.title"
                 prop="keyWord"
               >
@@ -35,21 +49,21 @@
                 ></Input>
               </FormItem>
             </Col>
-            <Col span="4">
+            <!-- <Col span="4">
               <FormItem :label-width="20">
                 <RadioGroup v-model="formDataInfo.master.likeFlag">
                   <Radio label="1">模糊</Radio>
                   <Radio label="0">精准</Radio>
                 </RadioGroup>
               </FormItem>
-            </Col>
+            </Col> -->
             <Col span="8">
               <FormItem label="日期" prop="searchDay">
                 <DatePicker
                   transfer
                   style="width: 120px"
                   v-model="formDataInfo.master.startDate"
-                  type="datetime"
+                  type="date"
                   format="yyyy-MM-dd"
                 ></DatePicker>
                 -
@@ -57,7 +71,7 @@
                   transfer
                   style="width: 120px"
                   v-model="formDataInfo.master.endDate"
-                  type="datetime"
+                  type="date"
                   format="yyyy-MM-dd"
                 ></DatePicker>
               </FormItem>
@@ -188,6 +202,7 @@ const default_formDataInfo = {
   master: {
     keyWord: "",
     likeFlag: "1",
+    iciNoType: "",
     startDate: dayjs()
       .subtract(1, "month")
       .format("YYYY-MM-DD"),
@@ -277,16 +292,23 @@ export default {
       this.formDataInfo["invoiceCheckItems"].defaultList = [];
       //参数包括 参数(inCustId 客户id，inArNo 单据号，inShortName 简称，inFlag 模糊查询，beginDate 起始日期，endDate 结束日期)
       let params = {
-        beginDate: dayjs(this.formDataInfo.master.startDate).format(
-          "YYYY-MM-DD"
-        ), //(开始日期)
-        endDate: dayjs(this.formDataInfo.master.endDate).format("YYYY-MM-DD"), //(结束日期)
+        // beginDate: dayjs(this.formDataInfo.master.startDate).format(
+        //   "YYYY-MM-DD"
+        // ), //(开始日期)
+        // endDate: dayjs(this.formDataInfo.master.endDate).format("YYYY-MM-DD"), //(结束日期)
         inCustId: this.searchParams.custId, //(客户id)
         inArNo: this.getCurrentKeyTypeWords("iciArNo"), //(单据号)
-        inShortName: this.getCurrentKeyTypeWords("shortName"), //(客户简称)
+       // inShortName: this.getCurrentKeyTypeWords("shortName"), //(客户简称)
+        iciNoType:this.formDataInfo.master.iciNoType,// 单据类型
         inFlag: this.formDataInfo.master.likeFlag, //(1模糊查询0精准查询)
         inIciArNoList: this.searchParams.inIciArNoList //过滤参数
       };
+      if(!!this.formDataInfo.master.startDate){
+        params.beginDate =dayjs(this.formDataInfo.master.startDate).format( "YYYY-MM-DD") //(开始日期)
+      }
+      if(!!this.formDataInfo.master.endDate){
+        params.endDate =dayjs(this.formDataInfo.master.endDate).format( "YYYY-MM-DD") //(开始日期)
+      }
       this.loadingData = true;
       request
         .post(`${this.functionParams.requestBaseUrl}/getArNoPopup`, params)
@@ -342,7 +364,7 @@ export default {
     excludeFiled(type, key) {
       let exListItemFm = ["bpCBoxId", "stationId", "bpCArtId"];
       //iciArNo 单据号，shortName 简称
-      let searchList = ["iciArNo", "shortName"];
+      let searchList = ["iciArNo"];
       let exList = [];
       switch (type) {
         case "itemFm":

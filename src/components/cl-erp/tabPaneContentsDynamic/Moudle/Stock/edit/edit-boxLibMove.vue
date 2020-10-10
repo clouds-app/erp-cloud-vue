@@ -56,6 +56,7 @@
                       :suffix="true"
                       :suffix-model="formDataInfo.master.allocator"
                       suffixModelName="allocator"
+                      @on-fill="allocatorCodeOnFillEvent"
                       :query-params="{workOptType:8}"
                     />
                   </div>
@@ -150,6 +151,7 @@
                   :colspan="column.colSpan"
                   :rowspan="column.rowSpan"
                   style="text-align:center;"
+                  :columnKey="column.key"
                 >
                   <div class="ivu-table-cell">
                     <span class>{{column.title}}</span>
@@ -396,6 +398,10 @@ export default {
     }
   },
   methods: {
+    // 调拨人 回调事件
+    allocatorCodeOnFillEvent(item){
+      this.$refs['formDataInfo'].validateField('allocatorCode', err => {})
+    },
     // 判断一个值是数字
     myIsNaN (value) {
       return typeof value === 'number' && !isNaN(value)
@@ -417,6 +423,23 @@ export default {
       }
       this.formDataInfo.master.bmQty = Number(masterstockqty)
     },
+      // 获取过滤工单字符串
+    getworkNuList () {
+      let workNoList = ''
+      let _self = this
+      let dataList = this.formDataInfo.moveItems.defaultList
+      dataList.filter((item, index, data) => {
+        if(item.scWorkNo != ''){
+            if(!!!workNoList){
+              workNoList = item.scWorkNo
+            }else{
+              workNoList += ',' + item.scWorkNo
+            }
+        }
+      })
+      return workNoList
+    },
+  
     // 数据传递
     transformation (selectedValue, sundata) {
       // debugger;
@@ -636,7 +659,7 @@ export default {
     // 工单号点击事件
     Slave_list_table_editRowModify (index, keyWord) {
       // 工单号不可点击
-      let workNoList = ''
+      let workNoList = this.getworkNuList()
       let tabData = this.$refs['tableFields'].cloneData
       if (this.formDataInfo.master.allocatorCode == '') {
         this.$Message.error('调拨人不能为空')
@@ -673,13 +696,12 @@ export default {
             bpNo: scProductNo, // 调出产品编号
             workNoList,
             workNo: '',
-            productNo: productNo
-            // inSupplierId: this.formDataInfo.master.allocatorId
+            productNo: productNo,
+            pageNum:this.pageConfig.pageNum,//(当前页),
+            pageSize:this.pageConfig.pageSize,//(每页显示条数)
           })
           .then(res => {
-            // debugger
             this.WorkOrderNumber1 = res
-            // console.log(res)
             this.$refs.mychild.getFormInitDataObj(res)
           })
       } else if (keyWord === 'dtWorkNo') { // dtWorkNo 调入工单号

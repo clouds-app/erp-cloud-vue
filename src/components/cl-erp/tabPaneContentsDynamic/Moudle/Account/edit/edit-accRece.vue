@@ -27,7 +27,7 @@
           :label-width="90"
           :disabled="detailDisabled"
         >
-          <Row>
+          <Row type="flex">
             <Col span="6">
               <FormItem label="立账单号" prop="arNo">
                 <Input
@@ -53,14 +53,14 @@
             <Col span="6">
               <FormItem :label-width="100" label="客户编号" prop="cusCode">
                 <popup
+                  :disabled="canSelecedCust"
                   v-model="formDataInfo.master.cusCode"
                   field-name="cusCode"
                   ref='firstFocusInput'
-                  :disabled="false"
                   popup-name="CustomerCommonSingleBox"
                   :fill-model.sync="formDataInfo.master"
-                  render-fields="custId,cusCode,cusName,signBack,arpType,salerId,saleCode,saleName,coinId,areaIds,bdDeAddr,addrDetail,followerId,followerCode,followerName"
-                  from-fields="id,cusCode,cusName,signBack,arpType,salerId,saleCode,saleName,coinId,areaIds,areaNames,addrDetail,followerId,followerCode,followerName"
+                  render-fields="custId,cusCode,cusName,signBack,arpType,salerId,saleCode,saleName,faxNo,discount,taxRate,taxType,coinId,coinCode,coinName,areaIds,bdDeAddr,addrDetail,followerId,followerCode,followerName"
+                  from-fields="id,cusCode,cusName,signBack,arpType,salerId,saleCode,saleName,contactFax,discount,taxRate,taxTP,coinId,coinCode,coinName,areaIds,areaNames,addrDetail,followerId,followerCode,followerName"
                   :suffix="true"
                   :suffix-model="formDataInfo.master.cusName"
                   @on-fill="cusCodeOnFillEvent"
@@ -75,6 +75,45 @@
                   maxlength="20"
                   placeholder="业务员"
                 ></Input>
+              </FormItem>
+            </Col>
+             <Col span="6">
+             <FormItem label="税别" prop="taxType">
+                  <optionSearch
+                   disabled
+                    maxlength="20"
+                    @onChange="optionOnChange"
+                    :defaultItem="formDataInfo.master.taxType+''"
+                    :loaddingDataWhen="showWindow"
+                    query="taxTP"
+                  />
+                </FormItem>
+            </Col>
+          <Col span="6">
+                <FormItem label="税率" prop="taxRate">
+                  <Input disabled type="number" v-model="formDataInfo.master.taxRate" maxlength="20" placeholder="税率"></Input>
+                </FormItem>
+              </Col>
+               <Col span="6">
+            <FormItem label="货币" prop="coinCode">
+              <popup
+                disabled
+                v-model="formDataInfo.master.coinCode"
+                field-name="coinCode"
+                popup-name="CoinSingleBox"
+                :fill-model.sync="formDataInfo.master"
+                render-fields="coinId,coinCode,coinName"
+                from-fields="id,coinCode,coinName"
+                :suffix="true"
+                :suffix-model="formDataInfo.master.coinName"
+                suffixModelName="coinName" 
+                @on-fill="coinCodevaldate"
+              />
+            </FormItem>
+          </Col>
+            <Col span="6">
+              <FormItem label="传真" prop="faxNo">
+                <Input disabled v-model="formDataInfo.master.faxNo" maxlength="20" placeholder="传真"></Input>
               </FormItem>
             </Col>
             <Col span="6">
@@ -167,15 +206,6 @@
                 />
               </FormItem>
             </Col>
-            <!-- <Col span="6">
-              <FormItem label="税率" prop="taxRate">
-                <InputNumber
-                  placeholder="税率"
-                  :min="0"
-                  v-model="formDataInfo.master.taxRate"
-                />
-              </FormItem>
-            </Col>-->
             <Col span="2">
               <FormItem class="iisReturnColClass">
                 <Checkbox class="iisReturnClass" disabled v-model="formDataInfo.master.iisReturn">回传</Checkbox>
@@ -197,11 +227,7 @@
                 ></DatePicker>
               </FormItem>
             </Col>
-            <Col span="6">
-              <FormItem label="传真" prop="faxNo">
-                <Input disabled v-model="formDataInfo.master.faxNo" maxlength="20" placeholder="传真"></Input>
-              </FormItem>
-            </Col>
+          
             <Col span="6">
               <FormItem label="备注" prop="remark">
                 <Input v-model="formDataInfo.master.remark" maxlength="80" placeholder="备注"></Input>
@@ -343,8 +369,8 @@
 
 <script>
 /**
- ** @desc edit-dept 描述
- * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ ** @desc edit-accRece 应收对账单 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 editBaseMixins,
  * 可以根据需求重写所需的方法:
  *
  * @params 参数
@@ -389,6 +415,8 @@ const default_formDataInfo = {
     // supplierType: "",
     // supplierTypeText: "",
     taxRate: null,
+    taxType:'0',
+    coinId:'',coinCode:'',coinName:'',
     arpType: '' // 自定义 月结方式
   },
   // 子表 artLengs 根据实际接口更改,其它不变
@@ -444,6 +472,17 @@ export default {
       disabledCustCode: false // 是否禁用 客户编号
     }
   },
+  computed:{
+    // 是否可以修改客户,默认可以编辑
+    canSelecedCust(){
+      let flag = false
+      let dataList= this.formDataInfo['accReceItems'].defaultList
+      if(dataList && dataList.length>0 && !!dataList[0].workNo){
+        flag = true
+      }
+      return flag
+    }
+  },
   watch: {
     showWindow: function (n, o) {
       // debugger
@@ -465,8 +504,17 @@ export default {
     this.getAccPayItemBillTypeList()
   },
   methods: {
+      // 货币弹框数据填充回调事件
+    coinCodevaldate () {
+      this.$refs['formDataInfo'].validateField('coinCode', err => {
+      })
+    },
     // 通过参数查询数据列表
     searchDataBy () {
+      if(!!!this.formDataInfo.master.cusCode){
+        // 修复需要点击两次才能选择
+        return
+      }
       // debugger
       this.accPayguideDataList = [] // 重置数据列表
       // 参数包括：
@@ -484,7 +532,7 @@ export default {
       this.loading_submit_btn = true
       request
         .post(
-          `${this.functionParams.requestBaseUrl}/getAccReceCustData?pageNumber=1&pageSize=10`,
+          `${this.functionParams.requestBaseUrl}/getAccReceCustData?pageNumber=1&pageSize=100`,
           params
         )
         .then(res => {
@@ -526,9 +574,12 @@ export default {
     // 客户选择后回调事件
     cusCodeOnFillEvent (item) {
       // 单独校验客户编号
-      // debugger
       this.$refs['formDataInfo'].validateField('cusCode', err => {})
       this.searchDataBy()
+       this.amountFormatConfig = {
+           decimalPls: item[0].orignData.amtDot , // 保留小数位 最大6
+           carryMode:Number(item[0].orignData.amtType) //进位方式:carryMode:0 四舍五入,1:只舍不进,2:只进不舍
+      }
     },
     // 弹框==确认==回调事件,返回选择的数据
     onSubmitEditForm (dataList) {
@@ -588,7 +639,7 @@ export default {
         let newItemKeys = Object.keys(newItem)
         newItemKeys.forEach(itemKey => {
           newItem[itemKey] = null
-          if (oldItem[itemKey]) {
+          if (oldItem[itemKey] || oldItem[itemKey] ==0 || oldItem[itemKey]=='0') {
             newItem[itemKey] = oldItem[itemKey]
           }
         })
@@ -638,17 +689,16 @@ export default {
     },
     // 初始值 设置
     setDefaultData () {
-      // debugger
+      this.amountFormatConfig = {
+           decimalPls: Number(this.formDataInfo.master.amtDot) , // 保留小数位 最大6
+           carryMode:Number(this.formDataInfo.master.amtType) //进位方式:carryMode:0 四舍五入,1:只舍不进,2:只进不舍
+      }
       this.disabledSubmitBtn = false
       let invoicedAmt = Number(this.formDataInfo.master.invoicedAmt)
       if (invoicedAmt > 0) {
         // 已开票金额一旦写入值时，单据不能修改/不能删除
         this.disabledSubmitBtn = true
       }
-      // if (!!!this.formDataInfo.master.supplierType) {
-      //   // 客户类型 :默认 全部
-      //   this.formDataInfo.master.supplierType = "0";
-      // }
       this.formatDateTime(true)
     },
     // 立账日期 改变时间回调事件
@@ -696,8 +746,8 @@ export default {
             this.$Message.error('请输入正数')
             return
           }
-          let disAmt = (
-            (Number(obj.row.arAmt) * Number(obj.row.discount)) / 100).toFixed(2)
+          let disAmt = ((Number(obj.row.arAmt) * Number(obj.row.discount)) / 100)
+          disAmt= this.formatAmountByTypeWith(disAmt)
           this.$refs['slave_list_table_edit'].set(
             { discount: obj.row.discount, disAmt: disAmt },
             obj.index
@@ -725,15 +775,16 @@ export default {
         totolDiscontMoney = totolDiscontMoney + currentRowDiscountMoney
       })
       // 设置主表 总金额
-      this.formDataInfo.master.amt = totolMoney.toFixed(2)
+      this.formDataInfo.master.amt = totolMoney
       // 设置主表 总细折后金额
-      this.formDataInfo.master.itemDisAmt = totolDiscontMoney.toFixed(2)
+      this.formDataInfo.master.itemDisAmt = this.formatAmountByTypeWith(totolDiscontMoney)
       // 主表 折后金额=明细折后金额汇总 * 主表折扣
-      this.formDataInfo.master.disAmt = (
+      let tempDisAmt = (
         (this.formDataInfo.master.itemDisAmt *
           Number(this.formDataInfo.master.discount)) /
         100
-      ).toFixed(2)
+      )
+     this.formDataInfo.master.disAmt = this.formatAmountByTypeWith(tempDisAmt)
     },
     // 验证产品编号选择前先选择客户
     popupClickValidator () {

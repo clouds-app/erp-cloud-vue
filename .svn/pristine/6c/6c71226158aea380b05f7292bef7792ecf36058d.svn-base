@@ -1,0 +1,303 @@
+<template>
+  <div>
+    <editWindow
+    :draggable="false"
+      :zindex="10"
+      id="cl-edit-salesOrder"
+      title="应收呆账关联单号"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="80%"
+      :loading="!isLoaddingDone"
+      :spinLoaddingText="spinLoaddingText"
+      @on-ok="submitFormDataEvent"
+      v-if="initData.columns"
+    >
+      <div v-if="formDataInfo.master">
+        <Form
+          ref="formDataInfo"
+          :show-message="true"
+          :model="formDataInfo.master"
+          :rules="ruleValidate"
+          :label-width="110"
+        >
+          <div class="edit-purPaperPoSlave">
+             <Row type="flex">
+              <Col span="5">
+                <FormItem label="单据类型" prop="billList">
+                  <optionSearch
+                    @onChange="optionOnChange"
+                    v-model="formDataInfo.master.billList"
+                    :loaddingDataWhen="showWindow"
+                    query="srelationType"
+                  />
+                </FormItem>
+              </Col>
+              <Col span="5">
+                <FormItem label="单号" prop="oddNumbers">
+                  <Input v-model="formDataInfo.master.oddNumbers" maxlength="20" placeholder="单号"></Input>
+                </FormItem>
+              </Col>
+              <!-- <Col span="8"> 
+              <Row>-->
+              <Col span="5">
+                <FormItem label="日期">
+                  <DatePicker
+                    type="date"
+                    format="yyyy-MM-dd"
+                    v-model="formDataInfo.master.startDate"
+                  ></DatePicker>
+                </FormItem>
+              </Col>
+              <Col span="3">
+                <FormItem label="--" :label-width="30">
+                  <DatePicker type="date" format="yyyy-MM-dd" v-model="formDataInfo.master.endDate"></DatePicker>
+                </FormItem>
+              </Col>
+              <!-- </Row>
+              </Col>-->
+              <Col span="1">
+                <FormItem label>
+                  <Button type="primary" @click="clickmaster()">搜索</Button>
+                </FormItem>
+              </Col>
+            </Row>
+          </div>
+        </Form>
+
+        <!-- <Tabs> -->
+          <!--  注意:eTable formDataInfo.wareHouseItems.defaultList  ===wareHouseItems=== 需要根据实际接口修改,其它不变-->
+          <!-- <TabPane> -->
+            <eTable
+              ref="slave_edit-boxUseLost"
+              :height="400"
+              unqiue-mark="id"
+              :index-menu="true"
+              :col-start="0"
+              :row-init-data="initData.initData.sbadDebtNoDtoFm"
+              :data="snaddebtMDatasTableDataList"
+              :rules="tableFieldsValidator"
+              :showContextMenu="!detailDisabled"
+            >
+              <template slot="head">
+                <tr
+                  v-for="(columnGroup,index) in initData.columns.sbadDebtNoDtoFm.editGroups"
+                  :key="index"
+                >
+                  <th
+                    class="ivu-table-column-left"
+                    v-for="(column,index2) in columnGroup"
+                    :key="index2"
+                    :width="column.width"
+                    :colspan="column.colSpan"
+                    :rowspan="column.rowSpan"
+                    style="text-align:center;"
+                  >
+                    <div class="ivu-table-cell">
+                      <span class>{{column.title}}</span>
+                    </div>
+                  </th>
+                </tr>
+              </template>
+              <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
+                <td
+                  :class="`ivu-table-column-${column.align}`"
+                  v-for="(column,columnIndex) in initData.columns.sbadDebtNoDtoFm.editColumns"
+                  :key="columnIndex"
+                  :width="column.width"
+                  @dblclick="submitFormDataEvent(index)"
+                  @click="getIndex(index)"
+                >
+                  <formControl
+                    :control-type="column.controlType"
+                    v-model="row[column.key]"
+                    readonly
+                    @input="value => {valueChangeAssign(value, index, row,column.key)}"
+                  ></formControl>
+                </td>
+              </template>
+            </eTable>
+          <!-- </TabPane> -->
+        <!-- </Tabs> -->
+        <!-- <snaddebtSpec
+          v-model="snaddebtSpecShow"
+          ref="snaddebtSpec"
+          
+
+          :bpMoCut="formDataInfo.master.bpMoCut"
+        ></snaddebtSpec>-->
+      </div>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:07:54
+ */
+import tableSelect from "@/components/table-select/table-select";
+import editWindow from "@/components/edit-window/edit-window";
+// import Form from '@/components/form/form'
+import eTable from "@/components/e-table/e-table";
+import request from "@/libs/request";
+import optionSearch from "../../components/optionSearch";
+import popup from "@/components/popup/popup";
+import editBaseMixins from "../../mixins/edit";
+import InputNumber from "@/components/input-number";
+import formControl from "@/components/form-control/form-control";
+import { customValidator } from "@/libs/validator";
+import calc from "@/libs/calc";
+import list from "../../mixins/list";
+import dayjs from "dayjs";
+export default {
+  name: "edit-purPaperPoSlave",
+  mixins: [editBaseMixins],
+  components: {
+    editWindow,
+    popup,
+    tableSelect,
+    eTable,
+    InputNumber,
+    formControl,
+    optionSearch
+  },
+
+  created() {
+    //debugger
+    // console.log(this.List)
+  },
+  props: {
+    List: {
+      type: String,
+      default: "0"
+    },
+    CustId: {
+      type: String,
+      defaule: ""
+    }
+  },
+  data() {
+    return {
+      snaddebtSpecShow: false,
+      formDataInfo: {
+        // 主表 更改字段
+        master: {},
+        snaddebtMDatas: {
+          bdIvAmt: 0,
+          bdNoIvAmt: 0,
+          bdYm: 0,
+          iisChose: true,
+          omAmt: 0,
+          remark: "",
+          srelationDate: "",
+          srelationNo: "",
+          srelationType: 0,
+          srelationTypeText: ""
+        }
+        // List:thsi.list
+      }, // 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {},
+      tableFieldsValidator: {},
+      WorkOrderNumber: {
+        bdIvAmt: 0,
+        bdNoIvAmt: 0,
+        bdYm: 0,
+        iisChose: true,
+        omAmt: 0,
+        remark: "",
+        srelationDate: "",
+        srelationNo: "",
+        srelationType: 0,
+        srelationTypeText: ""
+      },
+      // actionLableName: "应收呆账关联单号", // 当前操作副标题
+      formName: "sbadDebtNoDtoFm",
+      snaddebtMDatasTableDataList: [], //存放处理过后的数据:[],
+      table: [], //存储子表全部对应的字段
+      index: null //存储选中行索引
+    };
+  },
+  methods: {
+    //搜索点击事件
+    clickmaster() {
+      let ddata = this.formDataInfo;
+      if (!!ddata.master.startDate) {
+        ddata.master.startDate = dayjs(ddata.master.startDate).format(
+          "YYYY-MM-DD"
+        );
+      }
+      if (!!ddata.master.endDate) {
+        ddata.master.endDate = dayjs(ddata.master.endDate).format("YYYY-MM-DD");
+      }
+      let params = {
+        beginDate: ddata.master.startDate,
+        endDate: this.formDataInfo.master.endDate,
+        inSrelatioNo: this.formDataInfo.master.oddNumbers,
+        inCustId: this.CustId,
+        inSrelationType: this.formDataInfo.master.billList
+      };
+      request.post(`/account/snaddebt/getSrelationNo`, params).then(res => {
+        this.$refs["slave_edit-boxUseLost"].cloneData = res;
+      });
+    },
+    //加载表单初始化数据
+    getFormInitDataObj(data) {
+      var begin = new Date();
+      let startDate = dayjs(
+        new Date(begin.setMonth(new Date().getMonth() - 1))
+      ).format("YYYY-MM-DD");
+      //加载表单初始化数据
+      this.formDataInfo["master"] = {
+        billList: "2",
+        billListText: "应收对账单",
+        oddNumbers: "",
+        endDate: dayjs().format("YYYY-MM-DD"),
+        startDate: startDate
+      };
+      this.$refs["slave_edit-boxUseLost"].cloneData = data;
+    },
+    getIndex(index) {
+      this.index = index;
+    },
+    //表单数据提交事件
+    submitFormDataEvent(index) {
+      //表单数据提交事件
+      // true就是有问题
+      // this.$refs["slave_edit-boxUseLost"].validate(result => {});
+      // debugger
+      //   if (result) {
+      //     return;
+      //   }
+        if (!index) {
+          index = this.index;
+        }
+        let submitDataObj = this.$refs["slave_edit-boxUseLost"].cloneData[
+          index
+        ];
+        let parms = submitDataObj.srelationNo;
+        //提交数据
+        // 向外暴露的方法:
+        this.$emit("closeMain", parms);
+        this.showWindow = false; // 关闭当前窗口
+        // });
+      
+    }
+  }
+};
+</script>
+<style >
+.ivu-form-item-text2 .ivu-form-item-content {
+  margin-left: 2.8125rem !important;
+}
+</style>

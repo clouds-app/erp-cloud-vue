@@ -1,6 +1,8 @@
 <template>
   <div>
     <editWindow
+     :draggable="false"
+      :zindex="30"
       id="cl-edit-boxLibCheck"
       :title="actionLableName"
       v-model="showWindow"
@@ -10,6 +12,9 @@
       :spinLoaddingText="spinLoaddingText"
       @on-ok="submitFormDataEvent"
       v-if="initData.columns"
+       ref="editWindow"
+       :showPageConfig="true"
+       @pageOnChange="pageOnChange"
     >
       <div v-if="formDataInfo.master">
         <Form
@@ -80,7 +85,7 @@
               </Col>
               <Col span="1">
                 <FormItem label>
-                  <Button type="primary" @click="clickmaster()">搜索</Button>
+                  <Button type="primary" @click="clickmaster('search')">搜索</Button>
                 </FormItem>
               </Col>
             </Row>
@@ -108,7 +113,7 @@
                   :key="index"
                 >
                   <th
-                    class="ivu-table-column-left"
+                    :class="`ivu-table-column-${column.titleAlign}`"
                     v-for="(column,index2) in columnGroup"
                     :key="index2"
                     :width="column.width"
@@ -133,7 +138,7 @@
               </template>
               <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
                 <td
-                  class="ivu-table-column-left"
+                  :class="`ivu-table-column-${column.align}`"
                   v-for="(column,columnIndex) in initData.columns.BoxLibCheckWorkDtoFm.editColumns"
                   :key="columnIndex"
                   :width="column.width"
@@ -220,46 +225,46 @@ export default {
   },
   data() {
     return {
-      //actionSubtitle: "纸箱销售订单明细", // 当前操作副标
+      actionSubtitle: '纸箱库存盘点工单弹框', // 当前操作副标题
       productSpecShow: false,
       formDataInfo: {
         // 主表 更改字段
         master: {},
-        productMDatas: {
-          boxUseBatchOn: "", //批次号
-          mateWorkNo: "", //用料号单
-          workNo: "", //工单号
-          bpName: "", //产品名称
-          stationLinkId: "", //仓位id
-          stationLinkName: "", //仓位名称
-          paiOrderQty: "", //工单数
-          paiStoreQty: "", //库存数
-          artId: "", //纸质id
-          artCode: "", //纸质
-          lbCode: "", //楞别
-          sizeLeng: "", //纸长
-          sizeWidth: "" //纸宽
-        }
+        // productMDatas: {
+        //   boxUseBatchOn: "", //批次号
+        //   mateWorkNo: "", //用料号单
+        //   workNo: "", //工单号
+        //   bpName: "", //产品名称
+        //   stationLinkId: "", //仓位id
+        //   stationLinkName: "", //仓位名称
+        //   paiOrderQty: "", //工单数
+        //   paiStoreQty: "", //库存数
+        //   artId: "", //纸质id
+        //   artCode: "", //纸质
+        //   lbCode: "", //楞别
+        //   sizeLeng: "", //纸长
+        //   sizeWidth: "" //纸宽
+        // }
         // List:thsi.list
       }, // 防止添加和更新数据提交发生冲突
       // 需要验证的数据
       ruleValidate: {},
       tableFieldsValidator: {},
-      WorkOrderNumber: {
-        boxUseBatchOn: "", //批次号
-        mateWorkNo: "", //用料号单
-        workNo: "", //工单号
-        bpName: "", //产品名称
-        stationLinkId: "", //仓位id
-        stationLinkName: "", //仓位名称
-        paiOrderQty: "", //工单数
-        paiStoreQty: "", //库存数
-        artId: "", //纸质id
-        artCode: "", //纸质
-        lbCode: "", //楞别
-        sizeLeng: "", //纸长
-        sizeWidth: "" //纸宽
-      },
+      // WorkOrderNumber: {
+      //   boxUseBatchOn: "", //批次号
+      //   mateWorkNo: "", //用料号单
+      //   workNo: "", //工单号
+      //   bpName: "", //产品名称
+      //   stationLinkId: "", //仓位id
+      //   stationLinkName: "", //仓位名称
+      //   paiOrderQty: "", //工单数
+      //   paiStoreQty: "", //库存数
+      //   artId: "", //纸质id
+      //   artCode: "", //纸质
+      //   lbCode: "", //楞别
+      //   sizeLeng: "", //纸长
+      //   sizeWidth: "" //纸宽
+      // },
       title: "工单号",
       formName: "BoxLibCheckWorkDtoFm",
       propvalue: "workNo", //存储子表每个对应的字段
@@ -275,6 +280,10 @@ export default {
   },
   computed: {},
   methods: {
+    pageOnChange(_pageNum){
+      this.pageConfig.pageNum = _pageNum
+      this.clickmaster()
+    },
     //判断一个值是数字
     myIsNaN(value){
       return typeof value === 'number' && !isNaN(value)
@@ -294,8 +303,11 @@ export default {
       this.propvalue = value;
     },
     //搜索点击事件
-    clickmaster() {
-      //debugger
+     clickmaster (type) {
+      if(this.pageConfig.pageNum==1 || type=='search'){
+          this.resetPageConfig()
+          this.productMDatasTableDataList = []
+      }
       let ddata = this.formDataInfo;
       let params = {
         // flag:this.formDataInfo.master.flag,
@@ -310,17 +322,20 @@ export default {
         inL: ddata.master.inL,                        //长
         inW: ddata.master.inW,                        //
         inH: ddata.master.inH,                        //
-        workNoList: this.workNoList
+        workNoList: this.workNoList,
+        pageNum:this.pageConfig.pageNum,//(当前页),
+        pageSize:this.pageConfig.pageSize,//(每页显示条数)
       };
       request.post(`/stock/boxLibCheck/getWorkInStore`, params).then(res => {
-        if(res){
-           for(let i=0;i<res.length;i++){
-              if(res[i].biQty){
-                res[i].biChkQty = res[i].biQty //实盘数量默认赋值
-              }
+       if (res && res.records && res.records.length>0) {
+           for(let i=0;i<res.records.length;i++){
+              res.records[i].biChkQty = res.records[i].biQty //实盘数量默认赋值
             }
+            this.productMDatasTableDataList.push(...res.records)
         }
-        this.$refs["slave_edit-boxLibCheck"].cloneData = res;
+         this.pageConfig.total = res.total // 赋值总条数
+         this.$refs['editWindow'].pageConfig= this.pageConfig
+       // this.$refs["slave_edit-boxLibCheck"].cloneData = res;
       });
     },
 
@@ -337,14 +352,22 @@ export default {
       if (data == null) {
         return;
       }
-      for(let i=0;i<data.length;i++){
-        if(data[i].biQty){
-          data[i].biChkQty = data[i].biQty //实盘数量默认赋值
-        }
-      }          
-      this.$refs["slave_edit-boxLibCheck"].cloneData = data;
+    
+      this.productMDatasTableDataList = []
+      if(data && data.records){
+        for(let i=0;i<data.records.length;i++){
+            data.records[i].biChkQty = data.records[i].biQty //实盘数量默认赋值
+        }  
+        this.productMDatasTableDataList = data.records
+        this.pageConfig.total = data.total // 赋值总条数
+        this.$refs['editWindow'].pageConfig= this.pageConfig
+      }        
+      //this.$refs["slave_edit-boxLibCheck"].cloneData = data;
     },
-
+    closeActionTigger () {
+      this.resetPageConfig()
+      this.productMDatasTableDataList = []
+    },
     //表单数据提交事件
     submitFormDataEvent() {
       //debugger

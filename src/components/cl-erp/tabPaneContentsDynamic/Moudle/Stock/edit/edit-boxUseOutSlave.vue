@@ -1,6 +1,8 @@
 <template>
   <div>
     <editWindow
+     :draggable="false"
+      :zindex="30"
       id="cl-edit-salesOrder"
       :title="actionLableName"
       v-model="showWindow"
@@ -9,6 +11,9 @@
       :loading="!isLoaddingDone"
       :spinLoaddingText="spinLoaddingText"
       @on-ok="submitFormDataEvent"
+       ref="editWindow"
+       :showPageConfig="true"
+       @pageOnChange="pageOnChange"
     >
       <div v-if="formDataInfo.master">
         <Form
@@ -69,7 +74,7 @@
 
               <Col span="4">
                 <FormItem label style="margin-left: -80%;">
-                  <Button type="primary" @click="clickmaster()">搜索</Button>
+                  <Button type="primary" @click="clickmaster('search')">搜索</Button>
                 </FormItem>
               </Col>
             </Row>
@@ -636,14 +641,7 @@ export default {
       type: String,
       default: ''
     }
-    // List:{
-    //   type: String,
-    //   default: '0'
-    // },
-    // WorkOrderNumber:{
-    //   type: Array,
-    //   defaule:'null'
-    // }
+ 
   },
   data () {
     return {
@@ -695,14 +693,10 @@ export default {
   computed: {
   },
   methods: {
-    // tableRowCli(rowIndex,rowData){
-    //  //debugger
-    //   if(rowData.Choice){
-    //      rowData.bpOutStore = 0
-    //   }else{
-    //     rowData.bpOutStore = rowData.bpStoreQty
-    //   }
-    // },
+   pageOnChange(_pageNum){
+      this.pageConfig.pageNum = _pageNum
+      this.clickmaster()
+    },
     valueChangeAssign (value, index, row, word) {
       // debugger
     },
@@ -713,7 +707,11 @@ export default {
       this.formDataInfo.master.propvalue = ''
     },
     // 搜索点击事件
-    clickmaster () {
+    clickmaster (type) {
+      if(this.pageConfig.pageNum==1 || type=='search'){
+          this.resetPageConfig()
+          this.productMDatasTableDataList = []
+      }
       if (this.propvalue == 'bmMateWorkNo') {
         this.bmMateWorkNo = this.formDataInfo.master.propvalue
         this.workNo = ''
@@ -727,42 +725,47 @@ export default {
         this.bmMateWorkNo = ''
         this.inBoxUseBatchOn = this.formDataInfo.master.propvalue
       }
-      let one = {
+      let params = {
         psWorkNo: this.workNo, // 工单号
         flag: this.formDataInfo.master.flag,
         inBmMateWorkNo: this.bmMateWorkNo, // 用料单号
         inWsId: this.inWsId, // 仓位id
         biBatchNoList: this.biBatchNoList,
-        inBoxUseBatchOn: this.inBoxUseBatchOn// 批次号
+        inBoxUseBatchOn: this.inBoxUseBatchOn,// 批次号
+        pageNum:this.pageConfig.pageNum,//(当前页),
+        pageSize:this.pageConfig.pageSize,//(每页显示条数)
       }
-      request.post(`/stock/boxUseOut/getBoiOutCo`, one).then(res => {
-        // this.WorkOrderNumber = res
-        // debugger
-        // 给领用数复制
-        for (var i = 0; i < res.length; i++) {
-          if (res[i].bpStoreQty) {
-            res[i].bpOutStore = res[i].bpStoreQty
+      request.post(`/stock/boxUseOut/getBoiOutCo`, params).then(res => {
+         if (res && res.records && res.records.length>0) {
+              // 给领用数复制
+          for (var i = 0; i < res.records.length; i++) {
+            if (res.records[i].bpStoreQty) {
+              res.records[i].bpOutStore = res.records[i].bpStoreQty
+            }
           }
-        }
-        this.$refs['slave_edit-boxUseOut'].cloneData = res
+       
+         this.productMDatasTableDataList.push(...res.records)
+         }
+         this.pageConfig.total = res.total // 赋值总条数
+         this.$refs['editWindow'].pageConfig= this.pageConfig
       })
     },
 
     // 加载表单初始化数据
     getFormInitDataObj (data) {
-      // debugger;
       // 加载表单初始化数据
       this.formDataInfo['master'] = {
         boiCoNo: '',
         workNo: '',
         flag: '0'
-        // beginDate:dayjs().format("2000-11-30"),
-        // endDate:dayjs().format("YYYY-MM-DD"),
-        // ifAreaPrice:false,
       }
-      if (this.$refs['slave_edit-boxUseOut']) {
-        this.$refs['slave_edit-boxUseOut'].cloneData = data
+      this.productMDatasTableDataList = []
+      if(data && data.records){
+        this.productMDatasTableDataList = data.records
+        this.pageConfig.total = data.total // 赋值总条数
+        this.$refs['editWindow'].pageConfig= this.pageConfig
       }
+    
     },
 
     // 表单数据提交事件
@@ -790,7 +793,8 @@ export default {
     },
     // 重写父类 关闭窗口时 触发事件
     closeActionTigger () {
-      // debugger
+      this.resetPageConfig()
+      this.productMDatasTableDataList = []
       // fix 清除上次的错误提示 formDataInfo 为表单ref名称
       if (this.$refs['masterForm']) { this.$refs['masterForm'].resetFields() }
       if (this.$refs['slave_edit-boxUseOut']) { this.$refs['slave_edit-boxUseOut'].reset() }

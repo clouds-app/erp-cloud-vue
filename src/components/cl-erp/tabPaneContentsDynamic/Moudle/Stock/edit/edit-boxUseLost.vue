@@ -541,7 +541,13 @@ export default {
       }
       if (!!boxUseBatchNo) {
         request
-          .post(`/stock/boxUseLost/getWorkNo`, { inBatchOn: boxUseBatchNo, flag: 1, whId: this.formDataInfo.master.stationId,batchOnList})
+          .post(`/stock/boxUseLost/getWorkNo`, { 
+            inBatchOn: boxUseBatchNo, 
+            flag: 1,
+            whId: this.formDataInfo.master.stationId,
+            batchOnList,
+             }
+            )
           .then(res => {
             let data = res[0]
             if (data === [] || data === undefined) {
@@ -561,16 +567,25 @@ export default {
     },
     // 获取批次号过滤字段
     getbatchOnList (dataindex) {
+      debugger
       let workNoList = ''
-      this.$refs.tableFields.get().filter((item, index, data) => {
-        if (!item.boxUseBatchNo || dataindex === index) {
-          return
+      let dataList = this.formDataInfo.boxUseLostItemSlave.defaultList
+       dataList.forEach((item, index, data) => {
+        if(!!item.boxUseBatchNo){
+           if(!!!workNoList){
+              workNoList += item.boxUseBatchNo
+           }else{
+              workNoList += ',' + item.boxUseBatchNo
+           }
         }
-        if (index === 0) {
-          workNoList += item.boxUseBatchNo
-        } else {
-          workNoList += ',' + item.boxUseBatchNo
-        }
+        // if (!item.boxUseBatchNo || dataindex === index) {
+        //   return
+        // }
+        // if (index === 0) {
+        //   workNoList += item.boxUseBatchNo
+        // } else {
+        //   workNoList += ',' + item.boxUseBatchNo
+        // }
       })
       return workNoList
     },
@@ -594,7 +609,13 @@ export default {
       this.batchOnList = batchOnList
       this.viodid = this.formDataInfo.master.stationId
       request
-        .post(`/stock/boxUseLost/getWorkNo`, { inBatchOn: '', whId: this.formDataInfo.master.stationId, batchOnList })
+        .post(`/stock/boxUseLost/getWorkNo`, { 
+          inBatchOn: '', 
+          whId: this.formDataInfo.master.stationId, 
+          batchOnList,
+          pageNum:this.pageConfig.pageNum,//(当前页),
+          pageSize:this.pageConfig.pageSize,//(每页显示条数)
+          })
         .then(res => {
           this.WorkOrderNumber1 = res
           // console.log(res)

@@ -1,6 +1,8 @@
 <template>
   <div>
     <editWindow
+     :draggable="false"
+      :zindex="22"
       class="cl-edit-window-boxDeli"
       title="纸箱出货工单选择"
       v-model="showWindow"
@@ -10,6 +12,9 @@
       :spinLoaddingText="spinLoaddingText"
       @on-ok="formTableDataSubmit()"
       v-if="initColData.columns"
+      ref="editWindow"
+      :showPageConfig="true"
+      @pageOnChange="pageOnChange"
     >
       <template slot="footer">
         <div>
@@ -48,7 +53,7 @@
           :rules="masterRuleValidate"
           :label-width="40"
         >
-          <Row>
+          <Row type="flex"> 
             <Col span="4">
               <FormItem
                 :label-width="80"
@@ -77,7 +82,7 @@
                   transfer
                   style="width: 120px"
                   v-model="formDataInfo.master.startDate"
-                  type="datetime"
+                  type="date"
                   format="yyyy-MM-dd"
                 ></DatePicker>
                 -
@@ -85,7 +90,7 @@
                   transfer
                   style="width: 120px"
                   v-model="formDataInfo.master.endDate"
-                  type="datetime"
+                  type="date"
                   format="yyyy-MM-dd"
                 ></DatePicker>
               </FormItem>
@@ -324,6 +329,8 @@
 
     <editWindow
       title="快速工单调拨"
+      :draggable="false"
+      :zindex="30"
       :fullscreen="false"
       v-model="showSetOrderWindow"
       width="80%"
@@ -665,6 +672,10 @@ export default {
     this.loadSetOrderColumsData(); // 快速调拨 表头
   },
   methods: {
+    pageOnChange(_pageNum){
+      this.pageConfig.pageNum = _pageNum
+     // this.clickmaster()
+    },
     // 是否禁用快速调拨选择框
     disabledMoveQty(index) {
       let needMoveQty = Number(this.formSetOrderInfo.needNumber); // 需调拨数量
@@ -829,10 +840,11 @@ export default {
           break;
       }
     },
-    // 校验送货数是否超过库存 (确认是否需要快速调拨)
+    // 校验送货数是否超过库存 (确认是否需要快速调拨) boxDeliSubItems
     checkSumDelieryQtyMoreThanStores(){
       this.needAllocate = false; // 是否需要快速调拨
       let slaveList = this.formDataInfo["boxDeliSlaveItems"].defaultList
+      let subList = this.formDataInfo["boxDeliSubItems"].defaultList
       if(slaveList){
        let slaveItem = slaveList[this.slaveTableSelectedIndex]
        let deliQty = Number(slaveItem.deliQty) // 送货数
@@ -843,8 +855,22 @@ export default {
            this.getNeedAllocateRowIndex()
         }
       }
+      if(subList && subList.length>0){
+         let _sub_needAllocate = false
+          subList.forEach(item=>{
+            if(Number(item.deliQty)> Number(item.bsQty)){
+                  _sub_needAllocate = true; 
+                  this.needAllocate = true;
+            }
+          })
+          if(_sub_needAllocate){
+            this.getNeedAllocateRowIndex()
+          }
+      }
+
       return this.needAllocate
     },
+
     // 获取需要调拨的行 返回数组
     getNeedAllocateRowIndex(){
       let needAllocateIndexList = []
@@ -1053,6 +1079,7 @@ export default {
     },
     //获取数据BY MODE
     getDataByMode() {
+      debugger
       let _self = this;
       //MODE1 仓位数据
       // 查询前 表格 数据清空
@@ -1060,11 +1087,12 @@ export default {
       this.formDataInfo["boxDeliSubItems"].defaultList = [];
       this.boxDeliSubItemsList = [];
       this.searchDataBy("1").then(res => {
-        _self.boxDeliSubItemsList = res;
+        debugger
+        _self.boxDeliSubItemsList = res.records;
         //MODE0 合计数据
         _self.searchDataBy("0").then(rep => {
-            //debugger
-          _self.formDataInfo["boxDeliSlaveItems"].defaultList = rep;
+            debugger
+          _self.formDataInfo["boxDeliSlaveItems"].defaultList = rep.records;
           _self.setDefaultSelectedRow(); // 默认选择第一行
           _self.setDefaultSelectedSubRow();
         });
@@ -1093,7 +1121,10 @@ export default {
           addrDetail: this.searchParams.addrDetail, //(详细地址)
           workNoList: this.searchParams.workNoList //(过滤已选的工单号集合)
         };
-
+        if(mode=='1'){
+            params.pageNum = this.pageConfig.pageNum//(当前页),
+            params.pageSize = this.pageConfig.pageSize//(每页显示条数)
+         }
         this.loadingData = true;
         request
           .post(
@@ -1101,12 +1132,13 @@ export default {
             params
           )
           .then(res => {
-            if (res && res.length > 0) {
-              resolve(res);
-            }
+              if (res && res.records && res.records.length>0) {
+                  resolve(res);
+               }
             this.loadingData = false;
           })
           .catch(err => {
+             reject();
             this.loadingData = false;
           });
       });
@@ -1237,7 +1269,7 @@ export default {
       }
     },
     getMasterheight() {
-      return 50;
+      return 35;
     },
     // 重写父类,修改提交数据
     resetformDataInfo() {
@@ -1249,6 +1281,7 @@ export default {
 
     // 提交主从表数据
     formTableDataSubmit() {
+      //debugger
       this.checkSumDelieryQtyMoreThanStores()
       if (this.needAllocate) {
         this.$Modal.warning({
@@ -1418,7 +1451,7 @@ export default {
   overflow: auto;
 }
 .cl-edit-window-boxDeli .otherHeightClass {
-  height: 50%;
+  height: 40%;
   overflow: hidden;
 }
 </style>

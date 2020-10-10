@@ -191,6 +191,7 @@
                   :disabled="detailDisabled"
                   @on-blur="getCouponSelected(value, index, row, 'biChkQty')"
                   size="small"
+                  :min='0'
                   :maxlength="20"
                 ></inputNumber>
                 <!--控件特殊处理 盘点类型 -->
@@ -328,7 +329,7 @@ export default {
         bcWhCode: [
           {
             required: true,
-            message: '仓位不能为空',
+            message: '仓库不能为空',
             trigger: 'blur'
           }
         ]
@@ -584,10 +585,13 @@ export default {
           this.salveWindow.isLoaddingDone = true
           // issInput(1输入0查询)
           request
-            .post(`/stock/boxLibCheck/getWorkInStore`, { inWhId: this.formDataInfo.master.bcWhId, workNoList })
+            .post(`/stock/boxLibCheck/getWorkInStore`, { 
+              inWhId: this.formDataInfo.master.bcWhId, 
+               workNoList,
+               pageNum:this.pageConfig.pageNum,//(当前页),
+               pageSize:this.pageConfig.pageSize,//(每页显示条数) 
+              })
             .then(res => {
-              // debugger
-              // this.WorkOrderNumber1 = res;
               this.$refs.mychild.getFormInitDataObj(res)
             })
         } else {

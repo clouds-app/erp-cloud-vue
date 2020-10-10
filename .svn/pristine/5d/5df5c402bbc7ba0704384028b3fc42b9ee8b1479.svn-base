@@ -1,0 +1,228 @@
+<template>
+  <modal v-model="modalShow" :styles="{top: '50px'}" :title="popupInit.title" :width="popupInit.width" transfer class="popup">
+    <Form :model="queryParams" v-if="popupInit && popupInit.formItems.length > 0">
+      <Row>
+        <Col :span="colSpan" v-for="(item,index) in popupInit.formItems" :key="index" :style="{'padding-right':'10px'}">
+        <FormItem style="padding:0,10px;" v-if="queryParams">
+          <Input type="text" :placeholder="item.label" size="small" v-model="queryParams[item.model]">
+          </Input>
+        </FormItem>
+        </Col>
+        <Col :span="colSpan">
+          <Row>
+            <Col :span="12">
+              <FormItem>
+                <Button size="small" type="primary" @click="search">
+                  搜索
+                </Button>
+              </FormItem>
+            </Col>
+            <Col :span="12" v-show="pagination">
+              <FormItem>
+                <!-- current,//当前页码 total,//数据总数  pageSize,//每页条数 -->
+                <Page  :current="page.pageNumber" :total="page.total" :page-size="page.pageSize" simple @on-change='pageChange'/>
+              </FormItem>
+            </Col>
+          </Row>
+        </Col>
+      </Row>
+    </Form>
+    <vTable
+      v-if="tableShow"
+      ref="vipTable"
+      :url="url"
+      :pagination="pagination"
+      :height="popupInit.height - 200"
+      :width="popupInit.width"
+      :columns="popupInit.columns"
+      :query-params="queryParams"
+      :table-data="tableData"
+      @on-selection-change="selectGroupChange"
+      @select-all="selectGroupChange"
+      @row-click="rowClick"
+      @row-dblclick="rowDbClick"
+      :name="'popup_'+popupName"
+      ></vTable>
+
+    <div slot="footer">
+    
+      <Button type="primary" @click="onOk"> <Icon type="ios-arrow-down" />确定</Button>
+       <Button @click="closeWindow">  <Icon color="red" type="md-close" />取消</Button>
+    </div>
+    <Spin size="large" fix v-if="spinShow"></Spin>
+  </modal>
+</template>
+
+<script>
+  import request from '@/libs/request'
+  import vTable from '../tables/vTable'
+  export default {
+    name: 'popupWindow',
+    components: {
+      vTable
+    },
+    data() {
+      return {
+        tableShow:false,
+        modalShow: false,
+        initOk: false,
+        url: '',
+        selectionItems: [],
+        popupInit: {
+          formItems:[]
+        },
+        popupIsInit:false,
+        spinShow:false,
+        page:{
+          pageNumber:1,//当前页码 
+          total:20,//数据总数
+          pageSize:20,//每页条数
+        },
+        pagination:true //分页
+      }
+    },
+    watch: {
+      value: {
+        immediate: true,
+        handler(n, o) {
+          if(this.$refs && this.$refs.vipTable){
+             this.$refs.vipTable.search(this.queryParams);
+          }
+          if(n && !this.popupIsInit){
+            this.getPopupInitData();
+          }
+          this.modalShow = n;
+        }
+      },
+      pageInitParams:{
+          deep:true,
+          handler(n,o){
+            // debugger
+            if (n.page.total != this.page.total) {
+              this.getpageData(n)
+            }
+        }
+      },
+      modalShow(n, o) {
+        this.$emit('input', n);
+        if (n) {
+          this.page.pageNumber = 1
+        }
+      },queryParams:{
+        handler(n,o){
+          if(this.$refs.vipTable){
+            //this.$refs.vipTable.search(n);
+          }
+        },deep:true
+      }
+    },
+    props: {
+      value: {
+        type: Boolean,
+        default: false
+      },
+      popupName: String,
+      queryParams: {
+        default: {}
+      },tableData:{
+        default:()=>{
+          return [];
+        }
+      }
+    },
+    computed: {
+      colSpan() {
+        return Math.floor(24 / (this.popupInit.formItems.length + 1));
+      },
+      myValue() {
+        return this.value;
+      },
+      // 获取分页参数
+      pageInitParams() {
+        return this.$store.state.app.pageDataInit
+      },
+    },
+    created() {
+      this.url = `/common/sys/popup/${this.popupName}` + '/query';
+    },
+    methods: {
+      // 获取弹框分页数据
+      getpageData(data){
+        this.page.total = data.page.total
+        this.page.pageSize = data.page.pageSize
+      },
+      // 分页查询
+      pageChange(n){
+        this.page.pageNumber = n
+        let pageFlag = this.$store.state.app.pageDataLoaddingDone.pageFlag
+        this.$store.commit('setPageNumberChange',{pageFlag:pageFlag,pageNumber:n})
+      },
+      search() {
+        this.page.current = 1
+        this.$refs.vipTable.search();
+      },
+      selectGroupChange(selection) {
+        this.selectionItems = selection;
+      },
+      rowClick(rowData, rowIndex) {
+        if (this.popupInit.multiple) {
+          return;
+        }
+        this.selectionItems = rowData;
+      },
+      onOk() {
+        if (this.selectionItems.length == 0) {
+          this.$Message.warning('请选择内容');
+          return;
+        }
+        this.modalShow = false;
+        this.$emit('on-ok', this.selectionItems, Array.isArray(this.selectionItems));
+        this.selectionItems  = [];
+      },
+      resize() {
+        //this.$refs.vipTable.resize();
+      },
+      rowDbClick() {
+        setTimeout(()=>{
+          // 延迟赋值,修复总是获取到上一次的值
+          this.onOk();
+        },500)
+      },closeWindow(){
+        this.modalShow = false;
+      },getPopupInitData(){
+        let _self = this;
+        this.spinShow = true;
+        request.get('/common/sys/popup/detail',{},{popupName:this.popupName}).then(res => {
+          _self.page.pageSize =  res.pageSize;
+          _self.popupIsInit = true;
+          _self.popupInit = res;
+          _self.initOk = true;
+          _self.pagination = res.existsPage;
+          _self.tableShow = true;
+          _self.spinShow = false;
+          if (_self.popupInit.multiple) { //多选
+            _self.popupInit.columns.unshift({
+              type: 'selection',
+              width: 40,
+              titleAlign: 'center',
+              align: 'center'
+            });
+          }
+          //storage.session.put(this.popupName, JSON.stringify(this.popupInit));
+        }).catch(()=>{
+          _self.tableShow = true;
+           _self.spinShow = true;
+        });
+      }
+    }
+  }
+</script>
+
+<style>
+  .popup .ivu-modal-body{
+    padding-top: 0px;
+  }
+  .popup .ivu-form-item{
+    margin-bottom: 0px;
+  }
+</style>

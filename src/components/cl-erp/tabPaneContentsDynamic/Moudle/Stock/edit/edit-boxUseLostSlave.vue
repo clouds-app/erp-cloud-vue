@@ -1,6 +1,8 @@
 <template>
   <div>
     <editWindow
+     :draggable="false"
+      :zindex="30"
       id="cl-edit-salesOrder"
       :title="actionLableName"
       v-model="showWindow"
@@ -9,6 +11,9 @@
       :loading="!isLoaddingDone"
       :spinLoaddingText="spinLoaddingText"
       @on-ok="submitFormDataEvent"
+       ref="editWindow"
+       :showPageConfig="true"
+       @pageOnChange="pageOnChange"
     >
       <div v-if="formDataInfo.master">
         <Form
@@ -36,7 +41,7 @@
               </Col>
               <Col span="1">
                 <FormItem label >
-                  <Button type="primary" @click="clickmaster()">搜索</Button>
+                  <Button type="primary" @click="clickmaster('search')">搜索</Button>
                 </FormItem>
               </Col>
               
@@ -52,7 +57,7 @@
               :index-menu="true"
               :col-start="0"
               :width="200"
-              :row-init-data="WorkOrderNumber"
+              :row-init-data="{}"
               :data.sync="productMDatasTableDataList"
               :rules="tableFieldsValidator"
               :showContextMenu="false"
@@ -342,7 +347,6 @@ export default {
     },
   data() {
     return {
-      //actionSubtitle: "纸箱销售订单明细", // 当前操作副标
       productSpecShow: false,
       formDataInfo: {
         // 主表 更改字段
@@ -394,6 +398,10 @@ export default {
   computed: {
   },
   methods: {
+     pageOnChange(_pageNum){
+      this.pageConfig.pageNum = _pageNum
+      this.clickmaster()
+    },
     // Td点击事件，切换搜索条件
     purPaperPoClick(name,val){
       this.titleName = name 
@@ -407,19 +415,38 @@ export default {
       return ''
     },
     //搜索点击事件
-    clickmaster(){
+    clickmaster(type){
+        if(this.pageConfig.pageNum==1 || type=='search'){
+          this.resetPageConfig()
+          this.productMDatasTableDataList = []
+        }
       // debugger
       let inBiWorkNo = this.checkmasterval('inBiWorkNo')
       let inBatchOn = this.checkmasterval('inBatchOn')
       let flag = this.formDataInfo.master.flag
       let batchOnList = this.batchOnList
       let whId =  this.viodid
-       request.post(`/stock/boxUseLost/getWorkNo`,{inBiWorkNo,flag,batchOnList,whId,inBatchOn}).then(res => {
-        // this.WorkOrderNumber = res
-        this.$refs['slave_edit-boxUseLost'].cloneData = res
+       request.post(`/stock/boxUseLost/getWorkNo`,{
+         inBiWorkNo,
+         flag,
+         batchOnList,
+         whId,
+         inBatchOn,
+         pageNum:this.pageConfig.pageNum,//(当前页),
+         pageSize:this.pageConfig.pageSize,//(每页显示条数)
+         }).then(res => {
+         if (res && res.records && res.records.length>0) {
+             this.productMDatasTableDataList.push(...res.records)
+         }
+         this.pageConfig.total = res.total // 赋值总条数
+         this.$refs['editWindow'].pageConfig= this.pageConfig
       })
     },
-
+ // 重写父类 关闭窗口时 触发事件
+    closeActionTigger () {
+      this.resetPageConfig()
+      this.productMDatasTableDataList = []
+    },
     //加载表单初始化数据
     getFormInitDataObj(data) {
       //  debugger;
@@ -428,11 +455,12 @@ export default {
         inBiWorkNo:"",
         flag:"0",
       }
-      // if (data==''||data==null) {
-      //   return
-      // }
-      this.$refs['slave_edit-boxUseLost'].cloneData=data
-
+      this.productMDatasTableDataList = []
+      if(data && data.records){
+        this.productMDatasTableDataList = data.records
+        this.pageConfig.total = data.total // 赋值总条数
+        this.$refs['editWindow'].pageConfig= this.pageConfig
+      }
     },
 
     //表单数据提交事件
