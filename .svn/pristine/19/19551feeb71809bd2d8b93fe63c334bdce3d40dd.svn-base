@@ -1,0 +1,655 @@
+<template>
+  <div>
+    <editWindow
+     ref="editWindow"
+     :draggable="false"
+      :zindex="30"
+      id="cl-edit-salesOrder"
+      title="纸板入库选工单"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="90%"
+      :loading="!isLoaddingDone"
+      :spinLoaddingText="spinLoaddingText"
+      @on-ok="submitFormDataEvent"
+       :showPageConfig="true"
+       @pageOnChange="pageOnChange"
+    >
+      <div v-if="formDataInfo.master">
+        <Form
+          ref="masterForm"
+          :show-message="true"
+          :model="formDataInfo.master"
+          :rules="ruleValidate"
+          :label-width="124"
+        >
+          <div class="edit-purPaperPoSlave">
+            <Row>
+              <Col span="6" >
+                <FormItem :label="title" prop="multiValue">
+                  <Input v-model="multiValue" maxlength="20" :placeholder="title"></Input>
+                </FormItem>
+              </Col>
+              <Col span="5">
+                <FormItem label :label-width='80'>
+                  <RadioGroup v-model="formDataInfo.master.flag">
+                    <Radio label="0">模糊</Radio>
+                    <Radio label="1">精准</Radio>
+                  </RadioGroup>
+                </FormItem>
+              </Col>
+              <Col span="9">
+                <Row>
+                  <Col span="14" >
+                    <FormItem label="订单日期">
+                      <DatePicker
+                        type="date"
+                        format="yyyy-MM-dd"
+                        v-model="formDataInfo.master.beginDate"
+                      ></DatePicker>
+                    </FormItem>
+                  </Col>
+                  <Col span="10" >
+                    <FormItem label="--" :label-width='40'>
+                      <DatePicker
+                        type="date"
+                        format="yyyy-MM-dd"
+                        v-model="formDataInfo.master.endDate"
+                      ></DatePicker>
+                    </FormItem>
+                  </Col>
+                </Row>
+              </Col>
+              <Col span="2" :label-width='40'>
+                <FormItem label>
+                  <Button type="primary" @click="clickmaster('search')">搜索</Button>
+                </FormItem>
+              </Col>
+            </Row>
+          </div>
+        </Form>
+
+        <Tabs>
+          <!--  注意:eTable formDataInfo.wareHouseItems.defaultList  ===wareHouseItems=== 需要根据实际接口修改,其它不变-->
+          <TabPane>
+            <eTable
+              ref="slave_edit-purPaperPo"
+              :height="400"
+              :index-menu="true"
+              :col-start="0"
+              :width="200"
+              :data.sync="productMDatasTableDataList"
+              :rules="tableFieldsValidator"
+              :showContextMenu="false"
+            >
+              <template slot="head">
+                <tr>
+                  <th class="ivu-table-column-center" width="35">
+                    <div class="ivu-table-cell">
+                      <span class>选择</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="110">
+                    <div class="ivu-table-cell">
+                      <span class='hover' @click="purPaperPoClick('采购单号','ppoNO')">采购单号</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="70">
+                    <div class="ivu-table-cell">
+                      <span class >采购日期</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="70">
+                    <div class="ivu-table-cell">
+                      <span class >送货日期</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="100">
+                    <div class="ivu-table-cell">
+                      <span class='hover' @click="purPaperPoClick('工单号','ppoGroupNo')">工单号</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="70">
+                    <div class="ivu-table-cell">
+                      <span class >本厂纸质</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="70">
+                    <div class="ivu-table-cell">
+                      <span class >供应商纸质</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="36">
+                    <div class="ivu-table-cell">
+                      <span class >楞别</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="36">
+                    <div class="ivu-table-cell">
+                      <span class >纸宽</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="70">
+                    <div class="ivu-table-cell">
+                      <span class >纸长</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="100">
+                    <div class="ivu-table-cell">
+                      <span class >压线</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="70">
+                    <div class="ivu-table-cell">
+                      <span class >采购数量</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="70">
+                    <div class="ivu-table-cell">
+                      <span class >已入库数</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="70">
+                    <div class="ivu-table-cell">
+                      <span class >退货数</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="70">
+                    <div class="ivu-table-cell">
+                      <span class>本次入库数</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="70">
+                    <div class="ivu-table-cell">
+                      <span class>品名</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="70">
+                    <div class="ivu-table-cell">
+                      <span class >料号</span>
+                    </div>
+                  </th>
+                  <th class="ivu-table-column-center" width="80">
+                    <div class="ivu-table-cell">
+                      <span class>备注</span>
+                    </div>
+                  </th>
+                </tr>
+              </template>
+              <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
+                <!-- 选择 -->
+                <td class="ivu-table-column-center" width="32">
+                  <Checkbox
+                    size="default"
+                    v-model="row.Choice"
+                    @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'Choice');
+                      }
+                    "
+                  ></Checkbox>
+                </td>
+                <!-- 采购单号 -->
+                <td class="ivu-table-column-center" width="110">
+                  <Input
+                    disabled
+                    size="default"
+                    v-model="row.ppoNO"
+                    @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'ppoNO');
+                      }
+                    "
+                  ></Input>
+                </td>
+                <!-- 采购日期 -->
+                <td class="ivu-table-column-center" width="70">
+                  <Input
+                    disabled
+                    size="default"
+                    v-model="row.ppoDate"
+                    format="YYYY-MM-DD HH:mm:ss"
+                    @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'ppoDate');
+                      }
+                    "
+                  ></Input>
+                </td>
+                <!-- 送货日期 -->
+                <td class="ivu-table-column-center" width="70">
+                  <Input
+                    disabled
+                    size="default"
+                    format="yyyy-MM-dd"
+                    v-model="row.ppoDueDate"
+                    @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'ppoDueDate');
+                      }
+                    "
+                  ></Input>
+                </td>
+                <!-- 工单号 -->
+                <td class="ivu-table-column-left" width="100">
+                  <Input
+                    disabled
+                    v-model="row.ppoGroupNo"
+                    @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'ppoGroupNo');
+                        }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                <!-- 本厂纸质 -->
+                <td class="ivu-table-column-left" width="70">
+                  <Input
+                    disabled
+                    v-model="row.ppoCorpartCode"
+                    @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'ppoCorpartCode');
+                        }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                <!-- 供应商纸质-->
+                <td class="ivu-table-column-left" width="70">
+                  <Input
+                    disabled
+                    v-model="row.supplierArtName"
+                    @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'supplierArtName');
+                      }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+
+                <!-- 楞别		 -->
+                <td class="ivu-table-column-left" width="70">
+                  <Input
+                    disabled
+                    v-model="row.ppoLB"
+                    @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'ppoLB');
+                        }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                <!-- 纸宽	 -->
+                <td class="ivu-table-column-left" width="70">
+                  <Input
+                    disabled
+                    v-model="row.ppoSizeW"
+                    @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'ppoSizeW');
+                        }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                <!-- 纸长	 -->
+                <td class="ivu-table-column-left" width="70">
+                  <Input
+                    disabled
+                    v-model="row.ppoSizeL"
+                    @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'ppoSizeL');
+                        }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                <!-- 压线	 -->
+                <td class="ivu-table-column-left" width="100">
+                  <Input
+                    disabled
+                    v-model="row.ppoSizeLine"
+                    @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'ppoSizeLine');
+                      }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                <!-- 采购数量 -->
+                <td class="ivu-table-column-left" width="70">
+                  <inputNumber
+                    disabled
+                    v-model="row.ppoStockQty"
+                    @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'ppoStockQty');
+                      }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></inputNumber>
+                </td>
+                <!-- 已入库数 -->
+                <td class="ivu-table-column-left" width="70">
+                  <Input
+                    disabled
+                    v-model="row.ppoInQty"
+                    @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'ppoInQty');
+                      }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                <!-- 退货数 -->
+                <td class="ivu-table-column-left" width="70">
+                  <inputNumber
+                    disabled
+                    v-model="row.ppoRQty"
+                    @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'ppoRQty');
+                      }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></inputNumber>
+                </td>
+                <!-- 本次入库数	 -->
+                <td class="ivu-table-column-left" width="70">
+                  <inputNumber
+                    v-model="row.ppoQty"
+                    :max='getmaxstockQty(row)'
+                    :min=1
+                    @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'ppoQty');
+                      }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></inputNumber>
+                </td>
+                <!-- 品名-->
+                <td class="ivu-table-column-left" width="70">
+                  <Input
+                    disabled
+                    v-model="row.ppoPartName"
+                    @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'ppoPartName');
+                      }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                <!-- 料号	-->
+                <td class="ivu-table-column-left" width="70">
+                  <Input
+                    disabled
+                    v-model="row.ppoPartNumer"
+                    @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'ppoPartNumer');
+                      }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+                <!-- 备注	-->
+                <td class="ivu-table-column-left" width="80">
+                  <Input
+                    v-model="row.remark"
+                    @input="
+                      value => {
+                          valueChangeAssign(value, index, row, 'remark');
+                      }
+                      "
+                    size="small"
+                    :maxlength="20"
+                  ></Input>
+                </td>
+              </template>
+            </eTable>
+          </TabPane>
+        </Tabs>
+      </div>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:07:54
+ */
+import inputNumber from '@/components/input-number'
+import tableSelect from '@/components/table-select/table-select'
+import editWindow from '@/components/edit-window/edit-window'
+// import Form from '@/components/form/form'
+import eTable from '@/components/e-table/e-table'
+import request from '@/libs/request'
+import popup from '@/components/popup/popup'
+import editBaseMixins from '../../mixins/edit'
+import InputNumber from '@/components/input-number'
+import formControl from '@/components/form-control/form-control'
+import { customValidator } from '@/libs/validator'
+import calc from '@/libs/calc'
+import list from '../../mixins/list'
+import dayjs from 'dayjs'
+export default {
+  name: 'edit-paperJoinSlave',
+  mixins: [editBaseMixins],
+  components: {
+    editWindow,
+    popup,
+    tableSelect,
+    eTable,
+    InputNumber,
+    formControl,
+    inputNumber
+  },
+
+  mounted () {},
+  props: {
+    ppoGroupNoList: {
+      type: String,
+      default: ''
+    },
+    inProvider: {
+      type: Number|String,
+      default:''
+    }
+  },
+  data () {
+    return {
+      actionSubtitle: '储运入库', // 当前操作副标
+      productSpecShow: false,
+      formDataInfo: {
+        // 主表 更改字段
+        master: {},
+        productMDatas: {}
+        // List:thsi.list
+      }, // 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {},
+      tableFieldsValidator: {},
+      productMDatasTableDataList: [], // 存放处理过后的数据:[],
+      timeoutId: 0,
+      requestCount: 0,
+      table: [], // 存储子表全部对应的字段
+      title: '工单号',
+      multiValue:'',//查询字段
+      propvalue:'ppoGroupNo'//存储子表每个对应的字段
+    }
+  },
+  computed: {
+    getppoQty () {
+      // debugger
+      let tableData = this.$refs['slave_edit-purPaperPo'].cloneData
+      return (tableData[0].ppoQty =
+        tableData[0].ppoStockQty -
+        tableData[0].ppoInQty +
+        tableData[0].ppoRQty)
+    }
+  },
+  methods: {
+    pageOnChange(_pageNum){
+      this.pageConfig.pageNum = _pageNum
+      this.clickmaster()
+    },
+    clicktable(){},
+    // 获取最大本次入库数 = 采购数*（1+百分比）+退货数 ppoRQty-已入库数 ppoInQty
+    getmaxstockQty(data){
+      if (!!data.ppoStockQty) {
+        let masQty = (1+Number(this.$params.PaperJoinQtyUpLimit)/100)*data.ppoStockQty+Number(data.ppoRQty)-Number(data.ppoInQty)
+        return Math.ceil(masQty)
+      }
+      return 1
+    },
+    // 存储选择的查询字段
+    purPaperPoClick (data, val) {
+      this.title = data
+      this.propvalue = val
+    },
+    getmultiValue(val){
+      if (this.propvalue === val) {
+        return this.multiValue
+      }
+      return ''
+    },
+    // 搜索点击事件
+    clickmaster (type) {
+      if(this.pageConfig.pageNum==1 || type=='search'){
+          this.resetPageConfig()
+          this.productMDatasTableDataList = []
+      }
+      let ddata = this.formDataInfo
+      let params = {
+        ppoNo:this.getmultiValue('ppoNO'),//采购单号
+        inProvider:this.inProvider,//主表供应商ID
+        ppoGroupNo: this.getmultiValue('ppoGroupNo'),//工单号
+        beginDate: dayjs(this.formDataInfo.master.beginDate).format("YYYY-MM-DD"),
+        endDate: dayjs(this.formDataInfo.master.endDate).format("YYYY-MM-DD"),
+        flag: this.formDataInfo.master.flag,
+        ppoGroupNoList: this.ppoGroupNoList,
+        pageNum:this.pageConfig.pageNum,//(当前页),
+        pageSize:this.pageConfig.pageSize,//(每页显示条数)
+      }
+      var _this = this
+      request
+        .post(`/stock/paperJoin/getSpPaperPOToPaperJoin`, params)
+        .then(res => {
+          if (res && res.records && res.records.length>0) {
+            this.pageConfig.total = res.total // 赋值总条数
+            for (let i = 0; i < res.length; i++) {
+              if (res.records[i].ppoDate) { res.records[i].ppoDate = res.records[i].ppoDate.replace('T', ' ').replace('.000+0000', '') }
+              if (res.records[i].ppoDueDate) { res.records[i].ppoDueDate = res.records[i].ppoDueDate.replace('T', ' ').replace('.000+0000', '') }
+            }
+             // debugger
+          // _this.$refs['slave_edit-purPaperPo'].cloneData = res.records
+             this.productMDatasTableDataList.push(...res.records)
+          }
+             this.pageConfig.total = res.total // 赋值总条数
+            this.$refs['editWindow'].pageConfig= this.pageConfig
+         
+        })
+    },
+
+    // 加载表单初始化数据
+    getFormInitDataObj (data) {
+      // debugger
+      // 加载表单初始化数据
+      this.formDataInfo['master'] = {
+        inCusCode: '',
+        propvalue: '',
+        inCusName: '',
+        flag: '0',
+        beginDate:dayjs().subtract(15, 'day').format("YYYY-MM-DD"),
+        endDate:dayjs().format("YYYY-MM-DD"),
+        // ifAreaPrice:false,
+      }
+      if(data && data.records){
+        this.productMDatasTableDataList = data.records
+        this.pageConfig.total = data.total // 赋值总条数
+        this.$refs['editWindow'].pageConfig= this.pageConfig
+      }
+     //  if (this.$refs['slave_edit-purPaperPo']) { this.$refs['slave_edit-purPaperPo'].cloneData = data.records }
+    },
+
+    // 表单数据提交事件
+    submitFormDataEvent () {
+      // 表单数据提交事件
+      // true就是有问题
+      let result = this.$refs['slave_edit-purPaperPo'].validate()
+      if (result) {
+        return
+      }
+      let parms = []
+      let submitDataObj = this.$refs['slave_edit-purPaperPo'].cloneData
+      for (let index = 0; index < submitDataObj.length; index++) {
+        let Choice = this.$refs['slave_edit-purPaperPo'].cloneData[index]
+          .Choice
+        if (Choice === true) {
+          parms.push(submitDataObj[index])
+        }
+      }
+      // 提交数据
+      // 向外暴露的方法:
+      this.$emit('closeMain', parms)
+      this.showWindow = false // 关闭当前窗口
+      // });
+    },
+    // 重写父类 关闭窗口时 触发事件
+    closeActionTigger () {
+      this.resetPageConfig()
+      this.productMDatasTableDataList = []
+      // fix 清除上次的错误提示 formDataInfo 为表单ref名称
+      if (this.$refs['masterForm']) { this.$refs['masterForm'].resetFields() }
+      if (this.$refs['slave_edit-purPaperPo']) { this.$refs['slave_edit-purPaperPo'].reset() }
+    }
+  },
+  created () {
+    this.getFormInitDataObj() // 获取初始化数据
+  }
+}
+</script>
+<style >
+.ivu-form-item-text2 .ivu-form-item-content {
+  /* margin-left: 2.8125rem !important; */
+}
+.edit-table .ivu-input {
+  padding: 0 !important;
+  height: 24px;
+}
+.hover {
+  cursor:pointer
+}
+</style>

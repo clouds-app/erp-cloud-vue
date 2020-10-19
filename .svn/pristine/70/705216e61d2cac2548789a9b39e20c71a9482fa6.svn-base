@@ -1,0 +1,806 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-paperJoin"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="90%"
+      :loading="!isLoaddingDone"
+      :spinLoaddingText="spinLoaddingText"
+      :disabledSubmitBtn="disabledSubmitBtn"
+      @on-ok="formTableDataSubmit()"
+      v-if="initData.columns"
+    >
+    <div @contextmenu.prevent ref="masterHeight" class="masterHeightClass" :style="{ height: getMasterheight() + '%' }" >
+      <Form
+        ref="formDataInfo"
+        :show-message="true"
+        :model="formDataInfo.master"
+        :rules="ruleValidate"
+        :label-width="100"
+      >
+        <Row>
+          <Col span="10">
+            <Row>
+              <Col span="12">
+                <FormItem label="入库单号" prop="pjNumber">
+                  <Input v-model="formDataInfo.master.pjNumber" maxlength="20" placeholder disabled></Input>
+                </FormItem>
+              </Col>
+              <Col span="11">
+                <FormItem label="日期" prop="pjDate" :label-width="50">
+                  <DatePicker
+                    :editable='false'
+                    :clearable='false'
+                    type="date"
+                    format="yyyy-MM-dd HH:mm:ss"
+                    :disabled="detailDisabled"
+                    :transfer='true'
+                    v-model="formDataInfo.master.pjDate"
+                  ></DatePicker>
+                </FormItem>
+              </Col>
+            </Row>
+          </Col>
+          <Col span="7">
+            <FormItem label="供应商编号" prop="supplierCode">
+              <div>
+                <popup
+                  ref='firstFocusInput'
+                  :disabled="detailDisabled||action!='add'"
+                  @on-fill="Initializationdata"
+                  v-model="formDataInfo.master.supplierCode"
+                  field-name="supplierCode"
+                  popup-name="SupplierSingleBox"
+                  :fill-model.sync="formDataInfo.master"
+                  render-fields="supplierId,supplierCode,supplierName,curyId,taxTp,taxRat,rate,priceAreaMode"
+                  from-fields="id,purCode,purName,coinCode,taxTP,taxRate,coinRate,priceAreaMode"
+                  :suffix="true"
+                  :suffix-model="formDataInfo.master.supplierName"
+                  suffixModelName="supplierName" 
+                  :query-params="{}"
+                />
+              </div>
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="月结日期" prop="accDate">
+              <DatePicker
+                disabled
+                type="date"
+                format="yyyy-MM-dd HH:mm:ss"
+                v-model="formDataInfo.master.accDate"
+              ></DatePicker>
+            </FormItem>
+          </Col>
+          
+          <Col span="10">
+            <Row>
+              <Col span="12">
+                <FormItem label="数量" prop="qty">
+                  <Input v-model="formDataInfo.master.qty" maxlength="20" placeholder disabled></Input>
+                </FormItem>
+              </Col>
+              <Col span="11">
+                <FormItem label="金额" prop="money" :label-width="50">
+                  <InputNumber
+                    disabled
+                    v-model="formDataInfo.master.money"
+                    style="width:100%"
+                    maxlength="20"
+                    placeholder
+                  ></InputNumber>
+                </FormItem>
+              </Col>
+            </Row>
+          </Col>
+          <Col span="7">
+            <FormItem label="仓位" prop="wareHouseItCode">
+              <div>
+                <popup
+                  :disabled="detailDisabled||action!='add'"
+                  v-model="formDataInfo.master.wareHouseItCode"
+                  @on-fill="Initializationdata"  
+                  field-name="wareHouseItCode"
+                  popup-name="WareHouseSingleBox"
+                  :fill-model.sync="formDataInfo.master"
+                  render-fields="wareHouseItId,wareHouseItCode,wareHouseItName"
+                  from-fields="wareHouseItId,wsCode,wsName"
+                  :suffix="true"
+                  :suffix-model="formDataInfo.master.wareHouseItName"
+                  suffixModelName="wareHouseItName" 
+                  :query-params="{whType:3}"
+                />
+              </div>
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <Row>
+              <Col span="6">
+                <FormItem label="月结" prop="iisAcc" >
+                  <Checkbox
+                    disabled
+                    v-model="formDataInfo.master.iisAcc"
+                    maxlength="20"
+                    placeholder
+                  ></Checkbox>
+                </FormItem>
+              </Col>
+            </Row>
+          </Col>
+          <Col span="10">
+            <Row>
+                <Col span="12">
+                  <FormItem label="送货单号" prop="shNumber">
+                    <Input :disabled="detailDisabled" v-model="formDataInfo.master.shNumber" maxlength="20" placeholder="请输入送货单号" ></Input>
+                  </FormItem>
+                </Col>
+                <Col span="11">
+                  <FormItem :label-width="50" label="车牌" prop="carNo">
+                    <div>
+                      <popup
+                        :disabled="detailDisabled"
+                        v-model="formDataInfo.master.carNo"
+                        field-name="carNo"
+                        popup-name="CarSingleBox"
+                        :fill-model.sync="formDataInfo.master"
+                        render-fields="carNo"
+                        from-fields="carNo"
+                        :suffix="false"
+                        :blur-focus-load-data="false"
+                      />
+                    </div>
+                  </FormItem>
+                </Col>
+                </Row>
+            </Col>
+              <Col span="7">
+                <FormItem label="备注">
+                  <Input
+                    :disabled="detailDisabled"
+                    v-model="formDataInfo.master.remark"
+                    maxlength="20"
+                    placeholder="请输入备注..."
+                    size="small"
+                    :rows="1"
+                  />
+                </FormItem>
+              </Col>
+        </Row>
+      </Form>
+  </div>
+      <Tabs>
+        <!--  注意:eTable formDataInfo.artLengs.defaultList  ===artLengs=== 需要根据实际接口修改,其它不变-->
+        <TabPane label="纸板入库明细" name="name1">
+          <eTable
+            ref="tableFields"
+            unqiue-mark="id"
+            :index-menu="true"
+            :col-start="0"
+            :width="200"
+            :height="350"
+            :insertDirection="insertDirection"
+            :row-init-data="initData.initData.stockPurPaperJoinItemFm"
+            :data.sync="formDataInfo.paperJoinItemSlave.defaultList"
+            :rules="tableFieldsValidator"
+            @row-delete='slave_list_table_edit_Delete'
+            :showContextMenu="!detailDisabled"
+            v-if="showWindow"
+          >
+            <template slot="head">
+              <tr
+                v-for="(columnGroup,index) in initData.columns.stockPurPaperJoinItemFm.editGroups"
+                :key="index"
+              >
+                <th
+                  :class="`ivu-table-column-${column.titleAlign}`"
+                  v-for="(column,index2) in columnGroup"
+                  :key="index2"
+                  :width="column.editWidth"
+                  :colspan="column.colSpan"
+                  :rowspan="column.rowSpan"
+                  :columnKey="column.key"
+                >
+                  <div class="ivu-table-cell">
+                    <span class>{{column.title}}</span>
+                  </div>
+                </th>
+              </tr>
+            </template>
+
+            <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
+              <td
+                :class="`ivu-table-column-${column.align}`"
+                v-for="(column,columnIndex) in initData.columns.stockPurPaperJoinItemFm.editColumns"
+                :key="columnIndex"
+                :width="column.editWidth"
+              >
+                 <Input
+                  v-if="column.key == 'workNo'"
+                  v-model="row[column.key]"
+                  :disabled="!!(row['id'])"
+                  @on-blur="onFill(index)"
+                  @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'workNo');
+                      }
+                    "
+                  size="small"
+                  :maxlength="20"
+                >
+                  <Icon @click="Slave_list_table_editRowModify(index)" slot="suffix" type="md-add" v-show="!(row['id'])" />
+                </Input>
+                <!--控件特殊处理 本次入库数 -->
+                <inputNumber
+                  v-else-if="column.key == 'qty'"
+                  v-model="row[column.key]"
+                  :disabled="detailDisabled"
+                  @on-change="getMasterqty(index)"
+                  :min=1
+                  :max='getmaxstockQty(row)'
+                  @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'qty');
+                      }
+                    "
+                  size="small"
+                  :maxlength="20"
+                />
+                <!--控件特殊处理 备品数 --> 
+                <inputNumber
+                  :min='0'
+                  v-else-if="column.key == 'prepQty'"
+                  v-model="row[column.key]"
+                  :disabled="detailDisabled"
+                  @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'prepQty');
+                      }
+                    "
+                  size="small"
+                  :maxlength="20"
+                />
+                <!--控件特殊处理 单价 --> 
+                <inputNumber
+                  v-else-if="column.key == 'price'"
+                  v-model="row[column.key]"
+                  :disabled="detailDisabled"
+                  @on-blur="onBlurprice(index)"
+                  @on-change="changePriceQty(index)"
+                  @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'price');
+                      }
+                    "
+                  size="small"
+                  :maxlength="20"
+                />
+                <formControl
+                  v-else
+                  :control-type="column.controlType"
+                  v-model="row[column.key]"
+                  :disabled="detailDisabled||column.readOnly"
+                  @input="value => {valueChangeAssign(value, index, row,column.key)}"
+                ></formControl>
+              </td>
+            </template>
+          </eTable>
+        </TabPane>
+      </Tabs>
+    </editWindow>
+    <paperJoinSlave
+      ref="mychild"
+      :isLoaddingDone="salveWindow.isLoaddingDone"
+      :formDetailData="salveWindow.formDetailData"
+      :action="salveWindow.action"
+      :ppoGroupNoList="ppoGroupNoList"
+      :inProvider='formDataInfo.master.supplierId'
+      v-model="salveWindow.showEditWindow"
+      @closeMain="closeMain"
+    />
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:07:54
+ */
+// import preferential from "@/components/preferential/preferential";
+import popup from '@/components/popup/popup'
+import inputNumber from '@/components/input-number'
+import editWindow from '@/components/edit-window/edit-window'
+import eTable from '@/components/e-table/e-table'
+import request from '@/libs/request'
+import editBaseMixins from '../../mixins/edit'
+import optionSearch from '../../components/optionSearch'
+import dayjs from 'dayjs'
+import Sys from '@/api/sys'
+import formControl from '@/components/form-control/form-control'
+import paperJoinSlave from './edit-paperJoinSlave'
+import { deepCopy } from 'view-design/src/utils/assist'
+const default_formDataInfo = {
+  // 主表 更改字段
+  master: {
+    iisAcc: false,
+    carNo: '',
+    pjDate: dayjs().format('YYYY-MM-DD HH:mm:ss'),
+    accDate: '',
+    iisAudit: 0,
+    money: 0,
+    ppoRQty: 0,
+    pjNumber: '',
+    qty: 0,
+    rate: 0,
+    remark: '',
+    shNumber: '',
+    status: 1,
+    supplierId: 0,
+    supplierCode: '',
+    supplierName: '',
+    taxRat: 0,
+    taxTp: '',
+    wareHouseItCode:'',
+    updateUsername: ''
+  },
+  // 子表 artLengs 根据实际接口更改,其它不变
+  paperJoinItemSlave: {
+    addList: [], // 添加列
+    defaultList: [], // 默认列
+    deleteList: [], // 删除列
+    updateList: []
+  }
+}
+export default {
+  name: 'edit-paperJoin',
+  mixins: [editBaseMixins],
+  components: {
+    editWindow,
+    optionSearch,
+    eTable,
+    popup,
+    paperJoinSlave,
+    formControl,
+    inputNumber
+    // Form,
+  },
+  data () {
+    return {
+      disabledSubmitBtn:false,//编辑宽确认按钮
+      insertDirection: 'down', // 表单插入方向
+      actionSubtitle: '纸板入库', // 当前操作副标题
+      salveWindow: {
+        flag: null, // 隐藏完结字段
+        Tips: '提示：此窗口只显示有供应商纸质/纸板进价的工单！',
+        isLoaddingDone: false, // 窗口是否加载完成
+        showEditWindow: false, // 是否显示edit-boxSalesOrderSlave 编辑窗口
+        action: 'add', // 当前操作功能 添加/编辑
+        formDetailData: {} // 当前表单的详细信息
+      },
+      showContextMenu: true,
+      showEditMenu: false,
+      id: 0,
+      formName: 'stockPurPaperJoinItemFm',
+      requestBaseUrl: '/stock/paperJoin', // 请求 查询 操作的基础路径
+      formDataInfo: deepCopy(default_formDataInfo), // 防止添加和更新数据提交发生冲突
+
+      itemInitData: {},
+      // 需要验证的数据
+      ruleValidate: {
+        supplierCode: [
+          { required: true, message: '供应商不能为空', trigger: 'blur' }
+        ],
+        wareHouseItCode: [
+          {
+            required: true,
+            message: '仓位不能为空',
+            trigger: 'blur'
+          }
+        ]
+      },
+      tableFieldsValidator: {
+        qty: [/// ^[0-9]+(\.\d+)?$/;
+          {
+            required: true,
+            message: '本次入库数不能为空',
+            trigger: 'blur',
+            type: 'number'
+          },
+          {
+            pattern: /^[1-9]\d*$/,
+            trigger: 'blur',
+            message: '本次入库数必须是正整数'
+          }
+        ]
+      },
+      getworkerId: 0,
+      cliclleng: null,
+      getsupplierCode: 0,
+      getppoNoOrder: [false],
+      index1: 0, // 工单号里面用
+      disppoGroupNo: true, // 工单号禁用字段
+      inWsId: null, // 传给用料批次号的参数
+      biBatchNoList: '', // 过滤用的字符串传给工单
+      ppoGroupNoList: '',
+      masterDisabled: false // 主表字段禁用
+    }
+  },
+  methods: {
+    // 获取最大本次入库数 = 采购数*（1+百分比）+退货数 rQty-已入库数 inQty
+    getmaxstockQty(data){
+      if (!!data.stockQty) {
+        let masQty = data.stockQty*(1+Number(this.$params.PaperJoinQtyUpLimit)/100)+Number(data.ppoRQty)-Number(data.ppoInQty)
+        return Math.ceil(masQty)
+      }
+      return 1
+    },
+    // 计算总数量
+    getboQtySum () {
+      let masterstockqty = 0
+      let tableData = this.$refs['tableFields'].get()
+      for (let i = 0; i < tableData.length; i++) {
+        let stockqty = Number(tableData[i].boiQty)
+        if (stockqty) {
+          masterstockqty += stockqty
+        }
+      }
+      this.formDataInfo.master.boQty = masterstockqty
+    },
+    // 本次入库数改变 主表数量改变
+    getMasterqty (index) {
+      let fromData = this.$refs['tableFields'].get()
+      let masterqty = 0
+      fromData.filter(item => {
+        masterqty += Number(item.qty)
+      })
+      this.formDataInfo.master.qty = masterqty
+      this.changePriceQty(index)
+      this.getppoArea(index)
+    },
+    // 单价>>焦点离开 触发事件
+    onBlurprice(index){
+       let dataList = this.formDataInfo.paperJoinItemSlave.defaultList
+       let submonny = this.formatSupplierCtPrice(dataList[index].price) // 单价
+       this.$refs['tableFields'].set({ price:submonny }, index)
+    },
+    // 单价改变 主表数量改变  price 单价
+    changePriceQty (index) {
+      let fromData = this.$refs['tableFields'].get()
+      let submonny = this.formatSupplierCtPrice(fromData[index].price) // 单价
+      let sArea = this.formatSupplierCtPrice(fromData[index].sArea) // 单面积
+      let quotePrice = this.formatSupplierCtPrice(fromData[index].quotePrice) // 报价
+      let qty = fromData[index].qty
+      let money = this.formatSupplierAmtPrice(Number(submonny) * Number(qty))
+      if(!!this.formDataInfo.master.priceAreaMode){
+          // 金额 =  单面积 * 数量 * 报价 or==>单价* 数量
+          money = this.formatSupplierAmtPrice(Number(sArea) * Number(qty) * Number(quotePrice))
+      }
+      this.$refs['tableFields'].set({ money: money }, index)
+      this.getMastermoney()
+    },
+    // 获取主表金额
+    getMastermoney () {
+      let masterMoney = 0
+      this.$refs['tableFields'].get().filter(item => {
+        masterMoney += Number(item.money)
+      })
+      this.formDataInfo.master.money = masterMoney
+    },
+    transformation (selectedValue) {
+      // debugger
+      let transData = JSON.parse(
+        JSON.stringify(this.initData.initData.stockPurPaperJoinItemFm)
+      )
+      // transData.artCode = selectedValue.psArt; //  纸质
+      transData.workNo = selectedValue.ppoGroupNo // 工单号
+      transData.pppmId = selectedValue.id // 纸板采购明细id
+      transData.ppoNO = selectedValue.ppoNO // 采购单号
+      transData.prodNo = selectedValue.prodNo // 产品编号
+      transData.ctDesc = selectedValue.ctDesc // 客户名称
+      transData.custId = selectedValue.custId // 客户ID
+      transData.lbCode = selectedValue.ppoLB // 楞别
+      transData.partNumer = selectedValue.ppoPartNumer // 产品编号
+      transData.artCode = selectedValue.ppoCorpartCode // 本厂纸质
+      transData.artId = selectedValue.ppoCorpartId // 本厂纸质Id  ppoCorpartId
+      transData.supplierArtName = selectedValue.supplierArtName // 供应商纸质
+      transData.supplierArtId = selectedValue.supplierArtId // 供应商纸质ID
+      transData.lengId = selectedValue.lengId
+      transData.sizeW = selectedValue.ppoSizeW // 纸宽
+      transData.sizeL = selectedValue.ppoSizeL // 纸长
+      transData.sizeLine = selectedValue.ppoSizeLine // 压线
+      transData.stockQty = selectedValue.ppoStockQty // 采购数量
+      transData.inQty = selectedValue.ppoInQty // 已入库数
+      transData.ppoRQty = selectedValue.ppoRQty // 退货数 用来计算的
+      transData.rQty = 0 // 退货数
+      transData.quotePrice = selectedValue.ppoArtPrice // 报价
+      transData.price = this.formatSupplierCtPrice(selectedValue.ppoPrice) // 单价
+      transData.sArea = selectedValue.ppoSArea // 单面积
+      transData.ppoArea = selectedValue.ppoArea // 面积
+      transData.partNumber = selectedValue.ppoPartNumber // 料号
+      transData.partName = selectedValue.ppoPartName // 产品名称
+      transData.remark = selectedValue.remark // 备注
+      transData.money = this.formatSupplierAmtPrice(selectedValue.ppoMoney) // 金额
+      // transData.prepQty = selectedValue.ppoPrepQty // 备品数
+      transData.qty = selectedValue.ppoQty // 本次入库数
+      transData.mateWorkNo = selectedValue.mateWorkNo // 用料单号
+      transData.artId = selectedValue.ppoCorpartId// 本厂纸质Id
+      transData.iisAcc = selectedValue.iisAcc // 月结
+      return transData
+    },
+    // 获取工单号过滤字段
+    getppoGroupNoList (index) {
+      let ppoGroupNoList = ''
+      let tabData = this.$refs['tableFields'].get()
+      tabData.filter((item, itemindex) => {
+        if (itemindex !== index) {
+          if (item.ppoNO === '') {
+            return
+          }
+          if (itemindex === 0) {
+            ppoGroupNoList += item.ppoNO + '#' + item.mateWorkNo
+          } else {
+            ppoGroupNoList += ',' + item.ppoNO + '#' + item.mateWorkNo
+          }
+        }
+      })
+      return ppoGroupNoList
+    },
+    // 工单号失去焦点带出参数事件
+    onFill (index) { // workNo
+      let tabData = this.$refs['tableFields'].get()
+      let ppoGroupNoList = this.getppoGroupNoList(index)
+      // 获取供应商id
+      let inProvider = this.formDataInfo.master.supplierId
+      // 获取供应商
+      let supplierCode = this.formDataInfo.master.supplierCode
+      // 获仓位
+      let wareHouseItCode = this.formDataInfo.master.wareHouseItCode
+      // 获取工单号
+      let ppoGroupNo = this.formDataInfo.paperJoinItemSlave.defaultList[
+        index
+      ].workNo
+      // 获取当前子表数据
+      let two = this.formDataInfo.paperJoinItemSlave.defaultList[index]
+      let one = this.$refs['tableFields'].cloneData[index]
+      // 获取子表初始化时的数据
+      let defulit = this.initData.initData.stockPurPaperJoinItemFm
+      if (!supplierCode) {
+        this.$Message.error('供应商不能为空')
+        return
+      }
+      if (!wareHouseItCode) {
+        this.$Message.error('仓位不能为空')
+        return
+      }
+      let _this = this
+      if (ppoGroupNo) {
+        this.ppoGroupNoList = ppoGroupNoList
+        let nowData = JSON.parse(JSON.stringify(_this.initData.initData.stockPurPaperJoinItemFm))
+        request
+          .post(`/stock/paperJoin/getSpPaperPOToPaperJoin`, {
+            ppoGroupNo: ppoGroupNo,
+            flag: '1',
+            inProvider: inProvider,
+            ppoGroupNoList
+          }).then(res => {
+            let data = res[0]
+            if (data === [] || data === undefined || data === null) {
+              _this.$Message.error('工单号错误')
+              // $set(要修改的对象,属性,属性的值是啥)
+              _this.$refs['tableFields'].set(nowData, index)
+              return
+            }
+            let dataList = _this.transformation(res[0])
+            _this.$refs['tableFields'].set(dataList, index)
+            _this.getMasterqty(index)//本次入库数改变 
+            _this.getppoArea(index)//获取面积
+          })
+      }
+    },
+    // 接受工单号传回来的数据
+    closeMain (selectedValues) {
+      let pushData = []
+      // 获取子表数据
+      let sundata = this.$refs['tableFields'].get()
+      selectedValues.forEach(selectedValue => {
+        let transData = this.transformation(selectedValue)
+        pushData.push(transData)
+      })
+      let index2 = this.index1
+      for (let a = 0; a < pushData.length; a++) {
+        this.$refs['tableFields'].set(pushData[a], index2)
+        this.getMasterqty(index2)//本次入库数改变 
+        this.getppoArea(index2)//获取面积
+        index2++
+      }
+    },
+    // 计算面积 单面积*本次入库数
+    getppoArea(index){
+      let FromData = this.$refs['tableFields'].get()
+      let Nub =Number(FromData[index].qty)
+      let sArea =Number(FromData[index].sArea)
+      this.$refs['tableFields'].set({ppoArea:Nub*sArea},index)
+    },
+    // 工单号点击事件
+    Slave_list_table_editRowModify (index) {
+      let ppoGroupNoList = this.getppoGroupNoList()
+      let tabData = this.$refs['tableFields'].cloneData
+      this.salveWindow.showEditWindow = true
+      this.index1 = index
+      if (
+        this.formDataInfo.master.supplierCode &&
+        this.formDataInfo.master.wareHouseItCode
+      ) {
+        // this.List = this.formDataInfo.master.workerCode;
+        let ppuer = this.salveWindow.showEditWindow
+        this.salveWindow.isLoaddingDone = true
+        this.salveWindow.action = 'add'
+        this.ppoGroupNoList = ppoGroupNoList
+        var _this = this
+        request
+          .post(`/stock/paperJoin/getSpPaperPOToPaperJoin`, {
+            inProvider: this.getsupplierId,
+            ppoGroupNoList,
+            pageNum:this.pageConfig.pageNum,//(当前页),
+            pageSize:this.pageConfig.pageSize,//(每页显示条数)
+          })
+          .then(res => {
+             // 添加分页
+            if (res && res.records && res.records.length>0) {
+              for (let i = 0; i < res.length; i++) {
+                if (res.records[i].ppoDate) { res.records[i].ppoDate = res.records[i].ppoDate.replace('T', ' ').replace('.000+0000', '') }
+                if (res.records[i].ppoDueDate) { res.records[i].ppoDueDate = res.records[i].ppoDueDate.replace('T', ' ').replace('.000+0000', '') }
+              }
+              _this.$refs.mychild.getFormInitDataObj(res)
+            }
+            
+          })
+      } else {
+        this.salveWindow.showEditWindow = false
+        if (!this.formDataInfo.master.supplierCode) {
+          this.$Message.error('供应商不能为空')
+          return
+        }
+        if (!this.formDataInfo.master.wareHouseItCode) {
+          this.$Message.error('仓位不能为空')
+        }
+      }
+      // } else {
+      //   this.salveWindow.showEditWindow = false;
+      // }
+    },
+    // 判断数据是新增还是修改
+    formDetailDataCall () {
+      if (this.action != 'add') {
+        // debugger
+        this.getworkerId = this.formDataInfo.master.workerId
+        this.getsupplierId = this.formDataInfo.master.supplierId
+        this.masterDisabled = true // 主表字段弹框禁用
+        // this.id = this.formDataInfo.master.id;
+       this.supplierPriceFormatConfig = {
+         amtDot: Number(this.formDataInfo.master.amtDot) , //金额小数位
+         ctDot:Number(this.formDataInfo.master.ctDot),// 单价小数位
+       }
+      }
+    },
+   
+    // 当主表客户弹框改变时促发初始化子表数据
+    Initializationdata (val) {
+      if(!!!val[0].data[val[0].fieldName]){
+        return
+      }
+      this.$refs["formDataInfo"].validateField(val[0].fieldName, err => {});
+      if(val[0].fieldName =='supplierCode'){
+         this.supplierPriceFormatConfig = {
+         amtDot:Number(val[0].orignData.amtDot), //金额小数位
+         ctDot:Number(val[0].orignData.amtDot),// 单价小数位
+       }
+      }
+      let tableData = this.$refs['tableFields'].getCategorizeData()
+      // debugger
+      if (this.formDataInfo.master.workerId) {
+        if (this.formDataInfo.master.workerId != this.getworkerId) {
+          this.formDataInfo.paperJoinItemSlave.defaultList = []
+          tableData.deleteList = tableData.updateList
+        }
+        this.getworkerId = this.formDataInfo.master.workerId
+      }
+      if (this.formDataInfo.master.supplierId) {
+        if (this.formDataInfo.master.supplierId != this.getsupplierId) {
+          this.formDataInfo.paperJoinItemSlave.defaultList = []
+          tableData.deleteList = tableData.updateList
+        }
+        this.getsupplierId = this.formDataInfo.master.supplierId
+      }
+      //this.$forceUpdate()
+    },
+    // 判断主表供应商弹框不能为空
+    clickValuedate () {
+      // debugger
+      if (
+        !this.formDataInfo.master.supplierCode ||
+        this.formDataInfo.master.supplierCode == ''
+      ) {
+        this.$Message.error('供应商编号不能为空')
+        return false
+      }
+      return true
+    },
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo () {
+      this.formDataInfo = deepCopy(default_formDataInfo)
+      this.$forceUpdate()
+    },
+    // 重写父类,修改提交数据
+    resetformDataInfo (_data) {
+      let tableData = this.$refs['tableFields'].getCategorizeData()
+      // debugger
+      if (!!_data.master.pjDate) {
+        _data.master.pjDate = dayjs(_data.master.pjDate).format(
+          'YYYY-MM-DD HH:mm:ss'
+        )
+      }
+      if (!!_data.master.accDate) {
+        _data.master.accDate = dayjs(_data.master.accDate).format(
+          'YYYY-MM-DD HH:mm:ss'
+        )
+      }
+      // if(this.action == "update") {
+      //   tableData.updateList = _data.paperJoinItemSlave.defaultList
+      // }
+      this.formDataInfo.paperJoinItemSlave = tableData
+      return this.formDataInfo
+    },
+    slave_list_table_edit_Delete (index) {
+      // (重新计算体积/面积/金额等)
+      this.getMasterqty()
+      this.getqty()
+    },
+    // 打开窗口触发
+    openActionTigger(){
+      this.disabledSubmitBtn = false
+      let _self = this
+      if (this.action!='add'&&!!this.subfromData.length) {
+        this.subfromData.filter(item=>{
+          if(!!item.iisAcc){
+            _self.disabledSubmitBtn = true
+          }
+        })
+      }
+    },
+  },
+  props:{
+    subfromData:{
+      type:Array,
+      default:''
+    }
+  }
+
+}
+</script>
+
+<style>
+/* .cl-edit-paperJoin .ivu-form-item {
+  margin-bottom: 5px !important;
+} */
+.cl-edit-paperJoin .ivu-select-item {
+  display: block;
+}
+/* .cl-edit-paperJoin .ivu-input-type-text{
+  width: 200px
+} */
+.cl-edit-paperJoin .right-text {
+  width: 500px;
+}
+
+</style>

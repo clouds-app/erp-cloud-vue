@@ -1,0 +1,1467 @@
+<template>
+  <div>
+    <editWindow
+     :draggable="false"
+      :zindex="22"
+      class="cl-edit-window-boxDeli"
+      title="纸箱出货工单选择"
+      v-model="showWindow"
+      :fullscreen="true"
+      width="90%"
+      :loading="false"
+      :spinLoaddingText="spinLoaddingText"
+      @on-ok="formTableDataSubmit()"
+      v-if="initColData.columns"
+      ref="editWindow"
+      :showPageConfig="true"
+      @pageOnChange="pageOnChange"
+    >
+      <template slot="footer">
+        <div>
+          <Button
+            style="margin-right:50%;"
+            @click="onCustomerAction()"
+            type="primary"
+          >
+            <Icon type="ios-apps" />
+            快速调拨
+          </Button>
+          <Button
+            :disabled="disabledSubmitBtn"
+            @click="formTableDataSubmit()"
+            type="primary"
+          >
+            <Icon type="ios-arrow-down" />
+            确 定
+          </Button>
+
+          <Button @click="showWindow = false">
+            <Icon color="red" type="md-close" />
+            取 消
+          </Button>
+        </div>
+      </template>
+      <div
+        ref="masterHeight"
+        class="masterHeightClass"
+        :style="{ height: getMasterheight() + '%' }"
+      >
+        <Form
+          ref="formDataInfo"
+          :show-message="true"
+          :model="formDataInfo.master"
+          :rules="masterRuleValidate"
+          :label-width="40"
+        >
+          <Row type="flex"> 
+            <Col span="4">
+              <FormItem
+                :label-width="80"
+                :label="searchConfig.title"
+                prop="keyWord"
+              >
+                <Input
+                  :clearable="true"
+                  maxlength="20"
+                  v-model="formDataInfo.master.keyWord"
+                  placeholder="搜索关键字"
+                ></Input>
+              </FormItem>
+            </Col>
+            <Col span="3">
+              <FormItem :label-width="20">
+                <RadioGroup v-model="formDataInfo.master.likeFlag">
+                  <Radio label="1">模糊</Radio>
+                  <Radio label="0">精准</Radio>
+                </RadioGroup>
+              </FormItem>
+            </Col>
+            <Col span="6">
+              <FormItem label="日期" prop="searchDay">
+                <DatePicker
+                  transfer
+                  style="width: 120px"
+                  v-model="formDataInfo.master.startDate"
+                  type="date"
+                  format="yyyy-MM-dd"
+                ></DatePicker>
+                -
+                <DatePicker
+                  transfer
+                  style="width: 120px"
+                  v-model="formDataInfo.master.endDate"
+                  type="date"
+                  format="yyyy-MM-dd"
+                ></DatePicker>
+              </FormItem>
+            </Col>
+            <Col span="6">
+              <FormItem :label-width="10">
+                <Checkbox
+                  @on-change="getDataByMode()"
+                  class="CheckboxItem"
+                  v-model="formDataInfo.master.storeFlag"
+                  >加上没有库存的记录</Checkbox
+                >
+                <Checkbox
+                  class="CheckboxItem"
+                  v-model="formDataInfo.master.coType"
+                  >送货数为库存数</Checkbox
+                >
+              </FormItem>
+            </Col>
+            <Col span="1">
+              <FormItem>
+                <Button
+                  :loading="loadingData"
+                  @click="getDataByMode()"
+                  type="primary"
+                >
+                  <Icon type="md-search" />
+                  搜索
+                </Button>
+              </FormItem>
+            </Col>
+          </Row>
+        </Form>
+        <eTable
+          ref="slave_list_table_edit"
+          :showContextMenu="false"
+          :disabledAddRowWhenfocusNull="true"
+          unqiue-mark="id"
+          :height="masterHeight - 40"
+          :index-menu="true"
+          :col-start="0"
+          :row-init-data="{}"
+          :data="formDataInfo['boxDeliSlaveItems'].defaultList"
+          :rules="slaveTableFieldsValidator"
+          @row-click="slave_list_table_editRowClick"
+          @tableColTiggerEventCall="tableColTiggerEventCall"
+        >
+          <template slot="head">
+            <tr
+              v-for="(columnGroup, index) in initColData.columns[
+                `${functionParams.formInitPreName}Fm`
+              ].editGroups"
+              :key="index"
+            >
+              <template v-for="(column, index2) in columnGroup">
+                <th
+                  v-if="excludeFiled('Fm', column.key)"
+                  @click="searchKeyType(column.key, column.title)"
+                  :key="index2"
+                  :class="`ivu-table-column-${column.titleAlign}`"
+                  :width="column.editWidth"
+                  :colspan="column.colSpan"
+                  :rowspan="column.rowSpan"
+                  :columnKey="column.key"
+                  :style="
+                    excludeFiled('search', column.key) ? 'cursor:pointer' : ''
+                  "
+                >
+                  <div class="ivu-table-cell">
+                    <span class="">{{ column.title }}</span>
+                  </div>
+                </th>
+              </template>
+            </tr>
+          </template>
+          <template
+            slot="body"
+            slot-scope="{ row, index, valueChangeAssign, tableColTiggerEvent }"
+          >
+            <template
+              v-for="(column, subIndex) in initColData.columns[
+                `${functionParams.formInitPreName}Fm`
+              ].editColumns"
+            >
+              <td
+                :key="subIndex"
+                :class="`ivu-table-column-${column.align}`"
+                v-if="excludeFiled('Fm', column.key)"
+                :width="column.editWidth"
+              >
+                <!-- 控件特殊处理 订单编号 -->
+                <template v-if="column.key == 'iisChose'">
+                  <Checkbox
+                    @on-change="onChange_SlaveItemChcBox(index)"
+                    v-model="row[column.key]"
+                    :disabled="resetDisable(index)"
+                  ></Checkbox>
+                </template>
+                <template v-else-if="column.key === 'deliQty'">
+                  <formControl
+                    @on-blur="
+                      tableColTiggerEvent(
+                        row,
+                        column,
+                        index,
+                        'deliQtyChangeEvent'
+                      )
+                    "
+                    :control-type="column.controlType"
+                    v-model="row[column.key]"
+                  ></formControl>
+                </template>
+                <!--其它 控件 -->
+                <template v-else>
+                  <formControl
+                    :align="column.align"
+                    :control-type="column.controlType"
+                    v-model="row[column.key]"
+                    :disabled="column.readOnly"
+                    @input="
+                      value => {
+                        valueChangeAssign(value, index, row, column.key);
+                      }
+                    "
+                  ></formControl>
+                </template>
+              </td>
+            </template>
+          </template>
+        </eTable>
+      </div>
+      <div ref="otherHeight" class="otherHeightClass">
+        <Tabs>
+          <TabPane label="工单明细" name="boxDeliSubItems">
+            <eTable
+              :showContextMenu="false"
+              :disabledAddRowWhenfocusNull="true"
+              ref="sub_list_table_edit"
+              unqiue-mark="id"
+              :height="otherHeight - 40"
+              :index-menu="true"
+              :col-start="0"
+              :row-init-data="{}"
+              :data="formDataInfo['boxDeliSubItems'].defaultList"
+              :rules="subTableFieldsValidator"
+              @row-click="sub_list_table_editRowClick"
+              @tableColTiggerEventCall="tableColTiggerEventSubCall"
+            >
+              <template slot="head">
+                <tr
+                  v-for="(columnGroup, index) in initColData.columns[
+                    `${functionParams.formInitPreName}itemFm`
+                  ].editGroups"
+                  :key="index"
+                >
+                  <template v-for="(column, index2) in columnGroup">
+                    <th
+                      v-if="excludeFiled('itemFm', column.key)"
+                      :key="index2"
+                      :class="`ivu-table-column-${column.titleAlign}`"
+                      :width="column.editWidth"
+                      :colspan="column.colSpan"
+                      :rowspan="column.rowSpan"
+                      :columnKey="column.key"
+                    >
+                      <div class="ivu-table-cell">
+                        <span class="">{{ column.title }}</span>
+                      </div>
+                    </th>
+                  </template>
+                </tr>
+              </template>
+              <template
+                slot="body"
+                slot-scope="{
+                  row,
+                  index,
+                  valueChangeAssign,
+                  tableColTiggerEvent
+                }"
+              >
+                <template
+                  v-for="(column, subIndex) in initColData.columns[
+                    `${functionParams.formInitPreName}itemFm`
+                  ].editColumns"
+                >
+                  <td
+                    :key="subIndex"
+                    :class="`ivu-table-column-${column.align}`"
+                    v-if="excludeFiled('itemFm', column.key)"
+                    :width="column.editWidth"
+                  >
+                    <template v-if="column.key === 'deliQty'">
+                      <formControl
+                        @on-blur="
+                          tableColTiggerEvent(
+                            row,
+                            column,
+                            index,
+                            'deliQtyChangeEvent_Sub'
+                          )
+                        "
+                        :control-type="column.controlType"
+                        v-model="row[column.key]"
+                      ></formControl>
+                    </template>
+                    <!-- 控件特殊处理 订单编号 -->
+                    <template v-else-if="column.key == 'iisChose'">
+                      <Checkbox
+                        @on-change="onChange_SubItemChcBox(index)"
+                        v-model="row[column.key]"
+                      ></Checkbox>
+                    </template>
+                    <!--其它 控件 -->
+                    <template v-else>
+                      <formControl
+                        :align="column.align"
+                        :control-type="column.controlType"
+                        v-model="row[column.key]"
+                        :disabled="column.readOnly"
+                        @input="
+                          value => {
+                            valueChangeAssign(value, index, row, column.key);
+                          }
+                        "
+                      ></formControl>
+                    </template>
+                  </td>
+                </template>
+              </template>
+            </eTable>
+          </TabPane>
+        </Tabs>
+      </div>
+    </editWindow>
+
+    <editWindow
+      title="快速工单调拨"
+      :draggable="false"
+      :zindex="30"
+      :fullscreen="false"
+      v-model="showSetOrderWindow"
+      width="80%"
+      :loading="false"
+      @on-ok="setOrderWindowSubmitPre()"
+    >
+      <div>
+        <Form
+          ref="formSetOrderInfo"
+          :show-message="true"
+          :model="formSetOrderInfo"
+          :label-width="80"
+        >
+          <Row>
+            <Col span="8">
+              <FormItem label="仓库编码" prop="storeCode">
+                <Input
+                  :disabled="true"
+                  v-model="formSetOrderInfo.storeCode"
+                  maxlength="80"
+                  placeholder="仓库编码"
+                ></Input>
+              </FormItem>
+            </Col>
+            <Col span="8">
+              <FormItem label="纸箱工单" prop="boxWordNo">
+                <Input
+                  :disabled="true"
+                  v-model="formSetOrderInfo.boxWordNo"
+                  maxlength="80"
+                  placeholder="纸箱工单"
+                ></Input>
+              </FormItem>
+            </Col>
+            <Col span="8">
+              <FormItem label="需调数量" prop="needNumber">
+                <Input
+                  :disabled="true"
+                  v-model="formSetOrderInfo.needNumber"
+                  maxlength="80"
+                  placeholder="需掉数量1"
+                ></Input>
+              </FormItem>
+            </Col>
+            <Col span="8">
+              <FormItem label="产品编码" prop="productCode">
+                <Input
+                  :disabled="true"
+                  v-model="formSetOrderInfo.productCode"
+                  maxlength="80"
+                  placeholder="产品编码"
+                ></Input>
+              </FormItem>
+            </Col>
+            <Col span="8">
+              <FormItem label="产品名称" prop="productName">
+                <Input
+                  :disabled="true"
+                  v-model="formSetOrderInfo.productName"
+                  maxlength="80"
+                  placeholder="产品名称"
+                ></Input>
+              </FormItem>
+            </Col>
+            <Col span="8">
+              <FormItem label="调拨人" prop="allocatorCode">
+                <popup
+                  v-model="formSetOrderInfo.allocatorCode"
+                  field-name="allocatorCode"
+                  popup-name="WorkerSingleBox"
+                  :fill-model.sync="formSetOrderInfo"
+                  render-fields="allocatorId,allocatorCode,allocator"
+                  from-fields="id,workCode,workName"
+                  :suffix="true"
+                  :suffix-model="formSetOrderInfo.allocator"
+                  :query-params="{ workOptType: 8 }"
+                />
+              </FormItem>
+            </Col>
+            <!-- <Col span="24">
+                  <FormItem  :label-width="160"  label="还需掉数量">
+                      <Input :disabled="true" v-model="formSetOrderInfo.needNumberLeft" maxlength="80" placeholder="还需掉数量"></Input>
+                  </FormItem>
+              </Col> -->
+          </Row>
+        </Form>
+        <!-- row-init-data=tableColSetOrderInfo.initData[`boxdelimovescdataFm`] -->
+        <div v-if="tableColSetOrderInfo.columns">
+          <eTable
+            :showContextMenu="false"
+            :disabledAddRowWhenfocusNull="true"
+            :height="300"
+            ref="sub_list_table_boxdelimovescdataFm"
+            unqiue-mark="id"
+            :index-menu="true"
+            :col-start="0"
+            :row-init-data="{}"
+            :data="tableSetOrderDataList"
+            @tableColTiggerEventCall="tableColTiggerEventSubCall_MoveQty"
+          >
+            <template slot="head">
+              <tr
+                v-for="(columnGroup, index) in tableColSetOrderInfo.columns[
+                  `boxdelimovescdataFm`
+                ].editGroups"
+                :key="index"
+              >
+                <template v-for="(column, index2) in columnGroup">
+                  <th
+                    v-if="excludeFiled('tableColSetOrderInfo', column.key)"
+                    :key="index2"
+                    :class="`ivu-table-column-${column.titleAlign}`"
+                    :width="column.editWidth"
+                    :colspan="column.colSpan"
+                    :rowspan="column.rowSpan"
+                    :columnKey="column.key"
+                  >
+                    <div class="ivu-table-cell">
+                      <span class="">{{ column.title }}</span>
+                    </div>
+                  </th>
+                </template>
+              </tr>
+            </template>
+            <template
+              slot="body"
+              slot-scope="{
+                row,
+                index,
+                valueChangeAssign,
+                tableColTiggerEvent
+              }"
+            >
+              <template
+                v-for="(column, subIndex) in tableColSetOrderInfo.columns[
+                  `boxdelimovescdataFm`
+                ].editColumns"
+              >
+                <td
+                  :key="subIndex"
+                  :class="`ivu-table-column-${column.align}`"
+                  v-if="excludeFiled('tableColSetOrderInfo', column.key)"
+                  :width="column.editWidth"
+                >
+                  <template v-if="column.key == 'iisChose'">
+                    <Checkbox
+                      @on-change="onChange_moveQtyChcBox(index)"
+                      v-model="row[column.key]"
+                      :disabled="disabledMoveQty(index)"
+                    ></Checkbox>
+                  </template>
+                  <template v-else-if="column.key === 'moveQty'">
+                    <formControl
+                      @on-blur="
+                        tableColTiggerEvent(
+                          row,
+                          column,
+                          index,
+                          'moveQtyChangeEvent'
+                        )
+                      "
+                      :control-type="column.controlType"
+                      v-model="row[column.key]"
+                    ></formControl>
+                  </template>
+                  <!--其它 控件-->
+                  <template v-else>
+                    <formControl
+                      :align="column.align"
+                      :control-type="column.controlType"
+                      v-model="row[column.key]"
+                      :disabled="column.readOnly"
+                      @input="
+                        value => {
+                          valueChangeAssign(value, index, row, column.key);
+                        }
+                      "
+                    ></formControl>
+                  </template>
+                </td>
+              </template>
+            </template>
+          </eTable>
+        </div>
+      </div>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-boxDeli 描述 纸箱出货
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 editBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2020/04/10
+ */
+import popup from "@/components/popup/popup";
+import editWindow from "@/components/edit-window/edit-window";
+import eTable from "@/components/e-table/e-table";
+import request from "@/libs/request";
+import editBaseMixins from "../../mixins/edit";
+import optionSearch from "../../components/optionSearch";
+import dayjs from "dayjs";
+import Sys from "@/api/sys";
+import formControl from "@/components/form-control/form-control";
+import { deepCopy } from "view-design/src/utils/assist";
+const default_formSetOrderInfo = {
+  storeCode: "",
+  boxWordNo: "",
+  needNumber: "",
+  needNumberLeft: "", // 还需调拨数量
+  productCode: "",
+  productName: "",
+  allocatorId: "",
+  allocatorCode: "",
+  allocator: ""
+};
+const default_formDataInfo = {
+  // 主表 更改字段
+  master: {
+    keyWord: "",
+    likeFlag: "1",
+    startDate: dayjs()
+      .subtract(1, "month")
+      .format("YYYY-MM-DD"),
+    endDate: dayjs().format("YYYY-MM-DD"),
+    coType: true,
+    storeFlag: false
+  },
+  boxDeliSlaveItems: {
+    addList: [], // 添加列
+    defaultList: [], // 默认列
+    deleteList: [], // 删除列
+    updateList: []
+  },
+  boxDeliSubItems: {
+    addList: [], // 添加列
+    defaultList: [], // 默认列
+    deleteList: [], // 删除列
+    updateList: []
+  }
+};
+export default {
+  name: "edit-boxDeli",
+  mixins: [editBaseMixins],
+  components: {
+    editWindow,
+    optionSearch,
+    eTable,
+    popup,
+    formControl
+  },
+  props: {
+    // 搜索参数对象,从父类填充参数过来
+    searchParams: {
+      type: Object,
+      default: () => {
+        return {
+          //  custId,// 客户id
+          //  areaIds, // 详细地址
+          //  addrDetail // 送货地址id
+        };
+      }
+    }
+  },
+  data() {
+    return {
+      selectedAllocateDataList:[],//快速调拨选择的数据列表
+      formName: "stockboxdeliFm", // 重写父类 查询表单名称
+      // 查询配置参数
+      functionParams: {
+        formInitPreName: "boxdeliboxdatadto", // 查询表格列头信息 前缀 例如:saleboxproductprice Fm/Fm/mdataFm
+        requestBaseUrl: "/stock/boxDeli", // 查询 表格行 数据 接口前缀地址
+        uniqueId: "bdId" // 查询详细的唯一ID,需要顶部查询中使用
+      },
+      actionSubtitle: "纸箱出货", //重写父类 当前操作副标题
+      salveWindow: {
+        isLoaddingDone: false, // 窗口是否加载完成
+        showEditWindow: false, // 是否显示edit-boxSalesOrderSlave 编辑窗口
+        action: "add" // 当前操作功能 添加/编辑
+      },
+      needAllocate: false, // 是否需要快速调拨
+      needAllocateIndex: -1, //需要快速调拨的行数,勾选取消是,回调
+      slaveTableSelectedIndex: 0, // 主表当前选择行,默认第一行
+      formSetOrderInfo: deepCopy(default_formSetOrderInfo),
+      formDataInfo: deepCopy(default_formDataInfo), // Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      masterRuleValidate: {}, // 纸箱出货 需要验证的数据
+      slaveTableFieldsValidator: {}, // 纸箱出货明细 需要验证的数据
+      subTableFieldsValidator: {}, // 出货其他费用 需要验证的数据
+      boxDeliSubItemsList: [], //工单明细列表
+      masterHeight: 0, //表单高度
+      otherHeight: 0, //剩余高度
+      initColData: {},
+      loadingData: false, // 查询中
+      tableSetOrderDataList: [], //快速调拨数据列表
+      showSetOrderWindow: false, //快速调拨窗体
+      tableColSetOrderInfo: [], //快速调拨 表头
+      sub_list_table_edit_currentIndex: 0, //工单明细 当前选择 下标
+      boxDeliSubItems_rowItem: {}, //工单明细当前选择行
+      searchConfig: {
+        title: "订单编号",
+        keyField: "bcNo"
+      }
+    };
+  },
+  computed: {
+    // 是否禁用确认按钮
+    disabledSubmitBtn() {
+      let datalist = this.formDataInfo["boxDeliSlaveItems"].defaultList;
+      if (datalist && datalist.length > 0) {
+        return false;
+      } else {
+        return true;
+      }
+    }
+  },
+  watch: {
+    showWindow: function(n, o) {
+      if (n) {
+        let _self = this;
+        this.$nextTick(() => {
+          this.needAllocate = false;
+          this.registerEvent();
+          this.pageResize();
+          this.getDataByMode();
+        });
+      }else{
+           this.resetPageConfig()
+           this.formDataInfo["boxDeliSlaveItems"].defaultList = []
+      }
+    }
+  },
+  created() {
+    this.loadColumsData();
+    this.loadSetOrderColumsData(); // 快速调拨 表头
+  },
+  methods: {
+    pageOnChange(_pageNum){
+      this.pageConfig.pageNum = _pageNum
+      this.searchDataBy("0").then(res => {
+         if (res && res.records && res.records.length>0) {
+            this.formDataInfo["boxDeliSlaveItems"].defaultList.push(...res.records)
+         }
+          this.pageConfig.total = res.total // 赋值总条数
+          this.$refs['editWindow'].pageConfig= this.pageConfig
+        });
+    },
+    // 是否禁用快速调拨选择框
+    disabledMoveQty(index) {
+      let needMoveQty = Number(this.formSetOrderInfo.needNumber); // 需调拨数量
+      let totalMoveQty = 0;
+      this.tableSetOrderDataList.forEach(item => {
+        totalMoveQty = totalMoveQty + Number(item.moveQty);
+      });
+      let rowItem = this.tableSetOrderDataList[index];
+      if (rowItem && !!!rowItem.iisChose && totalMoveQty >= needMoveQty) {
+        return true;
+      } else {
+        return false;
+      }
+    },
+    // 加载列头数据(快速调拨)
+    loadSetOrderColumsData() {
+      let formName = "boxdelimovescdataFm";
+      let url = `/sys/form/init/${formName}`;
+      request.get(url).then(res => {
+        if (res != null) {
+          this.tableColSetOrderInfo = res;
+        }
+      });
+    },
+    // 获取快速工单调拨
+    searchGetBackDataList() {
+      this.tableSetOrderDataList = [];
+      let url = `/stock/boxLibMove/getBoxDeliMoveData?bpNo=${this.formSetOrderInfo.productCode}&workNo=${this.formSetOrderInfo.boxWordNo}`;
+      let params = {
+        //获取纸箱出货中快速调拨的调出数据
+        // bpNo:this.formSetOrderInfo.productCode, // 调入产品编号
+        // workNo:this.formSetOrderInfo.boxWordNo, //调入工单号
+      };
+      this.getDataByUrl(url, params).then(res => {
+       // debugger
+        if (res && res.length > 0) {
+          this.tableSetOrderDataList = res;
+        }
+      });
+    },
+    // 快速调拨
+    onCustomerAction() {
+      this.showSetOrderWindow = true;
+      this.selectedAllocateDataList = [] // 重置调拨数据列表
+      let rowItem = this.boxDeliSubItems_rowItem;
+      let needNum = Number(rowItem.deliQty) - Number(rowItem.bsQty);
+      if (needNum < 0) {
+        needNum = 0;
+      }
+      this.formSetOrderInfo = {
+        storeCode: rowItem.bdStationCode, // 仓位编号
+        boxWordNo: rowItem.workNo, // 工单号
+        needNumber: needNum, //调拨数量(计算)
+        needNumberLeft: needNum, //调拨数量(计算)
+        productCode: rowItem.biProdNo, //产品编号
+        productName: rowItem.bpName, // 产品名称
+        allocatorCode: "", // 调拨人,(弹框选择)
+        allocatorId: "",
+        allocator: ""
+      };
+      this.searchGetBackDataList();
+    },
+    // 表格列值改变 回调事件处理event：{row, column, index, event,config}
+    tableColTiggerEventCall(obj) {
+      switch (obj.event) {
+        case "deliQtyChangeEvent":
+          this.handleSlaveDeliQtyChangeEvent(obj.index, "slave");
+          break;
+        default:
+          break;
+      }
+    },
+    // 工单明细 修改 送货数 触发事件
+    tableColTiggerEventSubCall(obj) {
+      switch (obj.event) {
+        case "deliQtyChangeEvent_Sub":
+          let currentItem = this.formDataInfo["boxDeliSubItems"].defaultList[
+            obj.index
+          ];
+          let deliQty = Number(currentItem.deliQty); // 送货数
+          let bsQty = Number(currentItem.bsQty); // 库存数
+          if (deliQty > 0 && deliQty > bsQty) {
+            currentItem.iisChose = true;
+          } else if (deliQty == 0) {
+            currentItem.iisChose = false;
+          } else {
+            currentItem.iisChose = true;
+          }
+          this.setSlaveListDeliQty();
+          this.checkSumDelieryQtyMoreThanStores()
+          break;
+        default:
+          break;
+      }
+    },
+    // 快速调拨 表格列值改变 回调事件处理event：{row, column, index, event,config}
+    tableColTiggerEventSubCall_MoveQty(obj) {
+      let needMoveQty = Number(this.formSetOrderInfo.needNumber); // 需调拨数量
+      let needNumberLeft = Number(this.formSetOrderInfo.needNumberLeft); // 需调拨数量
+      // 汇总所有调拨数量
+      let totalMoveQty = 0;
+      this.tableSetOrderDataList.forEach(item => {
+        totalMoveQty = totalMoveQty + Number(item.moveQty);
+      });
+      switch (obj.event) {
+        case "moveQtyChangeEvent":
+          let currentItem = this.tableSetOrderDataList[obj.index]; // 当前操作行
+          if (currentItem) {
+            let storeQty = Number(currentItem.storeQty); // 库存数
+            let moveQty = Number(currentItem.moveQty); // 调拨数
+            if (moveQty > 0 && moveQty > storeQty) {
+              this.$Modal.warning({
+                width: "260",
+                title: "警告",
+                content: `调拨数不能大于库存数,请检查!`,
+                onOk: () => {
+                  this.$refs["sub_list_table_boxdelimovescdataFm"].set(
+                    { moveQty: 0 },
+                    obj.index
+                  );
+                  currentItem.iisChose = false;
+                }
+              });
+              return;
+            } else if (
+              (moveQty > 0 && moveQty > needMoveQty) ||
+              totalMoveQty > needMoveQty
+            ) {
+              this.$Modal.info({
+                width: "260",
+                title: "提示",
+                content: `调拨数总数:${totalMoveQty},已经超过需调数量:${needMoveQty}`,
+                onOk: () => {
+                  this.$refs["sub_list_table_boxdelimovescdataFm"].set(
+                    { moveQty: moveQty },
+                    obj.index
+                  );
+                  currentItem.iisChose = true;
+                }
+              });
+            }
+            // 小于需要调拨的数量
+            else if (moveQty > 0 && moveQty <= needMoveQty) {
+              this.$refs["sub_list_table_boxdelimovescdataFm"].set(
+                { moveQty: moveQty },
+                obj.index
+              );
+              currentItem.iisChose = true;
+            }
+            // 其它 数量
+            else if (moveQty <= 0) {
+              this.$refs["sub_list_table_boxdelimovescdataFm"].set(
+                { moveQty: 0 },
+                obj.index
+              );
+              currentItem.iisChose = false;
+            }
+          }
+
+          break;
+        default:
+          break;
+      }
+    },
+    // 校验送货数是否超过库存 (确认是否需要快速调拨) boxDeliSubItems
+    checkSumDelieryQtyMoreThanStores(){
+      this.needAllocate = false; // 是否需要快速调拨
+      let slaveList = this.formDataInfo["boxDeliSlaveItems"].defaultList
+      let subList = this.formDataInfo["boxDeliSubItems"].defaultList
+      if(slaveList){
+       let slaveItem = slaveList[this.slaveTableSelectedIndex]
+       let deliQty = Number(slaveItem.deliQty) // 送货数
+       let bsQty = Number(slaveItem.bsQty) // 库存数
+       let noDeliQty = Number(slaveItem.noDeliQty) // 未送货数
+        if (deliQty > bsQty){
+           this.needAllocate = true; 
+           this.getNeedAllocateRowIndex()
+        }
+      }
+      if(subList && subList.length>0){
+         let _sub_needAllocate = false
+          subList.forEach(item=>{
+            if(Number(item.deliQty)> Number(item.bsQty)){
+                  _sub_needAllocate = true; 
+                  this.needAllocate = true;
+            }
+          })
+          if(_sub_needAllocate){
+            this.getNeedAllocateRowIndex()
+          }
+      }
+
+      return this.needAllocate
+    },
+
+    // 获取需要调拨的行 返回数组
+    getNeedAllocateRowIndex(){
+      let needAllocateIndexList = []
+       let subList = this.formDataInfo["boxDeliSubItems"].defaultList
+       if(subList){
+         subList.filter((item,index)=>{
+              let deliQty = Number(item.deliQty) // 送货数
+              let bsQty = Number(item.bsQty) // 库存数
+               if (deliQty > bsQty){
+                needAllocateIndexList.push(index)
+              }
+        })
+      }
+     if(needAllocateIndexList.length>0){
+       // 选中需要调拨的第一行
+       this.setDefaultSelectedSubRow(needAllocateIndexList[0])
+     }
+     return needAllocateIndexList
+    },
+    handleSlaveDeliQtyChangeEvent(index, type) {
+      let currentItem = this.formDataInfo["boxDeliSlaveItems"].defaultList[
+        index
+      ];
+      let deliQty = Number(currentItem.deliQty); // 送货数
+      if (deliQty > 0) {
+        currentItem.iisChose = true;
+      } else {
+        currentItem.iisChose = false;
+      }
+      let bsQty = Number(currentItem.bsQty); // 库存数
+      let noDeliQty = Number(currentItem.noDeliQty); // 未送货数
+      if (deliQty > 0 && deliQty > noDeliQty) {
+        if (type == "sub") {
+          this.setSubListDeliQty(deliQty,type);
+          return;
+        }
+        this.$Modal.warning({
+          width: "260",
+          title: "警告",
+          content: `送货数不能大于未送货数,请检查!`,
+          onOk: () => {
+            this.$refs["slave_list_table_edit"].set({ deliQty: 0 }, index);
+            currentItem.iisChose = false;
+            this.setSubListDeliQty(0,type);
+          }
+        });
+      } else if (deliQty > bsQty) {
+         this.checkSumDelieryQtyMoreThanStores()
+        if (type == "sub") {
+          this.setSubListDeliQty(deliQty,type);
+          return;
+        }
+        this.$Modal.warning({
+          width: "260",
+          title: "警告",
+          content: `存在库存不足的工单,请采用快速调拨!`,
+          onOk: () => {
+            this.setSubListDeliQty(deliQty,type);
+            // 默认选择需要调拨的所在行,也就是最后一行
+            let dataList = this.formDataInfo["boxDeliSubItems"].defaultList;
+            if (dataList) {
+              let countNum = dataList.length;
+              setTimeout(() => {
+                this.setDefaultSelectedSubRow(Number(countNum - 1));
+              }, 200);
+            }
+          }
+        });
+      } else {
+        this.setSubListDeliQty(deliQty,type);
+      }
+    },
+    // 计算主表当前行是否可选
+    resetDisable(index) {
+      if (this.needAllocate) {
+        let rowItem = this.formDataInfo["boxDeliSlaveItems"].defaultList[index];
+        if (!!!rowItem.iisChose) {
+          return true;
+        }
+      } else {
+        return false;
+      }
+    },
+    // 设置主表送货数
+    setSlaveListDeliQty() {
+      let totalDeliQty = 0;
+      let subDataList = this.formDataInfo["boxDeliSubItems"].defaultList;
+      let slaveDataList = this.formDataInfo["boxDeliSlaveItems"].defaultList;
+      if (subDataList) {
+        if (subDataList.length > 0) {
+          subDataList.forEach(item => {
+            totalDeliQty = totalDeliQty + Number(item.deliQty);
+          });
+          slaveDataList[this.slaveTableSelectedIndex].deliQty = totalDeliQty;
+          slaveDataList[this.slaveTableSelectedIndex].iisChose = true;
+        } else {
+          slaveDataList[this.slaveTableSelectedIndex].deliQty = 0;
+          slaveDataList[this.slaveTableSelectedIndex].iisChose = false;
+        }
+      }
+      this.handleSlaveDeliQtyChangeEvent(this.slaveTableSelectedIndex, "sub");
+    },
+    // 设置按需分配送货数到 工单明细 送货数
+    setSubListDeliQty(deliQty, type = "slave") {
+      if (type == "sub") {
+        return;
+      }
+      let subRowData = this.formDataInfo["boxDeliSubItems"].defaultList;
+      if (subRowData.length > 1) {
+        subRowData = subRowData.map((item, index) => {
+          let sub_bsQty = Number(item.bsQty); // 库存数
+          if (deliQty > sub_bsQty) {
+            item.deliQty = item.bsQty;
+            if (index == subRowData.length - 1) {
+              item.deliQty = deliQty;
+            }
+            item.iisChose = true;
+            deliQty = deliQty - sub_bsQty;
+          } else if (deliQty <= sub_bsQty && deliQty > 0) {
+            item.deliQty = deliQty;
+            item.iisChose = true;
+            deliQty = deliQty - item.deliQty;
+          } else {
+            item.deliQty = 0;
+            item.iisChose = false;
+          }
+          return item;
+        });
+      } else {
+        subRowData[0].deliQty = deliQty;
+        if (deliQty > 0) {
+          subRowData[0].iisChose = true;
+        } else {
+          subRowData[0].iisChose = false;
+        }
+      }
+    },
+    // 工单row选择事件回调
+    onChange_SlaveItemChcBox(index) {
+      let rowItem = this.formDataInfo["boxDeliSlaveItems"].defaultList[index];
+      //设置送货数根据条件变化
+      rowItem = this.setDeliQtyBy(rowItem);
+      this.setSubListDeliQty(rowItem.deliQty);
+      this.checkSumDelieryQtyMoreThanStores()
+    },
+    // 快速调拨 选择事件回调
+    onChange_moveQtyChcBox(index) {
+      let totalSetNum = this.hasSetOrderNumber();
+      let needMoveQty = Number(this.formSetOrderInfo.needNumber) - totalSetNum; // 需调拨数量
+      let needNumberLeft = Number(this.formSetOrderInfo.needNumberLeft); // 还需调拨数量
+      let currentItem = this.tableSetOrderDataList[index]; // 当前操作行
+      if (currentItem && !!currentItem.iisChose) {
+        let storeQty = Number(currentItem.storeQty); // 库存数量
+        if (storeQty >= needMoveQty) {
+          currentItem.moveQty = needMoveQty; // 调拨数
+          needNumberLeft = needNumberLeft - needMoveQty;
+        } else {
+          currentItem.moveQty = storeQty;
+          needNumberLeft = needNumberLeft - storeQty;
+        }
+      } else {
+        currentItem.moveQty = 0;
+      }
+    },
+    // 工单明细勾选 变更回调
+    onChange_SubItemChcBox(index) {
+      let rowItem = this.formDataInfo["boxDeliSubItems"].defaultList[index];
+      if (!!!rowItem.iisChose) {
+        // 取消勾选 设置送货数为0
+        this.$refs["sub_list_table_edit"].set({ deliQty: 0 }, index);
+      }else{
+          // 勾选 设置送货数为库存数
+        let bsQty = Number(rowItem.bsQty) // 库存数   
+        this.$refs["sub_list_table_edit"].set({ deliQty: bsQty }, index);
+      }
+      this.setSlaveListDeliQty()
+      this.checkSumDelieryQtyMoreThanStores()
+    },
+    //设置送货数根据条件变化
+    setDeliQtyBy(rowItem) {
+      let BoxDeliOutOrder = this.$params.BoxDeliOutOrder; //纸箱送货可以超订单数
+      let coType = this.formDataInfo.master.coType; //送货数为库存数
+      if (rowItem.iisChose) {
+        let noDeliQty = Number(
+          rowItem.noDeliQty == null ? 0 : rowItem.noDeliQty
+        ); //未送数
+        let bsQty = Number(rowItem.bsQty == null ? 0 : rowItem.bsQty); // 库存数
+        //默认 送货数=未送数
+        rowItem.deliQty = noDeliQty;
+        if (coType) {
+          if (BoxDeliOutOrder == "1") {
+            // 不管订单数，未送数是多少，送货数=库存数
+            rowItem.deliQty = bsQty;
+          } else {
+            //送货数为库存数
+            if (noDeliQty > bsQty) {
+              // 未送数大于库存数，送货数=库存数，
+              rowItem.deliQty = bsQty;
+            }
+          }
+        }
+      } else {
+        rowItem.deliQty = 0;
+      }
+      return rowItem;
+    },
+    //获取数据BY MODE
+    getDataByMode() {
+      this.resetPageConfig()
+      let _self = this;
+      //MODE1 仓位数据
+      // 查询前 表格 数据清空
+      this.formDataInfo["boxDeliSlaveItems"].defaultList = [];
+      this.formDataInfo["boxDeliSubItems"].defaultList = [];
+      this.boxDeliSubItemsList = [];
+      this.searchDataBy("1").then(res => {
+        _self.boxDeliSubItemsList = res.records;
+        //MODE0 合计数据
+        _self.searchDataBy("0").then(rep => {
+          _self.formDataInfo["boxDeliSlaveItems"].defaultList = rep.records;
+          _self.pageConfig.total = rep.total // 赋值总条数
+          _self.$refs['editWindow'].pageConfig= _self.pageConfig
+          _self.setDefaultSelectedRow(); // 默认选择第一行
+          _self.setDefaultSelectedSubRow();
+        });
+      });
+    },
+
+    // 通过参数查询数据列表
+    searchDataBy(mode) {
+      return new Promise((resolve, reject) => {
+        // 参数包括：关键字只能出现一个
+        let params = {
+          startDate: dayjs(this.formDataInfo.master.startDate).format(
+            "YYYY-MM-DD"
+          ), //(开始日期)
+          endDate: dayjs(this.formDataInfo.master.endDate).format("YYYY-MM-DD"), //(结束日期)
+          mode, //(0合计数据，1仓位数据)
+          coType: mode === "1" ? "1" : "0", //()
+          storeFlag: this.formDataInfo.master.storeFlag, //(加上没有库存的记录)
+          custId: this.searchParams.custId, //(客户id)
+          bcCustPo: this.getCurrentKeyTypeWords("bcCustPo"), //(客户PO号)
+          biProdNo: this.getCurrentKeyTypeWords("biProdNo"), //(产品编号)
+          bpName: this.getCurrentKeyTypeWords("bpName"), //(产品名称)
+          bcNo: this.getCurrentKeyTypeWords("bcNo"), //(订单编号)
+          workNo: this.getCurrentKeyTypeWords("workNo"), //(工单号)
+          likeFlag: this.formDataInfo.master.likeFlag, //(1模糊查询0精准查询)
+          areaIds: this.searchParams.areaIds, //(送货地址id)
+          addrDetail: this.searchParams.addrDetail, //(详细地址)
+          workNoList: this.searchParams.workNoList //(过滤已选的工单号集合)
+        };
+        if(mode=='0'){
+            params.pageNum = this.pageConfig.pageNum//(当前页),
+            params.pageSize = this.pageConfig.pageSize//(每页显示条数)
+         }
+        this.loadingData = true;
+        request
+          .post(
+            `${this.functionParams.requestBaseUrl}/getBoxDeliBoxData`,
+            params
+          )
+          .then(res => {
+              if (res && res.records && res.records.length>0) {
+                  resolve(res);
+               }
+            this.loadingData = false;
+          })
+          .catch(err => {
+             reject();
+            this.loadingData = false;
+          });
+      });
+    },
+    // 工单明细选择行事件
+    sub_list_table_editRowClick(index) {
+      this.sub_list_table_edit_currentIndex = index;
+      this.boxDeliSubItems_rowItem = this.formDataInfo[
+        "boxDeliSubItems"
+      ].defaultList[index];
+    },
+    // 工单列表行点击事件回调
+    slave_list_table_editRowClick(index) {
+    //  debugger
+      this.slaveTableSelectedIndex = index;
+      let rowItem = this.formDataInfo["boxDeliSlaveItems"].defaultList[index];
+      if (rowItem && rowItem.biProdNo != "") {
+        let mapData = this.boxDeliSubItemsList.filter(item => {
+          if (
+            item.biProdNo == rowItem.biProdNo &&
+            item.workNo == rowItem.workNo
+          ) {
+            return item;
+          }
+        });
+
+        this.formDataInfo["boxDeliSubItems"].defaultList = mapData;
+        this.setDefaultSelectedSubRow();
+      }
+    },
+    // 默认选择行数据
+    setDefaultSelectedRow(index = 0) {
+      //debugger
+      let slaveObj = this.$refs["slave_list_table_edit"];
+      if (slaveObj) {
+        slaveObj.rowClick(index, "row-click");
+      }
+    },
+    // 默认选择行数据
+    setDefaultSelectedSubRow(index = 0) {
+      let subObj = this.$refs["sub_list_table_edit"];
+      if (subObj) {
+        subObj.rowClick(index, "row-click");
+      }
+    },
+    // 获取关键字类型
+    searchKeyType(keyField, keyTitle) {
+      //订单编号 bcNo，产品编号 biProdNo，产品名称 bpName,客户po号 bcCustPo,工单号 workNo
+      if (this.excludeFiled("search", keyField)) {
+        this.searchConfig.title = keyTitle;
+        this.searchConfig.keyField = keyField;
+      }
+    },
+    // 获取当前搜索类型的关键字
+    getCurrentKeyTypeWords(field) {
+      if (field == this.searchConfig.keyField) {
+        return this.formDataInfo.master.keyWord;
+      } else {
+        return "";
+      }
+    },
+    // 加载列头数据
+    loadColumsData() {
+      //纸箱出货弹出框主表数据(虚拟)
+      let _self = this;
+      let formName = "boxdeliboxdatadtoFm ";
+      let url = `/sys/form/init/${formName}`;
+      request.get(url).then(res => {
+        if (res != null) {
+          _self.initColData = res;
+        }
+      });
+    },
+    // 排除不需要显示的字段
+    excludeFiled(type, key) {
+      let exListItemFm = [
+        "iisChose",
+        "bdStationName",
+        "bsQty",
+        "deliQty",
+        "deliPrepQty"
+      ];
+      let exListOtherfeeFm = [];
+      let searchList = ["bcNo", "biProdNo", "bpName", "bcCustPo", "workNo"];
+      let exList = [];
+      switch (type) {
+        case "itemFm":
+          exList = exListItemFm;
+          break;
+        case "search":
+          exList = searchList;
+          break;
+        default:
+          exList = [];
+          break;
+      }
+      let isExist = exList.includes(key);
+      if (type === "itemFm" || type === "search") {
+        isExist = !isExist;
+      }
+      if (isExist) {
+        return false;
+      } else {
+        return true;
+      }
+    },
+    // 注册窗口事件
+    registerEvent() {
+      let _self = this; //赋值vue的this
+      window.onresize = () => {
+        //调用methods中的事件
+        _self.pageResize();
+      };
+    },
+    // 触发窗口大小变化事件
+    pageResize() {
+      this.$nextTick(() => {
+        this.getTabWindowHeight();
+      });
+    },
+    // 获取当前TAB标签的实际高度
+    getTabWindowHeight() {
+      this.getMasterheight();
+      // 因为使用V-SHOW 隐藏,实际还会占用高度,所以切换时,设置为0 或使用V-IF 可以不用那么麻烦,但性能较低
+      if (this.$refs["masterHeight"]) {
+        this.masterHeight = this.$refs["masterHeight"].offsetHeight;
+        this.otherHeight = this.$refs["otherHeight"].offsetHeight;
+      }
+    },
+    getMasterheight() {
+      return 35;
+    },
+    // 重写父类,修改提交数据
+    resetformDataInfo() {
+      let choseDataList = this.boxDeliSubItemsList.filter(item => {
+        return item.iisChose == true && Number(item.deliQty)>0
+      });
+      return choseDataList;
+    },
+
+    // 提交主从表数据
+    formTableDataSubmit() {
+      //debugger
+      this.checkSumDelieryQtyMoreThanStores()
+      if (this.needAllocate) {
+        this.$Modal.warning({
+          width: "260",
+          title: "警告",
+          content: `存在库存不足的工单,请采用快速调拨!`,
+          onOk: () => {
+            return;
+          }
+        });
+      } else {
+        let submitData = this.resetformDataInfo();
+        if (submitData.length > 0) {
+          this.showWindow = false; // 关闭当前编辑页面
+          this.$emit("submit-success", submitData); // 刷新主页面数据
+        } else {
+          this.$Message.error("请勾选需要操作的数据!!");
+          return;
+        }
+      }
+    },
+    // 已经调拨数量
+    hasSetOrderNumber() {
+      let dataList = this.tableSetOrderDataList;
+      let totalSetNum = 0;
+      dataList.forEach(item => {
+        let moveQty = Number(item.moveQty == undefined ? 0 : item.moveQty);
+        totalSetNum = totalSetNum + moveQty;
+      });
+      return totalSetNum;
+    },
+
+    // 预快速调拨提交
+    setOrderWindowSubmitPre() {
+      if (this.formSetOrderInfo.needNumber <= 0) {
+        this.$Message.error("需调数量为0,请检查!!");
+        return;
+      }
+
+      let flag = false;
+      let totalSetNum = this.hasSetOrderNumber(); // 已经调拨数量
+      if (totalSetNum <= 0) {
+        this.$Message.error("请勾选需要操作的数量!!");
+        return;
+      }
+      if (totalSetNum < this.formSetOrderInfo.needNumber) {
+        //已经调拨数量 和 需要调拨的数量比较
+        this.$Modal.confirm({
+          width: "260",
+          title: "确认提示",
+          content: `调拨总数:${totalSetNum}<br/>不等于<br/>需调拨数量:${this.formSetOrderInfo.needNumber},<br/>是否提交?`,
+          onOk: () => {
+            this.setOrderWindowSubmit();
+          }
+        });
+      } else {
+        this.setOrderWindowSubmit();
+      }
+    },
+    // 回调调拨数量到原始列表修复已有库存数量Num
+    resetExistingInventoryNum() {
+      //debugger
+      let totalSetNum = this.hasSetOrderNumber(); // 已经调拨数量
+      // 工单明细
+      let originalNum = 0; //所在行已有(库存数)数量
+      let dataList = this.formDataInfo["boxDeliSubItems"].defaultList;
+      if (dataList) {
+        originalNum = Number(
+          dataList[this.sub_list_table_edit_currentIndex].bsQty
+        );
+      }
+      this.$refs["sub_list_table_edit"].set(
+        { bsQty: totalSetNum + originalNum },
+        this.sub_list_table_edit_currentIndex
+      );
+      // 工单列表
+      let workNo_stock_originalNum = 0; // 所在行已有(库存数)数量
+      let workNo_dataList = this.formDataInfo["boxDeliSlaveItems"].defaultList;
+      if (workNo_dataList) {
+        workNo_stock_originalNum = Number(
+          workNo_dataList[this.slaveTableSelectedIndex].bsQty
+        );
+      }
+      this.$refs["slave_list_table_edit"].set(
+        { bsQty: totalSetNum + workNo_stock_originalNum },
+        this.slaveTableSelectedIndex
+      );
+    },
+    // 主表从表根据此表传来的参数:仓位id 工单号 产品编号 减去相应的 <库存>调拨数
+    subtractionOfStockBy(){
+      // 因为可能调拨的数量大于需调拨数据,需要重新计算
+      let totalAllocation = this.hasSetOrderNumber()
+    
+        // ==============主表 根据工单号 产品编号  减去相应的 <库存>调拨数=============================
+      let defaultList =  this.formDataInfo['boxDeliSlaveItems'].defaultList
+      if(this.selectedAllocateDataList.length>0){
+           this.formDataInfo['boxDeliSlaveItems'].defaultList = defaultList.map(item=>{
+            let isExistItem = this.selectedAllocateDataList.filter(subItem =>{
+              return  (subItem.workNo == item.workNo &&  subItem.bpNo == item.biProdNo)
+            })
+            if(!!isExistItem && isExistItem.length>0){
+              //debugger
+              item.bsQty = Number(item.bsQty)  - totalAllocation // 调拨总数
+            }
+          return item
+        })
+      }
+      // ==============子表(原始数据) 根据工单号 仓位id 产品编号  减去相应的 <库存>调拨数=============================
+      if(this.selectedAllocateDataList.length>0){
+           this.boxDeliSubItemsList = this.boxDeliSubItemsList.map(item=>{
+            let isExistSubItem = this.selectedAllocateDataList.filter(subItem =>{
+             return  (subItem.workNo == item.workNo &&  subItem.bpNo == item.biProdNo && subItem.stationId == item.bdStationId)
+            })
+            if(!!isExistSubItem && isExistSubItem.length>0){
+             // debugger
+              item.bsQty = Number(item.bsQty)  - Number(isExistSubItem[0].moveQty)
+            }
+          return item
+        })
+      }
+
+    },
+    // 快速调拨提交
+    setOrderWindowSubmit() {
+      let url = `/stock/boxLibMove/batchSaveMoveData`;
+      let rowItem = this.boxDeliSubItems_rowItem;
+      let params = {
+        allocatorId: this.formSetOrderInfo.allocatorId, //调拨人id
+        bpBatchNo: rowItem.biBatchNo, //料号
+        bpName: rowItem.bpName, //产品名称
+        bpNo: rowItem.biProdNo, //产品编号
+        coinId: rowItem.coinId, //货币id
+        moveQty: this.formSetOrderInfo.needNumber, //??需调数量(计算)
+        sourceList: [], //调出数据
+        stationId: rowItem.bdStationId, //仓位id
+        storeQty: rowItem.bsQty, //当时库存数
+        unitPrice: rowItem.biPrice, //库存单价
+        workNo: rowItem.workNo //工单号
+      };
+      // 填充 调拨数据列表
+      params.sourceList = this.tableSetOrderDataList.filter(item => {
+        return  Number(item.moveQty)>0 //!!item.iisChose == true //&&
+      });
+
+      if (params.sourceList.length > 0) {
+        this.selectedAllocateDataList =  params.sourceList // 选择的调拨数据列表
+        this.getDataByUrl(url, params).then(res => {
+          if (!!res) {
+            this.resetExistingInventoryNum(); // 回填 调拨数量 到 库存数
+            this.subtractionOfStockBy() // 主表库存根据参数减去相应的调拨数,避免连续操作时候,数据对不上
+            this.$Message.success("操作成功");
+            this.showSetOrderWindow = false; // 关闭快递调拨页面
+          }
+        });
+      } else {
+        this.$Message.error("请勾选需要操作的数据!!");
+        return;
+      }
+    }
+  }
+};
+</script>
+
+<style>
+.cl-edit-window-boxDeli .masterHeightClass {
+  height: 50%;
+  overflow: auto;
+}
+.cl-edit-window-boxDeli .otherHeightClass {
+  height: 40%;
+  overflow: hidden;
+}
+</style>

@@ -1,0 +1,579 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-paperPrice"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="90%"
+      :loading="!isLoaddingDone"
+      :disabledSubmitBtn="disabledSubmitBtn"
+      :spinLoaddingText="spinLoaddingText"
+      @on-ok="formTableDataSubmit()"
+      v-if="initData.columns"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-message="true"
+        :model="formDataInfo.master"
+        :rules="ruleValidate"
+        :label-width="100"
+        :disabled='detailDisabled'
+      >
+        <Row>
+          <Col span="6">
+            <FormItem label="外发单号" prop="sendNo">
+              <Input disabled v-model="formDataInfo.master.sendNo" maxlength="20" placeholder></Input>
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="外发日期" prop="sendDate">
+              <DatePicker
+                type="date"
+                format="yyyy-MM-dd HH:mm:ss"
+                :editable='false'
+                :clearable='false'
+                v-model="formDataInfo.master.sendDate"
+              ></DatePicker>
+            </FormItem>
+          </Col>
+          <Col span="6">
+              <FormItem label="交货日期" prop="delDate">
+                <DatePicker
+                  type="date"
+                  format="yyyy-MM-dd HH:mm:ss"
+                  :editable='false'
+                  :clearable='false'
+                  v-model="formDataInfo.master.delDate"
+                ></DatePicker>
+              </FormItem>
+            </Col>
+            <Col span="6">
+                <FormItem label="外发类型">
+                      <optionSearch
+                        @onChange="optionOnChangeBy"
+                        :defaultItem="formDataInfo.master.sendType"
+                        :loaddingDataWhen="showWindow"
+                        formKey="sendType"
+                        query="sendType"
+                      />
+                </FormItem>
+            </Col>
+          <Col span="6">
+            <FormItem label="供应商" prop="supplierCode">
+              <popup
+                ref='firstFocusInput'
+                :disabled="dissendType"
+                v-model="formDataInfo.master.supplierCode"
+                field-name="supplierCode"
+                popup-name="SupplierSingleBox"
+                :fill-model.sync="formDataInfo.master"
+                render-fields="supplierId,supplierCode,supplierName"
+                from-fields="id,purCode,purName"
+                :suffix="true"
+                :suffix-model="formDataInfo.master.supplierName"
+                suffixModelName="supplierName"
+              />
+            </FormItem>
+          </Col>
+           <Col span="6">
+            <FormItem label="车牌号" prop="carNo">
+              <Input v-model="formDataInfo.master.carNo" maxlength="20" placeholder="请输入车牌号"></Input>
+            </FormItem>
+          </Col>
+           <Col span="6">
+            <FormItem label="装车员" prop="loadorCode">
+              <popup
+                v-model="formDataInfo.master.loadorCode"
+                field-name="loadorCode"
+                :disabled="false"
+                popup-name="WorkerSingleBox"
+                :fill-model.sync="formDataInfo.master"
+                render-fields="loadorId,loadorCode,loadorName"
+                from-fields="id,workCode,workName"
+                :suffix="true"
+                :suffix-model="formDataInfo.master.loadorName"
+                suffixModelName="loadorName"
+                :query-params="{workOptType:5}"
+              />
+            </FormItem>
+          </Col>
+         <Col span="6">
+              <FormItem v-show="formDataInfo.master.sendType!=0" label="外发状态">
+                    <optionSearch
+                      @onChange="optionOnChangeBy"
+                      :defaultItem="formDataInfo.master.sendStatus"
+                      :loaddingDataWhen="showWindow"
+                      formKey="sendStatus"
+                      query="sendStatus"
+                    />
+              </FormItem>
+          </Col>
+          <Col span="24">
+            <FormItem label="备注">
+              <Input
+                v-model="formDataInfo.master.remark"
+                maxlength="100"
+                placeholder="请输入备注..."
+              ></Input>
+            </FormItem>
+          </Col>
+        </Row>
+      </Form>
+
+      <Tabs>
+        <!--  注意:eTable formDataInfo.artLengs.defaultList  ===artLengs=== 需要根据实际接口修改,其它不变-->
+        <TabPane label="纸箱工序外发明细" name="name1">
+        <!-- <TabPane :label="initData.initData.mrpWproSendOutItemFm" name="name1"> -->
+          <eTable
+            ref="tableFields"
+            unqiue-mark="id"
+            :index-menu="true"
+            :col-start="0"
+            :width="200"
+            :height="300"
+            :insertDirection="insertDirection"
+            :row-init-data="initData.initData.mrpWproSendOutItemFm"
+            :data.sync="formDataInfo.proSendOutItemSlaves.defaultList"
+            :rules="tableFieldsValidator"
+            :showContextMenu="!detailDisabled"
+          >
+            <template slot="head">
+              <tr
+                v-for="(columnGroup,index) in initData.columns.mrpWproSendOutItemFm.editGroups"
+                :key="index"
+              >
+                <th
+                  class="ivu-table-column-left"
+                  v-for="(column,index2) in columnGroup"
+                  :key="index2"
+                  :width="column.editWidth"
+                  :colspan="column.colSpan"
+                  :rowspan="column.rowSpan"
+                  style="text-align:center;"
+                >
+                  <div class="ivu-table-cell">
+                    <span class>{{column.title}}</span>
+                  </div>
+                </th>
+              </tr>
+            </template>
+
+            <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
+              <td
+                :class="`ivu-table-column-${column.align}`"
+                v-for="(column,columnIndex) in initData.columns.mrpWproSendOutItemFm.editColumns"
+                :key="columnIndex"
+                :width="column.editWidth"
+              >
+                 <!--控件特殊处理 工单号  -->
+                <Input
+                  v-if="column.key == 'workNo'"
+                  v-model="row[column.key]"
+                  :disabled="detailDisabled"
+                  @on-blur="onFill(index)"
+                  icon="md-add"
+                  @on-click="Slave_list_table_editRowModify(index)"
+                  @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'workNo');
+                      }
+                    "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+                <!--控件特殊处理 带料  -->
+                <Checkbox
+                    v-else-if="column.key == 'iisMaterial'"
+                    v-model="row[column.key]"
+                    :disabled="detailDisabled"
+                    size="default"
+                    @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'iisMaterial');
+                      }
+                    "
+                    :maxlength="20"
+                ></Checkbox>
+                 <!--控件特殊处理 数量   -->
+                <InputNumber
+                  v-else-if="column.key == 'qty'"
+                  v-model="row[column.key]"
+                  :disabled="detailDisabled"
+                  @on-change="checkqty(index)"
+                  @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'qty');
+                        }
+                      "
+                  size="small"
+                  :maxlength="20"
+                ></InputNumber>
+                 <!--控件特殊处理 备品数  -->
+                <InputNumber
+                  v-else-if="column.key == 'prepQty'"
+                  v-model="row[column.key]"
+                  :disabled="detailDisabled"
+                  type="number"
+                  @on-change="getamt(index)"
+                  @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'prepQty');
+                        }
+                      "
+                  size="small"
+                  :maxlength="20"
+                ></InputNumber>
+                 <!--控件特殊处理 单价  -->
+                <InputNumber
+                  v-else-if="column.key == 'unitPrice'"
+                  v-model="row[column.key]"
+                  :disabled="detailDisabled"
+                  type="number"
+                  @on-change="getamt(index)"
+                  @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'unitPrice');
+                        }
+                      "
+                  size="small"
+                  :maxlength="20"
+                ></InputNumber>
+
+                <formControl
+                  v-else
+                  :control-type="column.controlType"
+                  v-model="row[column.key]"
+                  :disabled="column.readOnly||detailDisabled"
+                  @input="value => {valueChangeAssign(value, index, row,column.key)}"
+                ></formControl>
+              </td>
+            </template>
+          </eTable>
+        </TabPane>
+      </Tabs>
+    </editWindow>
+    <Slave
+      ref="mychild"
+      :isLoaddingDone="salveWindow.isLoaddingDone"
+      :formDetailData="salveWindow.formDetailData"
+      :action="salveWindow.action"
+      v-model="salveWindow.showEditWindow"
+      @closeMain="closeMain"
+    />
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author ming xing
+ *
+ * @created 2020/03/12 17:07:54
+ */
+// import preferential from "@/components/preferential/preferential";
+import popup from '@/components/popup/popup'
+import editWindow from '@/components/edit-window/edit-window'
+import formControl from '@/components/form-control/form-control'
+// import Form from '@/components/form/form'
+import InputNumber from '@/components/input-number'
+import eTable from '@/components/e-table/e-table'
+import request from '@/libs/request'
+import editBaseMixins from '../../mixins/edit'
+import optionSearch from '../../components/optionSearch'
+import dayjs from 'dayjs'
+import { deepCopy } from 'view-design/src/utils/assist'
+import Sys from '@/api/sys'
+import Slave from './edit-procedureoutSlabe'
+const default_formDataInfo = {
+  // 主表 更改字段
+  master: {
+    bppClassName: '',
+    carNo: '',
+    createTime: '',
+    createUser: '',
+    createUsername: '',
+    sendDate: dayjs().format('YYYY-MM-DD HH:mm:ss'),
+    delDate: dayjs().format('YYYY-MM-DD HH:mm:ss'),
+    loadorId: '',
+    loadorCode: '',
+    loadorName: '',
+    sendType: '0',
+    sendTypeText: '',
+    sendStatus: '0',
+    sendStatusText: '',
+    remark: '',
+    sendNo: ''
+  },
+  // 子表 artLengs 根据实际接口更改,其它不变
+  proSendOutItemSlaves: {
+    addList: [], // 添加列
+    defaultList: [], // 默认列
+    deleteList: [], // 删除列
+    updateList: [] // 更新列
+  }
+}
+export default {
+  name: 'edit-boxprodplan',
+  mixins: [editBaseMixins],
+  components: {
+    editWindow,
+    optionSearch,
+    // preferential,
+    eTable,
+    popup,
+    Slave,
+    formControl,
+    InputNumber
+    // Form,
+  },
+  computed: {
+
+  },
+  data () {
+    return {
+      dissendType: false, // 禁用字段
+      disabledSubmitBtn: false, // table确认按钮禁用字段
+      insertDirection: 'down',
+      salveWindow: {
+        // Tips:"提示：此窗口只显示有价的工单！",
+        isLoaddingDone: false, // 窗口是否加载完成
+        showEditWindow: false, // 是否显示edit-boxSalesOrderSlave 编辑窗口
+        action: 'add', // 当前操作功能 添加/编辑
+        formDetailData: {} // 当前表单的详细信息
+      },
+      WorkOrderNumber: null,
+      List: null,
+      index: 0, // 存储点击弹框行号
+      actionSubtitle: '纸箱工序外发', // 当前操作副标题
+      formName: 'mrpWproSendOutItemFm',
+      requestBaseUrl: '/mrp/wproSendOut', // 请求 查询 操作的基础路径
+      // formDataInfo:deepCopy(default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      formDataInfo: Object.assign({}, default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {
+        // supplierCode:[{
+        //     required: true,
+        //     message: "供应商不能为空",
+        //     trigger: "blur"
+        // }],
+        loadorCode: [
+          {
+            required: true,
+            message: '装车员不能为空',
+            trigger: 'blur'
+          }
+        ]
+      },
+      tableFieldsValidator: {
+        // supplierArtName:[{
+        //     required: true,
+        //     message: "供应商纸质错误",
+        //     trigger: "blur"
+        // }],
+      },
+      workNoList: ''
+    }
+  },
+  props: {
+    rowData: {
+      type: Object,
+      default: ''
+    }
+  },
+  watch: {
+    'formDataInfo.master.sendType' (n, o) {
+      switch (n) {
+        case n = '1':
+          this.dissendType = true
+          this.formDataInfo.master.supplierCode = ''
+          this.formDataInfo.master.supplierId = ''
+          this.formDataInfo.master.supplierName = ''
+          break
+        default:
+          this.dissendType = false
+          break
+      }
+    }
+  },
+
+  methods: {
+     // 继承中修改,提交数据前 验证数据 ,默认 false 没有错误
+    validateBeforePost () {
+     // debugger
+      let flag = false
+      if(this.formDataInfo.master.sendType=='0' && !!!this.formDataInfo.master.supplierId){
+         this.$Message.warning('请选择供应商')
+         flag = true
+      }
+      return flag
+    },
+    // 数量校验
+    checkqty (index) {
+      let data = this.$refs.tableFields.get()
+      if (data[index].originalQty !== '' && data[index].originalQty !== 0) {
+        if (Number(data[index].qty) > Number(data[index].originalQty)) {
+          this.$Message.error(`数量不能大于未外发数量${data[index].originalQty}`)
+          this.$refs.tableFields.set({ qty: 0 }, index)
+        }
+      }
+      this.getamt(index)
+    },
+    // 计算金额
+    getamt (index) {
+      let data = this.$refs.tableFields.get()
+      let qty = Number(data[index].qty)// 当前行数量
+      let prepQty = Number(data[index].prepQty)// 当前行备品数
+      let unitPrice = Number(data[index].unitPrice)// 当前行单价
+      let num = (qty + prepQty) * unitPrice
+      this.$refs.tableFields.set({ amt: num }, index)
+    },
+    // 工单号失去焦点
+    onFill (index) {
+      let data = this.$refs.tableFields.get()
+      let workNoList = this.getworkNoList(index)
+      if (data[index].workNo == '') {
+        return
+      }
+      let params = {
+        likeFlag: 1,
+        custPo: '', // 客户PO号
+        proNo: '', // 产品编号
+        proName: '', // 产品名称
+        bcNo: '', // 订单编号
+        workNo: data[index].workNo, // 工单号
+        workNoList: workNoList// 已选的工单号集合
+      }
+      let _self = this
+      request.post(`/mrp/wproSendOut/getWproSendOutData`, params).then(res => {
+        if (res.length === 0) {
+          this.$Message.error('该工单号不存在')
+          return
+        }
+        let params = _self.handleretData(res[0])
+        _self.$refs['tableFields'].set(params, index)
+        // this.$refs.tableFields.cloneData[index] = res[0]
+      })
+    },
+    // 处理工单失去焦点返回字段
+    handleretData (data) {
+      let { iisChose, companyId, hasDelete, id, soId, ...params } = data
+      params.prepQty = 0
+      params.unitPrice = 0
+      params.amt = 0
+      return params
+    },
+    // 获取工单弹框过滤字段
+    getworkNoList (dataindex) {
+      let workNoList = ''
+      this.$refs.tableFields.get().filter((item, index, data) => {
+        if (item.workNo === undefined || item.workNo === '' || dataindex === index) {
+          return
+        }
+        if (index === 0) {
+          workNoList += item.workNo
+        } else {
+          workNoList += ',' + item.workNo
+        }
+      })
+      return workNoList
+    },
+    // 打开工单弹框
+    Slave_list_table_editRowModify (index) {
+      if (this.detailDisabled) {
+        return
+      }
+      this.index = index
+      let workNoList = this.getworkNoList()
+      let params = {
+        likeFlag: 1,
+        custPo: '', // 客户PO号
+        proNo: '', // 产品编号
+        proName: '', // 产品名称
+        bcNo: '', // 订单编号
+        workNo: '', // 工单号
+        workNoList: workNoList,// 已选的工单号集合
+        pageNumber:1,
+        pageSize:10
+      }
+      request.post(`/mrp/wproSendOut/getWproSendOutData`, params).then(res => {
+        this.$refs.mychild.getFormInitDataObj(res)
+        this.salveWindow.showEditWindow = true
+        this.salveWindow.isLoaddingDone = true
+      })
+    },
+    // 填充工单弹框选择的数据
+    closeMain (data) {
+      // 当前从表数据
+      // this.$refs.tableFields.cloneData = this.$refs.tableFields.cloneData.concat(data)
+      let dataList = []
+      dataList = [...data]
+      let dataArray = dataList.filter((item) => {
+        item.prepQty = 0
+        item.unitPrice = 0
+        item.amt = 0
+        item.iisMaterial = false
+        return dataList
+      }
+      )
+      let Popupindex = this.index
+      dataList.filter((item) => {
+        this.$refs['tableFields'].set(item, Popupindex)
+        Popupindex++
+      })
+    },
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo () {
+      this.formDataInfo = deepCopy(default_formDataInfo)
+    },
+    // 重写父类,修改提交数据
+    resetformDataInfo (_data) {
+      if (this.formDataInfo.master.delDate) {
+        this.formDataInfo.master.delDate = dayjs(this.formDataInfo.master.delDate).format(
+          'YYYY-MM-DD HH:mm:ss'
+        )
+        // return this.formDataInfo;
+      }
+      if (this.formDataInfo.master.sendDate) {
+        this.formDataInfo.master.sendDate = dayjs(this.formDataInfo.master.sendDate).format(
+          'YYYY-MM-DD HH:mm:ss'
+        )
+      }
+      this.formDataInfo.proSendOutItemSlaves = this.$refs['tableFields'].getCategorizeData()
+      return this.formDataInfo
+    },
+    // 打开编辑框调用
+    openActionTigger () {
+      if (this.action === 'update') {
+        if (this.rowData.sendStatusText === '已外发') {
+          this.disabledSubmitBtn = true
+          return
+        }
+      }
+      this.disabledSubmitBtn = false
+    }
+  }
+}
+</script>
+
+<style scope>
+/* .cl-edit-paperPrice .ivu-form-item {
+  margin-bottom: 5px !important;
+} */
+.cl-edit-paperPrice .ivu-select-item {
+  display: block;
+}
+.cl-edit-paperPrice .right-text {
+  width: 160%;
+}
+.ivu-table-column-right input{
+  text-align: right;
+}
+</style>

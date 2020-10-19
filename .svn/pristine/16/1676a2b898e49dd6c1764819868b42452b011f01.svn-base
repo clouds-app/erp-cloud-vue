@@ -1,0 +1,866 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-boxLibMove"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="95%"
+      :loading="!isLoaddingDone"
+      :spinLoaddingText="spinLoaddingText"
+      @on-ok="formTableDataSubmit()"
+      v-if="initData.columns"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-message="true"
+        :model="formDataInfo.master"
+        :rules="ruleValidate"
+        :label-width="100"
+      >
+        <Row>
+          <Col span="12">
+            <Row>
+              <Col span="12">
+                <FormItem label="调拨单号" prop="bmNo">
+                  <Input disabled v-model="formDataInfo.master.bmNo" maxlength="20" placeholder></Input>
+                </FormItem>
+              </Col>
+              <Col span="12">
+                <FormItem label="日期">
+                  <DatePicker
+                    :disabled="detailDisabled"
+                    type="date"
+                    format="yyyy-MM-dd HH:mm:ss "
+                    v-model="formDataInfo.master.bmDate"
+                  ></DatePicker>
+                </FormItem>
+              </Col>
+            </Row>
+          </Col>
+          <Col span="12">
+            <Row>
+              <Col span="12">
+                <FormItem label="调拨人" prop="allocatorCode">
+                  <div>
+                    <!-- @on-fill="Initializationdata" -->
+                    <popup
+                      ref='firstFocusInput'
+                      v-model="formDataInfo.master.allocatorCode"
+                      field-name="allocatorCode"
+                      :disabled="detailDisabled"
+                      popup-name="WorkerSingleBox"
+                      :fill-model.sync="formDataInfo.master"
+                      render-fields="allocatorId,allocatorCode,allocator"
+                      from-fields="id,workCode,workName"
+                      :suffix="true"
+                      :suffix-model="formDataInfo.master.allocator"
+                      suffixModelName="allocator"
+                      @on-fill="allocatorCodeOnFillEvent"
+                      :query-params="{workOptType:8}"
+                    />
+                  </div>
+                </FormItem>
+              </Col>
+              <Col span="12">
+                <FormItem label="数量" prop="bmQty">
+                  <Input disabled v-model="formDataInfo.master.bmQty" maxlength="20" placeholder></Input>
+                </FormItem>
+              </Col>
+            </Row>
+          </Col>
+          <Col span="6">
+            <FormItem label="调出仓位" prop="sourceStationCode">
+                <!-- @on-fill="Initializationdata" -->
+                <popup
+                  v-model="formDataInfo.master.sourceStationCode"
+                  field-name="sourceStationCode"
+                  :disabled="detailDisabled"
+                  popup-name="WareHouseSingleBox"
+                  :fill-model.sync="formDataInfo.master"
+                  render-fields="sourceStationId,sourceStationCode,sourceStationName"
+                  from-fields="wareHouseItId,wsCode,wsName"
+                  :suffix="true"
+                  :suffix-model="formDataInfo.master.sourceStationName"
+                  suffixModelName="sourceStationName"
+                  :query-params="{whType:2}"
+                />
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="调入仓位" prop="destStationCode">
+              <div>
+                <!-- @on-fill="Initializationdata" -->
+                <popup
+                  v-model="formDataInfo.master.destStationCode"
+                  field-name="destStationCode"
+                  :disabled="detailDisabled"
+                  popup-name="WareHouseSingleBox"
+                  :fill-model.sync="formDataInfo.master"
+                  render-fields="destStationId,destStationCode,destStationName"
+                  from-fields="wareHouseItId,wsCode,wsName"
+                  :suffix="true"
+                  :suffix-model="formDataInfo.master.destStationName"
+                  suffixModelName="destStationName"
+                  :query-params="{whType:2}"
+                />
+              </div>
+            </FormItem>
+          </Col>
+          <Col span="12">
+            <FormItem label="备注">
+              <Input
+                :disabled="detailDisabled"
+                v-model="formDataInfo.master.remark"
+                maxlength="100"
+                :autosize="{ minRows: 1, maxRows: 2 }"
+                placeholder="请输入备注..."
+              ></Input>
+            </FormItem>
+          </Col>
+        </Row>
+      </Form>
+
+      <Tabs>
+        <!--  注意:eTable formDataInfo.artLengs.defaultList  ===artLengs=== 需要根据实际接口修改,其它不变-->
+        <TabPane label="纸箱库存调拨明细" name="name1">
+          <eTable
+            ref="tableFields"
+            unqiue-mark="id"
+            :index-menu="true"
+            :col-start="0"
+            :width="200"
+            :height="400"
+            :insertDirection="insertDirection"
+            :row-init-data="initData.initData.stockboxlibmoveitemFm"
+            :data.sync="formDataInfo.moveItems.defaultList"
+            :rules="tableFieldsValidator"
+            :showContextMenu="!detailDisabled"
+            v-if="showWindow"
+          >
+            <template slot="head">
+              <tr
+                v-for="(columnGroup,index) in initData.columns.stockboxlibmoveitemFm.editGroups"
+                :key="index"
+              >
+                <th
+                  class="ivu-table-column-left"
+                  v-for="(column,index2) in columnGroup"
+                  :key="index2"
+                  :width="column.editWidth"
+                  :colspan="column.colSpan"
+                  :rowspan="column.rowSpan"
+                  style="text-align:center;"
+                  :columnKey="column.key"
+                >
+                  <div class="ivu-table-cell">
+                    <span class>{{column.title}}</span>
+                  </div>
+                </th>
+              </tr>
+            </template>
+            <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
+              <td
+                class="ivu-table-column-left"
+                v-for="(column,columnIndex) in initData.columns.stockboxlibmoveitemFm.editColumns"
+                :key="columnIndex"
+                :width="column.editWidth"
+              >
+                <!--调出工单号 -->
+                <Input
+                  v-if="column.key == 'scWorkNo'"
+                  v-model="row[column.key]"
+                  field-name="scWorkNo"
+                  :disabled="detailDisabled||scWorkNoDisable"
+                  @on-blur="onFill(index,'scWorkNo')"
+                  @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'scWorkNo');
+                      }
+                    "
+                  size="small"
+                  :maxlength="20"
+                >
+                  <Icon @click="Slave_list_table_editRowModify(index,'scWorkNo')" slot="suffix" type="md-add" v-show="!detailDisabled"/>
+                </Input>
+                <!--调入工单号 -->
+                <Input
+                  v-else-if="column.key == 'dtWorkNo'"
+                  v-model="row[column.key]"
+                  field-name="dtWorkNo"
+                  :disabled="isDisabled"
+                  @on-blur="onFill(index,'dtWorkNo')"
+                  @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'dtWorkNo');
+                      }
+                    "
+                  size="small"
+                  :maxlength="20"
+                >
+                  <Icon @click="Slave_list_table_editRowModify(index,'dtWorkNo')" slot="suffix" type="md-add" v-show="!isDisabled||!detailDisabled"/>
+                </Input>
+                <!-- 调拨数量 -->
+                <inputNumber
+                  v-else-if="column.key == 'bmiQty'"
+                  v-model="row[column.key]"
+                  field-name="bmiQty"
+                  number
+                  :disabled="detailDisabled"
+                  @on-blur="changeBmiQty(index)"
+                  :min='0'
+                  @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'bmiQty');
+                      }
+                    "
+                  dtWorkNo
+                  size="small"
+                  :maxlength="20"
+                ></inputNumber>
+                <formControl
+                  v-else
+                  :control-type="column.controlType"
+                  v-model="row[column.key]"
+                  :disabled="detailDisabled||column.readOnly"
+                  @input="value => {valueChangeAssign(value, index, row,column.key)}"
+                ></formControl>
+              </td>
+            </template>
+          </eTable>
+        </TabPane>
+      </Tabs>
+    </editWindow>
+    <boxLibMoveSlave
+      ref="mychild"
+      :isLoaddingDone="salveWindow.isLoaddingDone"
+      :formDetailData="salveWindow.formDetailData"
+      :action="salveWindow.action"
+      v-model="salveWindow.showEditWindow"
+      :List="List"
+      :stationId="stationId"
+      :inSupplierId="inSupplierId"
+      :workNoList="workNoList"
+      :isSourceStation = "isSourceStation"
+      :WorkOrderNumber="WorkOrderNumber"
+      @closeMain="closeMain"
+    />
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author ming xing
+ *
+ * @created 2020/04/12 17:07:54
+ */
+import referenceField from '@/components/referenceField/referenceField'
+import popup from '@/components/popup/popup'
+import editWindow from '@/components/edit-window/edit-window'
+import eTable from '@/components/e-table/e-table'
+import request from '@/libs/request'
+import editBaseMixins from '../../mixins/edit'
+import optionSearch from '../../components/optionSearch'
+import dayjs from 'dayjs'
+import Sys from '@/api/sys'
+import formControl from '@/components/form-control/form-control'
+import boxLibMoveSlave from './edit-boxLibMoveSlave'
+import { deepCopy } from 'view-design/src/utils/assist'
+import inputNumber from '@/components/input-number'
+const default_formDataInfo = {
+  // 主表 更改字段
+  master: {
+    bmQty: 0,
+    bmNo: '',
+    bmDate: dayjs().format('YYYY-MM-DD HH:mm:ss'),
+    sourceStationCode: '',
+    destStationCode: '',
+    allocatorCode: '',
+    allocator: '',
+    sourceStationId: '',
+    remark: '',
+    allocatorId: '',
+    destStationName: '',
+    destStationId: '',
+    sourceStationName: ''
+  },
+  // 子表 artLengs 根据实际接口更改,其它不变
+  moveItems: {
+    addList: [], // 添加列
+    defaultList: [], // 默认列
+    deleteList: [], // 删除列
+    updateList: [] // 更新列
+  }
+}
+export default {
+  name: 'edit-boxLibMove',
+  mixins: [editBaseMixins],
+  components: {
+    editWindow,
+    optionSearch,
+    eTable,
+    popup,
+    formControl,
+    referenceField,
+    boxLibMoveSlave,
+    inputNumber
+    // rightMenu
+    // Form,
+  },
+  directives: {
+    focus: {
+      inserted: function (el) {
+        // debugger;
+        el.children[0].focus()
+      }
+    }
+  },
+  data () {
+    return {
+      insertDirection: 'down', // 表单插入方向
+      salveWindow: {
+        // Tips:"提示：此窗口只显示有供应商纸质/纸板进价的工单！",
+        isLoaddingDone: false, // 窗口是否加载完成
+        showEditWindow: false, // 是否显示edit-boxSalesOrderSlave 编辑窗口
+        action: null, // 当前操作功能 添加/编辑
+        formDetailData: {} // 当前表单的详细信息
+      },
+      pliLostTypeList: [], // 报损类型
+      showContextMenu: true,
+      showEditMenu: false,
+      actionSubtitle: '纸箱库存调拨', // 当前操作副标题
+      biLostTypeList: [], // 报损类型
+      formName: 'stockboxlibmoveitemFm',
+      formmasterName: 'stockboxlibmoveFm',
+      requestBaseUrl: '/stock/boxLibMove', // 请求 查询 操作的基础路径
+      formDataInfo: deepCopy(default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {
+        allocatorCode: [
+          {
+            required: true,
+            message: '调拨人不能为空',
+            trigger: 'blur'
+          }
+        ],
+        sourceStationCode: [
+          {
+            required: true,
+            message: '调出仓位不能为空',
+            trigger: 'blur'
+          }
+        ],
+        destStationCode: [
+          {
+            required: true,
+            message: '调入仓位不能为空',
+            trigger: 'blur'
+          }
+        ]
+      },
+      tableFieldsValidator: {
+      },
+      subBoxClickIndex: -1,
+      getbppClassId: 0,
+      whId: 'null', // 传给用料批次号的参数
+      List: 'null', // 传给用料批次号的参数
+      workNoList: '', // 过滤用的字符串传给工单
+      WorkOrderNumber: 'null',
+      index1: 0, // 工单号里面用
+      inSupplierId: null,
+      isSourceStation: true, // 是否位调出
+      isDisabled: false, // 调入工单禁用字段
+      stationId: '',
+      destStationCode: '',
+      scWorkNoDisable: false, // 工单号是否可以修改
+      storeQtyClone: 0 // 调入库存数
+    }
+  },
+  created () {
+
+  },
+  watch: {
+    // 调出
+    'formDataInfo.master.sourceStationCode' (n, o) {
+      this.showTipsModel()
+    },
+    // 调入
+    'formDataInfo.master.destStationCode' (n, o) {
+      this.showTipsModel()
+    }
+  },
+  methods: {
+    // 调拨人 回调事件
+    allocatorCodeOnFillEvent(item){
+      this.$refs['formDataInfo'].validateField('allocatorCode', err => {})
+    },
+    // 判断一个值是数字
+    myIsNaN (value) {
+      return typeof value === 'number' && !isNaN(value)
+    },
+    // 计算调整数量  biQty
+    biInQtyChange () {
+      // debugger
+      let masterstockqty = 0
+      let tableData = this.$refs['tableFields'].get()
+      for (let index = 0; index < tableData.length; index++) {
+        let bmiQty = Number(tableData[index].bmiQty)
+        let scStoreQty = Number(tableData[index].scStoreQty)
+        if (bmiQty > scStoreQty) {
+          tableData[index].bmiQty = 0
+          bmiQty = 0
+          this.$Message.error('调拨数量不能大于调出当时库存数')
+        }
+        masterstockqty += bmiQty
+      }
+      this.formDataInfo.master.bmQty = Number(masterstockqty)
+    },
+      // 获取过滤工单字符串
+    getworkNuList () {
+      let workNoList = ''
+      let _self = this
+      let dataList = this.formDataInfo.moveItems.defaultList
+      dataList.filter((item, index, data) => {
+        if(item.scWorkNo != ''){
+            if(!!!workNoList){
+              workNoList = item.scWorkNo
+            }else{
+              workNoList += ',' + item.scWorkNo
+            }
+        }
+      })
+      return workNoList
+    },
+  
+    // 数据传递
+    transformation (selectedValue, sundata) {
+      // debugger;
+      let transData = JSON.parse(
+        JSON.stringify(this.initData.initData.stockboxlibmoveitemFm)
+      )
+      Object.assign(transData, sundata)
+      if (this.isSourceStation) { // 是否为调出
+        transData.scBatchNo = selectedValue.bpBatchNo // 调出料号
+        transData.artCode = selectedValue.bpCArtCode // 客方纸质
+        transData.bpCArtId = selectedValue.bpCArtId // 客方纸质d
+        transData.bpCBoxId = selectedValue.bpCBoxId // 客方盒式id
+        transData.bpCBoxName = selectedValue.bpCBoxName // 客方盒式
+        transData.bpCSizeH = selectedValue.bpCSizeH
+        transData.bpCSizeL = selectedValue.bpCSizeL
+        transData.bpCSizeW = selectedValue.bpCSizeW
+        transData.scProductName = selectedValue.bpName // 调出产品名称
+        transData.scProductNo = selectedValue.bpNo // 调出产品编号
+        transData.coinId = selectedValue.coinId // 货币id
+        transData.unitPrice = selectedValue.storePrice // 单价
+        transData.scStoreQty = selectedValue.storeQty // 调出当时库存
+        transData.scWorkNo = selectedValue.workNo // 调出工单号
+        transData.bmiQty = transData.scStoreQty // 调拨数
+        if (this.formDataInfo.master.sourceStationId !== this.formDataInfo.master.destStationId) {
+          this.getStoreQty(selectedValue.workNo) // 调入当时库存
+          transData.dtBatchNo = selectedValue.bpBatchNo // 调入料号
+          transData.dtProductName = selectedValue.bpName // 调入产品名称
+          transData.dtProductNo = selectedValue.bpNo // 调入产品编号
+          // transData.dtStoreQty = selectedValue.storeQty     //调入当时库存
+          transData.dtWorkNo = selectedValue.workNo // 调入工单号
+          transData.coinId = selectedValue.coinId // 货币id
+          transData.dtStoreQty = this.storeQtyClone
+        }
+      } else {
+        transData.dtBatchNo = selectedValue.bpBatchNo // 调入料号
+        transData.dtProductName = selectedValue.bpName // 调入产品名称
+        transData.dtProductNo = selectedValue.bpNo // 调入产品编号
+        transData.coinId = selectedValue.coinId // 货币id
+        transData.dtStoreQty = selectedValue.storeQty // 调入当时库存
+        transData.dtWorkNo = selectedValue.workNo // 调入工单号
+      }
+      if (this.formDataInfo.master.sourceStationId !== this.formDataInfo.master.destStationId) {
+        // if(transData.scWorkNo == transData.dtWorkNo){
+        //   this.isDisabled = true
+        // }else{
+        //   this.isDisabled = false
+        // }
+      } else {
+        if (transData.scWorkNo != transData.dtWorkNo) {
+          if (transData.scProductName != '' && transData.dtProductName != '') {
+            if (transData.scProductName != transData.dtProductName) {
+              this.$Message.warning('调出调入产品名称不相同')
+            }
+          }
+        }
+      }
+      return transData
+    },
+    // 工单号唯一校验
+    checkOnlyWorkNo (data) {
+      let sundata = []
+      // this.$refs["tableFields"].get().filter(item=>{
+      //   if(item.scWorkNo===''||item.dtWorkNo===''){
+      //     return
+      //   }
+      //   sundata =  data.filter(dataitem=>{
+      //     debugger
+      //     if (dataitem.workNo+','+dataitem.workNo===item.scWorkNo+','+item.dtWorkNo) {
+      //       this.$Message.error('调出工单号'+dataitem.workNo+'已存在')
+      //       return
+      //     }
+      //     return dataitem
+      //   })
+      // })
+      let flag = true
+      let _self = this
+      sundata = data.filter(dataitem => {
+        flag = true
+        this.$refs['tableFields'].get().filter((item, index) => {
+          if (index !== _self.index1) {
+            if (item.scWorkNo === '' || item.dtWorkNo === '') {
+              return
+            }
+            if (dataitem.workNo + ',' + dataitem.workNo === item.scWorkNo + ',' + item.dtWorkNo) {
+              this.$Message.error('调出工单号' + dataitem.workNo + '已存在')
+              flag = false
+            }
+          }
+        })
+        if (flag) {
+          return dataitem
+        }
+      })
+
+      console.log(sundata)
+      return sundata
+    },
+    // 接受工单号传回来的数据
+    closeMain (selectedValues) {
+      // debugger
+      let pushData = []
+      // let 子表数据 = this.$refs["tableFields"].get()
+      let sundata = this.$refs['tableFields'].get()
+      selectedValues = this.checkOnlyWorkNo(selectedValues)
+      selectedValues.forEach((selectedValue, index) => {
+        let sData = sundata[index]
+        let transData = this.transformation(selectedValue, sData)
+        pushData.push(transData)
+      })
+      let index2 = this.index1
+      for (let a = 0; a < pushData.length; a++) {
+        this.$refs['tableFields'].set(pushData[a], index2)
+        index2++
+      }
+      this.biInQtyChange(this.index1)
+    },
+    // 工单号失去焦点带出参数事件
+    onFill (index, keyWord) {
+      let pushData = []
+      // debugger;
+      // 获取供应商编号
+      let sourceStationCode = this.formDataInfo.master.sourceStationCode
+      // 获取纸质
+      let artCode = this.formDataInfo.moveItems.defaultList[index].artCode
+      // 获取工单号
+      let scWorkNo = this.formDataInfo.moveItems.defaultList[index].scWorkNo
+      // 获取工单号
+      let dtWorkNo = this.formDataInfo.moveItems.defaultList[index].dtWorkNo
+      // 获取批次号
+      let boxUseBatchOn = this.formDataInfo.moveItems.defaultList[index]
+        .boxUseBatchOn
+      // 获取当前子表数据
+      // let two = this.formDataInfo.moveItems.defaultList[index];
+      // 明细表数据
+      let tabData = this.$refs['tableFields'].cloneData
+      // 获取子表初始化时的数据
+      let defulit = this.initData.initData.stockboxlibmoveitemFm
+      if (this.formDataInfo.master.allocatorCode == '') {
+        this.$Message.error('调拨人不能为空')
+        return
+      }
+      if (this.formDataInfo.master.sourceStationCode == '') {
+        this.$Message.error('调出仓位不能为空')
+        return
+      }
+      if (this.formDataInfo.master.destStationCode == '') {
+        this.$Message.error('调入仓位不能为空')
+        return
+      }
+      if (keyWord === 'scWorkNo') {
+        if (scWorkNo == '') return
+        this.isSourceStation = true // 是否位调出
+        request
+          .post(`/stock/boxLibMove/getMoveItemBoxData`, {
+            stationId: this.formDataInfo.master.sourceStationId,
+            bpNo: '', // 调出产品编号
+            // workNoList,
+            workNo: scWorkNo,
+            productNo: ''
+            // inSupplierId: this.formDataInfo.master.allocatorId
+          })
+          .then(res => {
+            // debugger;
+            let data = res[0]
+            if (data === [] || data === undefined) {
+              this.$Message.error('工单号错误')
+              // $set(要修改的对象,索引,属性的值是啥)
+              this.$set(
+                this.formDataInfo.moveItems.defaultList,
+                index,
+                this.initData.initData.stockboxlibmoveitemFm
+              )
+              return
+            }
+            // 获取子表数据
+            let sundata = this.$refs['tableFields'].get()
+            res.forEach((selectedValue) => {
+              let transData = this.transformation(selectedValue, sundata[index])
+              pushData.push(transData)
+            })
+            this.$refs['tableFields'].set(pushData, index)
+          })
+      } else if (keyWord === 'dtWorkNo') { // 调入
+        if (dtWorkNo == '') return
+        this.isSourceStation = false // 是否位调出
+        request
+          .post(`/stock/boxLibMove/getMoveItemBoxData`, {
+            stationId: this.formDataInfo.master.destStationId,
+            bpNo: '', // 调出产品编号
+            workNo: dtWorkNo,
+            productNo: '',
+            type: 1
+          })
+          .then(res => {
+            // debugger;
+            let data = res[0]
+            if (data === [] || data === undefined) {
+              this.$Message.error('工单号错误')
+              // $set(要修改的对象,索引,属性的值是啥)
+              this.$set(
+                this.formDataInfo.moveItems.defaultList,
+                index,
+                this.initData.initData.stockboxlibmoveitemFm
+              )
+              return
+            }
+            // 获取子表数据
+            let sundata = this.$refs['tableFields'].get()
+            res.forEach((selectedValue, index) => {
+              let transData = this.transformation(selectedValue, sundata[index])
+              pushData.push(transData)
+            })
+            this.$refs['tableFields'].set(pushData, index)
+          })
+      }
+    },
+    // 工单号点击事件
+    Slave_list_table_editRowModify (index, keyWord) {
+      // 工单号不可点击
+      let workNoList = this.getworkNuList()
+      let tabData = this.$refs['tableFields'].cloneData
+      if (this.formDataInfo.master.allocatorCode == '') {
+        this.$Message.error('调拨人不能为空')
+        return
+      }
+      if (this.formDataInfo.master.sourceStationCode == '') {
+        this.$Message.error('调出仓位不能为空')
+        return
+      }
+      if (this.formDataInfo.master.destStationCode == '') {
+        this.$Message.error('调入仓位不能为空')
+        return
+      }
+      // scWorkNo 调出工单号
+      if (keyWord === 'scWorkNo') {
+        this.isSourceStation = true // 是否位调出
+        this.inSupplierId = this.formDataInfo.master.allocatorId
+        this.salveWindow.showEditWindow = true
+        this.index1 = index
+        let ppuer = this.salveWindow.showEditWindow
+        this.salveWindow.action = 'add'
+        this.salveWindow.isLoaddingDone = true
+        let scProductNo = ''
+        // 获得调入的产品号
+        let productNo = ''
+        this.workNoList = workNoList
+        if (tabData[index].dtProductNo !== '') {
+          productNo = tabData[index].dtProductNo
+        }
+        this.stationId = this.formDataInfo.master.sourceStationId,
+        request
+          .post(`/stock/boxLibMove/getMoveItemBoxData`, {// sourceStationId调出仓位
+            stationId: this.formDataInfo.master.sourceStationId,
+            bpNo: scProductNo, // 调出产品编号
+            workNoList,
+            workNo: '',
+            productNo: productNo,
+            pageNum:this.pageConfig.pageNum,//(当前页),
+            pageSize:this.pageConfig.pageSize,//(每页显示条数)
+          })
+          .then(res => {
+            this.WorkOrderNumber1 = res
+            this.$refs.mychild.getFormInitDataObj(res)
+          })
+      } else if (keyWord === 'dtWorkNo') { // dtWorkNo 调入工单号
+        this.isSourceStation = false // 是否位调出
+        this.inSupplierId = this.formDataInfo.master.allocatorId
+        this.salveWindow.showEditWindow = true
+        this.index1 = index
+        let ppuer = this.salveWindow.showEditWindow
+        this.salveWindow.action = 'add'
+        this.salveWindow.isLoaddingDone = true
+        let dtProductNo = ''
+        this.workNoList = workNoList
+        // 获得调出的产品号
+        let productNo = ''
+        if (tabData[index].dtProductNo !== '') {
+          productNo = tabData[index].scProductNo
+        }
+        this.stationId = this.formDataInfo.master.destStationId,
+        request
+          .post(`/stock/boxLibMove/getMoveItemBoxData`, {
+            stationId: this.formDataInfo.master.destStationId, // 调入仓位id
+            bpNo: dtProductNo, // 调入产品编号
+            workNoList,
+            workNo: '',
+            productNo: productNo,
+            type: 1
+            // inSupplierId: this.formDataInfo.master.allocatorId
+          })
+          .then(res => {
+            // debugger
+            this.WorkOrderNumber1 = res
+            // console.log(res)
+            this.$refs.mychild.getFormInitDataObj(res)
+          })
+      }
+      // else {
+      //   this.salveWindow.showEditWindow = false;
+      //   this.$Message.error("调拨人不能为空");
+      // }
+    },
+
+    // 判断数据是新增还是修改
+    formDetailDataCall () {
+      // if (this.action != "add") {
+      //   //debugger;
+      //   this.getworkerId = this.formDataInfo.master.allocatorId;
+      //   this.id = this.formDataInfo.master.id;
+      //   this.scWorkNoDisable = true
+      // }
+    },
+    // 当主表弹框改变时促发初始化子表数据
+    showTipsModel (data) {
+      // 提示框
+      if (!!this.formDataInfo.master.destStationId && !!this.formDataInfo.master.sourceStationId) {
+        if (this.formDataInfo.master.sourceStationId !== this.formDataInfo.master.destStationId) {
+          this.isDisabled = true
+          this.$Message.info('亲，调入调出仓位不一样！属于仓位调拨！因此明细中调入、调出的工单、产品编号是一致的！')
+        } else {
+          this.isDisabled = false
+          this.$Message.info('亲，调入调出仓位一样！属于工单调拨！因此明细中调入、调出的工单、产品编号可以不一致！')
+        }
+      }
+    },
+    // 重写父类 关闭窗口时 触发事件
+    closeActionTigger () {
+      // debugger;
+      // fix 清除上次的错误提示 formDataInfo 为表单ref名称
+      if (this.$refs['formDataInfo']) this.$refs['formDataInfo'].resetFields()
+      this.$refs['tableFields'].reset()
+      this.formDataInfo.moveItems.defaultList = this.initData.initData.stockboxlibmoveitemFm
+      this.formDataInfo = deepCopy(default_formDataInfo)
+    },
+    // 主表弹框判空
+    clickValuedate () {
+      // debugger;
+      if (
+        !this.formDataInfo.master.workCode ||
+        this.formDataInfo.master.workCode == ''
+      ) {
+        this.$Message.error('报损人不能为空')
+        return false
+      }
+      return true
+    },
+    // 重写父类,添加时候,清空数据
+    // HandleFormDataInfo() {
+    //   //debugger
+    //   this.formDataInfo = Object.assign({}, default_formDataInfo);
+    //   if(this.action == "add"){
+    //     this.scWorkNoDisable = false
+    //   }
+    // },
+    // 重写父类,修改提交数据
+    resetformDataInfo () {
+      // debugger;
+      let _data = this.formDataInfo
+      let tableData = this.$refs['tableFields'].getCategorizeData()
+      this.formDataInfo.moveItems = tableData
+      if (_data.master.bmDate) {
+        _data.master.bmDate = dayjs(_data.master.bmDate).format(
+          'YYYY-MM-DD HH:mm:ss'
+        )
+      }
+      return this.formDataInfo
+    },
+    getStoreQty (workNo) {
+      // debugger
+      let _self = this
+      request
+        .post(`/stock/boxLibMove/getMoveItemBoxData`, {
+          stationId: this.formDataInfo.master.destStationId, // 调入仓位id
+          // bpNo:dtProductNo,  //调入产品编号
+          // workNoList,
+          workNo: workNo,
+          // productNo:productNo,
+          type: 1
+          // inSupplierId: this.formDataInfo.master.allocatorId
+        })
+        .then(res => {
+          // debugger
+          if (res.length == 1) {
+            _self.storeQtyClone = res[0].storeQty
+          }
+          // this.$refs.mychild.getFormInitDataObj(res);
+        })
+    },
+    changeBmiQty (index) {
+      let masterstockqty = 0
+      let tableData = this.$refs['tableFields'].get()
+      let bmiQtyClone = tableData[index].bmiQty
+      let isNumber = this.myIsNaN(Number(bmiQtyClone))
+      for (let index = 0; index < tableData.length; index++) {
+        let bmiQty = Number(tableData[index].bmiQty)
+        let scStoreQty = Number(tableData[index].scStoreQty)
+        if (bmiQty > scStoreQty) {
+          tableData[index].bmiQty = 0
+          bmiQty = 0
+          this.$Message.error('调拨数不能大于调出的当时库存数')
+        }
+        masterstockqty += bmiQty
+      }
+      this.formDataInfo.master.bmQty = Number(masterstockqty)
+    }
+
+  }
+}
+</script>
+
+<style>
+/* .cl-edit-boxLibMove .ivu-form-item {
+  margin-bottom: 5px !important;
+} */
+.cl-edit-boxLibMove .ivu-select-item {
+  display: block;
+}
+/* .cl-edit-boxLibMove .ivu-input-type-text{
+  width: 200px
+}*/
+.cl-edit-boxLibMove .right-text {
+  width: 160%;
+}
+</style>

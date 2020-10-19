@@ -1,0 +1,332 @@
+<template>
+  <div>
+    <editWindow
+     :draggable="false"
+      :zindex="30"
+      id="cl-edit-salesOrder"
+      title="用料库存盘点弹框"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="90%"
+      :loading="!isLoaddingDone"
+      :spinLoaddingText="spinLoaddingText"
+      @on-ok="submitFormDataEvent"
+      v-if="initData.columns"
+      ref="editWindow"
+      :showPageConfig="true"
+      @pageOnChange="pageOnChange"
+    >
+      <div v-if="formDataInfo.master">
+        <Form
+          ref="formDataInfo"
+          :show-message="true"
+          :model="formDataInfo.master"
+          :rules="ruleValidate"
+          :label-width="124"
+        >
+          <div class="edit-purPaperPoSlave">
+            <Row>
+              <Col span="9">
+                <FormItem :label="title" prop="inBiWorkNo">
+                  <Input
+                    v-model="formDataInfo.master.inBiWorkNo"
+                    maxlength="20"
+                    :placeholder="title"
+                  ></Input>
+                </FormItem>
+              </Col>
+              <Col span="9">
+                <FormItem label>
+                  <RadioGroup v-model="formDataInfo.master.likeFlag">
+                    <Radio label="0">模糊</Radio>
+                    <Radio label="1">精准</Radio>
+                  </RadioGroup>
+                </FormItem>
+              </Col>
+              <Col span="1">
+                <FormItem label>
+                  <Button type="primary" @click="clickmaster('search')">搜索</Button>
+                </FormItem>
+              </Col>
+            </Row>
+          </div>
+        </Form>
+
+        <Tabs>
+          <!--  注意:eTable formDataInfo.wareHouseItems.defaultList  ===wareHouseItems=== 需要根据实际接口修改,其它不变-->
+          <TabPane>
+            <eTable
+              ref="slave_edit-boxUseAdjust"
+              :height="400"
+              unqiue-mark="id"
+              :index-menu="true"
+              :col-start="0"
+              :width="200"
+              :row-init-data="initData.initData.paperWorkInStoreDtoFm"
+              :data.sync="productMDatasTableDataList"
+              :rules="tableFieldsValidator"
+              :showContextMenu="false"
+            >
+              <template slot="head">
+                <tr
+                  v-for="(columnGroup,index) in initData.columns.paperWorkInStoreDtoFm.editGroups"
+                  :key="index"
+                >
+                  <th
+                    class="ivu-table-column-left"
+                    v-for="(column,index2) in columnGroup"
+                    :key="index2"
+                    :width="column.width"
+                    :colspan="column.colSpan"
+                    :rowspan="column.rowSpan"
+                    style="text-align:center;"
+                  >
+                    <!-- workNo     工单 mateWorkNo 用料单号  boxUseBatchOn 批次 -->
+                    <div
+                      v-if="column.key == 'boxUseBatchOn'"
+                      @click="purPaperPoClick('用料批次号','boxUseBatchOn')"
+                      class="ivu-table-cell"
+                      style="cursor:pointer"
+                    >
+                      <span class>用料批次号</span>
+                    </div>
+                    <div
+                      v-else-if="column.key == 'mateWorkNo'"
+                      @click="purPaperPoClick('用料单号','mateWorkNo')"
+                      class="ivu-table-cell"
+                      style="cursor:pointer"
+                    >
+                      <span class>用料单号</span>
+                    </div>
+                    <div v-else-if="column.key == 'workNo'" class="ivu-table-cell" style="cursor:pointer">
+                      <span class @click="purPaperPoClick('工单号','workNo')">工单号</span>
+                    </div>
+                    <div v-else class="ivu-table-cell">
+                      <span class>{{column.title}}</span>
+                    </div>
+                  </th>
+                </tr>
+              </template>
+              <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
+                <td
+                  class="ivu-table-column-left"
+                  v-for="(column,columnIndex) in initData.columns.paperWorkInStoreDtoFm.editColumns"
+                  :key="columnIndex"
+                  :width="column.width"
+                >
+                  <formControl
+                    :control-type="column.controlType"
+                    v-model="row[column.key]"
+                    :disabled="column.readOnly"
+                    @input="value => {valueChangeAssign(value, index, row,column.key)}"
+                  ></formControl>
+                </td>
+              </template>
+            </eTable>
+          </TabPane>
+        </Tabs>
+      </div>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:07:54
+ */
+import tableSelect from "@/components/table-select/table-select";
+import editWindow from "@/components/edit-window/edit-window";
+// import Form from '@/components/form/form'
+import eTable from "@/components/e-table/e-table";
+import request from "@/libs/request";
+import popup from "@/components/popup/popup";
+import editBaseMixins from "../../mixins/edit";
+import InputNumber from "@/components/input-number";
+import formControl from "@/components/form-control/form-control";
+import { customValidator } from "@/libs/validator";
+import calc from "@/libs/calc";
+import list from "../../mixins/list";
+import dayjs from "dayjs";
+export default {
+  name: "edit-purPaperPoSlave",
+  mixins: [editBaseMixins],
+  components: {
+    editWindow,
+    popup,
+    tableSelect,
+    eTable,
+    InputNumber,
+    formControl
+  },
+
+  created() {
+    //debugger
+    // console.log(this.List)
+  },
+  props: {
+    whId: {
+      type: String,
+      default: "0"
+    },
+    inBatchOnList: {
+      type: String,
+      defaule: ""
+    }
+  },
+  data() {
+    return {
+      productSpecShow: false,
+      formDataInfo: {
+        // 主表 更改字段
+        master: {},
+        productMDatas: {
+          boxUseBatchOn: "", //批次号
+          mateWorkNo: "", //用料号单
+          workNo: "", //工单号
+          bpName: "", //产品名称
+          stationLinkId: "", //仓位id
+          stationLinkName: "", //仓位名称
+          paiOrderQty: "", //工单数
+          paiStoreQty: "", //库存数
+          artId: "", //纸质id
+          artCode: "", //纸质
+          lbCode: "", //楞别
+          sizeLeng: "", //纸长
+          sizeWidth: "" //纸宽
+        }
+        // List:thsi.list
+      }, // 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {},
+      tableFieldsValidator: {},
+      WorkOrderNumber: {
+        boxUseBatchOn: "", //批次号
+        mateWorkNo: "", //用料号单
+        workNo: "", //工单号
+        bpName: "", //产品名称
+        stationLinkId: "", //仓位id
+        stationLinkName: "", //仓位名称
+        paiOrderQty: "", //工单数
+        paiStoreQty: "", //库存数
+        artId: "", //纸质id
+        artCode: "", //纸质
+        lbCode: "", //楞别
+        sizeLeng: "", //纸长
+        sizeWidth: "" //纸宽
+      },
+      title: "工单号",
+      formName: "paperWorkInStoreDtoFm",
+      propvalue: "workNo", //存储子表每个对应的字段
+      productMDatasTableDataList: [], //存放处理过后的数据:[],
+      table: [], //存储子表全部对应的字段
+    };
+  },
+  computed: {},
+  methods: {
+     pageOnChange(_pageNum){
+      this.pageConfig.pageNum = _pageNum
+      this.clickmaster()
+    },
+    purPaperPoClick(name, value) {
+      // debugger
+      this.formDataInfo.master.inBiWorkNo = ''
+      this.title = name;
+      this.propvalue = value;
+    },
+    //获取主表搜索内容
+    getmasterValur(data){
+      if (this.propvalue === data) {
+        return this.formDataInfo.master.inBiWorkNo
+      }
+      return ''
+    },
+    //搜索点击事件
+    clickmaster(type) {
+      if(this.pageConfig.pageNum==1 || type=='search'){
+          this.resetPageConfig()
+          this.productMDatasTableDataList = []
+      }
+      let ddata = this.formDataInfo;
+      let params = {
+        // flag:this.formDataInfo.master.flag,
+        inWorkNo: this.getmasterValur('workNo'),//工单号
+        inMateWorkNo: this.getmasterValur('mateWorkNo'),//用料单号
+        inBatchOn: this.getmasterValur('boxUseBatchOn'),//批次号
+        flag:this.formDataInfo.master.likeFlag,
+        whId:this.whId,
+        inBatchOnList:this.inBatchOnList,
+        pageNum:this.pageConfig.pageNum,//(当前页),
+        pageSize:this.pageConfig.pageSize,//(每页显示条数)
+      };
+      request.post(`/stock/boxUseAdjust/getWorkInStore`, params).then(res => {
+       // this.$refs["slave_edit-boxUseAdjust"].cloneData = res;
+        if (res && res.records && res.records.length>0) {
+          this.productMDatasTableDataList.push(...res.records)
+         }
+         this.pageConfig.total = res.total // 赋值总条数
+         this.$refs['editWindow'].pageConfig= this.pageConfig
+      });
+    },
+
+    //加载表单初始化数据
+    getFormInitDataObj(data) {
+      //加载表单初始化数据
+      this.formDataInfo["master"] = {
+        inBiWorkNo: "",
+        likeFlag: "0"
+      };
+       this.productMDatasTableDataList = []
+       if(data && data.records){
+        this.productMDatasTableDataList = data.records
+        this.pageConfig.total = data.total // 赋值总条数
+        this.$refs['editWindow'].pageConfig= this.pageConfig
+      }
+     // this.$refs["slave_edit-boxUseAdjust"].cloneData = data;
+    },
+   // 重写父类 关闭窗口时 触发事件
+    closeActionTigger () {
+      this.resetPageConfig()
+      this.productMDatasTableDataList = []
+    },
+    //表单数据提交事件
+    submitFormDataEvent() {
+      //  debugger;
+      //表单数据提交事件
+      // true就是有问题
+      let result = this.$refs["slave_edit-boxUseAdjust"].validate();
+      if (result) {
+        return;
+      }
+      let parms = [];
+      let submitDataObj = this.$refs["slave_edit-boxUseAdjust"].cloneData;
+      for (let index = 0; index < submitDataObj.length; index++) {
+        let Choice = this.$refs["slave_edit-boxUseAdjust"].cloneData[index]
+          .iisChose;
+        if (Choice === true) {
+          parms.push(submitDataObj[index]);
+        }
+      }
+      //提交数据
+      // 向外暴露的方法:
+      this.$emit("closeMain", parms);
+      this.showWindow = false; // 关闭当前窗口
+      // });
+    }
+  }
+};
+</script>
+<style >
+.ivu-form-item-text2 .ivu-form-item-content {
+  margin-left: 2.8125rem !important;
+}
+</style>
