@@ -1,0 +1,1294 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-purPaperPo"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="97%"
+      :loading="!isLoaddingDone"
+      :spinLoaddingText="spinLoaddingText"
+      @on-ok="formTableDataSubmit()"
+      :disabledSubmitBtn="disabledSubmitBtn"
+      v-if="initData.columns"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-message="true"
+        :model="formDataInfo.master"
+        :rules="ruleValidate"
+        :label-width="100"
+      >
+        <Row>
+          <Col span="24">
+            <Row>
+              <Col span="12">
+                <FormItem label="供应商编号" prop="supplierCode">
+                  <popup
+                    ref="firstFocusInput"
+                    :disabled="detailDisabled || action !== 'add'"
+                    @on-fill="Initializationdata"
+                    v-model="formDataInfo.master.supplierCode"
+                    field-name="supplierCode"
+                    popup-name="SupplierSingleBox"
+                    :fill-model.sync="formDataInfo.master"
+                    render-fields="supplierId,supplierCode,supplierName,coinId,coinName,unitId,unitText,priceAreaMode"
+                    from-fields="id,purCode,purName,coinId,coinName,unitId,unitText,priceAreaMode"
+                    :suffix="true"
+                    :suffix-model="formDataInfo.master.supplierName"
+                    suffixModelName="supplierName"
+                    :query-params="{}"
+                  />
+                </FormItem>
+              </Col>
+              <Col span="12">
+                <Row>
+                  <Col span="12">
+                    <FormItem label="采购日期" prop="ppoDate">
+                      <DatePicker
+                        :disabled="detailDisabled"
+                        type="date"
+                        format="yyyy-MM-dd"
+                        :editable="false"
+                        :clearable="false"
+                        v-model="formDataInfo.master.ppoDate"
+                      ></DatePicker>
+                    </FormItem>
+                  </Col>
+                  <Col span="12">
+                    <FormItem label="采购单号" prop="ppoNo">
+                      <Input
+                        v-model="formDataInfo.master.ppoNo"
+                        maxlength="20"
+                        placeholder
+                        disabled
+                      ></Input>
+                    </FormItem>
+                  </Col>
+                </Row>
+              </Col>
+            </Row>
+          </Col>
+
+          <Col span="12">
+            <Row>
+              <Col span="12">
+                <FormItem label="采购数量" prop="ppoStockQty">
+                  <Input
+                    v-model="formDataInfo.master.ppoStockQty"
+                    maxlength="20"
+                    placeholder
+                    disabled
+                  ></Input>
+                </FormItem>
+              </Col>
+
+              <Col span="12">
+                <FormItem label="采购金额" prop="ppoMoney" width="100%">
+                  <Input
+                    v-model="formDataInfo.master.ppoMoney"
+                    maxlength="20"
+                    disabled
+                  ></Input>
+                </FormItem>
+              </Col>
+            </Row>
+          </Col>
+
+          <Col span="12">
+            <Row>
+              <Col span="12">
+                <FormItem label="货币" prop="coinName">
+                  <Input
+                    v-model="formDataInfo.master.coinName"
+                    maxlength="20"
+                    disabled
+                  ></Input>
+                </FormItem>
+              </Col>
+
+              <Col span="12">
+                <FormItem label="计量单位" prop="unitText" width="100%">
+                  <Input
+                    v-model="formDataInfo.master.unitText"
+                    maxlength="20"
+                    disabled
+                  ></Input>
+                </FormItem>
+              </Col>
+            </Row>
+          </Col>
+          <Col span="24">
+            <FormItem label="备注">
+              <Input
+                v-model="formDataInfo.master.remark"
+                :disabled="detailDisabled"
+                maxlength="100"
+                :autosize="{ minRows: 2, maxRows: 5 }"
+                placeholder="请输入备注..."
+              ></Input>
+            </FormItem>
+          </Col>
+        </Row>
+      </Form>
+
+      <Tabs>
+        <!--  注意:eTable formDataInfo.artLengs.defaultList  ===artLengs=== 需要根据实际接口修改,其它不变-->
+        <TabPane label="纸板采购明细" name="name1">
+          <eTable
+            ref="tableFields"
+            unqiue-mark="id"
+            :index-menu="true"
+            :col-start="0"
+            :width="200"
+            :height="350"
+            :insertDirection="insertDirection"
+            :row-init-data="initData.initData.purPaperPoItemFm"
+            :data.sync="formDataInfo.purPaperPoItemSlaves.defaultList"
+            :rules="tableFieldsValidator"
+            :showContextMenu="!detailDisabled"
+            @row-delete="tableFieldsDelete"
+            @row-click="tableFieldsRowClick"
+            v-if="showWindow"
+          >
+            <!-- tableInitData?tableInitData -->
+            <template slot="head">
+              <tr
+                v-for="(columnGroup, index) in initData.columns.purPaperPoItemFm
+                  .editGroups"
+                :key="index"
+              >
+                <th
+                  :class="`ivu-table-column-${column.titleAlign}`"
+                  v-for="(column, index2) in columnGroup"
+                  :key="index2"
+                  :width="column.editWidth"
+                  :colspan="column.colSpan"
+                  :rowspan="column.rowSpan"
+                  :columnKey="column.key"
+                >
+                  <div class="ivu-table-cell">
+                    <span class>{{ column.title }}</span>
+                  </div>
+                </th>
+              </tr>
+            </template>
+
+            <template
+              slot="body"
+              slot-scope="{ row, index, valueChangeAssign }"
+            >
+              <td
+                :class="`ivu-table-column-${column.align}`"
+                v-for="(column, columnIndex) in initData.columns
+                  .purPaperPoItemFm.editColumns"
+                :key="columnIndex"
+                :width="column.editWidth"
+              >
+                <!-- 控件特殊处理 无单采购 -->
+                <Checkbox
+                  @on-change="onChangePpoNoOrder"
+                  v-if="column.key == 'ppoNoOrder'"
+                  :disabled="detailDisabled || row.ppoInQty > 0 || row.iisClose"
+                  size="default"
+                  v-model="row[column.key]"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'ppoNoOrder');
+                    }
+                  "
+                ></Checkbox>
+                <!--控件特殊处理 完结  -->
+                <Checkbox
+                  v-else-if="column.key == 'iisClose'"
+                  size="default"
+                  :disabled="detailDisabled || action != 'update'"
+                  v-model="row[column.key]"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'iisClose');
+                    }
+                  "
+                ></Checkbox>
+                <!--控件特殊处理 工单号  -->
+                <Input
+                  v-else-if="column.key == 'workNo'"
+                  v-model="row[column.key]"
+                  disabled
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'workNo');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+                <!--控件特殊处理 楞别  -->
+                <Input
+                  v-else-if="column.key == 'ppoLb'"
+                  v-model="row[column.key]"
+                  :disabled="
+                    detailDisabled ||
+                      !row.ppoNoOrder ||
+                      row.ppoInQty > 0 ||
+                      row.iisClose
+                  "
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'ppoLb');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+                <!--控件特殊处理 纸长  -->
+                <inputNumber
+                  @on-change="onChangeInput"
+                  v-else-if="column.key == 'ppoSizeL'"
+                  v-model="row[column.key]"
+                  :disabled="
+                    detailDisabled ||
+                      !row.ppoNoOrder ||
+                      row.ppoInQty > 0 ||
+                      row.iisClose
+                  "
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'ppoSizeL');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></inputNumber>
+                <!--控件特殊处理 纸宽  -->
+                <inputNumber
+                  @on-change="onChangeInput"
+                  v-else-if="column.key == 'ppoSizeW'"
+                  v-model="row[column.key]"
+                  number
+                  :disabled="
+                    detailDisabled ||
+                      !row.ppoNoOrder ||
+                      row.ppoInQty > 0 ||
+                      row.iisClose
+                  "
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'ppoSizeW');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></inputNumber>
+                <!--控件特殊处理 压线  -->
+                <Input
+                  v-else-if="column.key == 'ppoSizeLine'"
+                  v-model="row[column.key]"
+                  :disabled="
+                    detailDisabled ||
+                      !row.ppoNoOrder ||
+                      row.ppoInQty > 0 ||
+                      row.iisClose
+                  "
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'ppoSizeLine');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+                <!--控件特殊处理 压线类型  -->
+                <Select
+                  @on-change="
+                    value => {
+                      valueChangeAssign(value, index, row, column.key);
+                    }
+                  "
+                  :disabled="
+                    detailDisabled ||
+                      !row.ppoNoOrder ||
+                      row.ppoInQty > 0 ||
+                      row.iisClose
+                  "
+                  v-else-if="column.key == 'ppoScoreType'"
+                  v-model="row[column.key]"
+                  transfer
+                >
+                  <Option
+                    v-for="(item, index) in ppoScoreTypeList"
+                    :key="index"
+                    :value="item.dicValue + ''"
+                    >{{ item.dicLabel }}</Option
+                  >
+                </Select>
+                <!--控件特殊处理 压线深度  -->
+                <Select
+                  @on-change="
+                    value => {
+                      valueChangeAssign(value, index, 'ppoScoreDepth');
+                    }
+                  "
+                  :disabled="
+                    detailDisabled ||
+                      !row.ppoNoOrder ||
+                      row.ppoInQty > 0 ||
+                      row.iisClose
+                  "
+                  v-model="row[column.key]"
+                  v-else-if="column.key == 'ppoScoreDepth'"
+                  transfer
+                >
+                  <Option
+                    v-for="(item, index) in ppoScoreDepthList"
+                    :key="index"
+                    :value="item.dicValue + ''"
+                    >{{ item.dicLabel }}</Option
+                  >
+                </Select>
+                <!--控件特殊处理 用料单号  -->
+                <Input
+                  v-else-if="column.key == 'mateWorkNo'"
+                  v-model="row[column.key]"
+                  :disabled="row.ppoNoOrder || !!row.id || row.ppoInQty > 0"
+                  @on-blur="onFill(index)"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'mateWorkNo');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                >
+                  <Icon
+                    @click="Slave_list_table_editRowModify(index)"
+                    slot="suffix"
+                    type="md-add"
+                    v-show="!(!!detailDisabled || !!row.id)"
+                  />
+                </Input>
+                <!-- 控件特殊处理 送货日期 -->
+                <DatePicker
+                  v-else-if="column.key == 'ppoDueDate'"
+                  :disabled="detailDisabled || row.ppoInQty > 0 || row.iisClose"
+                  v-model="row[column.key]"
+                  :clearable="false"
+                  :editable="false"
+                  type="date"
+                  format="yyyy-MM-dd"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'ppoDueDate');
+                    }
+                  "
+                ></DatePicker>
+                <!-- 控件特殊处理 本厂纸质 -->
+                <popup
+                  @on-fill="getbiWeight(index)"
+                  v-else-if="column.key == 'ppoArtCode'"
+                  v-model="row[column.key]"
+                  :popupClickValidator="clickValuedate"
+                  field-name="ppoArtCode"
+                  :disabled="
+                    detailDisabled ||
+                      !row.ppoNoOrder ||
+                      row.ppoInQty > 0 ||
+                      row.iisClose
+                  "
+                  popup-name="PurSupplierArtItemSingleBox"
+                  :fill-model.sync="
+                    formDataInfo.purPaperPoItemSlaves.defaultList
+                  "
+                  render-fields="supplierArtId,supplierArtName,ppoCorpartId,ppoArtCode,ppoLb,baseWt"
+                  from-fields="supplierArtId,supplierArtName,artId,artCode,lbCode,baseWt"
+                  :index="index"
+                  :init-data="initData.initData.purPaperPoItemFm"
+                  :excludeParams="{
+                    artCodeLeng$ne: row.ppoArtCode + row.ppoLb
+                  }"
+                  :query-params="{ supplierId: formDataInfo.master.supplierId }"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'ppoArtCode');
+                    }
+                  "
+                >
+                </popup>
+                <!-- 控件特殊处理 供应商纸质 -->
+                <popup
+                  @on-fill="getbiWeight(index)"
+                  v-else-if="column.key == 'supplierArtName'"
+                  v-model="row[column.key]"
+                  :popupClickValidator="clickValuedate"
+                  field-name="supplierArtName"
+                  :disabled="
+                    detailDisabled ||
+                      !row.ppoNoOrder ||
+                      row.ppoInQty > 0 ||
+                      row.iisClose
+                  "
+                  popup-name="PurSupplierArtItemSingleBox"
+                  :fill-model.sync="
+                    formDataInfo.purPaperPoItemSlaves.defaultList
+                  "
+                  render-fields="supplierArtId,supplierArtName,ppoCorpartId,ppoArtCode,ppoLb,baseWt"
+                  from-fields="supplierArtId,supplierArtName,artId,artCode,lbCode,baseWt"
+                  :index="index"
+                  :init-data="initData.initData.purPaperPoItemFm"
+                  :excludeParams="{
+                    artCodeLeng$ne: row.ppoArtCode + row.ppoLb
+                  }"
+                  :query-params="{ supplierId: formDataInfo.master.supplierId }"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'supplierArtName');
+                    }
+                  "
+                ></popup>
+                <!-- 控件特殊处理 采购数量 -->
+                <inputNumber
+                  @on-change="onChangeInput"
+                  v-else-if="column.key == 'ppoStockQty'"
+                  v-model="row[column.key]"
+                  :disabled="detailDisabled || row.ppoInQty > 0 || row.iisClose"
+                  @on-blur="getppoStockQty(index)"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'ppoStockQty');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></inputNumber>
+                <!-- 控件特殊处理 单价 -->
+                <Input
+                  @on-change="onChangeInput('ppoPrice')"
+                  v-else-if="column.key == 'ppoPrice'"
+                  v-model="row[column.key]"
+                  :disabled="detailDisabled || row.ppoInQty > 0 || row.iisClose || (formDataInfo.master.priceAreaMode && !!!row['ppoNoOrder'])"
+                  number
+                  @input="
+                    value => {
+                      valueChangeAssign(
+                        value,
+                        index,
+                        row,
+                        'ppoPrice',
+                        'number'
+                      );
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+                <!-- 控件特殊处理 报价 -->
+                <inputNumber
+                 @on-change="onChangeInput"
+                  v-else-if="column.key == 'ppoArtPrice'"
+                  v-model="row[column.key]"
+                  :disabled="
+                    detailDisabled ||
+                      !row.ppoNoOrder ||
+                      row.ppoInQty > 0 ||
+                      row.iisClose
+                  "
+                  @on-blur="getppoStockQty(index)"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'ppoArtPrice');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></inputNumber>
+                <!-- 控件特殊处理 金额 -->
+                <Input
+                  v-else-if="column.key == 'ppoMoney'"
+                  v-model="row[column.key]"
+                  @on-blur="getmasterppoMoney"
+                  disabled
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'ppoMoney');
+                    }
+                  "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+                <!-- 控件特殊处理 备品数 -->
+                <inputNumber
+                  v-else-if="column.key == 'ppoPrepQty'"
+                  v-model="row[column.key]"
+                  :disabled="detailDisabled || !!row.id"
+                  :mim="0"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'ppoPrepQty');
+                    }
+                  "
+                  size="small"
+                  :maxlength="11"
+                ></inputNumber>
+                <!-- 控件特殊处理 完结日期 -->
+                <DatePicker
+                  v-else-if="column.key == 'breakupDate'"
+                  v-model="row[column.key]"
+                  disabled
+                  placement="left-start"
+                  type="date"
+                  format="yyyy-MM-dd"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, 'breakupDate');
+                    }
+                  "
+                ></DatePicker>
+                <!-- 不可以编辑字段: 单面积	面积	单重	重量	入库数量	退货数	完结人 -->
+                <formControl
+                  v-else-if="
+                    column.key == 'ppoSarea' ||
+                      column.key == 'ppoArea' ||
+                      column.key == 'bpSWeight' ||
+                      column.key == 'biWeight' ||
+                      column.key == 'ppoInQty' ||
+                      column.key == 'ppoRqty' ||
+                      column.key == 'breakupMan'
+                  "
+                  :control-type="column.controlType"
+                  v-model="row[column.key]"
+                  :disabled="true"
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, column.key);
+                    }
+                  "
+                ></formControl>
+                <!-- 其它 -->
+                <formControl
+                  v-else
+                  :control-type="column.controlType"
+                  v-model="row[column.key]"
+                  :disabled="
+                    detailDisabled ||
+                      !row.ppoNoOrder ||
+                      row.ppoInQty > 0 ||
+                      row.iisClose
+                  "
+                  @input="
+                    value => {
+                      valueChangeAssign(value, index, row, column.key);
+                    }
+                  "
+                ></formControl>
+              </td>
+            </template>
+          </eTable>
+        </TabPane>
+        <p slot="extra" style="color:red">
+          友情提示:此窗口只显示有供应商纸质 / 纸板进价的工单!
+        </p>
+      </Tabs>
+    </editWindow>
+    <purPaperPoSlave
+      ref="mychild"
+      :isLoaddingDone="salveWindow.isLoaddingDone"
+      :formDetailData="salveWindow.formDetailData"
+      :action="salveWindow.action"
+      v-model="salveWindow.showEditWindow"
+      :List="List"
+      :mateWorkNoList="mateWorkNoList"
+      :WorkOrderNumber="WorkOrderNumber"
+      @closeMain="closeMain"
+    />
+    <!-- :isCalAreaPricePur="isCalAreaPricePur" -->
+    <!-- <preferential v-model="showpreferential" @preferential-ok="preferentialOk"></preferential> -->
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-purPaperPo 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @update 2020-09-16
+ */
+import preferential from "@/components/preferential/preferential";
+import popup from "@/components/popup/popup";
+import editWindow from "@/components/edit-window/edit-window";
+import eTable from "@/components/e-table/e-table";
+import request from "@/libs/request";
+import editBaseMixins from "../../mixins/edit";
+import optionSearch from "../../components/optionSearch";
+import formControl from "@/components/form-control/form-control";
+import dayjs from "dayjs";
+import Sys from "@/api/sys";
+import purPaperPoSlave from "./edit-purPaperPoSlave";
+import { deepCopy } from "view-design/src/utils/assist";
+const default_formDataInfo = {
+  // 主表 更改字段
+  master: {
+    ppoMoney: 0,
+    ppoNo: "",
+    ppoStockQty: 0,
+    ppoDate: dayjs().format("YYYY-MM-DD"),
+    supplierCode: "",
+    supplierId: "",
+    supplierName: "",
+    remark: ""
+  },
+  // 子表 artLengs 根据实际接口更改,其它不变
+  purPaperPoItemSlaves: {
+    addList: [], // 添加列
+    defaultList: [], // 默认列
+    deleteList: [], // 删除列
+    updateList: [] // 更新列
+  }
+};
+export default {
+  name: "edit-purPaperPo",
+  mixins: [editBaseMixins],
+  components: {
+    editWindow,
+    optionSearch,
+    preferential,
+    eTable,
+    popup,
+    purPaperPoSlave,
+    formControl
+    // Form,
+  },
+  data() {
+    return {
+      currentRowIndex: 0, // 当前选择行
+      disabledSubmitBtn: false,
+      formDataInfo: deepCopy(default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      insertDirection: "down",
+      salveWindow: {
+        // Tips:"提示：此窗口只显示有供应商纸质/纸板进价的工单！",
+        isLoaddingDone: false, // 窗口是否加载完成
+        showEditWindow: false, // 是否显示edit-boxSalesOrderSlave 编辑窗口
+        action: null, // 当前操作功能 添加/编辑
+        formDetailData: {} // 当前表单的详细信息
+      },
+      ppoScoreTypeList: [], // 获取压线类型
+      ppoScoreDepthList: [], // 获取压线深度
+      actionSubtitle: "纸板采购", // 当前操作副标题
+      formName: "purPaperPoItemFm",
+      requestBaseUrl: "/purchase/purPaperPo", // 请求 查询 操作的基础路径
+      ctDot: 2, // 单价小数位
+      amtDot: 2, // 金额小数位
+      itemInitData: {},
+      // 主表需要验证的数据
+      ruleValidate: {
+        supplierCode: [
+          { required: true, message: "供应商编号不能为空", trigger: "blur" }
+        ]
+      },
+      // 子表表需要验证的数据
+      tableFieldsValidator: {
+        supplierArtId: [
+          { required: true, message: "供应商纸质不能为空", trigger: "blur" }
+        ],
+        ppoPrice: [
+          {
+            required: true,
+            message: "单价不能为空",
+            trigger: "blur",
+            type: "number"
+          }
+        ],
+        ppoSizeW: [
+          {
+            required: true,
+            message: "纸宽不能为空",
+            trigger: "blur",
+            type: "number"
+          }
+        ]
+      },
+      cliclleng: null,
+      getsupplierId: 0,
+      List: "null",
+      WorkOrderNumber: "null",
+      // getppoNoOrder: [false],
+      index1: 0, // 工单号里面用
+      // index2:0,//无单采购里面用
+      mateWorkNoList: "", // 工单号过滤字段
+      ppoSizeL: 0,
+      ppoSizeW: 0
+    };
+  },
+  watch: {},
+  created() {
+    this.getppoScoreTypeList(), this.getppoScoreDepthList();
+  },
+  methods: {
+    // 输入控件发生改变触发,多控件 共用事件
+    onChangeInput(val) {
+     // debugger
+      let currentSelectedItem = this.formDataInfo.purPaperPoItemSlaves.defaultList[this.currentRowIndex]
+      if(currentSelectedItem && !!currentSelectedItem.ppoNoOrder){
+         let _self = this;
+         if(val !='ppoPrice'){
+           this.$refs["tableFields"].set({ppoPrice:0}, this.currentRowIndex);
+         }
+          clearTimeout(this.changeTimer);
+          this.changeTimer = setTimeout(() => {
+            _self.calcMoneyAreaWeight();
+          }, 1000);
+      }else{
+         debugger
+        // 无单采购 不勾选的情况下
+        //priceAreaMode:  纸板金额计算模式
+        let _ppoMoney = 0
+        // 单价 = 报价 * 单面积
+        let _ppoPrice = currentSelectedItem.ppoArtPrice *  currentSelectedItem.ppoSarea 
+            _ppoPrice = this.formatAmountByType(_ppoPrice,this.ctDot)
+        if(this.formDataInfo.master.priceAreaMode){
+            if(val !='ppoPrice'){
+                //1: 纸板 金额 =  采购数量* 报价 * 单面积,
+           _ppoMoney =currentSelectedItem.ppoStockQty * currentSelectedItem.ppoArtPrice *  currentSelectedItem.ppoSarea
+            }else{
+              _ppoMoney =currentSelectedItem.ppoStockQty * currentSelectedItem.ppoPrice
+          }
+        
+           _ppoMoney = this.formatAmountByType(_ppoMoney,this.amtDot)
+        }else{
+          if(val !='ppoPrice'){
+               //0:纸板 金额 = 采购数量 * 单价 (区别在于 先四舍五入)
+          _ppoMoney = currentSelectedItem.ppoStockQty * _ppoPrice
+          }else{
+              _ppoMoney =currentSelectedItem.ppoStockQty * currentSelectedItem.ppoPrice
+          }
+        
+          _ppoMoney = this.formatAmountByType(_ppoMoney,this.amtDot) 
+
+        }
+         this.$refs["tableFields"].set(
+            {
+              ppoMoney: _ppoMoney, // 金额
+              ppoPrice:this.formatAmountByType(_ppoPrice,this.ctDot) // 单价
+            },
+            this.currentRowIndex
+          );
+          this.getppoMoney();
+      }
+    },
+    // 无单采购勾选事件触发
+    onChangePpoNoOrder(_ischeck) {
+      if (_ischeck) {
+        this.calcMoneyAreaWeight();
+      }else{
+        this.onChangeInput()
+      }
+    },
+    // 计算金额，面积，重量等信息
+    calcMoneyAreaWeight() {
+      let currentRowItem = this.formDataInfo.purPaperPoItemSlaves.defaultList[
+        this.currentRowIndex
+      ];
+      let canAccess = false;
+      if (
+        //!!!currentRowItem.workNo &&
+        currentRowItem.ppoNoOrder &&
+        ((!!currentRowItem.ppoSizeW &&
+          !!currentRowItem.ppoSizeL &&
+          Number(currentRowItem.ppoSizeW) > 0 &&
+          Number(currentRowItem.ppoSizeL) > 0) ||
+          (
+            // !!currentRowItem.ppoQty &&
+            // Number(currentRowItem.ppoQty) > 0 &&
+            !!currentRowItem.ppoPrice &&
+            Number(currentRowItem.ppoPrice) > 0))
+      ) {
+        canAccess = true;
+      }
+      if (!canAccess) {
+        return;
+      }
+      let formDataList = this.formDataInfo.purPaperPoItemSlaves.defaultList[
+        this.currentRowIndex
+      ];
+      let ppoCorpartId = !!!formDataList.ppoCorpartId
+        ? null
+        : formDataList.ppoCorpartId; //纸质id
+      let supplierArtId = !!!formDataList.supplierArtId
+        ? null
+        : formDataList.supplierArtId; //供应商纸质id
+      let baseWt = !!!formDataList.baseWt ? 0 : Number(formDataList.baseWt); //基重
+      let _url = `/purchase/purPaperPo/spCalcPaperPo`;
+      let params = {
+        supplierId: this.formDataInfo.master.supplierId, //(供应商id),
+        ppoDate: !!this.formDataInfo.master.ppoDate
+          ? dayjs(this.formDataInfo.master.ppoDate).format("YYYY-MM-DD")
+          : null, //(采购日期),
+        ppoStockQty:
+          this.formDataInfo.master.ppoStockQty == ""
+            ? 0
+            : Number(this.formDataInfo.master.ppoStockQty), //(采购数量),
+        ppoCorpartId, //(纸质id),
+        supplierArtId, //(供应商纸质id),
+        ppoLb: formDataList.ppoLb, //(楞别),
+        ppoSizeW:Number(formDataList.ppoSizeW), //(纸宽),
+        ppoSizeL: Number(formDataList.ppoSizeL), //(纸长)
+        ppoArtPrice:Number(formDataList.ppoArtPrice), //(报价),
+        ppoPrice: Number(formDataList.ppoPrice), //(单价),
+        baseWt, //(基重),
+        ppoNoOrder: formDataList.ppoNoOrder //(无单采购)
+      };
+      request.post(_url, params).then(res => {
+        //  debugger
+        if (res && Object.keys(res).length > 0) {
+          this.$refs["tableFields"].set(
+            {
+              biWeight: this.formatAmountByType(res.biWeight), // 总量
+              ppoArea: this.formatAmountByType(res.ppoArea),// 面积
+              ppoArtPrice:res.ppoArtPrice,// 报价
+              ppoMoney: this.formatAmountByType(res.ppoMoney,this.amtDot),// 金额
+
+              ppoPrice: this.formatAmountByType(res.ppoPrice,this.ctDot),// 单价
+              ppoSarea:this.formatAmountByType(res.ppoSarea,6), // 单面积
+              bpSWeight:this.formatAmountByType(res.bpSWeight,6), // 单重,
+            },
+            this.currentRowIndex
+          );
+          this.getppoMoney();
+        }
+      });
+    },
+    // 当前选择行
+    tableFieldsRowClick(index) {
+      this.currentRowIndex = index;
+    },
+    // table删除回调事件
+    tableFieldsDelete(a, b, c) {
+      this.getmasterppoStockQty();
+      this.getmasterppoMoney();
+    },
+    // 计算重量
+    getbiWeight(index) {
+      // debugger
+      let tableData = this.$refs["tableFields"].get();
+      // 单重
+      let bpSWeight = Number(tableData[index].bpSWeight);
+      // 采购数
+      let ppoStockQty = Number(tableData[index].ppoStockQty);
+      // 总重
+      let biWeight = this.formatAmountByType(bpSWeight * ppoStockQty);
+      this.$refs["tableFields"].set({biWeight:biWeight}, index)
+    },
+    // 获取压线类型
+    getppoScoreTypeList() {
+      request
+        .get("/common/sys/dic/childList/ppoScoreType", {}, { qt: "pValue" })
+        .then(res => {
+          res.forEach(item => {
+            item.dicValue = parseInt(item.dicValue);
+          });
+          this.ppoScoreTypeList = res;
+          // console.log(this.ppoScoreTypeList)
+        });
+    },
+    // 获取压线深度
+    getppoScoreDepthList() {
+      request
+        .get("/common/sys/dic/childList/ppoScoreDepth", {}, { qt: "pValue" })
+        .then(res => {
+          res.forEach(item => {
+            item.dicValue = parseInt(item.dicValue);
+          });
+          this.ppoScoreDepthList = res;
+          // console.log(res)
+        });
+    },
+    // 数据转换
+    transformation(selectedValue, index) {
+      let transData = JSON.parse(
+        JSON.stringify(this.initData.initData.purPaperPoItemFm)
+      );
+      transData.ppoDueDate = selectedValue.bmDeDate; // 送货日期
+      transData.baseWt = selectedValue.baseWt; // 基重
+      transData.mateWorkNo = selectedValue.ppoGroupNo; // 用料工单号
+      transData.iisClose = selectedValue.iisClose; // 完结
+      transData.ppoLb = selectedValue.artLb; // 楞别
+      transData.ppoArtCode = selectedValue.artCode; // 本厂纸质
+      transData.ppoCorpartId = selectedValue.ppoCorpartId; // 本厂纸质id
+      transData.supplierArtId = selectedValue.ppoArtId; // 供应商纸质id
+      transData.supplierArtName = selectedValue.ppoArtName; // 供应商纸质名称
+      transData.ppoStockQty = selectedValue.bmStockQty; // 采购数量
+      transData.ppoQty = selectedValue.bmNeedQty; // 需购数量
+      transData.ppoStockQty = selectedValue.bmNeedQty; // 采购数量
+      transData.workNo = selectedValue.biWorkNo; // 工单号
+      transData.custCode = selectedValue.custCode; // 客户编号
+      transData.custName = selectedValue.custName; // 客户名称
+      transData.ppoSizeL = selectedValue.bmSizeL; // 净料纸长
+      transData.ppoSizeW = selectedValue.bmSizeW; // 净料纸宽
+      transData.ppoSizeLine = selectedValue.bmScoreStr; // 压线
+      transData.ppoScoreType = JSON.stringify(
+        this.ppoScoreTypeList[selectedValue.bmScoreType].dicValue
+      ); // 压线类型
+      transData.ppoScoreDepth = JSON.stringify(
+        this.ppoScoreTypeList[selectedValue.bmScoreDepth].dicValue
+      ); // 压线深度
+      transData.prodNo = selectedValue.biProdNo; // 产品编号
+      transData.ppoPartName = selectedValue.biProdName; // 产品名称
+      transData.ppoPartNumer = selectedValue.biBatchNo; // 料号
+      transData.ppoArtPrice = selectedValue.popoArtPrice; // 报价,默认不格式化
+      transData.ppoPrice = this.formatAmountByType(selectedValue.popoArtPrice,this.ctDot); // 单价 = 报价
+       if(!!!this.formDataInfo.master.priceAreaMode){
+         // 单价 = 单面积* 报价
+         transData.ppoPrice = this.formatAmountByType(selectedValue.ppoSarea * selectedValue.popoArtPrice,this.ctDot)
+       }
+      transData.ppoMoney = this.formatAmountByType(selectedValue.ppoMoney,this.amtDot); // 金额
+      // transData.ppoPrepQty = selectedValue.ppoPrepQty // 备品数
+      transData.ppoRqty = selectedValue.ppoRqty; // 退货数
+      transData.remark = selectedValue.remark; // 备注
+      transData.ppoSarea = this.formatAmountByType(selectedValue.ppoSarea,6); // 单面积
+      transData.bpSWeight = this.formatAmountByType(selectedValue.bpSWeight,6); // 单重
+      return transData;
+    },
+    // 接受用料单号传回来的数据
+    closeMain(selectedValues) {
+      let pushData = [];
+      // 获取子表数据
+      let sundata = this.$refs["tableFields"].get();
+      selectedValues.forEach(selectedValue => {
+        let transData = this.transformation(selectedValue);
+        pushData.push(transData);
+      });
+      let hiddensundata = {};
+      let index2 = this.index1;
+      for (let a = 0; a < pushData.length; a++) {
+        this.$refs["tableFields"].set(pushData[a], index2);
+        this.getppoStockQty(index2);
+        index2++;
+      }
+    },
+    // 用料单号失去焦点带出参数事件
+    onFill(index) {
+      if (this.getDisabled()) {
+        return;
+      }
+      let pushData = [];
+      // 获取供应商id
+      let suplierid = this.formDataInfo.master.supplierId;
+      // 获取用料单号
+      let mateWorkNo = this.formDataInfo.purPaperPoItemSlaves.defaultList[index]
+        .mateWorkNo;
+      // 获取子表初始化时的数据
+      let defulit = this.initData.initData.purPaperPoItemFm;
+      if (!suplierid) {
+        this.$Message.error("供应商不能为空");
+        return;
+      }
+      let mateWorkNoList = this.getmateWorkNoList(index);
+      if (mateWorkNo) {
+        request
+          .post(`/purchase/purPaperPo/spPaperMegerStockOrder1`, {
+            workNo: mateWorkNo,
+            vendId: suplierid,
+            flag: 1,
+            mateWorkNoList
+          })
+          .then(ref => {
+            if (!!!ref.workData[0]) {
+              this.$Message.error("用料单号错误或用料单号已存在");
+              // $set(要修改的对象,索引,属性的值是啥)
+              this.$set(
+                this.formDataInfo.purPaperPoItemSlaves.defaultList,
+                index,
+                JSON.parse(JSON.stringify(defulit))
+              );
+              return;
+            }
+            ref.workData.forEach(selectedValue => {
+              let transData = this.transformation(selectedValue, index);
+              pushData.push(transData);
+            });
+            this.$refs["tableFields"].set(pushData, index);
+            this.getppoStockQty(index); // 获取采购数量总数
+            // this.$forceUpdate() 强制渲染
+          });
+      }
+    },
+    getmateWorkNoList(index) {
+      let mateWorkNoList = "";
+      let fromData = this.$refs["tableFields"].get();
+      fromData.filter((item, itemindex) => {
+        if (!!item.mateWorkNo && itemindex !== index) {
+          mateWorkNoList += item.mateWorkNo + ",";
+        }
+        return mateWorkNoList;
+      });
+      return mateWorkNoList.substr(0, mateWorkNoList.length - 1);
+    },
+    getDisabled() {
+      let desabled = false;
+      this.$refs["tableFields"].get().filter(item => {
+        if (item.ppoInQty > 0 || !!item.iisClose) {
+          desabled = true;
+        }
+      });
+      return desabled;
+    },
+    // 用料单号点击事件
+    Slave_list_table_editRowModify(index) {
+      if (this.getDisabled()) {
+        return;
+      }
+      let mateWorkNoList = this.getmateWorkNoList(-1);
+      if (
+        !this.formDataInfo.purPaperPoItemSlaves.defaultList[index].ppoNoOrder
+      ) {
+        this.salveWindow.showEditWindow = true;
+        this.index1 = index;
+        if (this.formDataInfo.master.supplierId) {
+          this.List = this.formDataInfo.master.supplierId;
+          let ppuer = this.salveWindow.showEditWindow;
+          this.salveWindow.isLoaddingDone = true;
+          this.salveWindow.action = "add";
+          this.mateWorkNoList = mateWorkNoList;
+          request
+            .post(`/purchase/purPaperPo/spPaperMegerStockOrder1`, {
+              vendId: this.formDataInfo.master.supplierId,
+              mateWorkNoList
+            })
+            .then(res => {
+              this.WorkOrderNumber1 = res;
+              // console.log(res)
+              this.$refs.mychild.getFormInitDataObj(res);
+            });
+        } else {
+          this.salveWindow.showEditWindow = false;
+          this.$Message.error("供应商不能为空");
+        }
+      } else {
+        this.salveWindow.showEditWindow = false;
+      }
+    },
+    // 判断数据是新增还是修改
+    formDetailDataCall() {
+      if (this.action != "add") {
+        this.amtDot = this.formDataInfo.master.amtDot;
+        this.ctDot = this.formDataInfo.master.ctDot;
+        this.getsupplierId = this.formDataInfo.master.supplierId;
+        for (
+          let index = 0;
+          index < this.$refs["tableFields"].cloneData.length;
+          index++
+        ) {
+          // this.ppoNoOrderclick(index);
+        }
+      }
+    },
+    // 当主表供应商弹框改变时促发初始化子表数据
+    Initializationdata(data) {
+      this.$refs["formDataInfo"].validateField("supplierCode", err => {});
+      this.ctDot = data[0].orignData.ctDot;
+      this.amtDot = data[0].orignData.amtDot;
+      if (!this.getsupplierId) {
+        this.getsupplierId = this.formDataInfo.master.supplierId;
+        // return;
+      }
+      let tableData = this.$refs["tableFields"].getCategorizeData();
+      if (this.formDataInfo.master.supplierId) {
+        if (this.formDataInfo.master.supplierId != this.getsupplierId) {
+          this.formDataInfo.purPaperPoItemSlaves.defaultList = [
+            { ppoDueDate: dayjs().format("YYYY-MM-DD") }
+          ];
+          tableData.deleteList = tableData.updateList;
+        }
+        this.getsupplierId = this.formDataInfo.master.supplierId;
+      }
+      this.checkMasterId(); //主表供应商报价校验
+    },
+    // 主表供应商报价校验
+    checkMasterId() {
+      if (this.$params.isCalAreaPricePur == "1") {
+        request
+          .post("/purchase/purPaperPo/notPriceOrIiaudit", {
+            supplierId: this.formDataInfo.master.supplierId
+          })
+          .then(res => {
+            if (res.message) {
+              this.$set(this.formDataInfo.master, "supplierCode", "");
+              this.$set(this.formDataInfo.master, "supplierName", "");
+              this.$set(this.formDataInfo.master, "supplierId", "");
+              this.$Message.error(res.message);
+            }
+          });
+      }
+    },
+    // 计算主表金额
+    getmasterppoMoney() {
+      this.formDataInfo.master.ppoMoney = 0;
+     // let tableData = this.$refs["tableFields"].get();
+      let tableData = this.formDataInfo.purPaperPoItemSlaves.defaultList
+      let sumMoney = 0
+      for (let i = 0; i < tableData.length; i++) {
+        sumMoney += Number(tableData[i].ppoMoney);
+      }
+      this.formDataInfo.master.ppoMoney = sumMoney
+    },
+    // 获取子表金额  ppoMoney金额 采购数*单价
+    getppoMoney(index) {
+      // let masterppoMoney = 0;
+      // let tableData = this.$refs["tableFields"].get();
+      // if (this.amtDot !== null) {
+      //   masterppoMoney =
+      //     Number(tableData[index].ppoStockQty) *
+      //     Number(tableData[index].ppoPrice);
+      // }
+      // this.$refs["tableFields"].set({ ppoMoney: masterppoMoney }, index);
+      this.$nextTick(()=>{
+        this.getmasterppoMoney();
+      })  
+    },
+    // 计算主表采购数量
+    getmasterppoStockQty(index) {
+      let tableData = this.$refs["tableFields"].get();
+      let masterstockqty = 0;
+      for (let i = 0; i < tableData.length; i++) {
+        let stockqty = Number(tableData[i].ppoStockQty);
+        if (tableData[i].ppoStockQty) {
+          masterstockqty += stockqty;
+        }
+      }
+      this.formDataInfo.master.ppoStockQty = masterstockqty;
+    },
+    // 获取子表采购数量总数  ppoStockQty采购数量
+    getppoStockQty(index) {
+       //debugger;
+      let tableData = this.$refs["tableFields"].get();
+      // 获取当前列表 需购数量
+      let ppoQty = Number(tableData[index].ppoQty);
+      // 获取当前列表采购数量
+      let StockQty1 = Number(tableData[index].ppoStockQty);
+      // 获取系统参数
+      let StockQtyUpLimit = Number(this.$params.StockQtyUpLimit);
+      // 无单采购时，不需要警告
+      if (!tableData[index].ppoNoOrder) {
+        if (StockQty1 > ppoQty * (StockQtyUpLimit / 100)) {
+          this.$Message.error("采购数量不能大于需购数量百分比");
+          tableData[index].ppoStockQty = JSON.parse(JSON.stringify(0));
+          // return
+        }
+      }
+      this.getmasterppoStockQty(); // 主表采购数量
+      // 获取当前列表 单价
+      //let price = tableData[index].ppoPrice;
+      let ppoArtPrice = tableData[index].ppoArtPrice;
+      let ppoStockQty = tableData[index].ppoStockQty;
+      // 获取当前列表 单面积
+      let ppoSarea = tableData[index].ppoSarea;
+      // 获取当前列表 面积 =   单面积 * 采购数量
+      let ppoArea = this.formatAmountByType(Number(ppoSarea * StockQty1));
+      // 获取当前列表 金额 = 单价* 面积// 
+     // let ppoMoney =this.formatAmountByType( Number(price * ppoArea),this.amtDot);
+      //NEW 金额 = 报价 * 采购数量* 单面积
+     // _ppoMoney = currentSelectedItem.ppoArtPrice * currentSelectedItem.ppoStockQty * currentSelectedItem.ppoSarea
+     // let ppoMoney =this.formatAmountByType( Number(ppoArtPrice * ppoStockQty * ppoSarea),this.amtDot);
+      this.$refs["tableFields"].set({ppoArea:ppoArea }, index)
+      this.getppoMoney(index); // 子表金额 => 主表金额
+      this.getbiWeight(index);
+    },
+    // 判断主表供应商弹框不能为空
+    clickValuedate() {
+      // debugger;
+      if (
+        !this.formDataInfo.master.supplierCode ||
+        this.formDataInfo.master.supplierCode == ""
+      ) {
+        this.$Message.error("供应商编号不能为空");
+        return false;
+      }
+      return true;
+    },
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo() {
+      //  debugger
+      this.formDataInfo = deepCopy(default_formDataInfo);
+    },
+    // 重写父类,修改提交数据
+    resetformDataInfo(_data) {
+      let tableData = this.$refs["tableFields"].getCategorizeData();
+      // 主表时间处理
+      this.formDataInfo.master.ppoDate = dayjs(_data.master.ppoDate).format(
+        "YYYY-MM-DD HH:mm:ss"
+      );
+      // 从表时间处理
+      this.formDataInfo.purPaperPoItemSlaves = tableData;
+      if (!!tableData.addList.length) {
+        _data.purPaperPoItemSlaves.addList.filter(item => {
+          if (!!item.ppoDueDate) {
+            item.ppoDueDate = dayjs(item.ppoDueDate).format(
+              "YYYY-MM-DD HH:mm:ss"
+            );
+          }
+          if (!!item.breakupDate) {
+            item.breakupDate = dayjs(item.breakupDate).format(
+              "YYYY-MM-DD HH:mm:ss"
+            );
+          }
+        });
+      }
+      if (!!tableData.updateList.length) {
+        _data.purPaperPoItemSlaves.updateList.filter(item => {
+          if (!!item.ppoDueDate) {
+            item.ppoDueDate = dayjs(item.ppoDueDate).format(
+              "YYYY-MM-DD HH:mm:ss"
+            );
+          }
+          if (!!item.breakupDate) {
+            item.breakupDate = dayjs(item.breakupDate).format(
+              "YYYY-MM-DD HH:mm:ss"
+            );
+          }
+        });
+      }
+      return this.formDataInfo;
+    },
+    // 打开窗口触发
+    openActionTigger() {
+      this.disabledSubmitBtn = false;
+      let _self = this;
+      if (this.action != "add" && !!this.subfromData.length) {
+        this.subfromData.filter(item => {
+          if (!!item.iisClose) {
+            _self.disabledSubmitBtn = true;
+          }
+        });
+      }
+    }
+  },
+  props: {
+    subfromData: {
+      type: Array,
+      default: []
+    }
+  }
+};
+</script>
+
+<style>
+/* .cl-edit-purPaperPo .ivu-form-item {
+  margin-bottom: 5px !important;
+} */
+.cl-edit-purPaperPo .ivu-select-item {
+  display: block;
+}
+.cl-edit-purPaperPo .right-text {
+  width: 800px;
+}
+.cl-edit-purPaperPo .ivu-tabs-nav-right {
+  margin-top: 10px;
+  color: red;
+}
+</style>

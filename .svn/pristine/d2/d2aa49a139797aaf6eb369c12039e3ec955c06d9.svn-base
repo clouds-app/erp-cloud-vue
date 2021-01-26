@@ -1,0 +1,200 @@
+const path = require('path')
+//const CompressionWebpackPlugin = require('compression-webpack-plugin')
+const resolve = dir => {
+  return path.join(__dirname, dir)
+}
+
+// 项目部署基础
+// 默认情况下，我们假设你的应用将被部署在域的根目录下,
+// 例如：https://www.my-app.com/
+// 默认：'/'
+// 如果您的应用程序部署在子路径中，则需要在这指定子路径
+// 例如：https://www.foobar.com/my-app/
+// 需要将它改为'/my-app/'
+const BASE_URL = process.env.NODE_ENV === 'production' ? '/' : '/'
+const devServerPort = 9527
+const mockServerPort = 9528
+const productionGzipExtensions = ['js', 'css']
+module.exports = {
+  // 去掉文件名中的 hash
+  filenameHashing: false,
+  // Project deployment base
+  // By default we assume your app will be deployed at the root of a domain,
+  // e.g. https://www.my-app.com/
+  // If your app is deployed at a sub-path, you will need to specify that
+  // sub-path here. For example, if your app is deployed at
+  // https://www.foobar.com/my-app/
+  // then change this to '/my-app/'
+  baseUrl: BASE_URL,
+  // tweak internal webpack configuration.
+  // see https://github.com/vuejs/vue-cli/blob/dev/docs/webpack.md
+  // 如果你不需要使用eslint，把lintOnSave设为false即可
+  lintOnSave: false,
+  chainWebpack: config => {
+    config.resolve.alias
+      .set('@', resolve('src')) // key,value自行定义，比如.set('@@', resolve('src/components'))
+      .set('_c', resolve('src/components'))
+  },
+  // 打包时不生成.map文件
+  productionSourceMap: false,
+  // configureWebpack:config=>{
+  //   if (process.env.NODE_ENV === 'production') {
+  //        return{
+  //         plugins: [
+  //           // dllPlugin关联配置 //使用前 必须 执行 npm run dll 
+  //           // new webpack.DllReferencePlugin({
+  //           //     // 跟dll.config里面DllPlugin的context一致
+  //           //     context: process.cwd(), 
+  //           //     // dll过程生成的manifest文件
+  //           //     manifest: require('./public/vendor/vendor-manifest.json')
+  //           //    // manifest: require(path.join(process.cwd(), "dll", "vendor-manifest.json"))
+  //           // }),
+  //           //用来缩小（压缩优化）js文件，至少需要Node v6.9.0和Webpack v4.0.0版本。
+  //         //   new UglifyJsPlugin({
+  //         //     uglifyOptions: {
+  //         //         compress: {
+  //         //             //warnings: false,
+  //         //             drop_debugger: true,
+  //         //             drop_console: true,
+  //         //         },
+  //         //     },
+  //         //     cache: true,
+  //         //     sourceMap: false,
+  //         //     parallel: true,
+  //         // }),
+  //            // 如果这个值是一个对象，则会通过 webpack-merge 合并到最终的配置中
+  //           // 如果你需要基于环境有条件地配置行为，或者想要直接修改配置，那就换成一个函数 (该函数会在环境变量被设置之后懒执行)。
+  //           //该方法的第一个参数会收到已经解析好的配置。在函数内，你可以直接修改配置，或者返回一个将会被合并的对象
+  //             new CompressionWebpackPlugin({
+  //                   algorithm: 'gzip',//默认值
+  //                   //test:/\.js$|\.html$|.\css/, //匹配文件名
+  //                   test: new RegExp('\\.(' + productionGzipExtensions.join('|') + ')$'),//匹配文件名
+  //                   threshold: 10240,//对超过10k的数据压缩
+  //                   deleteOriginalAssets: false //不删除源文件
+  //                   //配置参数详解
+  //                   // asset： 目标资源名称。 [file] 会被替换成原始资源。[path] 会被替换成原始资源的路径， [query] 会被替换成查询字符串。默认值是 "[path].gz[query]"。
+  //                   // algorithm： 可以是 function(buf, callback) 或者字符串。对于字符串来说依照 zlib 的算法(或者 zopfli 的算法)。默认值是 "gzip"。
+  //                   // test： 所有匹配该正则的资源都会被处理。默认值是全部资源。
+  //                   // threshold： 只有大小大于该值的资源会被处理。单位是 bytes。默认值是 0。
+  //                   // minRatio： 只有压缩率小于这个值的资源才会被处理。默认值是 0.8。
+  //               })
+  //         ],
+  
+  //       }
+  //   }
+  // },
+  // 这里写你调用接口的基础路径，来解决跨域，如果设置了代理，那你本地开发环境的axios的baseUrl要写为 '' ，即空字符串
+  devServer: {
+    // before: app => {}
+    // https: true,
+    // hotOnly: false,
+    // host: 'localhost',
+    // port: 8080,//固定端口
+    open: true, // 自动开启浏览器
+    compress: false, // 开启压缩
+    overlay: {
+      warnings: true,
+      errors: true
+    },
+    proxy: {
+
+      '/report': {
+        target: 'http://192.168.0.5:8080', // 对应自己的接口
+        changeOrigin: true, // 是否跨域
+        ws: true,
+        pathRewrite: {
+          '^/': ''
+        }
+      },
+      '/account': {
+        target: 'http://192.168.0.5:8080', // 对应自己的接口
+        changeOrigin: true, // 是否跨域
+        ws: true,
+        pathRewrite: {
+          '^/': ''
+        }
+      },
+      '/mrp': {
+        target: 'http://192.168.0.5:8080', // 对应自己的接口
+        changeOrigin: true, // 是否跨域
+        ws: true,
+        pathRewrite: {
+          '^/': ''
+        }
+      },
+      '/stock': {
+        target: 'http://192.168.0.5:8080', // 对应自己的接口
+        changeOrigin: true, // 是否跨域
+        ws: true,
+        pathRewrite: {
+          '^/': ''
+        }
+      },
+      '/purchase': {
+        target: 'http://192.168.0.5:8080', // 对应自己的接口
+        changeOrigin: true, // 是否跨域
+        ws: true,
+        pathRewrite: {
+          '^/': ''
+        }
+      },
+      '/sale': {
+        target: 'http://192.168.0.5:8080', // 对应自己的接口
+        changeOrigin: true, // 是否跨域
+        ws: true,
+        pathRewrite: {
+          '^/': ''
+        }
+      },
+      '/sys': {
+        target: 'http://192.168.0.5:8080', // 对应自己的接口
+        changeOrigin: true, // 是否跨域
+        ws: true,
+        pathRewrite: {
+          '^/': ''
+        }
+      },
+      '/bas': {
+        target: 'http://192.168.0.5:8080', // 对应自己的接口 http://192.168.168.224:8081/
+        changeOrigin: true, // 是否跨域
+        ws: true,
+        pathRewrite: {
+          '^/': ''
+        }
+      },
+      '/setplatform': {
+        target: 'http://192.168.0.5:8080', // 对应自己的接口 http://192.168.168.224:8081/
+        changeOrigin: true, // 是否跨域
+        ws: true,
+        pathRewrite: {
+          '^/': ''
+        }
+      },
+      '/common': {
+        target: 'http://192.168.0.5:8080', // 对应自己的接口
+        changeOrigin: true, // 是否跨域
+        ws: true,
+        pathRewrite: {
+          '^/': ''
+        }
+      },
+      '/file': {
+        target: 'http://192.168.0.5:8080', // 对应自己的接口
+        changeOrigin: true, // 是否跨域
+        ws: true,
+        pathRewrite: {
+          '^/': ''
+        }
+      },
+      '/api': {
+        target: 'http://120.79.197.136/', // 对应自己的接口
+        changeOrigin: true, // 是否跨域
+        ws: true,
+        pathRewrite: {
+          '^/': ''
+        }
+      }
+    }
+  }
+
+}

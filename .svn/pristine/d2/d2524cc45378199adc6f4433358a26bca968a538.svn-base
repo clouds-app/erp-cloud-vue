@@ -1,0 +1,352 @@
+<template>
+  <div class="reportContent">
+    <div class="reportItem">
+      <div class="contentHeightBox xiaoshou">
+        <div class="acdountItem">
+          <div class="moduleDataTitleBg">
+            <div class="moduleDataTitle">销售报表</div>
+          </div>
+        </div>
+        <div class="acdountItemfont">
+          <div class="fontdata">
+            <div class="fontdatasize"  @click="handleSubMenuEvent('analyzerNew','sale-analyzerNew','纸箱销售订单汇总',secondenum.analyzerNew.val.disabled)" :class="[secondenum.analyzerNew.val.disabled?'':'clickstyle' ]">纸箱销售订单汇总</div>
+            <div class="fontdatasize" @click="handleSubMenuEvent('customerReport','sale-customerReport','客户资料查询',secondenum.customerReport.val.disabled)" :class="[secondenum.customerReport.val.disabled?'':'clickstyle' ]">客户资料查询</div>
+            <div class="fontdatasize" @click="handleSubMenuEvent('productsBasInfo','sale-productsBasInfo','产品基础资料查询',secondenum.productsBasInfo.val.disabled)" :class="[secondenum.productsBasInfo.val.disabled?'':'clickstyle' ]">产品基础资料查询</div>
+          </div>
+        </div>
+        <div class="acdountItemfont">
+          <div class="fontdata">
+            <!-- <div class="fontdatasize">纸箱订单查询</div>
+            <div class="fontdatasize">纸箱订单状态表</div>
+            <div class="fontdatasize">纸箱销售计划查询</div>
+            <div class="fontdatasize">纸板已产未送查询</div>
+            <div class="fontdatasize">纸板销单与删除情况表</div>
+            <div class="fontdatasize">纸板部生产综合统计表</div>
+            <div class="fontdatasize">纸板补货查询</div> -->
+            <!-- <div class="fontdatasize">纸板补货查询</div> -->
+             <!-- <div class="fontdatasize">纸板补货查询</div>
+            <div class="fontdatasize">纸板补货查询</div> -->
+          </div>
+        </div>
+      </div>
+
+      <div class="contentHeightBox caigou">
+        <div class="acdountItem">
+          <div class="moduleDataTitleBg">
+            <div class="moduleDataTitle">采购报表</div>
+          </div>
+        </div>
+        <div class="acdountItemfont">
+          <div class="fontdata">
+            <div class="fontdatasize" :class="[secondenum.purPaperPoAnalyz.val.disabled?'':'clickstyle' ]"  @click="handleSubMenuEvent('purPaperPoAnalyz','purchase-purPaperPoAnalyz','纸板采购情况分析',secondenum.purPaperPoAnalyz.val.disabled)">纸板采购情况分析</div>
+          </div>
+        </div>
+      </div>
+       <div class="contentHeightBox cangchu">
+        <div class="acdountItem">
+          <div class="moduleDataTitleBg">
+            <div class="moduleDataTitle">仓储报表</div>
+          </div>
+        </div>
+        <div class="acdountItemfont">
+          <div class="fontdata">
+            <div class="fontdatasize" :class="[secondenum.selectStoreTotal.val.disabled?'':'clickstyle' ]"  @click="handleSubMenuEvent('selectStoreTotal','stock-selectStoreTotal','纸箱库存查询',secondenum.selectStoreTotal.val.disabled)">纸箱库存查询</div>
+            <div class="fontdatasize" :class="[secondenum.selectAnalyzer.val.disabled?'':'clickstyle' ]"  @click="handleSubMenuEvent('selectAnalyzer','stock-selectAnalyzer','纸箱出货汇总查询',secondenum.selectAnalyzer.val.disabled)">纸箱出货汇总查询</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="contentHeightBox caiwu">
+        <div class="acdountItem">
+          <div class="moduleDataTitleBg">
+            <div class="moduleDataTitle">财务</div>
+          </div>
+        </div>
+        <div class="acdountItemfont">
+          <div class="fontdata">
+            <div  class="fontdatasize" :class="[secondenum.initialization.val.disabled?'':'clickstyle' ]" @click="handleSubMenuEvent('initialization','account-initialization','应收初始化查询',secondenum.initialization.val.disabled)">应收初始化查询</div> 
+            <div  class="fontdatasize" :class="[secondenum.otherReceivables.val.disabled?'':'clickstyle']" @click="handleSubMenuEvent('otherReceivables','account-otherReceivables','其它应收查询',secondenum.otherReceivables.val.disabled)">其它应收查询</div> 
+            <div  class="fontdatasize" :class="[secondenum.querySnaddebt.val.disabled?'':'clickstyle']" @click="handleSubMenuEvent('querySnaddebt','account-querySnaddebt','应收呆账查询')">应收呆账查询</div> 
+            <div  class="fontdatasize" :class="[secondenum.queryAccRece.val.disabled?'':'clickstyle']" @click="handleSubMenuEvent('queryAccRece','account-queryAccRece','应收对账单查询')">应收对账单查询</div> 
+            <div  class="fontdatasize" :class="[secondenum.queryCollection.val.disabled?'':'clickstyle']" @click="handleSubMenuEvent('queryCollection','account-queryCollection','收款查询')">收款查询</div> 
+            <div  class="fontdatasize" :class="[secondenum.queryLnvoice.val.disabled?'':'clickstyle']" @click="handleSubMenuEvent('queryLnvoice','account-queryLnvoice','发票查询')">开票查询</div> 
+            <div  class="fontdatasize" :class="[secondenum.queryGeneralLedger.val.disabled?'':'clickstyle']" @click="handleSubMenuEvent('queryGeneralLedger','account-queryGeneralLedger','应收账龄总账')">应收账龄总账</div> 
+          </div>
+          <div class="fontdata marginTop10">
+             <div  class="fontdatasize" :class="[secondenum.initializationlist.val.disabled?'':'clickstyle' ]" @click="handleSubMenuEvent('initializationlist','account-initializationlist','应付初始化查询',secondenum.initializationlist.val.disabled)">应付初始化查询</div> 
+              <div  class="fontdatasize" :class="[secondenum.otherlist.val.disabled?'':'clickstyle']" @click="handleSubMenuEvent('otherlist','account-otherlist','其它应付查询')">其它应付查询</div> 
+            <div  class="fontdatasize" :class="[secondenum.staybilllist.val.disabled?'':'clickstyle']" @click="handleSubMenuEvent('staybilllist','account-staybilllist','应付呆账查询')">应付呆账查询</div> 
+               <div  class="fontdatasize" :class="[secondenum.paymentlist.val.disabled?'':'clickstyle']" @click="handleSubMenuEvent('paymentlist','account-paymentlist','应付对账单查询')">应付对账单查询</div>
+              <div  class="fontdatasize" :class="[secondenum.collectpayList.val.disabled?'':'clickstyle']" @click="handleSubMenuEvent('collectpayList','account-collectpayList','付款查询')">付款查询</div> 
+            <div  class="fontdatasize" :class="[secondenum.collectticketList.val.disabled?'':'clickstyle' ]" @click="handleSubMenuEvent('collectticketList','account-collectticketList','收票查询',secondenum.collectticketList.val.disabled)">收票查询</div> 
+          </div>
+        </div>
+      </div>
+      <div class="contentHeightBox shengchan">
+        <div class="acdountItem">
+          <div class="moduleDataTitleBg">
+            <div class="moduleDataTitle">生产报表</div>
+          </div>
+        </div>
+        <div class="acdountItemfont">
+          <div class="fontdata">
+            <!-- <div class="fontdatasize">印唛使用查询</div>
+            <div class="fontdatasize">模切板使用查询</div>
+            <div class="fontdatasize">废品统计查询</div>
+            <div class="fontdatasize">纸箱排程明细查询</div>
+            <div class="fontdatasize">纸箱未排程分析</div> -->
+          </div>
+        </div>
+        <div class="acdountItemfont">
+          <div class="fontdata">
+            <!-- <div class="fontdatasize">纸箱工序完工查询</div>
+            <div class="fontdatasize">纸箱工序排程查询</div>
+            <div class="fontdatasize">待排程及用纸分析</div>
+            <div class="fontdatasize">原纸销售查询</div>
+            <div class="fontdatasize">原纸报损查询</div>
+            <div class="fontdatasize">原纸调拨查询</div> -->
+          </div>
+        </div>
+        <div class="acdountItemfont">
+          <div class="fontdata">
+            <!-- <div class="fontdatasize">辅料初始化查询</div>
+            <div class="fontdatasize">辅料销售查询</div>
+            <div class="fontdatasize">辅料报损查询</div>
+            <div class="fontdatasize">辅料调拨查询</div> -->
+            <!-- <div class="fontdatasize">纸板补货查询</div>
+            <div class="fontdatasize">纸板补货查询</div>
+            <div class="fontdatasize">纸板补货查询</div>
+            <div class="fontdatasize">纸板补货查询</div>
+            <div class="fontdatasize">纸板补货查询</div> -->
+          </div>
+        </div>
+      </div>
+
+     
+    </div>
+  </div>
+</template>
+<script>
+import globleMixin from '@/mixins'
+export default {
+  mixins: [globleMixin],
+  methods: {
+    handleSubMenuEvent (currentPage, uniqueKey, tabName, flag) {
+       this.relationSubMenu(currentPage,this.secondenum)
+      if (flag) {
+        this.$Message.warning('暂无权限,请与管理员联系!')
+        return
+      }
+      let params = {
+        menuName: 'Report',
+        page: currentPage, // 显示控件页面
+        uniqueKey: uniqueKey,
+        lable: tabName,
+        isActive: true
+      }
+      this.handleMenuBaseEvent(params) // 调用MIXIN 共用方法
+    }
+  },
+  computed: {
+    secondenum () {
+      let dataList = this.$store.state.app.Secondaryauthority.Report
+      return dataList
+    }
+  }
+}
+</script>
+<style lang="scss">
+.clickstyle{
+  cursor:pointer;
+  color: #ffffff !important;
+}
+.reportContent {
+  color: white;
+  min-height: 600px;
+  width: 100%;
+  display: flex;
+  display: -webkit-flex; /* Safari */
+  background: rgba(33, 46, 129, 1);
+  .reportItem {
+    display: flex;
+    display: -webkit-flex; /* Safari */
+    flex-direction: column;
+    margin: 10px;
+    width: 100%;
+    border-radius: 5px;
+    box-shadow: 0px 0px 10px rgba(0, 222, 255, 1) inset;
+    .contentHeightBox {
+      &.xiaoshou {
+        height: 14%;
+        display: flex;
+        // border: 1px solid red;
+        margin: 15px;
+        margin-bottom: 0px;
+        justify-content: flex-start;
+        flex-direction: column;
+        background: #30319e;
+        width: 98%;
+        .acdountItem {
+          // height: 10%;
+          padding-left: 15px;
+          padding-top: 15px;
+          width: 10%;
+          // border: 1px solid black;
+          .moduleDataTitleBg {
+            background-image: url("../../../../assets/images/page-design/Report/icon-SalesReport.png");
+            background-position: 10px top;
+            background-repeat: no-repeat;
+            background-size: auto 20px;
+            .moduleDataTitle {
+              color: #ff7c3c;
+              margin-left: 35px;
+              width: 100%;
+            }
+          }
+        }
+      }
+      &.caigou {
+        height: 14%;
+        display: flex;
+        // border: 1px solid red;
+        margin: 15px;
+        margin-bottom: 0px;
+        justify-content: flex-start;
+        flex-direction: column;
+        background: #4131aa;
+        width: 98%;
+        .acdountItem {
+          // height: 10%;
+          padding-left: 15px;
+          padding-top: 15px;
+          width: 100%;
+          margin-bottom: 0px;
+          // border: 1px solid black;
+          .moduleDataTitleBg {
+            background-image: url("../../../../assets/images/page-design/Report/icon-PurchaseReport.png");
+            background-position: 10px top;
+            background-repeat: no-repeat;
+            background-size: auto 20px;
+            .moduleDataTitle {
+              color: #f0dc00;
+              margin-left: 35px;
+            }
+          }
+        }
+      }
+      &.shengchan {
+        height: 21%;
+        display: flex;
+        margin: 15px;
+        margin-bottom: 0px;
+        justify-content: flex-start;
+        flex-direction: column;
+        // background: #1C3D8D;
+        background: #3d2e9d;
+        width: 98%;
+        .acdountItem {
+          // height: 10%;
+          padding-left: 15px;
+          padding-top: 15px;
+          width: 100%;
+          margin-bottom: 0px;
+          // border: 1px solid black;
+          .moduleDataTitleBg {
+            background-image: url("../../../../assets/images/page-design/Report/icon-producReport.png");
+            background-position: 10px top;
+            background-repeat: no-repeat;
+            background-size: auto 20px;
+            .moduleDataTitle {
+              color: #18fa00;
+              margin-left: 35px;
+            }
+          }
+        }
+      }
+      &.cangchu {
+        height: 14%;
+        display: flex;
+        // border: 1px solid red;
+        margin: 15px;
+        margin-bottom: 0px;
+        justify-content: flex-start;
+        flex-direction: column;
+        // background: #462488;
+        background: #3d2e9d;
+        width: 98%;
+        .acdountItem {
+          // height: 10%;
+          padding-left: 15px;
+          padding-top: 15px;
+          width: 100%;
+          margin-bottom: 0px;
+          // border: 1px solid black;
+          .moduleDataTitleBg {
+            background-image: url("../../../../assets/images/page-design/Report/icon-StorageReport.png");
+            background-position: 10px top;
+            background-repeat: no-repeat;
+            background-size: auto 20px;
+            .moduleDataTitle {
+              color: #ff74cc;
+              margin-left: 35px;
+            }
+          }
+        }
+     }
+      &.caiwu {
+        height: 21%;
+        display: flex;
+        // border: 1px solid red;
+        margin: 15px;
+        margin-bottom: 0px;
+        justify-content: flex-start;
+        flex-direction: column;
+        // background: #1B3A4E;
+        background:#4131aa;
+        width: 98%;
+        .acdountItem {
+          // height: 10%;
+          padding-left: 15px;
+          padding-top: 15px;
+          width: 100%;
+          margin-bottom: 0px;
+          // border: 1px solid black;
+          .moduleDataTitleBg {
+            background-image: url("../../../../assets/images/page-design/Report/icon-FinanceReport.png");
+            background-position: 10px top;
+            background-repeat: no-repeat;
+            background-size: auto 20px;
+            .moduleDataTitle {
+              color: #FF7C3C;
+              margin-left: 35px;
+            }
+          }
+        }
+    }
+    .acdountItemfont {
+        // height: 10%;
+        margin-top: 10px;
+        // border: 1px solid black;
+            .fontdata {
+                display: flex;
+                flex-direction: row;
+                // justify-content:space-around;
+                padding-left: 1.05%;
+                 margin-left: 35px;
+                .fontdatasize {
+               // margin-left: 30px;
+                width: 11%;
+                color: #bdb7b7;
+                // padding-left: 3.4%;
+                }
+                &.marginTop10{
+                  margin-top: 10px;
+                }
+                
+            }
+        }
+}
+
+    }
+}
+</style>

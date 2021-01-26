@@ -1,0 +1,1083 @@
+<template>
+  <div>
+    <editWindow
+      :draggable="false"
+      :zindex="15"
+      id="cl-edit-salesOrder"
+      title="用料单号弹出框"
+      v-model="showWindow"
+      :fullscreen="true"
+      width="100%"
+      :loading="!isLoaddingDone"
+      :spinLoaddingText="spinLoaddingText"
+      @on-ok="submitFormDataEvent"
+      v-if="initData.columns"
+    >
+      <div v-if="formDataInfo">
+        <Form
+          ref="formDataInfo"
+          :show-message="true"
+          :model="formDataInfo"
+          :rules="ruleValidate"
+          :label-width="85"
+        >
+          <div class="edit-purPaperPoSlave">
+            <Row>
+              <Col span="4">
+                <FormItem label="用料工单">
+                  <Input
+                    v-model="formDataInfo.workNo"
+                    maxlength="20"
+                    placeholder="用料工单"
+                  ></Input>
+                </FormItem>
+              </Col>
+              <Col span="4">
+                <FormItem label="客户PO号">
+                  <Input
+                    v-model="formDataInfo.custPo"
+                    maxlength="20"
+                    placeholder="客户PO号"
+                  ></Input>
+                </FormItem>
+              </Col>
+              <Col span="4">
+                <FormItem label="客户简称">
+                  <Input
+                    v-model="formDataInfo.inCusName"
+                    maxlength="20"
+                    placeholder="客户简称"
+                  ></Input>
+                </FormItem>
+              </Col>
+              <Col span="8">
+                <Row>
+                  <Col span="7">
+                    <FormItem label :label-width="15">
+                      <RadioGroup v-model="formDataInfo.flag">
+                        <Radio label="0">模糊</Radio>
+                        <Radio label="1">精准</Radio>
+                      </RadioGroup>
+                    </FormItem>
+                  </Col>
+                  <Col span="17">
+                    <Row>
+                      <Col span="13">
+                        <FormItem label="订单日期" :label-width="70">
+                          <DatePicker
+                            type="date"
+                            format="yyyy-MM-dd"
+                            :clearable="false"
+                            :editable="false"
+                            v-model="formDataInfo.beginDate"
+                          ></DatePicker>
+                        </FormItem>
+                      </Col>
+                      <Col span="11">
+                        <FormItem label="--" :label-width="30">
+                          <DatePicker
+                            type="date"
+                            format="yyyy-MM-dd"
+                            :clearable="false"
+                            :editable="false"
+                            v-model="formDataInfo.endDate"
+                          ></DatePicker>
+                        </FormItem>
+                      </Col>
+                    </Row>
+                  </Col>
+                </Row>
+              </Col>
+              <Col span="2">
+                <FormItem label :label-width="5">
+                  <Checkbox
+                    v-model="formDataInfo.ifAreaPrice"
+                    :disabled="isCalAreaPricePur"
+                    >含未报价纸质</Checkbox
+                  >
+                </FormItem>
+              </Col>
+              <Col span="1">
+                <FormItem label :label-width="0">
+                  <Button type="primary" @click="clickmaster()">搜索</Button>
+                </FormItem>
+              </Col>
+            </Row>
+          </div>
+        </Form>
+        <div class="tableList" :style="{ height: tableHeight - 25 + 'px' }">
+          <!-- @row-click="slave_list_table_editRowClick"
+              @row-delete="slave_list_table_editRowDelete" -->
+          <div class="leftTable">
+            <eTable
+              ref="leftTable"
+              unqiue-mark="id"
+              :height="tableHeight - 31"
+              :width="48"
+              :index-menu="false"
+              :col-start="0"
+              :row-init-data="initData.initData[`purpaperpoboxleftFm`]"
+              :data.sync="leftTableList"
+              :rules="tableFieldsValidator"
+              :showContextMenu="!detailDisabled"
+            >
+              <template slot="head">
+                <tr
+                  v-for="(columnGroup, index) in initData.columns[
+                    `purpaperpoboxleftFm`
+                  ].editGroups"
+                  :key="index"
+                >
+                <template v-for="(column, index2) in columnGroup">
+                    <th
+                      v-if="excludeFiled(column.key)"
+                      :key="index2"
+                      :class="`ivu-table-column-${column.titleAlign}`"
+                      :width="column.editWidth"
+                      :colspan="column.colSpan"
+                      :rowspan="column.rowSpan"
+                      :columnKey="column.key"
+                    >
+                      <div class="ivu-table-cell">
+                        <span class="">{{ column.title }}</span>
+                      </div>
+                    </th>
+                  </template>
+                </tr>
+              </template>
+              <template
+                slot="body"
+                slot-scope="{ row, index, valueChangeAssign }"
+              >
+                <template
+                  v-for="(column, subIndex) in initData.columns[
+                    `purpaperpoboxleftFm`
+                  ].editColumns"
+                >
+                <td
+                  :key="subIndex"
+                  :class="`ivu-table-column-${column.align}`"
+                  v-if="excludeFiled(column.key)"
+                  :width="column.editWidth"
+                >
+                  <!-- 其它 :placeholder="column.key"-->
+                  <formControl
+                    :align="column.align"
+                    :control-type="column.controlType"
+                    v-model="row[column.key]"
+                    :disabled="detailDisabled||column.readOnly"
+                    @input="
+                      (value) => {
+                        valueChangeAssign(value, index, row, column.key);
+                      }
+                    "
+                  ></formControl>
+                </td>
+                </template>
+              </template>
+            </eTable>
+          </div>
+          <div class="centerTable">
+            <Button
+              type="primary"
+              ghost
+              size="small"
+              shape="circle"
+              long
+              :disabled='leftTableList.length==0'
+              @click='single'
+              >单笔</Button
+            >
+            <Button
+              type="warning"
+              ghost
+              shape="circle"
+              long
+              @click='combination'
+              :disabled='leftTableList.length==0'
+              >组合</Button
+            >
+            <Button type="error" ghost shape="circle" long 
+              :disabled='rigntBottomTableList.length==0'
+              @click="backOff"
+              >回退</Button
+            >
+          </div>
+          <div class="rightTable">
+            <eTable
+              ref="rigntTopTable"
+              unqiue-mark="id"
+              :height="(tableHeight / 3) * 2 - 15"
+              :width="48"
+              :index-menu="false"
+              :col-start="0"
+              :row-init-data="[]"
+              :data.sync="rigntTopTableList"
+              :rules="tableFieldsValidator"
+              :showContextMenu="!detailDisabled"
+              @row-click="slave_list_table_editRowClick"
+            >
+              <template slot="head">
+                <tr
+                  v-for="(columnGroup, index) in initData.columns[
+                    `purpaperpoboxrighttopFm`
+                  ].editGroups"
+                  :key="index"
+                >
+                  <th
+                    v-for="(column, index2) in columnGroup"
+                    :key="index2"
+                    :class="`ivu-table-column-${column.titleAlign}`"
+                    :width="column.editWidth"
+                    :colspan="column.colSpan"
+                    :rowspan="column.rowSpan"
+                    :columnKey="column.key"
+                  >
+                    <div class="ivu-table-cell">
+                      <span class="">{{ column.title }}</span>
+                    </div>
+                  </th>
+                </tr>
+              </template>
+              <template
+                slot="body"
+                slot-scope="{ row, index, valueChangeAssign }"
+              >
+                <td
+                  :class="`ivu-table-column-${column.align}`"
+                  v-for="(column, columnIndex) in initData.columns[
+                    `purpaperpoboxrighttopFm`
+                  ].editColumns"
+                  :key="columnIndex"
+                  :width="column.editWidth"
+                >
+                  <!-- 其它 :placeholder="column.key"-->
+                  <formControl
+                    :align="column.align"
+                    :control-type="column.controlType"
+                    v-model="row[column.key]"
+                    :disabled="detailDisabled || column.readOnly"
+                    @input="
+                      (value) => {
+                        valueChangeAssign(value, index, row, column.key);
+                      }
+                    "
+                  ></formControl>
+                </td>
+              </template>
+            </eTable>
+            <!-- 底部Table -->
+            <eTable
+              ref="rigntBottomTable"
+              unqiue-mark="id"
+              :height="tableHeight / 3 - 16"
+              :index-menu="false"
+              :col-start="0"
+              :row-init-data="[]"
+              :data.sync="rigntBottomTableList"
+              :rules="tableFieldsValidator"
+              :showContextMenu="!detailDisabled"
+            >
+              <template slot="head">
+                <tr
+                  v-for="(columnGroup, index) in initData.columns[
+                    `purpaperpoboxrightdownFm`
+                  ].editGroups"
+                  :key="index"
+                >
+                  <th
+                    v-for="(column, index2) in columnGroup"
+                    :key="index2"
+                    :class="`ivu-table-column-${column.titleAlign}`"
+                    :width="column.editWidth"
+                    :colspan="column.colSpan"
+                    :rowspan="column.rowSpan"
+                    :columnKey="column.key"
+                  >
+                    <div class="ivu-table-cell">
+                      <span class="">{{ column.title }}</span>
+                    </div>
+                  </th>
+                </tr>
+              </template>
+              <template
+                slot="body"
+                slot-scope="{ row, index, valueChangeAssign }"
+              >
+                <td
+                  :class="`ivu-table-column-${column.align}`"
+                  v-for="(column, columnIndex) in initData.columns[
+                    `purpaperpoboxrightdownFm`
+                  ].editColumns"
+                  :key="columnIndex"
+                  :width="column.editWidth"
+                >
+                    <!--控件特殊处理 采购数量  -->
+                <inputNumber
+                  v-if="column.key == 'ppStockQty'"
+                  v-model="row[column.key]"
+                  :max="maxppStockQty(row)"
+                  @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'ppStockQty');
+                      }
+                    "
+                  @on-blur="ppsQtyBlur(index)"
+                  size="small"
+                  :maxlength="3"
+                ></inputNumber>
+                  <!-- 其它 :placeholder="column.key"-->
+                  <formControl
+                    v-else
+                    :align="column.align"
+                    :control-type="column.controlType"
+                    v-model="row[column.key]"
+                    :disabled="detailDisabled || column.readOnly"
+                    @input="
+                      (value) => {
+                        valueChangeAssign(value, index, row, column.key);
+                      }
+                    "
+                  ></formControl>
+                </td>
+              </template>
+            </eTable>
+          </div>
+        </div>
+      </div>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+import inputNumber from '@/components/input-number'
+import tableSelect from "@/components/table-select/table-select";
+import editWindow from "@/components/edit-window/edit-window";
+import eTable from "@/components/e-table/e-table";
+import request from "@/libs/request";
+import popup from "@/components/popup/popup";
+import editBaseMixins from "../../mixins/edit";
+import listBaseMixins from "../../mixins/list";
+import formControl from "@/components/form-control/form-control";
+import dayjs from "dayjs";
+import { deepCopy } from "view-design/src/utils/assist";
+const default_formDataInfo = {
+  flag: "0",
+  beginDate:dayjs().subtract(15, 'day').format("YYYY-MM-DD"),
+  endDate:dayjs().format("YYYY-MM-DD"),
+  ifAreaPrice: false,
+  workNo: "", //工单
+  inCusName: "", //客户名称
+  inCusCode: "", //客户编号
+  custPo:'',//客方PO号
+};
+const rightTopField = [
+ 'ppoDueDate',//送货日期
+ 'workNo',//工单号 
+ 'ppoCorpartId',//本厂纸质id
+ 'ppoArtCode',//本厂纸质
+ 'supplierArtId',//供应商纸质id
+ 'supplierArtName',//供应商纸质
+ 'ppoLb',//楞别
+ 'ppoQty',//需购数量
+ 'ppoStockQty',//采购数量
+ 'ppoSizeLine',//压线
+ 'ppoScoreType',//压线类型
+ 'ppoScoreText',//压线类型显示字段
+ 'ppoScoreDepth',//压线深度
+ 'ppoScoreDepthText',//压线深度显示字段
+ 'ppoArtPrice',//报价
+ 'bpSWeight',//单重
+ 'biWeight',//重量
+ 'ppoSarea',//单面积
+ 'ppoArea',//面积
+ 'ppoSCube',//单体积
+ 'ppoCube',//体积
+ 'ppoPrice',//单价
+ 'ppoMoney',//金额
+ 'ppoSizeL',//纸长
+ 'ppoSizeW',//纸宽
+];
+const topField = [
+   '',//送货日期
+  'biWorkNo',//工单号
+  'ppoCorpartId',//本厂纸质id
+  'artCode',//本厂纸质
+  'ppoArtId',//供应商纸质id
+  'ppoArtName',//供应商纸质
+  'artLb',//楞别
+  'bmNeedQty',//需购数量
+  'bmNeedQty',//采购数量默认=需购数量
+  'bmScoreStr',//压线
+  'bmScoreType',//压线类型
+  '',//压线类型显示字段
+  'bmScoreDepth',//压线深度
+  '',//压线深度显示字段
+  'popoArtPrice',//报价
+  'bpSWeight',//单重
+  'biWeight',//重量
+  'ppoSarea',//单面积
+  'ppoArea',//面积
+  'ppSCube',//单体积
+  'ppCube',//体积
+  'ppoPrice',//单价
+  'ppoMoney',//金额
+]
+const rightBttomField = [
+ 'iisChose',//选择
+ 'indexNo',//id 用于回退
+ 'workNo',//工单号
+ 'mateWorkNo',//用料单号
+ 'artId',//纸质id
+ 'artCode',//纸质
+ 'bpProQty',//工单数
+ 'bmQty',//用料数量
+ 'ppQty',//需购数
+ 'ppHaStockQty',//已采购数
+ 'ppStockQty',//采购数量
+ 'useStoreNum',//扣存料数
+ 'ppSWeight',//单重
+ 'ppWeight',//重量
+ 'ppSarea',//单面积
+ 'ppArea',//面积
+ 'ppSCube',//单体积
+ 'ppCube',//体积
+ 'lbCode',//楞别
+ 'scoreStr',//压线
+ 'scoreType',//压线类型
+ 'scoreTypeText',//压线类型显示字段
+ 'scoreDepth',//压线深度
+ 'scoreDepthText',//压线深度显示字段
+ 'boxInfo',//纸箱信息
+ 'prodNo',//产品编号
+ 'prodName',//产品名称
+ 'custCode',//客户编号
+ 'custName',//客户名称
+ 'custCO',//客户PO号
+ 'ppDeDate',//纸板交期
+ 'remark',//备注
+ 'batchNo',//料号
+ 'groupNo',//采购序号
+  'ppQuotePrice',//报价
+ 'ppMoney',//金额
+ 'sizeL',//长
+ 'sizeW',//宽
+];
+const bottomField = [
+    '',//选择
+    'id',//用于回退标识
+    'biWorkNo',//工单号
+    'ppoGroupNo',//用料单号
+    'ppoCorpartId',//纸质id
+    'artCode',//纸质 
+    'bpProQty',//工单数 
+    'bmQty',//用料数量 
+    'bmNeedQty',//需购数 
+    'bmStockQty',//已采购数 
+    'bmNeedQty',//采购数量默认=需购数
+    'bmUseStoreNum',//扣存料数 
+    'bpSWeight',//单重 
+    'biWeight',//重量 
+    'ppoSarea',//单面积 
+    'ppoArea',//面积 
+    'ppSCube',//单体积 
+    'ppCube',//体积 
+    'artLb',//楞别 
+    'bmScoreStr',//压线 
+    'bmScoreType',//压线类型 
+    '',//
+    'bmScoreDepth',//压线深度 
+    '',//
+    'prod',//纸箱信息 
+    'biProdNo',//产品编号 
+    'biProdName',//产品名称 
+    'custCode',//客户编号 
+    'custName',//客户简称 
+    'custCO',//客户PO号 
+    'bmDeDate',//纸板交期 
+    'remark',//纸板备注 
+    'biBatchNo',//料号 
+    'biWorkNo',//采购序号默认=工单号
+    'popoArtPrice',//报价 
+    'ppMoney',//金额 
+]
+const default_slavesForm = {
+  topTableList:[],
+  bottomTableList:[]
+}
+export default {
+  name: "newPurpaperpoSalve", //	纸板采购明细工单弹框
+  mixins: [editBaseMixins, listBaseMixins],
+  components: {
+    editWindow,
+    popup,
+    tableSelect,
+    eTable,
+    formControl,
+    inputNumber
+  },
+  props:{
+    // 供应商ID
+    supplierData:{
+      type:Object,
+      default:()=>{
+        return {}
+      }
+    },
+    // 搜素过滤字段
+    filterFild:{
+      type:String,
+      default:''
+    }
+  },
+  data() {
+    return {
+      rightTopClickIndex:-1,//存在右边头部表格选中数据索引
+      selectLeftTableData:[],//存储左边选中数据,方便回退
+      buttomlod: false, //buttom加载状态
+      actionSubtitle: "采购订单工单",
+      leftTableList: [], //左边表单显示数据
+      rigntTopTableList: [], //右边头部表单显示数据
+      rigntBottomTableList: [], //右边底部表单数据
+      formDataInfo: deepCopy(default_formDataInfo),
+      slavesForm:deepCopy(default_slavesForm),//存储右边所有数据
+      actionSubtitle: "纸板采购订单工单", // 当前操作副标题
+      formInitPreName: "paperPo", // 初始化信息查询 前缀 字段
+      formName: "purpaperpoboxleftFm", // 初始化信息查询 表单字段
+      requestBaseUrl: "/purchase/paperPo", // 请求 查询 操作的基础路径
+    };
+  },
+
+  methods: {
+    // 搜素数据回调
+    clickmaster() {
+      this.isLoaddingDone = false
+      let ddata = this.formDataInfo
+      if (!!ddata.beginDate) {
+        ddata.beginDate = dayjs(ddata.beginDate).format(
+          "YYYY-MM-DD HH:mm:ss"
+        );
+      }else{
+        this.$Message.warning('请选择开始日期');
+        return 
+      }
+      if (!!ddata.endDate) {
+        ddata.endDate = dayjs(ddata.endDate).format(
+          "YYYY-MM-DD HH:mm:ss"
+        );
+      }else{
+         this.$Message.warning('请选择结束日期');
+         return
+      }
+      let parms = { ...ddata, mateWorkNoList: this.filterFild,vendId:this.supplierData.id};
+      request.post(`/purchase/paperPo/spPaperMegerStockOrder1`, parms)
+        .then((res) => {
+          this.leftTableList = res.workData;
+          // this.clearRithTableList()
+          this.isLoaddingDone = true
+        });
+    },
+    // 单笔回调事件
+    single(){
+      this.isLoaddingDone = false
+      let data = this.getLeftTableSelectData()
+      this.setRigntTopTableList(data)
+      this.isLoaddingDone = true
+    },
+    // 单笔 右边头部表格赋值
+    setRigntTopTableList(list){
+      let [TopData,BottomData] = [{},[]]
+      let _self = this
+      let topoField = this.getRtopTableField(topField)
+      let bottomoField = this.getRtopTableField(bottomField)
+      list.forEach(item => {
+        TopData = this.transforField(topoField,rightTopField,item)
+        // BottomData.push(this.transforField(bottomoField,rightBttomField,item))
+        this.rigntTopTableList.push(TopData)
+        _self.slavesForm.topTableList.push([TopData])
+        _self.slavesForm.bottomTableList.push([_self.transforField(bottomoField,rightBttomField,item)])
+        // 单笔操作默认赋值采购数后对金额，体积，面积等进行操作
+      });
+      let slaveObj = this.$refs.rigntTopTable
+      slaveObj.rowClick(0, "row-click");
+    },
+    // 获取右边头部表对应左边表格格转换字段
+    getRtopTableField(firstField){
+      let oField = []
+      if (this.$params.IsSmallQty == '0:用料规格' ) {
+        oField = [
+          ...firstField,
+          'bmSizeL',//长 
+          'bmSizeW',//宽 
+        ]
+      }else{
+       oField = [
+          ...firstField,
+          'bmSSizeL',//长 
+          'bmSSizeW',//宽 
+        ]
+      }
+      return oField
+    },
+    // 数据字段转换
+    transforField(oField,nField,list){
+      let newList = {}
+      nField.filter((item,index)=>{
+        switch (item) {
+          case 'ppoScoreType'://top压线类型
+            newList[item] = String(list[oField[index]])
+            break;
+          case 'ppoScoreText'://top压线类型
+            newList[item] = this.gettype(newList['ppoScoreType'])
+            break;
+          case 'ppoScoreDepth'://压线深度
+            newList[item] = String(list[oField[index]])
+            break;
+          case 'ppoScoreDepthText'://top 压线深度
+            newList[item]=this.getdepth(newList['ppoScoreDepth'])
+            break;
+          case 'ppoDueDate'://top送货日期
+            let day = Number(this.$params.PaperPODueDate)
+            newList[item] = dayjs().add(day, 'day').format("YYYY-MM-DD HH:mm:ss")
+            break;
+          case'biWeight'://top重量
+            newList[item] = +(Number(newList.ppoStockQty)*Number(newList.bpSWeight)).toFixed(2)
+            break;
+          case'ppoArea'://top面积
+            newList[item] = +(Number(newList.ppoStockQty)*Number(newList.ppoSarea)).toFixed(2)
+            break;
+          case'ppoCube'://top体积
+            newList[item] = +(Number(newList.ppoStockQty)*Number(newList.ppoSCube)).toFixed(2)
+            break;
+          case 'ppoPrice'://top单价计算
+            newList[item] = this.getTopppoMoney(newList,item)
+            break;
+          case 'ppoMoney'://top金额计算
+            newList[item] = this.getTopppoMoney(newList,item)
+            break;
+          case'ppWeight'://bottom重量
+            newList[item] = (Number(newList['ppStockQty'])*Number(newList['ppSWeight'])).toFixed(2)
+            break;
+          case'ppArea'://bottom面积
+            newList[item] = (Number(newList['ppStockQty'])*Number(newList['ppSarea'])).toFixed(2)
+            break;
+          case'ppCube'://bottom体积
+            newList[item] = (Number(newList['ppStockQty'])*Number(newList['ppSCube'])).toFixed(2)
+            break;
+          case 'ppMoney'://botom金额计算
+            newList[item] = this.getBtomppoMoney(newList,item)
+            break;
+          case 'iisChose'://bottom选择
+            newList[item] = false
+            break;
+          case'indexNo'://bottomID
+              newList[item] = list[oField[index]]
+            break;
+          case 'scoreType'://压线类型 
+            newList[item] = String(list[oField[index]])
+            break;
+          case 'scoreTypeText'://压线类型 
+            newList[item] = this.gettype(newList['scoreType'])
+            break;
+          case 'scoreDepth'://压线深度
+            newList[item] = String(list[oField[index]])
+            break;
+          case 'scoreDepthText'://压线深度 
+            newList[item] = this.getdepth(newList['scoreDepth'])
+            break;
+          case'ppDeDate'://bottom纸板交期
+              newList[item] =dayjs(list[oField[index]]).format("YYYY-MM-DD HH:mm:ss")
+            break;
+          default:
+            // newList[item] = list[oField[index]]?list[oField[index]]:''
+            newList[item] = list[oField[index]]
+            break;
+        }
+      })
+      return newList
+    },
+    // Top 单价金额
+    getTopppoMoney(data,key,qty){
+      //priceAreaMode:  纸板金额计算模式
+      let _ppoMoney = 0 // 金额
+      let _ppoPrice = 0 // 单价
+      let ppoStockQty = qty?qty:data.ppoStockQty//采购数量
+      if(this.supplierData.priceAreaMode){
+      // 1、单价=报价 ppoArtPrice，不用控制位数  
+        _ppoPrice = data.ppoArtPrice
+      // 2、金额=单面积 ppoSarea * 采购数量 ppoStockQty* 0.报价 ppoArtPrice,计算出来后，再根据供应商位数控制
+        _ppoMoney = data.ppoSarea*ppoStockQty*data.ppoArtPrice
+      }else{
+      // 1、单价=单面积*报价，计算出来后，再根据供应商位数控制
+         _ppoPrice = (data.ppoSarea*data.ppoArtPrice).toFixed((this.supplierData.ctDot))
+      // 2、金额=单价*采购数量，计算出来后，再根据供应商位数控制
+        _ppoMoney = _ppoPrice*ppoStockQty
+      }
+      return (key=='ppoPrice'?_ppoPrice:(_ppoMoney.toFixed(this.supplierData.amtDot)))
+    },
+    // Bottom 单价 金额计算
+    getBtomppoMoney(data,key){
+      //priceAreaMode:  纸板金额计算模式
+      let _ppoMoney = 0 // 金额
+      let _ppoPrice = 0 // 单价
+      if(this.supplierData.priceAreaMode){
+      // 1、单价=报价，不用控制位数  
+        _ppoPrice = data.ppQuotePrice
+	    // 2、金额=单面积 ppSarea * 采购数量 ppStockQty* 0.报价 ppQuotePrice，计算出来后，再根据供应商位数控制
+        _ppoMoney = data.ppSarea*data.ppStockQty*data.ppQuotePrice
+      }else{
+      // 1、单价=单面积*报价，计算出来后，再根据供应商位数控制
+         _ppoPrice = data.ppSarea*data.ppQuotePrice
+      // 2、金额=单价*采购数量，计算出来后，再根据供应商位数控制
+        _ppoMoney = _ppoPrice.toFixed(this.supplierData.ctDot)*data.ppStockQty
+      }
+      return (key=='ppoPrice'?_ppoPrice:(_ppoMoney.toFixed(this.supplierData.amtDot)))
+    },
+    // 获取左边表单选中数据 
+    // 左边Table删除选中事件，且存储，方便回退
+    getLeftTableSelectData(){
+      let list = []
+      let _self = this
+      this.leftTableList = this.leftTableList.filter((item,index)=>{
+        if(item.iisChose){
+          list.push(item)
+          _self.selectLeftTableData.push(item)
+          return
+        }
+        return item
+      })
+      return list;
+    },
+    // 左边Table排除不显示字段
+    excludeFiled(key){
+      // 拿到显示控制系统参数 IsSmallQty 0:用料规格，1:净料规格
+      let bmsi = ['bmSize','bmSizeL','bmSizeW']//用料规格
+      let bmss = ['bmSSize','bmSSizeL','bmSSizeW']//净料规格
+      let data
+      let checkV = this.$params.IsSmallQty
+      switch (checkV) {
+        case '0:用料规格':
+          data = bmss
+          break;
+        case '1:净料规格':
+          data = bmsi
+          break;
+      }
+       if (data.includes(key)) {
+        return false
+      }
+        return true
+    },
+    // 右边头部Table点击事件
+    slave_list_table_editRowClick(...pro){
+      if (pro[0] == this.rightTopClickIndex) return
+      // 点击Top表格切换数据前清空Bottomb表格复选框
+      this.rigntBottomTableList = this.rigntBottomTableList.forEach(item=>item.iisChose=false)
+      this.rightTopClickIndex = pro[0]//点击行索引
+      let bottomTableList = this.slavesForm.bottomTableList
+      // this.$refs.rigntBottomTable.set(bottomTableList[index],index)
+      this.rigntBottomTableList = bottomTableList[this.rightTopClickIndex]
+    },
+    // 清除缓存
+    clearRithTableList(){
+      this.$refs.leftTable.reset()
+      this.$refs.rigntTopTable.reset()
+      this.$refs.rigntBottomTable.reset()
+      this.selectLeftTableData = []
+      this.rigntTopTableList= []
+      this.rigntBottomTableList= []
+      this.slavesForm = deepCopy(default_slavesForm)
+      this.rightTopClickIndex = -1
+    },
+    
+     // 组合回调事件
+    async combination(){
+      this.isLoaddingDone = false
+      let data = this.getcombinationSelectData()
+      if (!data) {
+        this.$Message.error('纸质,楞别,规格宽,不同的数据不能组合');
+        this.isLoaddingDone = true
+        return
+      }
+      let NworkNo = await this.getConbinationworkNo()
+      this.setCombinationRight(data,NworkNo)
+      this.$refs.rigntTopTable.rowClick(0, "row-click");
+      this.isLoaddingDone = true
+    },
+    // 组合获取工单号
+    getConbinationworkNo(){
+      return new Promise((resolve, reject)=>{
+        request.post(`/common/sys/code/getFlowNo?sysCode=paperPoGroupNo&prex=''`).then(res=>{
+          resolve(res);
+        }).catch(err=>{
+          reject(err)
+        })
+      })
+    },
+    // 组合数据赋值给右边表单
+    setCombinationRight(data,NworkNo){
+      let [TopData,BottomData,sort] = [{},[],0]
+      let _self = this
+      let topoField = this.getRtopTableField(topField)
+      let bottomoField = this.getRtopTableField(bottomField)
+      let ssizeFild = this.$params.IsSmallQty=='0:用料规格'?'bmSizeL':'bmSSizeL'
+      data.forEach(item=>{
+        if (sort<Number(item[ssizeFild])) {
+          TopData = item
+          sort = item[ssizeFild]
+        }
+        BottomData.push(_self.transforField(bottomoField,rightBttomField,item))
+      })
+        let combinationTop = this.transforField(topoField,rightTopField,TopData)
+        // 工单号,采购序号自动生成
+        combinationTop.workNo=NworkNo
+        BottomData.filter(item=>{item.groupNo=NworkNo})
+        // 组合主表采购数量汇总
+        // combinationTop.ppoStockQty = Number(ppoStockQty)
+        combinationTop = this.comBinationQty(combinationTop,BottomData)
+        this.rigntTopTableList.push(combinationTop)
+        this.slavesForm.topTableList.push([combinationTop])
+        this.slavesForm.bottomTableList.push(BottomData)
+    },
+    // 组合初始化时主表金额等数量汇总
+    comBinationQty(masterData,subData){
+      // 采购数量 金额 重量 面积 体积
+      let ppoStockQty = 0
+      subData.forEach(item=>{ppoStockQty+=item.ppStockQty})
+      masterData.ppoStockQty = ppoStockQty
+      masterData.ppoQty = ppoStockQty
+      masterData.ppoMoney = +this.getTopppoMoney(masterData,'ppoMoney')
+      masterData.biWeight = +(Number(ppoStockQty)*Number(masterData.bpSWeight)).toFixed(2)
+      masterData.ppoArea = +(Number(ppoStockQty)*Number(masterData.ppoSarea)).toFixed(2)
+      masterData.ppoCube = +(Number(ppoStockQty)*Number(masterData.ppoSCube)).toFixed(2)
+      return masterData
+    },
+    // 组合获取右边选中数据
+    getcombinationSelectData(){
+      let list = []
+      let _self = this
+      this.leftTableList.filter((item,index)=>{
+        if(item.iisChose){
+          list.push(item)
+        }
+      })
+      if (this.checkSeleteData(list)) {
+        list.forEach(item=>this.selectLeftTableData.push(item))
+        this.leftTableList = this.leftTableList.filter(item=>item.iisChose!=true)
+        return list
+      }
+      return false
+    },
+    //组合选中数据校验  纸质+楞别+规格宽
+    checkSeleteData(data){
+      let SizeW = this.$params.IsSmallQty=='0:用料规格'?'bmSizeW':'bmSSizeW'
+      let str = data[0].artCode+data[0].artLb+data[0][SizeW]
+      let check = true
+      data.filter(item=>{
+        if(str!=item.artCode+item.artLb+item[SizeW]){
+          check = false
+        }
+      })
+      return check
+    },
+
+    // 回退 selectLeftTableData
+    backOff(){
+      let BottomDataList = deepCopy(this.rigntBottomTableList)
+      let selectData = BottomDataList.filter(item=> !!item.iisChose)
+      if (this.rigntBottomTableList.length == 1) {
+        this.singleBack(selectData)
+      }else{
+        this.combinationBack(selectData)
+      }
+    },
+    // 单笔回退
+    singleBack(selectData){
+      // let BottomDataList = deepCopy(this.rigntBottomTableList)
+      // let selectData = BottomDataList.filter(item=> !!item.iisChose)
+      let backData
+      this.selectLeftTableData.filter((item,index)=>{
+          if (item.id == selectData[0].indexNo) {
+              backData = item
+              return
+          } 
+              return item
+        })
+      backData.iisChose = false
+      this.leftTableList.push(backData)
+      this.rigntBottomTableList = []
+      this.rigntTopTableList.splice(this.rightTopClickIndex,1)
+      this.slavesForm.bottomTableList.splice(this.rightTopClickIndex,1)
+      this.slavesForm.topTableList.splice(this.rightTopClickIndex,1)
+      this.rightTopClickIndex = -1
+      if(this.rigntTopTableList.length==0) return
+      this.$refs.rigntTopTable.rowClick(0, "row-click");
+    },
+    // 组合回退
+    combinationBack(selectData){
+      // let BottomDataList = deepCopy(this.rigntBottomTableList)
+      // let selectData = BottomDataList.filter(item=> !!item.iisChose)
+      this.rigntBottomTableList=this.rigntBottomTableList.filter(item=>!item.iisChose)
+      let [backData,index] = [[],[]]
+      this.selectLeftTableData.filter((items,masterindex)=>{
+        selectData.filter(item=>{
+          if (items.id == item.indexNo) {
+              items.iisChose = false
+              backData.push(items)
+              index.push(masterindex)
+          } 
+        })
+      })
+      backData.forEach(item=>{
+        this.leftTableList.push(item)
+      })
+      index.forEach(item=>{
+        this.selectLeftTableData.splice(item,1)
+      })
+      if (this.rigntBottomTableList.length==0) {
+        this.rigntTopTableList.splice(this.rightTopClickIndex,1)
+        this.slavesForm.topTableList.splice(this.rightTopClickIndex,1)
+        this.slavesForm.bottomTableList.splice(this.rightTopClickIndex,1)
+        this.rightTopClickIndex = -1
+        if(this.rigntTopTableList.length==0) return
+        this.$refs.rigntTopTable.rowClick(0, "row-click");
+      }
+      this.slavesForm.bottomTableList[this.rightTopClickIndex]=
+      this.slavesForm.bottomTableList[this.rightTopClickIndex].filter(item=>!item.iisChose)
+      this.summaryQty(0)
+    },
+
+    // 获取压线深度显示字段
+    getdepth(key){
+      let value = ''
+      switch (key) {
+        case '0':
+           value = "无"
+          break;
+        case '1':
+           value = "浅压"
+          break;
+        case '2':
+           value = "深压"
+          break;
+        default:
+           value = "普通"
+          break;
+      }
+      return value
+    },
+     // 获取压线类型显示字段 
+    gettype(key){
+      let value = ''
+      switch (key) {
+        case '0':
+           value = "无"
+          break;
+        case '1':
+           value = "尖凹"
+          break;
+        case '2':
+           value = "尖平"
+          break;
+        case '2':
+           value = "双尖"
+          break;
+        default:
+           value = "双压"
+          break;
+      }
+      return value
+    },
+    // bottomTable采购数量失去焦点回调
+    ppsQtyBlur(index){
+      /* 面积 ppArea = 采购数量 ppStockQty *单面积 ppSarea
+        体积 ppCube = 采购数量 ppStockQty *单体积 ppSCube
+        金额 ppMoney 
+        重量 ppWeight = 采购数量 ppStockQty *单重量 ppSWeight
+      */
+      let blurData =this.rigntBottomTableList[index]//获取修改行数据
+      let ppArea =Number(blurData.ppStockQty)*Number(blurData.ppSarea)
+      let ppCube =Number(blurData.ppStockQty)*Number(blurData.ppSCube)
+      let ppWeight =Number(blurData.ppStockQty)*Number(blurData.ppSWeight)
+      let ppMoney = this.getBtomppoMoney(blurData)
+      this.$refs.rigntBottomTable.set({
+        ppArea:ppArea.toFixed(2),
+        ppCube:ppCube.toFixed(2),
+        ppWeight:ppWeight.toFixed(2),
+        ppMoney
+      },index)
+      this.summaryQty()
+    },
+     // Top计算后头部 金额 重量 面积 体积 
+    summaryQty(index){
+      let botTableList =deepCopy(this.rigntTopTableList[index?index:this.rightTopClickIndex])
+      //金额 重量 面积 体积 采购数量 需购数量
+      let [ppoMoney,biWeight,ppoArea,ppoCube,ppoStockQty,ppoQty] = [0,0,0,0,0,0]
+      // this.slaveObj.bottomTableList[index?index:this.rightTopClickIndex]
+      this.rigntBottomTableList.filter(item=>{
+        ppoStockQty+=Number(item.ppStockQty)
+        ppoQty+=Number(item.ppQty)
+      })
+      ppoMoney = this.getTopppoMoney(botTableList,'ppoMoney',ppoStockQty)
+      biWeight = (Number(ppoStockQty)*Number(botTableList.bpSWeight)).toFixed(2)
+      ppoArea = (Number(ppoStockQty)*Number(botTableList.ppoSarea)).toFixed(2)
+      ppoCube = (Number(ppoStockQty)*Number(botTableList.ppoSCube)).toFixed(2)
+      this.$refs.rigntTopTable.set({
+        ppoMoney,biWeight,ppoArea,ppoCube,ppoStockQty,ppoQty
+      },index?index:this.rightTopClickIndex)
+    },
+    // 控制Bottom表格采购数量最大值
+    maxppStockQty(data){
+      if (!!data && !!data.ppQty) {
+        return data.ppQty
+      }
+      return 99999
+    },
+    //确认按钮回调
+    submitFormDataEvent(){
+      this.isLoaddingDone = false
+      setTimeout(() => {
+        this.showWindow = false
+        this.$emit('submitEvent',this.slavesForm)
+        this.isLoaddingDone = true
+      }, 200);
+    },
+  },
+};
+ 
+</script>
+<style lang='scss'>
+.ivu-form-item-text2 .ivu-form-item-content {
+  margin-left: 2.8125rem !important;
+}
+.tableList {
+  display: flex;
+  // height: 500px;
+  width: 100%;
+  // border: 1px solid red;
+  .leftTable {
+    width: 48%;
+    height: 100%;
+    // border: 1px solid blue;
+  }
+  .centerTable {
+    width: 4%;
+    height: 100%;
+    // border: 1px solid blue;
+    display: flex;
+    flex-direction: column;
+    // justify-content:center;
+    padding-top: 200px;
+    Button {
+      margin-bottom: 20px;
+    }
+  }
+  .rightTable {
+    width: 48%;
+    height: 100%;
+    // border: 1px solid blue;
+    display: flex;
+    flex-direction: column;
+  }
+}
+</style>
