@@ -1,0 +1,576 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-warehouse"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="true"
+      width="80%"
+      :loading="!isLoaddingDone"
+      :spinLoaddingText="spinLoaddingText"
+      @on-ok="formTableDataSubmit()"
+      v-if="initData.columns"
+    >
+    <Form
+        ref="formDataInfo"
+        :show-message="true"
+        :model="formDataInfo.master"
+        :rules="ruleValidate"
+        :label-width="100"
+      >
+         <Row>
+          
+             <Col span="8">
+               <FormItem label="完工编号" prop="hpNo">
+                  <Input
+                    :disabled="true"
+                     v-model="formDataInfo.master.hpNo"
+                     maxlength="20"
+                  ></Input>
+                </FormItem>
+           </Col>
+           
+             <Col span="8">
+               <FormItem label="完工时间" prop="completeDate">
+                  <DatePicker
+                      v-model="formDataInfo.master.completeDate" 
+                      type="date"
+                      format="yyyy-MM-dd"
+                    ></DatePicker>
+                </FormItem>
+           </Col>
+ 
+            
+             <Col span="8">
+               <FormItem label="备注" prop="remark">
+                  <Input
+                    :disabled="detailDisabled"
+                     v-model="formDataInfo.master.remark"
+                     maxlength="40"
+                  ></Input>
+                </FormItem>
+           </Col>
+             <Col span="8">
+               <FormItem label="工序" prop="wpName">
+                  
+                  <popup
+                   v-model="formDataInfo.master.wpNo"
+                   field-name="wpNo"
+                   :disabled="detailDisabled"
+                   popup-name="WorkProcSingleBox"
+                  :fill-model.sync="formDataInfo.master"
+                   render-fields="wpId,wpName,wpNo"
+                   from-fields="id,wpName,wpNo"
+                   :suffix="true"
+                   :suffix-model="formDataInfo.master.wpName"
+                  suffixModelName="wpName" 
+                  :query-params="{}"
+                  @on-fill="onFillEvent_wpNo"
+                   >
+                   </popup>
+                </FormItem>
+           </Col>
+             <Col span="8">
+               <FormItem label="机台" prop="moCode">
+                    
+                    <popup
+                   v-model="formDataInfo.master.moCode"
+                   field-name="moCode"
+                   :disabled="detailDisabled"
+                   popup-name="MachineSingleBox"
+                  :fill-model.sync="formDataInfo.master"
+                   render-fields="moId,moName,moCode"
+                   from-fields="id,moName,moCode"
+                   :suffix="true"
+                   :suffix-model="formDataInfo.master.moName"
+                  suffixModelName="moName" 
+                  :query-params="{}"
+                   >
+                   </popup>
+                </FormItem>
+           </Col>
+             <Col span="8">
+               <FormItem label="班別" prop="teamCode">
+                 
+                    <popup
+                      v-model="formDataInfo.master.teamCode"
+                      field-name="teamCode"
+                      :disabled="detailDisabled"
+                      popup-name="TeamSingleBox"
+                      :fill-model.sync="formDataInfo.master"
+                      render-fields="teamId,teamCode,teamName"
+                      from-fields="id,teamCode,teamName"
+                      :suffix="true"
+                      :suffix-model="formDataInfo.master.teamName"
+                       suffixModelName="teamName" 
+                      :query-params="{}"
+                       @on-fill="onFillEvent_teamCode"
+                    />
+                </FormItem>
+           </Col>
+        </Row>
+     </Form>  
+      <Tabs v-if="showWindow" :animated="false">
+        <!--  注意:eTable formDataInfo.wareHoaddrSlaveFormDataDTOuseItems.defaultList  ===addrSlaveFormDataDTO=== 需要根据实际接口修改,其它不变-->
+        <TabPane label="工序完工登记明细表" name="cusList">
+            <eTable
+           :showContextMenu="true"
+            ref="ref_table1"
+            unqiue-mark="id"
+             :height="580"
+            :index-menu="true"
+            :col-start="0"
+            :width="200"
+            :data="formDataInfo['boxHalfProdItems'].defaultList"
+            :row-init-data="initData.initData[`${formInitPreName}boxhalfproditemFm`]"
+            :rules="subTable2FieldsValidator"
+          >
+            <template slot="head">
+              <tr v-for="(columnGroup,index) in initData.columns[`${formInitPreName}boxhalfproditemFm`].editGroups" :key="index">
+                <th  :class="`ivu-table-column-${column.titleAlign}`"
+                v-for="(column,index2) in columnGroup" :key="index2"
+                :width="column.editWidth"
+                :colspan="column.colSpan"
+                :rowspan="column.rowSpan"
+                :columnKey="column.key"
+                >
+                  <div class="ivu-table-cell">
+                    <span class="">{{column.title}}</span>
+                  </div>
+                </th>
+
+              </tr>
+            </template>
+            <template
+              slot="body"
+              slot-scope="{ row, index, valueChangeAssign }"
+            >
+              <td :class="`ivu-table-column-${column.align}`"
+               v-for="(column,subIndex) in initData.columns[`${formInitPreName}boxhalfproditemFm`].editColumns"
+               :key="subIndex"
+               :width="column.editWidth">
+                  <!--控件特殊处理 工单号  -->
+                <Input
+                  v-if="column.key == 'workNo'"
+                  v-model="row[column.key]"
+                  :disabled="detailDisabled"
+                  icon="md-add"
+                  @on-click="onSelect_workNo(index)"
+                  @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'workNo');
+                      }
+                    "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+                
+                  <formControl v-else :control-type="column.controlType"
+                    v-model="row[column.key]" :disabled="column.readOnly"
+                    @input="value => {valueChangeAssign(value, index, row,column.key+'')}"
+                ></formControl>
+
+              </td>
+            </template>
+          </eTable>
+        </TabPane>
+        <TabPane  label="工分分配" name="addrList">
+               <eTable
+           :showContextMenu="true"
+            ref="ref_table2"
+            unqiue-mark="id"
+             :height="580"
+            :index-menu="true"
+            :col-start="0"
+            :width="200"
+            :data="formDataInfo['boxHalfProdWorkers'].defaultList"
+            :row-init-data="initData.initData[`${formInitPreName}boxhalfprodworkerFm`]"
+            :rules="subTable2FieldsValidator"
+          >
+            <template slot="head">
+              <tr v-for="(columnGroup,index) in initData.columns[`${formInitPreName}boxhalfprodworkerFm`].editGroups" :key="index">
+                <th  :class="`ivu-table-column-${column.titleAlign}`"
+                v-for="(column,index2) in columnGroup" :key="index2"
+                :width="column.editWidth"
+                :colspan="column.colSpan"
+                :rowspan="column.rowSpan"
+                :columnKey="column.key"
+                >
+                  <div class="ivu-table-cell">
+                    <span class="">{{column.title}}</span>
+                  </div>
+                </th>
+
+              </tr>
+            </template>
+            <template
+              slot="body"
+              slot-scope="{ row, index, valueChangeAssign }"
+            >
+              <td :class="`ivu-table-column-${column.align}`"
+               v-for="(column,subIndex) in initData.columns[`${formInitPreName}boxhalfprodworkerFm`].editColumns"
+               :key="subIndex"
+               :width="column.editWidth">
+                  <!--控件特殊处理 员工编号  -->
+                <Input
+                  v-if="column.key == 'workCode'"
+                  v-model="row[column.key]"
+                  :disabled="detailDisabled"
+                  icon="md-add"
+                  @on-click="onSelect_workCode(index)"
+                  @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'workCode');
+                      }
+                    "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+                
+                  <formControl v-else :control-type="column.controlType"
+                    v-model="row[column.key]" :disabled="column.readOnly"
+                    @input="value => {valueChangeAssign(value, index, row,column.key+'')}"
+                ></formControl>
+
+              </td>
+            </template>
+          </eTable>
+          </TabPane>
+          <!--  注意:eTable formDataInfo.contactSlaveFormDataDTO.defaultList  ===contactSlaveFormDataDTO=== 需要根据实际接口修改,其它不变-->
+      </Tabs>
+    </editWindow>
+     <workNoCP @submit-success="submitSelected_workNo" :otherParams="otherParams" ref="workNoCPRef"></workNoCP>
+    <workCodeCP @submit-success="submitSelected_workCode" :otherParams="otherParams" ref="workCodeCPRef"></workCodeCP>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:07:54
+ */
+import workNoCP from './edit-boxhalfprod-workNo.vue'
+ import workCodeCP from './edit-boxhalfprod-workCode.vue'
+import allCityList from '@/libs/area-data-min.js'
+import uploadImg from '@/components/cl-erp/uploadImg'
+import formControl from '@/components/form-control/form-control'
+import editWindow from '@/components/edit-window/edit-window'
+import referenceField from '@/components/referenceField/referenceField'
+import { customValidator, uniqueValidator } from '@/libs/validator'
+ import Form from '@/components/form/form'
+import eTable from '@/components/e-table/e-table'
+import request from '@/libs/request'
+import editBaseMixins from '../../mixins/edit'
+import popup from '@/components/popup/popup'
+import optionSearch from '../../components/optionSearch'
+import { deepCopy } from 'view-design/src/utils/assist'
+import dayjs from 'dayjs'
+const default_formDataInfo = {
+  // 主表 更改字段
+  master: {
+    completeDate: dayjs().format('YYYY-MM-DD'),
+		hpNo: "",
+		moCode: "",
+		moId: 0,
+		moName: "",
+		remark: "",
+		teamCode: "",
+		teamId: 0,
+		teamName: "",
+		wpId: 0,
+		wpName: "",
+		wpNo: ""
+  },
+  // 子表 工序完工登记明细表
+  boxHalfProdItems: {
+    addList: [], // 添加列
+    defaultList: [], // 默认列
+    deleteList: [], // 删除列
+    updateList: [] // 更新列
+  },
+  // 子表 工分分配
+  boxHalfProdWorkers: {
+    addList: [], // 添加列
+    defaultList: [], // 默认列
+    deleteList: [], // 删除列
+    updateList: [] // 更新列
+  }
+}
+export default {
+  name: 'edit-customerInfo',
+  mixins: [editBaseMixins],
+  components: {
+    workCodeCP,
+    workNoCP,
+    uploadImg,
+    editWindow,
+    popup,
+    optionSearch,
+    formControl,
+    // Form,
+    eTable,
+    referenceField
+  },
+  data () {
+    return {
+      select_workCodeIndex:0,// 选择行下标
+      select_workNoIndex:0,// 选择行下标
+      otherParams:{}, // 其它查询参数
+      popAddrValue:[],//地址弹框当前地址
+      showAddrWindow:false,//地址选择弹框
+      showAddrWindowType:'main',//地址弹框类型,sub/main
+      cityList:allCityList,
+      subindex: 1, // 子表点击行
+      frommastername: 'boxhalfprodFm',
+      actionSubtitle: '工序完工登记', // 当前操作副标题
+      formName: 'boxhalfprodFm',
+      currentSubItemlength_addr: 0, // 当前子表数据个数
+      formInitPreName: '', // 初始化信息查询 前缀 字段
+      requestBaseUrl: '/mrp/boxHalfProd', // 请求 查询 操作的基础路径
+      formDataInfo: deepCopy(default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      // 需要验证的数据
+      ruleValidate: {
+        cusCode: [
+          { required: true, message: '客户编号不能为空', trigger: 'blur' },
+          {
+            validator: uniqueValidator,
+            trigger: 'blur',
+            fieldDesc: '客户编号',
+            params: {
+              fieldName: 'cusCode',
+              formName: 'customerFm',
+              id: () => {
+                return this.formDataInfo.master.id
+              }
+            }
+          }
+        ],
+        payName: [
+          { required: true, message: '付款方式不能为空', trigger: 'blur' }
+        ],
+        cusName: [
+          { required: true, message: '客户不能为空', trigger: 'blur' }
+        ],
+        coinCode: [
+          { required: true, message: '计算货币不能为空', trigger: 'blur' }
+        ],
+        payCode: [
+          { required: true, message: '计算方式不能为空', trigger: 'blur' }
+        ],
+        areaIds: [
+          { required: true, message: '地区不能为空', trigger: 'blur,change' } //, type:'array'
+        ],
+        shortName:[
+          { required: true, message: '简称不能为空', trigger: 'blur' } //, type:'array'
+        ],
+      },
+      tableFieldsValidator: {
+
+      },
+     subTable2FieldsValidator:{},
+
+    }
+  },
+  computed:{
+      masterareaIds(){
+        let originData = this.formDataInfo.master.areaIds
+        if(!!originData &&  originData.includes(',')){
+            return originData.split(',')
+        }else{
+          return []
+        }
+
+      }
+  },
+ 
+  methods: {
+    // 查询列表查询班别人员
+     getWorkerDataById () {
+      // debugger
+      let url = `/bas/team/item/list`
+      let data = {
+        teamId: this.formDataInfo.master.teamId
+      }
+      let _self = this
+      request.post(url, data).then(res => {
+         debugger
+      })
+    },
+    // 班别选择 回调
+    onFillEvent_teamCode(params){
+      if(!!params){
+        this.getWorkerDataById()
+      }
+    },
+    // 工序选择 回调
+    onFillEvent_wpNo(params){
+      this.otherParams = {
+          searchParams_wpNo: params[0].data,
+          filter:this.getfilterList(),// 已有数据列表IDS
+      }
+    },
+    // 获取表格数据
+    getTableData(_tableRefName ='ref_table1'){
+      let ref_tableObj = this.$refs[_tableRefName]
+      let tableData = ref_tableObj.get()
+      return tableData
+    },
+    // 已选择的工单号列表,用于过滤
+    getfilterList(){
+      let workNoStr=""
+      let tableData = this.getTableData()
+      if(tableData.length>0){
+          tableData.forEach(item=>{
+          if(workNoStr==""){
+            if(item.workNo!=""){
+              workNoStr = item.workNo
+            }
+          }else{
+            workNoStr =workNoStr+"," +item.workNo
+          }
+        })
+      }
+   
+      return workNoStr
+    },
+     // 员工编号 弹框选择数据 返回列表
+    submitSelected_workCode(_selectedData){
+       //debugger
+      let selectDataList = []
+      // 获取子表数据
+      let ref_table2_Data = this.$refs['ref_table2']
+       selectDataList= this.itemAdapter(_selectedData)
+      selectDataList.forEach(item=>{
+          ref_table2_Data.set(item, this.select_workCodeIndex++)
+      })
+    },
+    // 工单号 弹框选择数据 返回列表
+    submitSelected_workNo(_selectedData){
+       //debugger
+      let selectDataList = []
+      // 获取子表数据
+      let ref_table1_Data = this.$refs['ref_table1']
+       selectDataList= this.itemAdapter(_selectedData)
+      selectDataList.forEach(item=>{
+          ref_table1_Data.set(item, this.select_workNoIndex++)
+      })
+    },
+      // 实体转换,获取相同Key的value,个别不同的手动修改值
+    itemAdapter (dataList) {
+      let newDataList = []
+      dataList.forEach(oldItem => {
+        let newItem = JSON.parse(
+          JSON.stringify(
+            this.initData.initData["boxhalfproditemFm"]
+          )
+        )
+        let newItemKeys = Object.keys(newItem)
+        newItemKeys.forEach(itemKey => {
+          newItem[itemKey] = null
+          if (oldItem[itemKey] || oldItem[itemKey] ==0 || oldItem[itemKey]=='0'){
+            newItem[itemKey] = oldItem[itemKey]
+          }
+        })
+      
+        //= ===== 额外需要转换的字段S=======
+        //newItem.iciZk = oldItem.discount // 折扣
+        //= ===== 额外需要转换的字段E=======
+        newDataList.push(newItem)
+      })
+      return newDataList
+    },
+
+    // 工单号 弹框选择数据
+    onSelect_workNo(_index){
+        this.select_workNoIndex = _index
+        let wpId = this.formDataInfo.master.wpId
+        if(wpId==""){
+          this.$Message.warning('请先选择工序')
+          return
+        }
+        let workNoCPRefObj = this.$refs["workNoCPRef"]
+        workNoCPRefObj.showWindow = true
+    },
+    // 员工编号 弹框选择数据
+    onSelect_workCode(_index){
+      //debugger
+        this.select_workCodeIndex = _index
+        let workCodeCPRefObj = this.$refs["workCodeCPRef"]
+       workCodeCPRefObj.showWindow = true
+    },
+      // 提交主从表数据,延迟提交,防止个别计算来不及验证
+    formTableDataSubmit () {
+      let wpId = this.formDataInfo.master.wpId
+      if(wpId==""){
+        this.$Message.warning('请先选择工序')
+        return
+      }
+      let teamId = this.formDataInfo.master.teamId
+      if(teamId==""){
+        this.$Message.warning('请先选择班别')
+        return
+      }
+      let ref_table1_data = this.getTableData("ref_table1")
+      if(ref_table1_data && ref_table1_data.length==0){
+         this.$Message.warning('工序不能为空')
+          return
+      }
+      let ref_table2_data = this.getTableData("ref_table2")
+      if(ref_table2_data && ref_table2_data.length==0){
+           this.$Message.warning('工分不能为空')
+          return
+       }
+      let _self = this
+      setTimeout(()=>{
+        this.$refs['formDataInfo'].validate(valid => {
+          if (!valid) {
+            return
+          }
+         // debugger
+          let submitData = _self.resetformDataInfo()
+          let _url=`${_self.requestBaseUrl}/saveOrUpdate`
+          request.post(_url, submitData).then(res => {
+              this.showWindow = false // 关闭当前编辑页面
+              this.$Message.success('执行成功')
+              this.$emit('submit-success') // 刷新主页面数据
+            })
+          })
+      },1000)
+    },
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo () {
+      this.formDataInfo = deepCopy(default_formDataInfo)
+    },
+   
+    // 修改提交数据
+    resetformDataInfo (_data) {
+        let tableData = this.$refs['ref_table1'].getCategorizeData()
+        this.formDataInfo["boxHalfProdItems"] = tableData
+
+        let tableData2 = this.$refs['ref_table2'].getCategorizeData()
+        this.formDataInfo["boxHalfProdWorkers"] = tableData2
+        this.formDataInfo.master.completeDate =dayjs(this.formDataInfo.master.completeDate).format('YYYY-MM-DD HH:mm:ss')
+      return this.formDataInfo
+    }
+  },
+ 
+}
+</script>
+
+<style>
+/* .cl-edit-warehouse .ivu-form-item {
+  margin-bottom: 5px !important;
+} */
+.cl-edit-warehouse .ivu-select-item {
+  display: block;
+}
+</style>

@@ -1,0 +1,346 @@
+<template>
+  <div>
+    <editWindow
+    :draggable="false"
+      :zindex="30"
+      id="cl-edit-salesOrder"
+      title="工序工单数据选择"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="90%"
+      :loading="false"
+      @on-ok="submitFormDataEvent"
+      :showPage='true'
+      ref="editWindow"
+      :showPageConfig="true"
+      @pageOnChange="pageOnChange"
+    >
+      <template slot="footer">
+        <div>
+            <Button :disabled="disabled_submitBtn" @click="selectAll()" type="primary">
+                <Icon type="ios-apps" />
+                全 选
+            </Button>
+          <Button :disabled="disabled_submitBtn" @click="submitFormDataEvent()" type="primary">
+                <Icon type="ios-arrow-down" />
+                确 定
+            </Button>
+           <Button @click="cancel()">
+                <Icon color="red" type="md-close" />
+                取 消
+            </Button>
+        </div>
+     </template>
+      <div>
+        <Form
+          ref="masterForm"
+          :show-message="true"
+          :model="searchForm"
+          :rules="ruleValidate"
+          :label-width="80"
+        >
+          <div class="edit-purPaperPoSlave">
+            <Row  type="flex">
+                 <Col span="4">
+                     <FormItem label="工单号" :label-width="80">
+                        <Input
+                            v-model="searchForm.workNo"
+                            maxlength="20"
+                        ></Input>
+                   </FormItem>
+                 </Col>
+                   <Col span="4">
+                        <FormItem label="客户编号" :label-width="80">
+                            <Input
+                                v-model="searchForm.cusCode"
+                                maxlength="20"
+                            ></Input>
+                    </FormItem>
+                    </Col>
+                    <Col span="4">
+                        <FormItem label="客户简称" :label-width="80">
+                            <Input
+                                v-model="searchForm.cusName"
+                                maxlength="20"
+                            ></Input>
+                    </FormItem>
+                 </Col>
+              <Col span="8">
+                  <Row type="flex">
+                  <Col span="12">
+                    <FormItem label="交货日期" :label-width="80">
+                      <DatePicker
+                        type="date"
+                        format="yyyy-MM-dd"
+                        :editable='false'
+                        :clearable='false'
+                        @on-change="datePicker_onChange_startDate"
+                        v-model="searchForm.startDate"
+                      ></DatePicker>
+                    </FormItem>
+                  </Col>
+                   <Col span="12">
+                    <FormItem label="--" :label-width="30">
+                      <DatePicker
+                        type="date"
+                        format="yyyy-MM-dd"
+                        :clearable='false'
+                        :editable='false'
+                        @on-change="datePicker_onChange_endDate"
+                        v-model="searchForm.endDate"
+                      ></DatePicker>
+                    </FormItem>
+                  </Col>
+                </Row>
+              </Col>
+            
+              <Col span="1">
+                <FormItem  :label-width="5">
+                  <Button type="primary" @click="searchData()">搜索</Button>
+                </FormItem>
+              </Col>
+            </Row>
+          </div>
+        </Form>
+
+        <Tabs v-if="initData.columns">
+          <TabPane >
+           <eTable
+            :showContextMenu="false"
+                ref="ref_table1"
+                unqiue-mark="id"
+                :height="480"
+                :index-menu="true"
+                :col-start="0"
+                 :data="ref_table1_data"
+          >
+            <template slot="head">
+              <tr v-for="(columnGroup,index) in initData.columns[`getboxhalfprodworkFm`].editGroups" :key="index">
+                <th  :class="`ivu-table-column-${column.titleAlign}`"
+                v-for="(column,index2) in columnGroup" :key="index2"
+                :width="column.editWidth"
+                :colspan="column.colSpan"
+                :rowspan="column.rowSpan"
+                :columnKey="column.key"
+               
+                >
+                  <div class="ivu-table-cell">
+                    <span class="">{{column.title}}</span>
+                  </div>
+                </th>
+
+              </tr>
+            </template>
+            <template
+              slot="body"
+              slot-scope="{ row, index, valueChangeAssign }"
+            >
+              <td :class="`ivu-table-column-${column.align}`"
+               v-for="(column,subIndex) in initData.columns[`getboxhalfprodworkFm`].editColumns"
+               :key="subIndex"
+               :width="column.editWidth">
+                 <formControl :control-type="column.controlType"
+                    v-model="row[column.key]" :disabled="column.readOnly"
+                    @input="value => {valueChangeAssign(value, index, row,column.key+'')}"
+                ></formControl>
+              </td>
+            </template>
+          </eTable>
+          </TabPane>
+        </Tabs>
+     
+      </div>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author ming xing
+ *
+ * @created 2020/03/12 17:07:54
+ */
+const  default_pageConfig = {
+        pageNum:1,//(当前页),
+        pageSize:10,//(每页显示条数)
+        total:0,// 总条数
+    }
+import tableSelect from "@/components/table-select/table-select";
+import editWindow from "@/components/edit-window/edit-window";
+import eTable from "@/components/e-table/e-table";
+import request from "@/libs/request";
+import popup from "@/components/popup/popup";
+import editBaseMixins from "../../mixins/edit";
+import InputNumber from "@/components/input-number";
+import formControl from "@/components/form-control/form-control";
+import dayjs from "dayjs";
+const default_searchForm={
+            wpId:"",//  (工序id),
+            workNo:"",// (工单号),
+            startDate:dayjs().subtract(1, 'month').format("YYYY-MM-DD"),// (交货开始日期),
+            endDate:dayjs().format('YYYY-MM-DD'),// (交货结束日期),
+            cusCode:"",// (客户编号),
+            cusName:"",// (客户简称),
+            filter:"",// (已选择的工单号列表,用于过滤),
+            pageNumber:1,// (页码),
+            pageSize:10,// (页大小)
+      }
+export default {
+  name: "edit-boxhalfprod-workNo",
+  mixins: [editBaseMixins],
+  components: {
+    editWindow,
+    popup,
+    tableSelect,
+    eTable,
+    InputNumber,
+    formControl
+  },
+  props: {
+    otherParams: {
+      type: Object,
+      default(){
+          return {}
+      }
+    }
+  },
+  data() {
+    return {
+        ref_table1_data:[],// 表格数据
+      initData:{},// 表格初始化数据
+      showWindow:false,
+      ruleValidate: {},
+      // 查询工序完工登记工单号弹出框数据
+      searchForm:Object.assign({},default_searchForm)
+    };
+  },
+  watch:{
+      showWindow(n,o){
+
+          if(!!n){
+                 // debugger
+                 if(this.otherParams && this.otherParams.wpId){
+                     this.searchForm.wpId = this.otherParams.wpId
+                 }
+                 if(this.otherParams.filter){
+                   this.searchForm.filter = this.otherParams.filter
+                 }
+                 
+                 this.loadColums()
+          }else{
+             this.ref_table1_data=[]// 表格数据
+             this.resetSearchForm()
+             this.$refs["masterForm"].resetFields();
+             this.pageConfig=Object.assign({},default_pageConfig)
+          }
+      }
+  },
+  computed: {},
+  methods: {
+    // 关闭当前窗口
+    cancel(){
+       this.showWindow = false; 
+    },
+    // 全选
+    selectAll(){
+    this.ref_table1_data = this.ref_table1_data.map(item=>{
+          item.iisChose = !item.iisChose
+          return item
+      })  
+    },
+     datePicker_onChange_startDate(params){
+         this.searchForm.startDate = params
+     },
+     datePicker_onChange_endDate(params){
+        this.searchForm.endDate = params
+     },
+     // 加载列头数据
+    loadColums(){
+        let formName="getboxhalfprodworkFm"
+        let url = `/sys/form/init/${formName}`
+        request.get(url).then(res => {
+          debugger
+          if(res!=null){
+            this.initData = res
+          } 
+        })
+    },
+    pageOnChange(_pageNum){
+      this.searchForm.pageNumber = Number(_pageNum) 
+      this.searchData(true)
+    },
+    resetSearchForm(){
+        this.searchForm=Object.assign({},default_searchForm)
+    },
+    //搜索点击事件
+    searchData(searchByPage=false) {
+       // debugger
+      let _self = this
+      let _url=`/mrp/boxHalfProd/getBoxProductWorkInfo`
+      if(this.searchForm.pageNumber==1 || !searchByPage){
+          _self.ref_table1_data=[]
+      }
+     if(!searchByPage){
+         _self.searchForm.pageNumber = 1
+        _self.pageConfig=Object.assign({},default_pageConfig)
+     }
+      let params = this.searchForm
+       params.startDate=dayjs(params.startDate).format("YYYY-MM-DD"),// (交货开始日期),
+       params.endDate=dayjs(params.endDate).format('YYYY-MM-DD'),// (交货结束日期)
+      request
+        .post(_url, params)
+        .then(res => {
+            //debugger
+          if (res && res.records) {
+             _self.ref_table1_data.push(...res.records)
+             _self.pageConfig.total = Number(res.total)  // 赋值总条数
+             _self.$refs['editWindow'].pageConfig= _self.pageConfig
+          }
+        });
+    },
+    getSelectData(){
+    //  debugger
+      let tableTable = this.$refs["ref_table1"].get()
+      let selectedData =[]
+      if(tableTable && tableTable.length>0){
+         tableTable.forEach(item=>{
+          if (item.iisChose == true) {
+            selectedData.push(item);
+          }
+        })
+      }
+     return selectedData
+   
+    },
+    //表单数据提交事件
+    submitFormDataEvent() {
+       let selectedData = this.getSelectData()
+       this.$emit('submit-success',selectedData)
+       this.showWindow = false; // 关闭当前窗口
+    },
+
+ 
+    
+  },
+ 
+};
+</script>
+<style >
+.ivu-form-item-text2 .ivu-form-item-content {
+  margin-left: 2rem !important;
+}
+.inUser{
+  width: 160px;
+}
+.labelClass{
+  width: 310px;
+}
+</style>

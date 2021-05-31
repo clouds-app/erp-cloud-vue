@@ -255,6 +255,7 @@ export default {
       this.onFill(item, isArray);
     },
     mappingReplace(replaceItem) {
+      debugger
       //返回结果替换
       if (this.fillMappingList && this.fillMappingList.length > 0) {
         let data = {};
@@ -268,6 +269,7 @@ export default {
         //return Object.assign(data,item);
         return data;
       }
+      debugger
       return replaceItem;
     },
     inputEvent(value) {
@@ -335,7 +337,7 @@ export default {
       }
       //大于0，先替换当前行
       if (data.length > 0) {
-        let obj1 = !!this.fillModelObj[this.index]?this.fillModelObj[this.index]:{}
+        let obj1 = !!this.fillModelObj[this.index]?his.fillModelObj[this.index]:{}
         let newData = Object.assign(
           obj1,
           this.mappingReplace(data[0])

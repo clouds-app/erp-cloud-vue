@@ -129,7 +129,6 @@
                   from-fields="workCode,workName"
                   :index="index"
                   :init-data="{}"
-                   :excludeParams="{'workCode$notIn':getfilter_workCode()}"
                   :query-params="{}"
                   @input="
                           value => {
@@ -282,20 +281,6 @@ export default {
   },
 
   methods: {
-     // 員工過濾
-    getfilter_workCode(){
-      if(!!this.$refs.tableFields){
-       let dataList = this.$refs.tableFields.get()
-       let filterCode = ''
-       dataList.filter(item=>{
-         if (!!item.workCode) {
-           filterCode += item.workCode+','
-         }
-       })
-       return filterCode.substr(0,filterCode.length-1)
-      }
-      return ''
-    },
     // 重写父类,添加时候,清空数据
     HandleFormDataInfo () {
       this.formDataInfo = Object.assign({}, default_formDataInfo)

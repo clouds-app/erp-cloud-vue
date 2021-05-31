@@ -15,7 +15,8 @@ export default {
   baseUrl: {
     dev: 'http://192.168.0.5:9999',
     pro: 'http://erp.szclsoft.com/erp'
-    // http://192.168.0.5:9999
+    // http://134.175.53.247/erp
+    //http://134.175.53.247/erp
   },
   reportUrl:'http://erp.szclsoft.com/erp',
   /**

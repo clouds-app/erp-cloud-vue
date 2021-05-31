@@ -28,25 +28,18 @@
           <div class="arrowRightConfig">
                 <div class="arrowRightIcon"></div>
           </div>
-          <div class="itemIconRight">
-               <div  class="circleBallItem processOutsourcing cursorPointer" :class="[secondenum.boxhalfprod.val.disabled?'diabledOrAccess':'']" @click="handleSubMenuEvent('boxhalfprod','mrp-boxhalfprod','工序完工登记',secondenum.boxhalfprod.val.disabled)">
-                <div class="itemIcon">
-                  <div class="itemIconTitle">工序完工登记</div>
-                </div>
-              </div>
-            </div> 
-         <!-- <div class="itemIconRight">
+         <div class="itemIconRight">
               <div  class="circleBallItem productOutsourcing cursorPointer" :class="[secondenum.prosendout.val.disabled?'diabledOrAccess':'']" >
                 <div class="itemIcon">
-                  <div class="itemIconTitle">产品外发</div>
+                  <!-- <div class="itemIconTitle">产品外发</div> -->
                 </div>
               </div>
-               <div  class="circleBallItem processOutsourcing cursorPointer" :class="[secondenum.procedureout.val.disabled?'diabledOrAccess':'']" @click="handleSubMenuEvent('procedureout','mrp-procedureout','工序外发',secondenum.prosendout.val.disabled)">
+              <!--  <div  class="circleBallItem processOutsourcing cursorPointer" :class="[secondenum.procedureout.val.disabled?'diabledOrAccess':'']" @click="handleSubMenuEvent('procedureout','mrp-procedureout','工序外发',secondenum.prosendout.val.disabled)">
                 <div class="itemIcon">
                   <div class="itemIconTitle">工序外发</div>
                 </div>
-              </div>
-            </div>  -->
+              </div>-->
+            </div> 
 
     </div>
     <div class="mrpItem rightItem">

@@ -335,7 +335,7 @@ export default {
       }
       //大于0，先替换当前行
       if (data.length > 0) {
-        let obj1 = !!this.fillModelObj[this.index]?this.fillModelObj[this.index]:{}
+        let obj1 = !!this.fillModelObj[this.index]?his.fillModelObj[this.index]:{}
         let newData = Object.assign(
           obj1,
           this.mappingReplace(data[0])
