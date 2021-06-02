@@ -353,9 +353,9 @@ export default {
         teamCode: [
           { required: true, message: '班别不能为空', trigger: 'blur' }
         ],
-        // completeDate: [
-        //   { required: true, message: '完工时间不能为空', trigger: 'blur' }
-        // ],
+        completeDate: [
+          { required: true, message: '完工时间不能为空', trigger: 'blur' }
+        ],
       },
       tableFieldsValidator: {
 
