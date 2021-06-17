@@ -116,7 +116,7 @@
                 type="customer"
                 size="small"
                 @click="importAction()"
-                >导入{{currentActivedPage}}</clButton
+                >导入</clButton
               >
             </div>
           </div>
@@ -650,11 +650,6 @@ export default {
     }
   },
   computed: {
-      // 当前激活的页面，也就是当前选择的二级菜单
-    currentActivedPage() {
-      let _currentActivedPage = this.$store.state.app.currentActivedPage;
-      return _currentActivedPage;
-    },
     // 上一条/下一条信息
     preOrNextAction() {
       let actionType = this.$store.state.app.preOrNextAction;

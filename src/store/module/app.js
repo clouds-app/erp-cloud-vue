@@ -83,7 +83,8 @@ export default {
     homeRoute: getHomeRoute(routers, homeName),
     local: localRead('local'),
     errorList: [],
-    hasReadErrorPage: false
+    hasReadErrorPage: false,
+    currentActivedPage:"",// 当前激活的页面，也就是当前选择的二级菜单
   },
   getters: {
     operationConfig_getter: state => state.operationConfig,
@@ -92,6 +93,10 @@ export default {
     errorCount: state => state.errorList.length
   },
   mutations: {
+     // // 当前激活的页面，也就是当前选择的二级菜单
+      setCurrentActivedPage (stata, data) {
+      stata.currentActivedPage = data
+     },
      // 设置>>当前分页数据加载完毕=====page======
       setPageDataLoaddingDone (stata, data) {
         stata.pageDataLoaddingDone = data

@@ -8,6 +8,32 @@ import ViewUI from 'view-design'
 import i18n from '@/locale'
 import config from '@/config'
 import XLSX from "xlsx";
+import XEUtils from 'xe-utils'
+import {
+	// 核心
+	VXETable,
+	Header,
+    Footer,
+	// 可选组件
+	Column,
+	Grid,
+	// 表格
+	Table
+  } from 'vxe-table'
+import zhCN from 'vxe-table/lib/locale/lang/zh-CN'
+ // 按需加载的方式默认是不带国际化的，自定义国际化需要自行解析占位符 '{0}'，例如：
+ VXETable.setup({
+	i18n: (key, args) => XEUtils.toFormatString(XEUtils.get(zhCN, key), args)
+ })
+
+  // 表格功能
+  Vue.use(Header)
+   .use(Footer)
+  // 可选组件
+  .use(Column)
+  .use(Grid)
+  // 安装表格
+  .use(Table)
 import importDirective from '@/directive'
 import installPlugin from '@/plugin'
 // import 'iview/dist/styles/iview.css'
@@ -18,17 +44,7 @@ import '@/assets/icons/iconfont.css'
 import _ from 'lodash'
 import request from './libs/request'
 import { _eventBus } from './libs/event-bus'
-// import 'xe-utils'
-// import VXETable from 'vxe-table'
-// import 'vxe-table/lib/index.css'
-// import './vex-tableReset.scss' // 样式重置
-// Vue.use(VXETable, {
-//   size: 'small',
-//   zIndex: 99999, // 全局 zIndex 起始值
-//   tooltipConfig: {
-//     // zIndex: 300000
-//   }
-// })
+
 // 右键菜单组件和样式
 import contentmenu from 'v-contextmenu'
 import 'v-contextmenu/dist/index.css'

@@ -139,18 +139,19 @@ export default {
         this.switchTopMenuHanle(this.contentType)
         //this.$store.commit('setCurrentSubMenu', this.cacheSelectedSubMenu)
          // 改用异步提交数据
-       this.$store.dispatch('setCurrentSubMenu_action',this.cacheSelectedSubMenu)
+        this.$store.dispatch('setCurrentSubMenu_action',this.cacheSelectedSubMenu)
+         this.$store.commit('setCurrentActivedPage',  "")
       }
     },
     // 回调事件 - 当前选中TAB 标签
     getCrrentActiveTab (uniqueKey) {
-      // debugger
+       //debugger
       this.turnToHome(uniqueKey)
       this.resetCurrentActiveTab(uniqueKey)
     },
     // 回调事件 -开打指定页面
     openSubMenu (params) {
-      // debugger
+       debugger
       this.currentSubMenuItem = params
       // 更新 hasSelectedSubMenu 数据
       this.switchTopMenuHanle(this.contentType)
@@ -159,7 +160,8 @@ export default {
     },
     // 回调事件 -点击tab 事件
     handlechange (params) {
-      //debugger
+     // debugger
+       this.$store.commit('setCurrentActivedPage',  params.uniqueKey)
       this.reSetOperationConfig(params)
       this.resetCurrentActiveTab(params.uniqueKey)
     },
@@ -235,6 +237,7 @@ export default {
           //  this.hasSelectedSubMenu = this.cacheSelectedSubMenu.Sale
           break
       }
+      //debugger
       this.contentType = key
       this.getCurrentOpenedTab()
     },
@@ -250,6 +253,10 @@ export default {
           item.isActive = false // 重置其它菜单为 未选中
           if (item.uniqueKey == uniqueKey) {
             arr[index].isActive = true
+          }
+          //debugger
+          if(item.lable == uniqueKey) {
+               this.$store.commit('setCurrentActivedPage', item.uniqueKey)
           }
         })
       }

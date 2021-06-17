@@ -1,0 +1,304 @@
+<template>
+  <div>
+    <editWindow
+      id="cl-edit-salesOrder"
+      title="纸箱订单导入"
+      v-model="ImportShowWindow"
+      :fullscreen="true"
+      :resizable='true'
+      width="95%"
+      :spinLoaddingText="spinLoaddingText"
+      @on-cancel='onCancel'
+      @on-ok='onOkEvent'
+      :loading="loading"
+      v-if="initData.columns"
+    >
+    <div class="topButton">
+        <Button type="warning" @click="getMould">下载模板</Button>
+        <Upload
+          action='http://192.168.0.5:9999/sale/boxCo/importOrder'
+          :format="format"
+          max-size='10240'
+          :on-success='onSuccess'
+          :on-error='onError'
+          :show-upload-list='false'
+          :data='uploadData'
+        >
+          <Button type="info">1.订单导入中间表</Button>
+        </Upload>
+        <Button type="success" @click="checkImportData">2.检查导入数据</Button>
+        <Button type="error" @click="ImportData">3.生成订单</Button>
+    </div>
+      <eTable
+        :showContextMenu="false"
+        ref="slave_list_table_edit"
+        unqiue-mark="id"
+        :height="tableHeight - 25"
+        :showDeleteEvent='true'
+        :index-menu="true"
+        :col-start="0"
+        :width="200"
+        :showEditMenu="true"
+        :row-init-data="initData.initData['saleboxcotempFm']"
+        :data.sync="submasterTableData"
+        :deleteValidator="comfirmDelete"
+        @row-delete='rowDelete'
+      >
+        <template slot="head">
+          <tr
+            v-for="(columnGroup, index) in initData.columns[`saleboxcotempFm`].editGroups"
+            :key="index"
+          >
+            <th
+                v-for="(column, index2) in columnGroup"
+              :key="index2"
+              :class="`ivu-table-column-${column.titleAlign}`"
+              :width="column.editWidth"
+                :colspan="column.colSpan"
+                :rowspan="column.rowSpan"
+                :columnKey="column.key"
+            >
+              <div class="ivu-table-cell">
+                <span class="">{{ column.title }}</span>
+              </div>
+            </th>
+          </tr>
+        </template>
+        <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
+          <template
+            v-for="(column, subIndex) in initData.columns[`saleboxcotempFm`].editColumns"
+          >
+            <td
+              :key="subIndex"
+              :class="`ivu-table-column-${column.align}`"
+              :width="column.editWidth"
+            >
+                  <!--控件特殊处理 生产长  -->
+                <inputNumber
+                  v-if="column.key == 'bpPSizeL'"
+                  v-model="row[column.key]"
+                  @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'bpPSizeL');
+                      }
+                    "
+                  size="small"
+                  :maxlength="3"
+                ></inputNumber>
+                  <!--控件特殊处理 生产宽  -->
+                <inputNumber
+                  v-else-if="column.key == 'bpPSizeW'"
+                  v-model="row[column.key]"
+                  @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'bpPSizeW');
+                      }"
+                  size="small"
+                  :maxlength="3"
+                ></inputNumber>
+                  <!--控件特殊处理 生产高  -->
+                <inputNumber
+                  v-else-if="column.key == 'bpPSizeH'"
+                  v-model="row[column.key]"
+                  @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'bpPSizeH');
+                      }
+                    "
+                  size="small"
+                  :maxlength="3"
+                ></inputNumber>
+                <!--控件特殊处理 生产盒式  -->
+                <popup
+                  v-else-if="column.key == 'bpPBoxName'"
+                  v-model="row.bpPBoxName" 
+                  field-name="bpPBoxName"
+                  popup-name="BoxSingleBox"
+                  @input="value => {valueChangeAssign(value, index, row, 'bpPBoxName')}"
+                  :fill-model.sync="submasterTableData"
+                  render-fields="bpPBoxId,bpPBoxCode,bpPBoxName"
+                  from-fields="id,boxCode,boxName"
+                  :index="index"
+                  :init-data="popupinitData"
+                   >
+                </popup>
+                <!--控件特殊处理 生产纸质  -->
+                <popup
+                  v-else-if="column.key == 'bpPArtCode'"
+                  v-model="row.bpPArtCode" 
+                  field-name="bpPArtCode"
+                  popup-name="ArtSingleBox"
+                  @input="value => {valueChangeAssign(value, index, row, 'bpPArtCode')}"
+                  :fill-model.sync="submasterTableData"
+                  render-fields="bpPArtId,bpPArtCode"
+                  from-fields="id,artCode"
+                  :index="index"
+                  :init-data="popupinitData"
+                   >
+                </popup>
+              <formControl
+                v-else 
+                :align="column.align"
+                :control-type="column.controlType"
+                v-model="row[column.key]"
+                :disabled="detailDisabled || column.readOnly"
+                @input="
+                  (value) => {
+                    valueChangeAssign(value, index, row, column.key);
+                  }"
+              ></formControl>
+            </td>
+          </template>
+        </template>
+      </eTable>
+    </editWindow>
+  </div>
+</template>
+
+<script>
+import tableSelect from "@/components/table-select/table-select";
+import editWindow from "@/components/edit-window/edit-window";
+// import Form from '@/components/form/form'
+import eTable from "@/components/e-table/e-table";
+import { setToken, getToken } from "@/libs/util";
+import request from "@/libs/request";
+import popup from "@/components/popup/popup";
+import editBaseMixins from "../../mixins/edit";
+import listBaseMixins from "../../mixins/list";
+import InputNumber from "@/components/input-number";
+import formControl from "@/components/form-control/form-control";
+import { customValidator } from "@/libs/validator";
+import dayjs from "dayjs";
+export default {
+  name: "edit-boxSalesOrderImport",
+  mixins: [editBaseMixins, listBaseMixins],
+  components: {
+    editWindow,
+    popup,
+    tableSelect,
+    eTable,
+    InputNumber,
+    formControl,
+  },
+  props: {
+    ImportShowWindow: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  watch: {
+    ImportShowWindow(n,o){
+      if(!!n){
+        this.onSuccess()
+      }
+    }
+  },
+  data() {
+    return {
+      format:['xlsx'],
+      loading: false, //加载状态
+      submasterTableData:[{}],
+      defaultInitData: {}, //初始数据
+      formInitPreName: "boxco", // 初始化信息查询 前缀 字段
+      formName: "saleboxcotempFm", // 初始化信息查询 表单字段
+      requestBaseUrl: "/sale/boxCo", // 请求 查询 操作的基础路
+    };
+  },
+  computed: {
+    uploadData(){
+      return {'token':getToken()}
+    },
+    popupinitData(){
+      return this.initData.initData.master
+    }
+  },
+  methods: {
+    //获取模板回调
+    getMould(){
+      try {
+        let token = getToken();
+        window.open("http://192.168.0.5:9999/sale/boxCo/downCOModuleFile?token="+token)
+      } catch (error) {
+        console.log(error);          
+      }
+    },
+    //订单导入中间表回调
+    setImportData(){},
+    // 文件上传成功钩子
+    onSuccess(...e){
+      this.loading = true
+      request.post('/sale/boxCo/boxCoTemp/list').then(res=>{
+        this.submasterTableData = res
+        this.loading = false
+      }).catch(err=>{
+        this.loading = false
+      })
+    },
+    // 文件上传失败钩子
+    onError(...e){
+      console.log('失败',e);
+    },
+    //检查导入订单
+    checkImportData(){
+      this.loading = true
+      request.post('/sale/boxCo/checkCoTemp').then(res=>{
+        this.onSuccess()
+        this.loading = false
+      }).catch(err=>{
+        this.loading = false
+      })
+    },
+    // 生成订单
+    ImportData(){
+      this.loading = true;
+      let _self = this;
+      request.post('/sale/boxCo/generateCo').then(res=>{
+        _self.$Message.success('操作成功');
+        _self.onSuccess()
+        this.loading = false
+      }).catch(err=>{
+        this.loading = false
+      })
+    },
+    // 关闭弹框回调
+    onCancel(){
+      this.$emit('on-cancel')
+    },
+    // 确定按钮回调，提交修改数据
+    onOkEvent(){
+      let tempList = this.submasterTableData
+      let _self = this
+      request.post('/sale/boxCo/batchUpdateTemp',{tempList}).then(res=>{
+        _self.$Message.success('修改成功');
+      }).catch(err=>{
+        _self.$Message.success('修改失败');
+        _self.onSuccess()
+      })
+    },
+    // 数据删除回调
+    rowDelete(index,data){
+      let _self = this,{id} = data,
+      _url = '/sale/boxCo/boxCoTemp/delete?id='+id
+      request.post(_url).then(res=>{
+        _self.$Message.success('删除成功');
+      }).catch(err=>{
+        _self.$Message.success('删除失败');
+        _self.onSuccess()
+      })
+    },
+  },
+};
+</script>
+
+<style>
+.importDiv {
+  height: 500px;
+  width: 500px;
+}
+.topButton{
+    display: flex;
+}
+.topButton button{
+    margin:  0 10px;
+}
+</style>

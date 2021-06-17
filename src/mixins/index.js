@@ -280,6 +280,7 @@ export default {
     },
     // 跳转到指定的页面,并且权限检查 缓存TAB菜单
     handleMenuBaseEvent (menuObj, check) {
+      //debugger
       //=====================贵厂ERP已于****-**-**到期，请续费后继续使用！======报表模块除外=========================
       let userInfo = JSON.parse(getlocalStorage('loginUserInfo'))
       let topMenu = this.$store.getters.currentTopMenu_getter;
@@ -334,6 +335,8 @@ export default {
         topMenu: params.type,
         subMenu: params.uniqueKey
       }
+      
+      this.$store.commit('setCurrentActivedPage',  menuObj.uniqueKey)
       this.$store.commit('setOperationConfig', menuConfig)
     //  this.$store.commit('setCurrentSubMenu', this.currentSelectedSubMenu)
        // 改用异步提交数据
