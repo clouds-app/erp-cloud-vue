@@ -637,7 +637,6 @@
           v-model="productSpecShow"
           ref="productSpec"
           @on-ok="paperSpecSelectRenderEvent"
-          @row-dblclick="paperSpecSelectRenderEvent"
           :bpMoCut="formDataInfo.master.bpMoCut"
           ></productSpec>
       </div>
@@ -732,7 +731,6 @@
         }
       }
       return {
-        disabledBiTaxPriceBtn:false,// 是否禁用>>单价输入框
         productMDatasDeleteList:[],// 规格删除列表
         productworkProcsDeleteList:[],//工序删除列表
         loaddingBtn:false,// 提交按钮 加载中
@@ -879,17 +877,11 @@
       };
     },
     computed: {
-        // 按钮访问权限列表
-        buttonAccessList() {
-          let dataList = this.$store.state.app.btnAccessList;
-          return dataList;
-        },
        // 使用禁用单价输入框B
-      //  disabledBiTaxPriceBtn(){
-      //    // biPriceType 计价方式:0-按面积, 1-按个(套) 
-      //    // return (this.$params.isCalAreaPriceSale=='0')
-      //    return true
-      //  },
+       disabledBiTaxPriceBtn(){
+         // biPriceType 计价方式:0-按面积, 1-按个(套) 
+         return (this.$params.isCalAreaPriceSale=='0')
+       },
       disabledBtnByPriceType(){
         // 禁用按钮 当 计价方式 为套件产品
         return this.formDataInfo.master.biPriceType+''=='1'
@@ -974,8 +966,6 @@
         if(n){
           let _self = this
           this.$nextTick(()=>{
-            // 设置单价 是否可以编辑
-            this.setBiTaxPriceDisableOrNot()
             setTimeout(()=>{
                _self.setDefaultValue()
             },1500)
@@ -1070,27 +1060,8 @@
      
     },
     methods: {
-      // 单价是否可以编辑
-      setBiTaxPriceDisableOrNot(){
-       // debugger
-        try {
-          let buttonList = this.buttonAccessList["sale-boxSalesOrder"]['buttonList']
-          if(buttonList.length>0){
-           // flag: "iisMoney"
-           buttonList.forEach(item=>{
-                if(item.flag=='iisMoney'){
-                    this.disabledBiTaxPriceBtn =!item.disabled
-                }
-           })
-          }
-        } catch (error) {
-           this.disabledBiTaxPriceBtn =true
-        }
-        
-      },
       // 盒式弹框选中回调,清除报错信息
       checkbpCBoxCodemsg(){
-       
         this.$refs["masterForm"].validateField("bpCBoxCode", err => {});
       },
       // 用料规格长(L)宽(W)变化，触发计算
@@ -1563,6 +1534,7 @@
           this.validateBiProdName()
           this.disabledAllForm()
           this.currentCustId = this.formDataInfo.params.custId
+          debugger
           if(this.formDataInfo.master.bpUnitId+''!=""){
               this.formDataInfo.master.bpUnitId = this.formDataInfo.master.bpUnitId+''
           }else{
@@ -1633,6 +1605,7 @@
           }else{
             this.formDataInfo.master.biCoType ="1"
           }
+          debugger
           if(this.action=='add'){
              // 从客户选择哪里获取客户信息
               if(this.formDataInfo.params.areaIds!=''){
@@ -1855,9 +1828,8 @@
                   if(bpProQty!=null && modulus!=null && _self.formDataInfo.master.bpMoCut!=null && item.bmKsTotal!=null){
                       //净料数量 =((工单数+损耗数)*单1或双2)/模数
                       let qty = Math.ceil(((bpProQty+_self.formDataInfo.master.biWasteQty) * modulus)/_self.formDataInfo.master.bpMoCut)
-                       // 总开数 = 纸宽开*纸长开
                       item.bmKsTotal = item.bmKsW * item.bmKsL
-                      let tbmQty = Math.ceil(qty/item.bmKsTotal) //Math.ceil()  “向上取整”
+                      let tbmQty = Math.ceil(qty/item.bmKsTotal)
                       item.bmSQty = qty;
                       item.bmQty = tbmQty;
                   }else{
@@ -2027,7 +1999,7 @@
           }
           let bpProQty =Number(this.formDataInfo.master.biPrepQty) + Number(this.formDataInfo.master.bpQty)* (this.formDataInfo.master.bpBoxPS==null?0: Number(this.formDataInfo.master.bpBoxPS))
           let requestDataObj = {
-            artCode: master.bpPArtCode,// 修改为生产纸质代号 // master.bpCArtCode,
+            artCode: master.bpCArtCode,
             biPrepQty: 0,
             boxCode: master.bpPBoxCode,
             bpHatch: master.bpHatch==null?0:master.bpHatch, // 开口
@@ -2200,13 +2172,13 @@
         },
        
         paperSpecSelectRenderEvent(selectData){
-          debugger
          //纸板规格选中回调事件
           let oldData = this.formDataInfo.productMDatas.defaultList[this.productMDatasDBClickIndex] 
           let newData =  this.productAdapter(oldData,selectData)
           this.formDataInfo.productMDatas.defaultList = Object.assign([], this.formDataInfo.productMDatas.defaultList, newData)
         },
         paperSpecRowDBClickEvent(rowIndex,rowData){
+          // debugger
           //纸板规格行被双击事件
           let requestDataObj = this.buildMaterialRequestData();
           if(!requestDataObj){
@@ -2379,7 +2351,6 @@
           })
         }
       },
-
       created() {
         //throttle(θrɒtl节流函数)会在连续事件的过程中，每隔一段时间至少触发一次，连续事件结束后触发不止一次
         //debounce(dibaʊns防抖动函数)只有当连续事件停止后的一小段时间后再触发一次，连续事件结束后可能只触发一次
