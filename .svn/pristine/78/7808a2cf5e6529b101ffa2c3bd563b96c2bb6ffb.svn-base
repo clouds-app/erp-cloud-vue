@@ -931,7 +931,6 @@ export default {
     // 重置当前实列,还是不起作用
     resetInstall() {
       this.$nextTick(() => {
-        // debugger
         this._install = this.$parent.$parent.$parent.$parent.$parent;
       });
     },

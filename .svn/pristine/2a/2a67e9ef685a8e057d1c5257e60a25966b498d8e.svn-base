@@ -52,9 +52,9 @@
                   </FormItem>
                   </Col>
                    <Col span="5">
-                  <FormItem label="商检号" prop="biChopNo">
-                    <Input v-model="formDataInfo.master.biChopNo" maxlength="80" placeholder="商检号"></Input>
-                  </FormItem>
+                      <FormItem label="货号" prop="biGoodsNo">
+                        <Input v-model="formDataInfo.master.biGoodsNo" maxlength="80" placeholder="货号"></Input>
+                      </FormItem>
                   </Col>
                   <!-- row-2 -->
                    <Col span="4">
@@ -67,23 +67,18 @@
                   <!-- 产品名称 -->
                   <Col span="5">
                   <FormItem :label-width="5" label="" prop="biProdName">
-                    <Input :disabled='disabledBtnByPriceType' :rules="rulesBiProdName" v-model="formDataInfo.master.biProdName" maxlength="40" placeholder="产品名称(长度20个汉字)"></Input>
+                    <Input :disabled='disabledBtnByPriceType' :rules="rulesBiProdName" v-model="formDataInfo.master.biProdName" maxlength="40" placeholder="产品名称"></Input>
+                  </FormItem>
+                  </Col>
+                  <Col span="9">
+                  <FormItem  label="料号" prop="biBatchNo">
+                    <Input :disabled='disabledBtnByPriceType' v-model="formDataInfo.master.biBatchNo" maxlength="20" placeholder="料号"></Input>
                   </FormItem>
                   </Col>
                   <Col span="5">
-                  <FormItem  label="料号" prop="biBatchNo">
-                    <Input :disabled='disabledBtnByPriceType' v-model="formDataInfo.master.biBatchNo" maxlength="40" placeholder="料号(长度20个汉字)"></Input>
+                  <FormItem label="商检号" prop="biChopNo">
+                    <Input v-model="formDataInfo.master.biChopNo" maxlength="80" placeholder="商检号"></Input>
                   </FormItem>
-                  </Col>
-                   <Col span="4">
-                    <FormItem :label-width="90" label="板数" prop="plateQty">
-                       <Input type="number" v-model="formDataInfo.master.plateQty" maxlength="20" placeholder="板数"></Input>
-                    </FormItem>
-                  </Col>
-                   <Col span="5">
-                      <FormItem label="货号" prop="biGoodsNo">
-                        <Input v-model="formDataInfo.master.biGoodsNo" maxlength="80" placeholder="货号"></Input>
-                      </FormItem>
                   </Col>
                   <!-- row-3 -->
                  <Col span="5">
@@ -424,12 +419,16 @@
                       <Input v-model="formDataInfo.master.bcRepNo" maxlength="80" placeholder="补货单号"></Input>
                     </FormItem>
                   </Col>
-                    <Col span="8">
+                    <Col span="6">
                     <FormItem label="补货原因" prop="bcRepRemark">
                       <Input v-model="formDataInfo.master.bcRepRemark" maxlength="80" placeholder="补货原因"></Input>
                     </FormItem>
                   </Col>
-                  
+                   <Col span="2">
+                    <FormItem :label-width="40" label="版数" prop="plateQty">
+                       <Input type="number" v-model="formDataInfo.master.plateQty" maxlength="20" placeholder="版数"></Input>
+                    </FormItem>
+                  </Col>
               
                 </Row>
               </div>

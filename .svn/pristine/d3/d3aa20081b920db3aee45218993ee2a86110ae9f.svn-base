@@ -90,10 +90,6 @@ export default {
     'leng': function (resolve) { // 组件的异步加载
       require(['./moudle/Bas/leng.vue'], resolve)
     },
-     // 楞次
-    'paper': function (resolve) { // 组件的异步加载
-      require(['./moudle/Bas/paper.vue'], resolve)
-    },
     // 银行
     'bank': function (resolve) { // 组件的异步加载
       require(['./moudle/Bas/bank.vue'], resolve)
@@ -232,10 +228,6 @@ export default {
     // 纸板采购进价
     'paperPrice': function (resolve) { // 组件的异步加载
       require(['./moudle/Purchase/paperPrice.vue'], resolve)
-    },
-     // 楞别加价
-    'purLbFee': function (resolve) { // 组件的异步加载
-      require(['./moudle/Purchase/purLbFee.vue'], resolve)
     },
     // 纸板采购订单 
     'newPurPaperPo': function (resolve) { // 组件的异步加载

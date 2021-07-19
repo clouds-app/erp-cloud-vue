@@ -522,33 +522,6 @@ export default {
     filterFild:{
       type:String,
       default:''
-    },
-    subMasterTableAllData:{
-      type:Array,
-      default:[]
-    },
-     subSonTableAllData:{
-      type:Array,
-      default:[]
-    }
-  },
-  watch:{
-    showWindow(n,o){
-      if(n){
-        setTimeout(()=>{
-          if(this.subMasterTableAllData.length>0){
-            this.rigntTopTableList = this.subMasterTableAllData
-            let BottomDataList = deepCopy(this.subMasterTableAllData)
-            BottomDataList.forEach(item=>{
-              this.slavesForm.topTableList.push([item])
-            })
-          }
-          if(this.subSonTableAllData.length>0){
-            this.rigntBottomTableList = this.subSonTableAllData[0]
-            this.slavesForm.bottomTableList = this.subSonTableAllData
-          }
-        },500)
-      }
     }
   },
   data() {
@@ -601,12 +574,7 @@ export default {
       let parms = { ...ddata, mateWorkNoList: this.filterFild,vendId:this.supplierData.id};
       request.post(`/purchase/paperPo/spPaperMegerStockOrder1`, parms)
         .then((res) => {
-         if(this.rigntTopTableList.length>0){
-            let arr = this.slavesForm.bottomTableList.flat()
-            this.leftTableList = res.workData.filter(x => arr.every(y => y.workNo !== x.biWorkNo));
-          }else{
-            this.leftTableList = res.workData;
-          }
+          this.leftTableList = res.workData;
           // this.clearRithTableList()
           this.isLoadding = true
         });
@@ -807,7 +775,6 @@ export default {
       if (pro[0] == this.rightTopClickIndex) return
       // 点击Top表格切换数据前清空Bottomb表格复选框
       this.rigntBottomTableList = this.rigntBottomTableList.forEach(item=>item.iisChose=false)
-      console.log(this.rigntBottomTableList);
       this.rightTopClickIndex = pro[0]//点击行索引
       let bottomTableList = this.slavesForm.bottomTableList
       // this.$refs.rigntBottomTable.set(bottomTableList[index],index)
@@ -915,39 +882,11 @@ export default {
       })
       return check
     },
-    //判断是否可以回退
-    isSecureContext(selectData){
-      let bool = this.selectLeftTableData.some((items,masterindex)=>{
-       let bools = selectData.some(item=>{
-          if (items.id != item.indexNo) {
-              return true
-          } 
-        })
-        if(bools){
-          return true
-        }
-      })
-      return bool
-    },
+
     // 回退 selectLeftTableData
     backOff(){
       let BottomDataList = deepCopy(this.rigntBottomTableList)
       let selectData = BottomDataList.filter(item=> !!item.iisChose)
-      if(selectData.length ==0){
-        BottomDataList.forEach(item=>{
-          item.iisChose = false
-        })
-        this.$Message.error('请勾选数据!');
-        return
-      }
-      if(this.selectLeftTableData.length==0){
-        this.$Message.error('该数据,不支持回退！');
-        return
-      }
-      if(this.isSecureContext(selectData)){
-        this.$Message.error('该数据,不支持回退！');
-        return
-      }
       if (this.rigntBottomTableList.length == 1) {
         this.singleBack(selectData)
       }else{

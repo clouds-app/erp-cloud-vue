@@ -13,51 +13,67 @@
           </div>
         </div>
       </div>
-      <div class="arrowRightConfig">
-            <div class="arrowRightIcon"></div>
+      <div class="contentBox">
+            <div class="contentItemBox">
+                  <div class="arrowRightConfig">
+                        <div class="arrowRightIcon"></div>
+                  </div>
+                  <div @click="handleSubMenuEvent('paperPrice','purchase-paperPrice','纸板进价',secondenum.paperPrice.val.disabled)" :class="[secondenum.paperPrice.val.disabled?'diabledOrAccess':'']"  class="circleBallItem marginLR purchaseAdvanced cursorPointer">
+                    <div class="purchaseAdvancedIcon">
+                      <div class="purchaseAdvancedTitle">纸板进价</div>
+                    </div>
+                  </div>
+                  <div class="arrowRightConfig">
+                        <div class="arrowRightIcon"></div>
+                  </div>
+                  <div @click="handleSubMenuEvent('newPurPaperPo','purchase-newPurPaperPo','纸板组合采购',secondenum.newPurPaperPo.val.disabled)" :class="[secondenum.newPurPaperPo.val.disabled?'diabledOrAccess':'']" class="circleBallItem marginLR purchaseOrder cursorPointer">
+                    <div class="purchaseOrderIcon">
+                      <div class="purchaseOrderTitle">纸板组合采购</div>
+                    </div>
+                  </div>
+             </div>
+              <div class="contentItemBox">
+                  <!-- <div class="arrowRightConfig">
+                        <div class="arrowRightIcon"></div>
+                  </div> -->
+                  <div @click="handleSubMenuEvent('purSpaperPrice','purchase-purSpaperPrice','原纸进价',secondenum.purSpaperPrice.val.disabled)" :class="[secondenum.purSpaperPrice.val.disabled?'diabledOrAccess':'']"  class="circleBallItem marginLR purchaseAdvancedNEW cursorPointer">
+                    <div class="purchaseAdvancedIcon">
+                      <div class="purchaseAdvancedTitle">原纸进价</div>
+                    </div>
+                  </div>
+                  <!-- <div class="arrowRightConfig">
+                        <div class="arrowRightIcon"></div>
+                  </div> -->
+                  <div @click="handleSubMenuEvent('newPurPaperPo','purchase-newPurPaperPo','愣别加价',secondenum.newPurPaperPo.val.disabled)" :class="[secondenum.newPurPaperPo.val.disabled?'diabledOrAccess':'']" class="circleBallItem marginLR purchaseOrderNEW cursorPointer">
+                    <div class="purchaseOrderIcon">
+                      <div class="purchaseOrderTitle">愣别加价</div>
+                    </div>
+                  </div>
+             </div>
       </div>
-
-      <div class="centerListItem">
-        <div style="align-self:center">
-          <div @click="handleSubMenuEvent('paperPrice','purchase-paperPrice','纸板进价',secondenum.paperPrice.val.disabled)" :class="[secondenum.paperPrice.val.disabled?'diabledOrAccess':'']"  class="circleBallItem purchaseAdvanced cursorPointer">
-            <div class="purchaseAdvancedIcon">
-              <div class="purchaseAdvancedTitle">纸板进价</div>
-            </div>
-          </div>
-        </div>
-        <div style="display:flex;justify-content:space-between;">
-          <div @click="handleSubMenuEvent('purSpaperPrice','purchase-purSpaperPrice','原纸进价',secondenum.purSpaperPrice.val.disabled)" :class="[secondenum.purSpaperPrice.val.disabled?'diabledOrAccess':'']"  class="circleBallItem purchaseAdvancedNEW cursorPointer">
-            <div class="purchaseAdvancedIcon">
-              <div class="purchaseAdvancedTitle">原纸进价</div>
-            </div>
-          </div>
-          <div @click="handleSubMenuEvent('purLbFee','purchase-purLbFee','楞别加价',secondenum.purLbFee.val.disabled)" :class="[secondenum.purLbFee.val.disabled?'diabledOrAccess':'']"  class="circleBallItem purchaseOrderNEW cursorPointer">
-            <div class="purchaseAdvancedIcon">
-              <div class="purchaseAdvancedTitle">楞别加价</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-
-      <div class="arrowRightConfig">
-            <div class="arrowRightIcon"></div>
-      </div>
-      <div @click="handleSubMenuEvent('newPurPaperPo','purchase-newPurPaperPo','纸板组合采购',secondenum.newPurPaperPo.val.disabled)" :class="[secondenum.newPurPaperPo.val.disabled?'diabledOrAccess':'']" class="circleBallItem purchaseOrder cursorPointer">
-        <div class="purchaseOrderIcon">
-          <div class="purchaseOrderTitle">纸板组合采购</div>
-        </div>
-      </div>
-    </div>
-
     
-    <!-- 报表 -->
+      <!-- <div @click="handleSubMenuEvent('purPaperPo','purchase-purPaperPo','纸板采购',secondenum.purPaperPo.val.disabled)" :class="[secondenum.purPaperPo.val.disabled?'diabledOrAccess':'']" class="circleBallItem purchaseOrder cursorPointer">
+        <div class="purchaseOrderIcon">
+          <div class="purchaseOrderTitle">纸板采购</div>
+        </div>
+      </div> -->
+    </div>
     <div class="purchaseContentItem rightItem">
+         <!-- <div class="leftContentItem">
+            <div class="moduleDataTitleBg">
+               <div class="moduleDataTitle">模块数据</div>
+                <div class="moduleDataListBox cursorPointer">
+                     <div @click="handleSubMenuEvent('supplier','Purchase-supplier','供应商',secondenum.supplier.val.disabled)" :class="[secondenum.supplier.val.disabled?'disabledColor':'']" class="moduleDataItem">供应商</div>
+                     <div @click="handleSubMenuEvent('supplierArt','purchase-supplierArt','供应商纸质',secondenum.supplierArt.val.disabled)" :class="[secondenum.supplierArt.val.disabled?'disabledColor':'']" class="moduleDataItem">供应商纸质</div>
+                </div>
+            </div>
+         </div> -->
          <div class="leftContentItem marginTop10">
            <div class="reportTitleBg">
               <div class="reportTitle">报表</div>
                 <div class="reportDataListBox cursorPointer">
                   <div @click="handleSubMenuEvent('purPaperPoAnalyz','purchase-purPaperPoAnalyz','纸板采购情况分析',secondenum.purPaperPoAnalyz.val.disabled)" :class="[secondenum.purPaperPoAnalyz.val.disabled?'disabledColor':'']" class="reportDataItem">纸板采购情况分析</div>
+                  <!-- <div @click="handleSubMenuEvent('newPurPaperPo','purchase-newPurPaperPo','纸板采购订单',secondenum.newPurPaperPo.val.disabled)" :class="[secondenum.newPurPaperPo.val.disabled?'disabledColor':'']" class="reportDataItem">纸板采购订单</div> -->
                 </div>
            </div>
          </div>
@@ -134,7 +150,7 @@ export default {
       box-shadow: 0px 0px 10px rgba(0, 222, 255, 1) inset;
       padding: 2% 7% 2% 7%;
       .subleftItem{
-        height: 85%;
+        height: 100%;
         display: flex;
         display: -webkit-flex; /* Safari */
         flex-direction: column;
@@ -182,6 +198,7 @@ export default {
             }
           }
         }
+      
       }
       .arrowRightConfig{
             width: 85px; // 重置 = 占用宽度百分比
@@ -198,42 +215,11 @@ export default {
                 background-repeat: no-repeat;
                 background-size: 80px 15px;
             }
-      }
-
-      .centerListItem{
-        display: flex;
-        flex-direction:column;
-        justify-content:space-around;
-        height: 85%;
-        width:35%
-      }
-
-
-
+        }
       .circleBallItem {
         width: 137px;
         height: 137px;
         border-radius: 50%;
-       
-        &.purchaseAdvancedNEW {
-          background: linear-gradient(
-            0deg,
-            rgb(253, 14, 173),
-            rgb(230, 106, 255)
-          );
-          .purchaseAdvancedIcon {
-            width: 140px;
-            height: 130px;
-            background-image: url("../../../../assets/images/page-design/master-page/Icon-purchaseAdvanced.png");
-            background-position: center center;
-            background-repeat: no-repeat;
-            background-size: auto 60px;
-            .purchaseAdvancedTitle {
-              text-align: center;
-              line-height: 210px;
-            }
-          }
-        }
         &.purchaseAdvanced {
           // margin-left: 10%;
           background: linear-gradient(
@@ -254,16 +240,17 @@ export default {
             }
           }
         }
-        &.purchaseOrderNEW {
+          &.purchaseAdvancedNEW {
+          // margin-left: 10%;
           background: linear-gradient(
             0deg,
-            rgb(46, 101, 253),
-            rgb(124, 224, 255)
+            rgb(253, 14, 173),
+            rgb(230, 106, 255)
           );
           .purchaseAdvancedIcon {
             width: 140px;
             height: 130px;
-            background-image: url("../../../../assets/images/page-design/master-page/Icon-purchaseOrder.png");
+            background-image: url("../../../../assets/images/page-design/master-page/Icon-purchaseAdvanced.png");
             background-position: center center;
             background-repeat: no-repeat;
             background-size: auto 60px;
@@ -279,6 +266,26 @@ export default {
             0deg,
             rgba(253, 113, 46, 1),
             rgba(255, 166, 124, 1)
+          );
+          .purchaseOrderIcon {
+            width: 140px;
+            height: 130px;
+            background-image: url("../../../../assets/images/page-design/master-page/Icon-purchaseOrder.png");
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-size: auto 60px;
+            .purchaseOrderTitle {
+              text-align: center;
+              line-height: 210px;
+            }
+          }
+        }
+         &.purchaseOrderNEW {
+          // margin-right: 10%;
+          background: linear-gradient(
+            0deg,
+             rgb(46, 101, 253),
+            rgb(124, 224, 255)
           );
           .purchaseOrderIcon {
             width: 140px;
@@ -371,5 +378,25 @@ export default {
       cursor: pointer;
     }
   }
+}
+.contentBox{
+        display: flex;
+        //border:1px solid red;
+        height: 70%;
+        width: 100%;
+        flex-direction: column;
+       // margin-left: 20px;
+        .contentItemBox{
+              display: flex;
+             // border:1px solid red;
+              height: 100%;
+              width: 100%;
+              align-items: center;
+              justify-content: center;
+        }
+      }
+.marginLR{
+  margin-left: 20px;
+  margin-right: 20px;
 }
 </style>

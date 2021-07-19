@@ -1,0 +1,509 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-paperPrice"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="70%"
+      :loading="!isLoaddingDone"
+      :spinLoaddingText="spinLoaddingText"
+      @on-ok="formTableDataSubmit()"
+      v-if="initData.columns"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-message="true"
+        :model="formDataInfo.master"
+        :rules="ruleValidate"
+        :label-width="90"
+      >
+         <Row>
+            <Col span="6">
+                <FormItem label="合同编号" prop="pactNo">
+                    <Input
+                        disabled
+                        v-model="formDataInfo.master.pactNo"
+                        maxlength="20"
+                        placeholder
+                    ></Input>
+                </FormItem>
+            </Col>
+             <Col span="6">
+             <!-- ,priceUnit -->
+              <FormItem label="供应商编号" prop="supplierId">
+                <popup
+                      ref='firstFocusInput'
+                      @on-fill="Initializationdata"
+                      v-model="formDataInfo.master.purCode"
+                      field-name="purCode"
+                      :disabled="detailDisabled"
+                      popup-name="SupplierSingleBox"
+                      :fill-model.sync="formDataInfo.master"
+                      render-fields="supplierId,purCode,purName"
+                      from-fields="id,purCode,purName"
+                      :suffix="true"
+                      :suffix-model="formDataInfo.master.purName"
+                      :query-params="{}"
+                    />
+              </FormItem>
+            </Col>
+           
+             <Col span="6">
+                    <FormItem  label="生效日期">
+                      <DatePicker
+                        :disabled="detailDisabled"
+                        type="date"
+                        format="yyyy-MM-dd HH:mm:ss"
+                        :clearable='false'
+                        :editable='false'
+                        v-model="formDataInfo.master.effectiveDate"
+                      ></DatePicker>
+                    </FormItem>
+                  </Col>
+                  <Col span="6">
+                <FormItem label="计价单位" prop="priceUnit">
+                    <optionSearch
+                        :disabled="detailDisabled"
+                        v-model="formDataInfo.master.priceUnit"
+                        :loaddingDataWhen="showWindow"
+                        formKey="priceUnit"
+                        query="priceUnit"
+                    />
+               </FormItem>
+            </Col>
+        </Row>
+        <Row>
+            
+             <Col span="24">
+                <FormItem label="优惠方式">
+                  <Input
+                      :disabled="detailDisabled"
+                      icon="md-apps"
+                      v-model="formDataInfo.master.upiPriceLessStr"
+                      @on-click="showExpression('upiPriceLess')"
+                  ></Input>
+                </FormItem>
+             </Col>
+            
+        </Row>
+      </Form>
+          <Tabs>
+        <TabPane label="原纸进价明细">
+          <eTable
+            :showContextMenu="!detailDisabled"
+            ref="tableFields"
+            unqiue-mark="id"
+            :height="500"
+            :index-menu="true"
+            :col-start="0"
+            :showEditMenu="true"
+            :row-init-data="initData.initData[`${formInitPreName}ItemFm`]"
+            :data.sync="formDataInfo.priceItemList.defaultList"
+          >
+            <template slot="head">
+              <tr v-for="(columnGroup,index) in initData.columns[`${formInitPreName}ItemFm`].editGroups" :key="index">
+                <th 
+                :class="`ivu-table-column-${column.titleAlign}`"
+                v-for="(column,index2) in columnGroup" :key="index2"
+                :width="column.editWidth"
+                :colspan="column.colSpan"
+                :rowspan="column.rowSpan"
+                :columnKey="column.key"
+                >
+                  <div class="ivu-table-cell">
+                    <span class="">{{column.title}}</span>
+                  </div>
+                </th>
+
+              </tr>
+            </template>
+            <template
+              slot="body"
+              slot-scope="{ row, index, valueChangeAssign }"
+            >
+              <td 
+              :class="`ivu-table-column-${column.align}`"
+               v-for="(column,columnIndex) in initData.columns[`${formInitPreName}ItemFm`].editColumns"
+               :key="columnIndex"
+               :width="column.editWidth">
+                <popup
+                  v-if="column.key=='paperCode'"
+                  :popupClickValidator="clickValuedate"
+                  v-model="row.paperCode"
+                  field-name="paperCode"
+                  :disabled="detailDisabled"
+                  popup-name="SpaperCodeBox"
+                  :fill-model.sync="formDataInfo.priceItemList.defaultList"
+                  render-fields="paperCode"
+                  from-fields="paperCode"
+                  :index="index"
+                  :init-data="{}"
+                  :query-params="{}"
+                  @on-fill="dataFill"
+                  @input="
+                  value => {
+                    valueChangeAssign(value, index, row, 'paperCode');
+                  }
+                "
+                />
+                 <!-- 控件特殊处理 面纸报价 -->
+                <Input
+                  v-else-if="column.key == 'price'"
+                  v-model="row[column.key]"
+                  number
+                  type="number"
+                  @on-blur="countQuotePrice(index)"
+                  :disabled="detailDisabled"
+                  @input="
+                      value => {
+                        valueChangeAssign(value, index, row, 'price');
+                      }
+                    "
+                  size="small"
+                  :maxlength="20"
+                ></Input>
+                 <!-- 其它 :placeholder="column.key"-->
+                <formControl v-else :control-type="column.controlType"
+                    v-model="row[column.key]"  :disabled="detailDisabled||column.readOnly"
+                    @input="value => {valueChangeAssign(value, index, row,column.key)}"
+                ></formControl>
+              </td>
+            </template>
+          </eTable>
+        </TabPane>
+      </Tabs>
+     
+    </editWindow>
+    <preferential
+      v-model="showpreferential"
+      @preferential-ok="preferentialOk"
+      :renderJsonStr="renderJsonStr"
+    ></preferential>
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:07:54
+ */
+import referenceField from "@/components/referenceField/referenceField";
+import preferential from "@/components/preferential/preferential";
+import popup from "@/components/popup/popup";
+import editWindow from "@/components/edit-window/edit-window";
+import eTable from "@/components/e-table/e-table";
+import request from "@/libs/request";
+import editBaseMixins from "../../mixins/edit";
+import optionSearch from "../../components/optionSearch";
+import dayjs from "dayjs";
+import formControl from "@/components/form-control/form-control";
+import { deepCopy } from "view-design/src/utils/assist";
+const default_formDataInfo = {
+  // 主表 更改字段
+  master: {
+		"effectiveDate": "",
+		"pactNo": "",
+		"priceUnit":0,
+		"purCode": "",
+		"purName": "",
+		"supplierId": "",
+		"upiPriceLess": "",
+		"upiPriceLessJson": "",
+		"upiPriceLessStr": ""
+  },
+  // 子表 artLengs 根据实际接口更改,其它不变
+  priceItemList: {
+    addList: [], // 添加列
+    defaultList: [], // 默认列
+    deleteList: [], // 删除列
+    updateList: [] // 更新列
+  }
+};
+export default {
+  name: "edit-paperPrice",
+  mixins: [editBaseMixins],
+  components: {
+    editWindow,
+    optionSearch,
+    preferential,
+    eTable,
+    popup,
+    formControl,
+    referenceField
+    // rightMenu
+    // Form,
+  },
+  data() {
+    return {
+      formInitPreName: 'purSPaperPrice', // 初始化信息查询 前缀 字段 purSPaperPriceFm 进价 purSPaperPriceItemFm 进价子表
+      showContextMenu: true,
+      showEditMenu: false,
+      actionSubtitle: "原纸进价", // 当前操作副标题
+      renderJsonStr: "", // 回填优惠方式 字符串
+      id: 0,
+      formName: "purSPaperPriceItemFm",
+      formmasterName: "purSPaperPriceFm",
+      currentExpressType: "", //当前打开的优惠方式类型
+      showpreferential: false,
+      requestBaseUrl: "/purchase/purSpaperPrice", // 请求 查询 操作的基础路径
+      formDataInfo: deepCopy(default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      priceUnit: "", //储存上传报价的计价单位
+      increaseRateData: [], //存储已经计算的涨幅
+      artid:null,//储存子表纸质id
+      // 需要验证的数据
+      ruleValidate: {
+        purCode: [
+          {
+            required: true,
+            message: "供应商不能为空",
+            trigger: "blur"
+          }
+        ]
+      },
+      tableFieldsValidator: {
+        supplierArtName: [
+          {
+            required: true,
+            message: "供应商纸质不能为空",
+            trigger: "blur"
+          }
+        ],
+       
+      },
+      subBoxClickIndex: -1,
+      getsupplierId: 0
+    };
+  },
+  computed:{
+    
+  },
+  watch: {
+     "formDataInfo.master.priceUnit": function(n, o) {
+      if (n != o&&!!o) {
+        this.optionpriceUnit(n);
+      }
+    },
+    showWindow(n,o){
+      if (n&&this.action=='add') {
+        this.formDataInfo.master.effectiveDate = dayjs().format("YYYY-MM-DD HH:mm:ss")
+      }
+    }
+  },
+
+  methods: {
+      //计价单位发生改变   1千平方英寸=0.645平方米
+    // (本次报价-上次报价)*100/上次报价,保留两位小数
+    //lastPrice 上次报价 quotePrice 本次报价
+    //increaseRate 涨幅
+    optionpriceUnit(n) {
+      debugger
+      let increaseRate  = ''
+      if (this.showWindow) {
+        let data =[]
+        if (this.action==="update") {
+          data =this.formDataInfo.priceItemList.defaultList
+        }else{
+          data = this.$refs["tableFields"].get();
+        }
+        for (let index = 0; index < data.length; index++) {
+          if(!data[index].priceId){// 这里不清楚？？
+            return
+          }
+          let quotePrice = data[index].price;
+          let lastPrice = data[index].oldPrice
+          if (n == 1) {
+            quotePrice = Number(data[index].price) * 0.645;
+            lastPrice = Number(data[index].oldPrice) * 0.645;
+            data[index].oldPrice = lastPrice;
+            data[index].price = quotePrice;
+          } else {
+            quotePrice = Number(data[index].price) / 0.645;
+            lastPrice = Number(data[index].oldPrice) / 0.645;
+            data[index].oldPrice = lastPrice;
+            data[index].price = quotePrice;
+          }
+          quotePrice = parseFloat(quotePrice);
+          if (lastPrice!=0) {
+            increaseRate = ((quotePrice - lastPrice) * 100) / lastPrice;
+          }else{
+            increaseRate = 100
+          }
+          this.$refs["tableFields"].set({rises:increaseRate.toFixed(2)},index)
+        }
+      }
+    },
+    //判断数据是新增还是修改
+    formDetailDataCall() {
+      // debugger;
+      if (this.action != "add") {
+         this.getsupplierId = this.formDataInfo.master.supplierId;
+      }
+    },
+    //当主表客户弹框改变时促发初始化子表数据
+    Initializationdata(data) {
+        // 清除验证
+        this.$refs["formDataInfo"].validateField("supplierId", err => {});
+        if (this.formDataInfo.master.supplierId) {
+        if (this.formDataInfo.master.supplierId != this.getsupplierId) {
+          this.$refs["tableFields"].reset()
+        }
+        this.getsupplierId = this.formDataInfo.master.supplierId;
+      }
+    },
+   // (本次报价-上次报价)*100/上次报价,保留两位小数
+    //lastPrice 上次报价 quotePrice 本次报价
+    //increaseRate 涨幅  1千平方英寸=0.645平方米
+    //计算涨幅
+    countQuotePrice(index){
+      let increaseRate = 0
+      let SunData = this.$refs['tableFields'].get()
+      let lastPrice = SunData[index].oldPrice
+      let quotePrice = SunData[index].price
+      lastPrice = parseFloat(lastPrice);
+      quotePrice = parseFloat(quotePrice);
+      // (本次报价-上次报价)*100/上次报价,保留两位小数
+      if(!quotePrice){
+        return
+      }
+      if (!lastPrice) {
+        increaseRate = 100
+      }else{
+        increaseRate = ((quotePrice - lastPrice) * 100) / lastPrice;
+      }
+      this.$refs['tableFields'].set({rises:increaseRate.toFixed(2)},index)
+    },
+    // (本次报价-上次报价)*100/上次报价,保留两位小数
+    //lastPrice 上次报价 quotePrice 本次报价
+    //increaseRate 涨幅  1千平方英寸=0.645平方米
+   async calincreaseRate(data,index) {
+      let master = this.formDataInfo.master;
+      let increaseRate = 0;
+      let lastPrice = data.price;
+      if (!lastPrice) {
+        this.$refs['tableFields'].set({rises:100,oldPrice:0},index)
+        return;
+      }
+      if (this.priceUnit !== Number(master.priceUnit)) {
+        if (this.priceUnit == 1) {
+          lastPrice = Number(data.oldPrice) / 0.645;
+          this.$refs.tableFields.set({ oldPrice:lastPrice },index);
+        } else {
+          lastPrice = Number(data.lastPrice) * 0.645;
+          this.$refs.tableFields.set({ oldPrice:lastPrice },index);
+        }
+      }
+      let quotePrice = data.price;
+      if (!quotePrice) {
+        quotePrice = 0;
+      }
+      lastPrice = parseFloat(lastPrice);
+      quotePrice = parseFloat(quotePrice);
+      // (本次报价-上次报价)*100/上次报价,保留两位小数
+      increaseRate = ((quotePrice - lastPrice) * 100) / lastPrice;
+      this.$refs['tableFields'].set({rises:increaseRate.toFixed(2)},index)
+    },
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo() {
+      //  debugger
+      this.formDataInfo = deepCopy(default_formDataInfo)
+    },
+    clickValuedate() {
+      //debugger;
+      if (
+        !this.formDataInfo.master.purCode ||
+        this.formDataInfo.master.purCode == ""
+      ) {
+        this.$Message.error("供应商编号不能为空");
+        return false;
+      }
+      return true;
+    },
+   
+    // 选择弹框数据回填数据列表
+   async dataFill(fillDatas) {
+      let tableObjRef =  this.$refs['tableFields']
+      let fillDatasLength=0
+      if(tableObjRef && fillDatas && fillDatas.length>0){
+          while(fillDatasLength<fillDatas.length){
+            // debugger
+              let _paperCode =  fillDatas[fillDatasLength].orignData.paperCode
+              let res = await this.getEndPrice(_paperCode,tableObjRef,fillDatasLength)
+              let increaseRateItem =  await this.calincreaseRate(res,fillDatasLength)
+              let resetParams ={
+                paperCode: _paperCode
+              }
+              if(!!res){
+                resetParams.oldPrice = res.price
+              }
+              tableObjRef.set(resetParams, fillDatasLength);
+              fillDatasLength = fillDatasLength+1
+          }
+      }
+    },
+    // 查询原纸报价上一次进价明细
+  async getEndPrice(_artId){
+      let _url =`/purchase/purSpaperPrice/getEndPrice`
+      let params ={
+        artId:_artId,
+        supplierId:this.formDataInfo.master.supplierId
+      }
+      let res = await request.post(_url,{}, params)
+      return res  
+   },
+    //打开优惠方式，参数，当前类型：
+    showExpression(type) {
+      this.retrunJsonDataToDisCount();
+      this.showpreferential = true;
+    },
+    // 回填JSON数据到优惠方式控件
+    retrunJsonDataToDisCount() {
+       if (this.action != "add") {
+        this.renderJsonStr = this.formDataInfo.master.upiPriceLessJson
+      }
+    },
+    //优惠方式的回调方式，返回参数
+    preferentialOk(text, json, value) {
+      this.formDataInfo.master.upiPriceLess = value
+      this.formDataInfo.master.upiPriceLessJson = json
+      this.formDataInfo.master.upiPriceLessStr = text
+    },
+    // 重写父类,修改提交数据
+    resetformDataInfo(_data) {
+      let tableData = this.$refs["tableFields"].getCategorizeData();
+      //debugger
+      this.formDataInfo.priceItemList = tableData;
+      if (!!_data.master.effectiveDate) {
+        _data.master.effectiveDate = dayjs(_data.master.effectiveDate).format(
+          "YYYY-MM-DD HH:mm:ss"
+        );
+      }
+      return this.formDataInfo;
+    }
+  }
+};
+</script>
+
+<style>
+/* .cl-edit-paperPrice .ivu-form-item {
+  margin-bottom: 5px !important;
+} */
+.cl-edit-paperPrice .ivu-select-item {
+  display: block;
+}
+/* .cl-edit-paperPrice .ivu-input-type-text{
+  width: 200px
+}*/
+.cl-edit-paperPrice .right-text {
+  width: 160%;
+}
+</style>

@@ -1,0 +1,474 @@
+<template>
+  <div>
+    <editWindow
+      class="cl-edit-purLbFee"
+      :title="actionLableName"
+      v-model="showWindow"
+      :fullscreen="false"
+      width="90%"
+      :loading="!isLoaddingDone"
+      :spinLoaddingText="spinLoaddingText"
+      @on-ok="formTableDataSubmit()"
+      v-if="initData.columns"
+    >
+      <Form
+        ref="formDataInfo"
+        :show-message="true"
+        :model="formDataInfo.master"
+        :rules="ruleValidate"
+        :label-width="100"
+      >
+       
+         
+            <Row>
+              <Col span="7">
+                <FormItem label="供应商编号" prop="purCode">
+                  <div>
+                    <popup
+                      ref='firstFocusInput'
+                      @on-fill="Initializationdata"
+                      v-model="formDataInfo.master.purCode"
+                      field-name="purCode"
+                      :disabled="detailDisabled"
+                      popup-name="SupplierSingleBox"
+                      :fill-model.sync="formDataInfo.master"
+                      render-fields="supplierId,purCode,purName,coinCode"
+                      from-fields="id,purCode,purName,coinCode,unitId"
+                      :suffix="true"
+                      :suffix-model="formDataInfo.master.purName"
+                      :query-params="{}"
+                    />
+                  </div>
+                </FormItem>
+              </Col>
+             
+               
+                  <Col span="5">
+                    <FormItem :label-width="80" label="生效日期">
+                      <DatePicker
+                        :disabled="detailDisabled"
+                        type="date"
+                        format="yyyy-MM-dd HH:mm:ss"
+                        :clearable='false'
+                        :editable='false'
+                        v-model="formDataInfo.master.effectiveDate "
+                      ></DatePicker>
+                    </FormItem>
+                  </Col>
+                  <Col span="4">
+                    <FormItem :label-width="80" label="单据编号" prop="lbFeeNo">
+                      <Input
+                        disabled
+                        v-model="formDataInfo.master.lbFeeNo"
+                        maxlength="20"
+                        placeholder
+                      ></Input>
+                    </FormItem>
+                    </Col>
+                    <Col span="4">
+                    <FormItem :label-width="80" label="货币编号" prop="coinCode">
+                        <Input
+                          disabled
+                          v-model="formDataInfo.master.coinCode"
+                          maxlength="20"
+                          placeholder
+                        ></Input>
+                      </FormItem>
+                    </Col>
+                    <Col span="4">
+                    <FormItem :label-width="60" label="备注">
+                      <Input
+                        :disabled="detailDisabled"
+                        v-model="formDataInfo.master.remark"
+                        maxlength="100"
+                        :autosize="{ minRows: 1, maxRows: 2 }"
+                        placeholder="请输入备注..."
+                      ></Input>
+                    </FormItem>
+                  </Col>
+            </Row>
+         
+
+
+          
+      
+      </Form>
+
+      <Tabs>
+        <!--  注意:eTable formDataInfo.artLengs.defaultList  ===artLengs=== 需要根据实际接口修改,其它不变-->
+        <TabPane label="楞别加价明细" name="name1">
+          <eTable
+            ref="tableFields"
+            unqiue-mark="id"
+            :index-menu="true"
+            :col-start="0"
+            :width="200"
+            :height="300"
+            :row-init-data="initData.initData.purLbFeeItemFm"
+            :data.sync="formDataInfo.lbFeeItemList.defaultList"
+            :rules="tableFieldsValidator"
+            :showContextMenu="!detailDisabled"
+            v-if="showWindow"
+          >
+            <!-- @on-row-change="calincreaseRate" -->
+            <template slot="head">
+              <tr
+                v-for="(columnGroup,index) in initData.columns.purLbFeeItemFm.editGroups"
+                :key="index"
+              >
+                <th
+                  class="ivu-table-column-left"
+                  v-for="(column,index2) in columnGroup"
+                  :key="index2"
+                  :width="column.editWidth"
+                  :colspan="column.colSpan"
+                  :rowspan="column.rowSpan"
+                  style="text-align:center;"
+                >
+                  <div class="ivu-table-cell">
+                    <span class>{{column.title}}</span>
+                  </div>
+                </th>
+              </tr>
+            </template>
+              <template slot="body" slot-scope="{ row, index, valueChangeAssign }">
+              <td
+                class="ivu-table-column-left"
+                v-for="(column,columnIndex) in initData.columns.purLbFeeItemFm.editColumns"
+                :key="columnIndex"
+                :width="column.editWidth"
+                @contextmenu.prevent="show(index)"
+              >
+                <!-- 控件特殊处理 楞别 -->
+                <popup
+                  v-if="column.key=='lbCode'"
+                  :popupClickValidator="clickValuedate"
+                  v-model="row[column.key]"
+                  field-name="lbCode"
+                  :disabled="detailDisabled"
+                  popup-name="LengMultiPriceBox"
+                  :fill-model.sync="formDataInfo.lbFeeItemList.defaultList"
+                  render-fields="lbCode,lpCS"
+                  from-fields="lbCode,lpCS"
+                  :index="index"
+                   @on-fill="dataFill"
+                  :init-data="{}"
+                  :query-params="{artId:getartid(index)}"
+                  @input="
+                          value => {
+                            valueChangeAssign(value, index, row, 'lbCode');
+                          }
+                        "
+                ></popup>
+                <!-- 控件特殊处理 优惠方式 -->
+                <Input
+                  v-else-if="column.key == 'upiPriceLess'"
+                  v-model="row[column.key]"
+                  :disabled="detailDisabled"
+                  @input="
+                        value => {
+                          valueChangeAssign(value, index, row, 'upiPriceLess');
+                        }
+                      "
+                  size="small"
+                  :maxlength="40"
+                  icon="md-apps"
+                  @on-click="showExpression('upiPriceLess',index)"
+                ></Input>
+                <formControl
+                  v-else
+                  :control-type="column.controlType"
+                  v-model="row[column.key]"
+                  :disabled="detailDisabled||column.readOnly"
+                  @input="value => {valueChangeAssign(value, index, row,column.key)}"
+                ></formControl>
+              </td>
+            </template>
+           
+          </eTable>
+        </TabPane>
+      </Tabs>
+    </editWindow>
+     <preferential
+      v-model="showpreferential"
+      @preferential-ok="preferentialOk"
+      :renderJsonStr="renderJsonStr"
+    ></preferential>
+    <!-- <referenceField :formName="formmasterName" :id="id"></referenceField> -->
+  </div>
+</template>
+
+<script>
+/**
+ * @desc edit-dept 描述
+ * 所有重要 可以重用的方法 放在了基类,继承即可用重复使用 dyBaseMixins,
+ * 可以根据需求重写所需的方法:
+ *
+ * @params 参数
+ *
+ * @return 返回
+ *
+ * @author Andy Huang
+ *
+ * @created 2019/11/20 17:07:54
+ */
+// import rightMenu from "@/components/e-table/right-menu2"
+import referenceField from "@/components/referenceField/referenceField";
+import preferential from "@/components/preferential/preferential";
+import popup from "@/components/popup/popup";
+import editWindow from "@/components/edit-window/edit-window";
+// import Form from '@/components/form/form'
+import eTable from "@/components/e-table/e-table";
+import request from "@/libs/request";
+import editBaseMixins from "../../mixins/edit";
+import optionSearch from "../../components/optionSearch";
+import dayjs from "dayjs";
+import Sys from "@/api/sys";
+import formControl from "@/components/form-control/form-control";
+import { deepCopy } from "view-design/src/utils/assist";
+const default_formDataInfo = {
+  // 主表 更改字段
+  master: {
+    purCode : "",
+    purName: "",
+    lbFeeNo: "",
+    coinCode: "",
+    effectiveDate: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+    remark: "",
+  },
+  // 子表 artLengs 根据实际接口更改,其它不变
+  lbFeeItemList: {
+    addList: [], // 添加列
+    defaultList: [], // 默认列
+    deleteList: [], // 删除列
+    updateList: [] // 更新列
+  }
+};
+export default {
+  name: "edit-paperPrice",
+  mixins: [editBaseMixins],
+  components: {
+    editWindow,
+    optionSearch,
+    preferential,
+    eTable,
+    popup,
+    formControl,
+    referenceField
+    // rightMenu
+    // Form,
+  },
+  data() {
+    return {
+      showContextMenu: true,
+      showEditMenu: false,
+      actionSubtitle: "楞别加价", // 当前操作副标题
+      renderJsonStr: "", // 回填优惠方式 字符串
+      id: 0,
+      formName: "purLbFeeItemFm",
+      formmasterName: "purLbFeeFm",
+      currentExpressType: "", //当前打开的优惠方式类型
+      showpreferential: false,
+      requestBaseUrl: "/purchase/purLbFee", // 请求 查询 操作的基础路径
+      formDataInfo: deepCopy(default_formDataInfo), // 防止添加和更新数据提交发生冲突
+      increaseRateData: [], //存储已经计算的涨幅
+      artid:null,//储存子表纸质id
+      // 需要验证的数据
+      ruleValidate: {
+        purCode: [
+          {
+            required: true,
+            message: "供应商不能为空",
+            trigger: "blur"
+          }
+        ]
+      },
+      tableFieldsValidator: {
+        // supplierArtName: [
+        //   {
+        //     required: true,
+        //     message: "供应商纸质不能为空",
+        //     trigger: "blur"
+        //   }
+        // ],
+        // quotePrice: [
+        //   {
+        //     required: true,
+        //     message: "报价不能为空",
+        //     trigger: "blur",
+        //     type: "number"
+        //   }
+        // ]
+      },
+      subBoxClickIndex: -1,
+      getsupplierId: 0
+    };
+  },
+  computed:{
+    
+  },
+  watch: {
+    showWindow(n,o){
+      if (n&&this.action=='add') {
+        this.formDataInfo.master.effectiveDate = dayjs().format("YYYY-MM-DD HH:mm:ss")
+      }
+    }
+  },
+  // mounted(){
+  //   this.init()
+  // },
+  methods: {
+    // 回填JSON数据到优惠方式控件
+    retrunJsonDataToDisCount(subBoxClickIndex) {
+      //debugger;
+      let slaveObj = this.$refs["tableFields"];
+      let tableData = slaveObj.get();
+      this.renderJsonStr = tableData[subBoxClickIndex].upiPriceLessJson;
+    },
+    //打开优惠方式，参数，当前类型：
+    showExpression(type, subBoxClickIndex) {
+      this.retrunJsonDataToDisCount(subBoxClickIndex);
+      this.showpreferential = true;
+       setTimeout(()=>{
+        this.$nextTick(()=>{
+          this.renderJsonStr = "" // 弹框后数据清空,不然下次无法回填
+        })
+      },1000)
+      this.currentExpressType = type;
+      this.subBoxClickIndex = -1;
+      if (subBoxClickIndex >= 0) {
+        this.subBoxClickIndex = subBoxClickIndex;
+      }
+    },
+     //优惠方式的回调方式，返回参数
+    preferentialOk(text, json, value) {
+      if (this.subBoxClickIndex == -1) {
+      } else {
+        this.$refs.tableFields.set(
+          {
+            upiPriceLess: text,
+            upiPriceLessJson: json,
+            upiPriceLessStr: value
+          },
+          this.subBoxClickIndex
+        );
+      }
+    },
+       // 选择弹框数据回填数据列表
+    dataFill(fillDatas) {
+      let tableObjRef =  this.$refs['tableFields']
+      let fillDatasLength=0
+      if(tableObjRef && fillDatas && fillDatas.length>0){
+          while(fillDatasLength<fillDatas.length){
+              let resetParams ={
+                lbCs: fillDatas[fillDatasLength].data.lpCS
+              }
+              tableObjRef.set(resetParams, fillDatasLength);
+              fillDatasLength = fillDatasLength+1
+          }
+      }
+    },
+    getartid(index){
+      if (!!this.$refs.tableFields) {
+        return this.$refs.tableFields.get()[index].artId
+      }
+    },
+    getartId(){
+      let artId = ''
+      if (!this.$refs['tableFields']) {
+        return  ''
+      }
+     this.$refs['tableFields'].get().filter(item=>{
+        if (!!item.artId) {
+          artId += item.artId+','
+        }
+      })
+      return  artId.substr(0, artId.length - 1)
+    },
+   
+    //子表数据唯一检验
+    OnlypurPaperPriceItemFm(i) {
+      let constdata = this.$refs["tableFields"].get();
+      for (let index = 0; index < constdata.length; index++) {
+        if (i != index) {
+          if (constdata[i].supplierArtName === constdata[index].supplierArtName) {
+            if (constdata[i].artCode === constdata[index].artCode) {
+              if (constdata[i].lbCode === constdata[index].lbCode) {
+                  constdata[i].lbCode = "";
+                  this.$Message.error("该数据已经存在");
+              }
+            }
+          }
+        }
+      }
+    },
+    show(index) {
+    console.log(index);
+      this.tableIndex = index;
+    },
+    //判断数据是新增还是修改
+    formDetailDataCall() {
+      // debugger;
+      if (this.action != "add") {
+        //debugger
+        this.getsupplierId = this.formDataInfo.master.supplierId;
+        this.id = this.formDataInfo.master.id;
+      }
+    },
+    //当主表客户弹框改变时促发初始化子表数据
+    Initializationdata(data) {
+      this.$refs["formDataInfo"].validateField("purCode", err => {});
+      let tableData = this.$refs["tableFields"].get();
+      if (this.formDataInfo.master.supplierId) {
+        if (this.formDataInfo.master.supplierId != this.getsupplierId) {
+          this.$refs["tableFields"].reset()
+        }
+        this.getsupplierId = this.formDataInfo.master.supplierId;
+      }
+    },
+    // 重写父类,添加时候,清空数据
+    HandleFormDataInfo() {
+      //  debugger
+      this.formDataInfo = deepCopy(default_formDataInfo)
+    },
+    clickValuedate() {
+      //debugger;
+      if (
+        !this.formDataInfo.master.purCode ||
+        this.formDataInfo.master.purCode == ""
+      ) {
+        this.$Message.error("供应商编号不能为空");
+        return false;
+      }
+      return true;
+    },
+    // 重写父类,修改提交数据
+    resetformDataInfo(_data) {
+      let tableData = this.$refs["tableFields"].getCategorizeData();
+      //debugger
+      this.formDataInfo.lbFeeItemList = tableData;
+      if (!!_data.master.effectiveDate) {
+        _data.master.effectiveDate = dayjs(_data.master.effectiveDate).format(
+          "YYYY-MM-DD HH:mm:ss"
+        );
+      }
+      return this.formDataInfo;
+    }
+  }
+};
+</script>
+
+<style>
+/* .cl-edit-paperPrice .ivu-form-item {
+  margin-bottom: 5px !important;
+} */
+.cl-edit-paperPrice .ivu-select-item {
+  display: block;
+}
+/* .cl-edit-paperPrice .ivu-input-type-text{
+  width: 200px
+}*/
+.cl-edit-paperPrice .right-text {
+  width: 160%;
+}
+</style>

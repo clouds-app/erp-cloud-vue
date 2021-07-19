@@ -453,21 +453,6 @@
                   size="small"
                   :maxlength="20"
                 ></Input>
-                 <!-- 控件特殊处理 供应商纸质 -->
-                <Input
-                  v-else-if="column.key == 'supplierArtName'"
-                  v-model="row[column.key]"
-                  :disabled="detailDisabled"
-                  @input="
-                        value => {
-                          valueChangeAssign(value, index, row, 'supplierArtName');
-                        }
-                      "
-                  size="small"
-                  :maxlength="40"
-                  icon="md-apps"
-                  @on-click="showExpression(index)"
-                ></Input>
                 <!--控件特殊处理  其它 -->
                   <formControl
                     v-else
@@ -712,15 +697,7 @@
       :supplierData='supplierData'
       :filterFild='filterFild'
       @submitEvent='submitEvent'
-      :subSonTableAllData="subSonTableAllData"
-      :subMasterTableAllData="subMasterTableAllData"
     />
-     <supplierArtName
-     ref="supplierArtName"
-      v-model="showEditWindows"
-      @preferential-ok="preferentialOk"
-      :supplierArtData="supplierArtData"
-    ></supplierArtName>
   </div>
 </template>
 
@@ -739,7 +716,6 @@
  * @created 2020/02/11 17:07:54
  */
 let _ = require('lodash')
-import supplierArtName from "@/components/supplier/supplierArtName.vue";
 import inputNumber from '@/components/input-number'
 import newPurpaperpoSalve from "../components/newPurpaperpoSalve";
 import editWindow from "@/components/edit-window/edit-window";
@@ -816,8 +792,7 @@ export default {
     formControl,
     popup,
     newPurpaperpoSalve,
-    inputNumber,
-    supplierArtName
+    inputNumber
   },
   data() {
     return {
@@ -843,13 +818,8 @@ export default {
       masterTableIndex:-1,//存在第二层表格选中数据索引
       subMasterTableData:[],//存储第二层显示数据
       subSonTableData:[],//存储第三层显示数据
-      subSonTableAllData:[],//存储第三层所有数据
-      subMasterTableAllData:[],
       formDataInfo:deepCopy(default_master),
       poItemList:[],// 深拷贝对象和数组,
-      showEditWindows:false,
-      supplierArtData:{},
-      subBoxClickIndex: -1,
       ruleValidate: {
         supplierId: [
           { required: true, message: "供应商不能为空", trigger: "blur" }
@@ -858,44 +828,12 @@ export default {
       tableFieldsValidator: {}, // 需要验证的数据表格
     };
   },
-  watch:{
-     showWindow(n,o){
-       if(!n){
-         this.$refs.supplierArtName.setsupplierArtName()
-       }
-     },
-  },
   created() {
         this.debouncedGetSuite = _.debounce(this.tableChangeCallback, 800)
         this.getppoScoreTypeList()
         this.getppoScoreDepthList()
   },
   methods:{
-      //优惠方式的回调方式，返回参数
-    preferentialOk(item) {
-      if(this.subBoxClickIndex != -1){
-         this.$refs['slave_list_table_edit'].set({ppoArtPrice:item},this.subBoxClickIndex)
-         let data = this.$refs['slave_list_table_edit'].get()
-         data[this.subBoxClickIndex].ppoMoney = (Number(data[this.subBoxClickIndex].ppoPrice)*Number(item)).toFixed(2)
-         console.log(data[this.subBoxClickIndex].ppoMoney);
-         this.formDataInfo.master.ppoMoney= data[this.subBoxClickIndex].ppoMoney
-      }
-    },
-    //打开优惠方式，参数，当前类型：
-    showExpression(subBoxClickIndex) {
-      if(this.supplierData.priceMode==1){
-        return
-      }
-      if(this.poItemList.length>0 ){
-        if(this.poItemList[subBoxClickIndex].paperPoDataList[0].workNo){
-         this.supplierArtData.lbCode = this.poItemList[subBoxClickIndex].paperPoDataList[0].lbCode
-         this.showEditWindows = true;
-         this.subBoxClickIndex = subBoxClickIndex
-         return
-        }
-      }
-      this.$Message.error('请先选择工单号！')
-    },
       clickValuedate(){
         if(!this.formDataInfo.master.supplierId){
           this.$Message.error('供应商不能为空')
@@ -965,16 +903,8 @@ export default {
       // onFill(index){},
       // 工单号ICON点击回调
       async Slave_list_table_editRowModify(index){
-        this.subSonTableAllData=[]
-        this.subMasterTableAllData=[]
         let valid = await this.$refs['formDataInfo'].validate()
         if(!valid) return
-        this.poItemList.forEach((item,index)=>{
-          if(item['master'].workNo !== ""){
-             this.subSonTableAllData.push(item['paperPoDataList'])
-             this.subMasterTableAllData.push(item['master'])
-          }
-        })
         this.salveWindow.showEditWindow = true;
         this.salveWindow.isLoaddingDone = true;
         this.salveWindow.action = "add";
@@ -999,15 +929,16 @@ export default {
         let _self = this
         e.topTableList.filter((item,index)=>{
           master = deepCopy(item[0])
-          _self.$refs.slave_list_table_edit.set(master,index)
+          _self.$refs.slave_list_table_edit.set(master,index+this.masterTableIndex)
           paperPoDataList = e.bottomTableList[index]
-          if (_self.poItemList[index]) {
-            _self.poItemList[index].master = master
-            _self.poItemList[index].paperPoDataList = paperPoDataList
+          if (_self.poItemList[this.masterTableIndex+index]) {
+            _self.poItemList[this.masterTableIndex+index].master = master
+            _self.poItemList[this.masterTableIndex+index].paperPoDataList = paperPoDataList
           }else{
             _self.poItemList.push({master,paperPoDataList})
           }
         })
+        console.log(this.poItemList);
         this.masterTableIndex = -1
         this.$refs.slave_list_table_edit.rowClick(0, "row-click")
         this.setppoMoney()
@@ -1022,7 +953,7 @@ export default {
       Initializationdata(e){
         this.$refs["formDataInfo"].validateField("supplierId", err => {});
         this.supplierData = e[0].orignData
-        this.supplierArtData.supplierId = e[0].orignData.id
+
       },
       // 数据提交回调
       formTableDataSubmit(){
