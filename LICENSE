@@ -1,21 +1,940 @@
-MIT License
+CREATE DEFINER=`YERP`@`%` PROCEDURE `spCalcMData`(IN inCompanyId bigint(20),inUserId bigint(20),inCustId bigint(20),inArtCode varchar(40),inLbCode varchar(20)
+,inBoxCode varchar(20),inL decimal(24,6),inW decimal(24,6),inH decimal(24,6),inMoks decimal(24,6),inQty int(6),inBp int(6)
+,inUnitCode varchar(12),inK decimal(24,6),inDieCuttingPlateCode varchar(20),inIsFullPrint tinyint(1),inAdjBorder decimal(24,6),out _errno varchar(100))
+BEGIN
+/*-----------------------------------------------------------------------------------------------------                                                                                                            
+ * 功能: 計算指定紙質/盒式的用料                                                                                                            
+ * 说明: （当系统参数 isCalPaperWidth = 0 时不启用T_BasPaperLimit表，产品资料界面调用 spCalcMDataNoPaperWidth 算净料，为1时调用 spCalcMData 算净料和用料）
+ * 程式: nowsun                                                                                                            
+ * 修改: 增加开口计算 songwenbo 111108  增加如有模切版号刚按模切版信息计算用料 songwenbo 111221                                                          
+         增加如有模切版调用规格的单位设置 songwenbo 120227                                                 
+         增加生产配纸代号  WWC 121110                            
+         wsc 2017-05-09              
+         wsc 2017-05-31  修正有时宽开为1的BUG       
+         HWJ 2019-09-18 优先取客户纸质，条件加上楞别判断    
+         wsc 2019-09-23 纸箱接头区分  粘箱和钉箱         
+         wsc 2019-10-11 如盒式公式 打勾 “开料单双片” 且符号双片的。默认带双片 反之按原来走法                                                         
+ * 日期: 2010-02-22     select lb_PMaxCut,lb_PMaxWidth,* from T_Leng                                                                                                       
+ * 备注: 
+ 传入参数：公司ID,用戶ID號,客戶ID號,生產紙質Code,楞别Code,
+           生產盒式Code, 生產長,寬,高,模數,數量,備品數,
+           开单單位,开口,模切版号,满版印刷,修边(净料)隐藏的
+		   ,钉条类型,inDtType int(1)                   ,out outErrno varchar(100)
+ CALL spCalcMData (公司ID,用戶ID,客戶ID,  紙質Code,楞别Code,盒式Code,生產長,寬,高,    模數,數量,備品數,  '开单單位',开口,模切版号,满版印刷,修边) ;
+ CALL spCalcMData (15,1,1213288419212460033,  'A5A','B','001',100,200,302,   1,1000,0,    '0:英寸',10,'',1,0) ;
+-----------------------------------------------------------------------------------------------------*/        
+ declare _artId bigint(20);  -- 纸质id
+ declare _r1w decimal(24,6); 
+ declare _r1l decimal(24,6); 
+ declare _r2w decimal(24,6); 
+ declare _r2l decimal(24,6);                                                                                                             
+ declare _s1w decimal(24,6); 
+ declare _s1l decimal(24,6); 
+ declare _s2w decimal(24,6); 
+ declare _s2l decimal(24,6); -- 小紙板尺寸                                        
+ declare _wMin decimal(24,6); 
+ declare _wMax decimal(24,6); 
+ declare _lMin decimal(24,6); 
+ declare _lMax decimal(24,6);                                    
+ declare _wTmp decimal(24,6); 
+ declare _xTmp decimal(24,6); 
+ declare _w1Flag char(1); 
+ declare _w2Flag char(1);-- 臨時變量                                   
+ declare _PaperCutFlag char(1); 
+ declare _BoxPaperSizeFormat char(1); 
+ declare _DoubleFlag char(1);                                                              
+ declare _usemode int(1);
+ declare _Tmpd decimal(24,6);
+ declare _Maxps int(1);                                                                               
+ declare _PaperWaste decimal(24,6); 
+ declare _ys1 varchar(60); 
+ declare _ys2 varchar(60);
+ declare _ys varchar(60);                                
+ declare _kc1 varchar(60); 
+ declare _kc2 varchar(60); 
+ declare _kc varchar(60);
+ declare _tmpys decimal(24,6);                                                                   
+ declare _boxlinemode char(1);
+ declare _ysInt decimal(24,6);
+ declare _kcInt int(1);
+ declare _tQty decimal(24,6); 
+ declare _flag char(1);                                                                                                      
+ declare _i int(1); 
+ declare _w1Cut int(1); 
+ declare _l1Cut int(1); 
+ declare _w2Cut int(1); 
+ declare _l2Cut int(1); 
+ declare _BoxMDataSizeLUnit varchar(12);   -- 紙箱用料紙長單位                                                                              
+ declare _unitid2 varchar(12);  
+ declare _bUnit2 varchar(12);  
+ declare _ll decimal(24,6);  
+ declare _ww decimal(24,6);  
+ declare _hh decimal(24,6);     -- 保存转换后的用料规格                                                                                                            
+ declare _lmm decimal(24,6);  
+ declare _wmm decimal(24,6);  
+ declare _hmm decimal(24,6); 
+ declare _MDatatwoperKilo  char(1);                                                          
+ declare _UWasteByBoxSize char(1); 
+ declare _BoxKaiKouUnit varchar(12); 
+ 
+ -- 用料规格按模切版号计算
+ declare _BoxMDataByModeNo varchar(12); 
+ -- declare _ProdArtCode varchar(20); -- 配纸代码                                                    
+ declare _BoxPrintWaste decimal(24,6); -- 满版印刷时的加值
+ -- declare _ArtPZ1 varchar(20); 
+ -- declare _ArtPZ2 varchar(20); 
+ -- declare _ArtPZ3 varchar(20); 
+ -- declare _ArtPZ4 varchar(20); 
+ -- declare _ArtPZ5 varchar(20);                                          
+ -- declare _ArtPZ6 varchar(20); 
+ -- declare _ArtPZ7 varchar(20); 
+ -- declare _ArtPZ8 varchar(20); 
+ -- declare _ArtPZ9 varchar(20);    
 
-Copyright (c) 2017 iView
+ -- 纸箱用料计算类型 
+ declare _BoxMDataCalcByParam varchar(255); 
+ declare _BoxMDataYXFloatToInt varchar(20);                    
+ declare _PMaxCut int(1);  
+ declare _PMaxWidth decimal(24,6);
+ declare _PaperMinWaste decimal(24,6)   ;   
+ declare _OrderDouble varchar(1);  -- - WSC 2019-10-11   
+ declare _ResutSQL nvarchar(4000);  -- - --- WSC 2019-10-11  
+          
+ -- 總數量, 基本單位,                     厚             单价           基重           壓線加分                                                                                  
+ declare _iQty decimal(24,6);  
+ declare _bUnit varchar(12);   
+ declare _t decimal(24,6);  -- 厚度(mm)
+ declare _u decimal(24,6);  -- 單價
+ declare _g decimal(24,6);  -- 基重
+ declare _s decimal(24,6);  -- 纸箱|压线加分(mm)    
+ 
+ declare _d decimal(24,6);  
+ declare _dinch decimal(24,6);  -- 钉条,
+ declare _dcm decimal(24,6);    -- 钉条,    
+ 
+ declare _f decimal(24,6);  
+ -- declare _finch decimal(24,6);  
+ -- declare _fcm decimal(24,6); -- 廢邊 ,    
+declare _fmm decimal(24,6); -- 纸箱|纸度废边廢邊mm , 
+  
+ declare _fl decimal(24,6);  
+ -- declare _flinch decimal(24,6);  
+ -- declare _flcm decimal(24,6); -- 廢邊 ,
+ declare _flmm decimal(24,6); -- 纸箱|纸长废边廢邊 ,
+ 
+ declare _CutMode char(1);  
+ declare _BoxCutMode char(1);  
+ declare _BoxLabel varchar(20); 
+ declare _Loop int(2); -- 單雙駁混合處理模式
+ 
+-- 套盒式公式計算出用料的需求
+declare _res int(3); declare _v decimal(24,6);declare _vTemp decimal(24,6);
+declare _isBorder tinyint(1); declare _islBorder tinyint(1); declare _box_If_Expr varchar(255); declare _box_If_Value decimal(24,6); 
+declare _box_W1_Expr varchar(255); declare  _box_L1_Expr varchar(255); declare  _box_YS1_Expr varchar(255); declare _box_KC1_Expr varchar(255); 
+declare _box_W2_Expr varchar(255); declare  _box_L2_Expr varchar(255); declare  _box_YS2_Expr varchar(255); declare _box_KC2_Expr varchar(255);
+declare _box_Inch_Expr varchar(255); declare  _box_CM_Expr varchar(255); declare     _box_Cut_Mode varchar(1);
+declare _box_Weight_Expr varchar(255); declare _box_Area_Expr varchar(255); declare  _box_Cube_Expr varchar(255); 
+declare _lCut int(3); declare  _wCut int(3); declare  _rl decimal(24,6); declare  _rW decimal(24,6); declare  _wFlag varchar(1);
+declare _W_Expr varchar(255); declare _L_Expr varchar(255); declare _KC_Expr varchar(255); declare _YS_Expr varchar(255);                                     
+declare _box_DefultW decimal(24,6); declare  _box_DefultL decimal(24,6);
+declare _pos int(5);
+declare _tmp_expr varchar(255);
+declare _index_no int(5);
+declare _isCalPaperWidth tinyint(1) ;  -- 启用计算用料纸度 (0未开通1开通)
+ 
+ SET inCustId = IFNULL(inCustId, '');  -- 客戶號 
+ SET inArtCode = IFNULL(inArtCode, ''); -- 生產紙質
+ SET inBoxCode = IFNULL(inBoxCode, ''); -- 生產盒式 
+ SET inL = IFNULL(inL, 0); -- 生產長 
+ SET inW = IFNULL(inW, 0); -- 生產寬
+ SET inH = IFNULL(inH, 0); -- 生產高
+ SET inQty = IFNULL(inQty, 0); -- 數量
+ SET inBp = IFNULL(inBp, 0); -- 備品數
+ SET inUnitCode = IFNULL(inUnitCode, ''); -- 开单单位      
+ if  IFNULL(inMoks, 0) < 0.5 THEN         -- 模數
+	set inMoks=1  ;  
+ END IF ;
+ set _errno=IFNULL(_errno,'')  ;                   
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+ -- *******获取inArtCode的artId
+ select id into _artId
+ from T_BasArt where companyId = inCompanyId and artCode =  inArtCode ;
+ 
+ -- *******获取配纸代号 wbh:此处已经无用了     
+ select ifnull(lbPMaxCut,0),ifnull(lbPMaxWidth,0) 
+ into _PMaxCut ,_PMaxWidth
+ from T_BasLeng where companyId = inCompanyId and lbCode=inLbCode;
+                      
+ -- set _ProdArtCode='';    
+ -- set _ArtPZ1='';   
+ -- set _ArtPZ2='';  
+ -- set _ArtPZ3=''; 
+ -- set _ArtPZ4='';
+ -- set _ArtPZ5='';
+ -- set _ArtPZ6='';
+ -- set _ArtPZ7='';
+ -- set _ArtPZ8='';
+ -- set _ArtPZ9='';  
+ set _OrderDouble='0'; 
+ 
+  -- 启用计算用料纸度 (0未开通1开通) wbh 2020-03-06
+ call spGetParamValue(inCompanyId,'isCalPaperWidth',_isCalPaperWidth );
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+ -- 纸箱用料压线保留小数位数 0:不保留小数　1：保留小数  如果参数为真则用料压线保存小数位数，否则保存整数。
+ call spGetParamValue(inCompanyId,'BoxMDataYXFloatToInt',_BoxMDataYXFloatToInt );
+ set _BoxMDataYXFloatToInt = ifnull(_BoxMDataYXFloatToInt,0);
+ 
+ -- (wbh 无客户纸质)
+ /*-----------------------------------------------------------------------------------------------------                                                                                                            
+ if exists(select top 1 1 from  T_CustArt a inner join T_CustArt_Item b on a.ID1=b.ID1                                          
+              where a.Cust_ID=inCustId and b.ca_ArtID=inArtCode and b.ca_ArtLB =inLengId)  
+-----------------------------------------------------------------------------------------------------*/  
+ -- (wbh 无客户纸质表，配纸)
+ 
+  -- 获取满版印刷时的纸长加值 当是满版印刷时,净料纸长则加上参数的值。(单位为毫米)
+  if inIsFullPrint=1 then
+	  select paramValue INTO _BoxPrintWaste  from T_SysParamValue where paramFlag ='BoxPrintWaste'  and companyId = inCompanyId limit 1;
+	  SET _BoxPrintWaste = IFNULL(_BoxPrintWaste, 0);  
+  else                                    
+	  set _BoxPrintWaste=0;
+  end if;  
+  
+  -- 开单单位 
+  if SUBSTR(inUnitCode FROM 1 FOR 1)='0' then
+     set inUnitCode='inch';
+  elseif  SUBSTR(inUnitCode FROM 1 FOR 1)='1' then
+     set inUnitCode='cm';
+  elseif  SUBSTR(inUnitCode FROM 1 FOR 1)='2' then
+     set inUnitCode='mm';
+  end if ;
+  
+  -- 得到紙箱用料紙長單位
+  call spGetParamValue(inCompanyId,'BoxMDataSizeLUnit',_BoxMDataSizeLUnit );
+  if SUBSTR(_BoxMDataSizeLUnit FROM 1 FOR 1)='0' then
+     set _BoxMDataSizeLUnit='inch';
+  elseif  SUBSTR(_BoxMDataSizeLUnit FROM 1 FOR 1)='1' then
+     set _BoxMDataSizeLUnit='cm';
+  elseif  SUBSTR(_BoxMDataSizeLUnit FROM 1 FOR 1)='2' then
+     set _BoxMDataSizeLUnit='mm';
+  end if ;
+  
+  -- 是否紙箱用料加上千分之二損耗  (wbh 参数没有 不影响计算)
+  call spGetParamValue(inCompanyId,'MDataAddTwoPerKilo',_MDatatwoperKilo );  
+  -- 用料损耗是否按小纸板算        (wbh 参数没有 不影响计算)
+  call spGetParamValue(inCompanyId,'UWasteByBoxSize',_UWasteByBoxSize );
+  
+  -- 开口单位
+  call spGetParamValue(inCompanyId,'BoxKaiKouUnit',_BoxKaiKouUnit );
+  if SUBSTR(_BoxKaiKouUnit FROM 1 FOR 1)='0' then
+     set _BoxKaiKouUnit='inch';
+  elseif  SUBSTR(_BoxKaiKouUnit FROM 1 FOR 1)='1' then
+     set _BoxKaiKouUnit='cm';
+  elseif  SUBSTR(_BoxKaiKouUnit FROM 1 FOR 1)='2' then
+     set _BoxKaiKouUnit='mm';
+  end if ;
+  
+	-- 纸箱用料计算类型
+	call spGetParamValue(inCompanyId,'BoxMDataCalcByParam',_BoxMDataCalcByParam );
+  
+	if ifnull(_BoxMDataCalcByParam,'')='' then
+		set _BoxMDataCalcByParam='0' ;
+	end if;
+  
+	-- 用料规格按模切版号计算  
+	call spGetParamValue(inCompanyId,'BoxMDataByModeNo',_BoxMDataByModeNo );
+	if _BoxMDataByModeNo='0' then
+		set inDieCuttingPlateCode=''  ;  
+	end if;
+  
+  
+  
+	-- 先清除计算内容
+	DELETE FROM T_tmpMData WHERE userId=inUserId AND companyId = inCompanyId;
+ 
+	-- usual_block: LOOP  
+	usual_block:BEGIN
+		if not exists(select 1 from T_SaleCustomer where companyId = inCompanyId and id =  inCustId ) then
+			set _errno='EMI00149'; -- 客戶號不能為空或客戶號不存在 
+			LEAVE usual_block;
+		end if;
+		
+		--  讀取系統的紙度單位 select * from T_SysParam
+		call spGetParamValue(inCompanyId,'Unit',_bUnit );
+		if SUBSTR(_bUnit FROM 1 FOR 1)='0' then
+		 set _bUnit='inch';
+		elseif  SUBSTR(_bUnit FROM 1 FOR 1)='1' then
+		 set _bUnit='cm';
+		elseif  SUBSTR(_bUnit FROM 1 FOR 1)='2' then
+		 set _bUnit='mm';
+		end if ;	
+		if  IFNULL(_bUnit,'') = '' THEN
+			set _errno='EMI00155'; -- 紙度單位沒設置
+			LEAVE usual_block;
+		end if;
+		-- 檢測單位的正确性, 如果不正确則進行缺省值的設置 select * from T_Customer 
+		if inUnitCode = '' then
+			set inUnitCode = _bUnit ;
+		end if;
+		-- 如果所有的开单單位都沒設, 返回錯誤信息
+		if  IFNULL(inUnitCode,'') = '' THEN
+			set _errno='EMI00152'; -- 开单單位不能為空
+			LEAVE usual_block;
+		end if;	
+		
+		if inArtCode='' or (not exists(select 1 from T_BasArt where companyId = inCompanyId and artCode =  inArtCode )) then
+			set _errno='EMI00150'; -- 生產紙質不能為空或不存在 
+			LEAVE usual_block;
+		end if;
+		
+		if inBoxCode = '' or  (not exists(select 1 from T_BasBox where companyId = inCompanyId and boxCode =  inBoxCode )) then
+			set _errno='EMI00151'; -- 生產盒式不能為空或不存在 
+			LEAVE usual_block;
+		end if;
+		
+		if ( inL = 0 ) or ( inW = 0)  then
+			set _errno='EMI00216'; -- -- 規格之長與寬不能為零 
+			LEAVE usual_block;
+		end if;
+		
+		set _iQty=inQty+inBp;
+		if _iQty <=0  then
+			set _errno='EMI00153'; -- -- 數量不能為零 
+			LEAVE usual_block;
+		end if;
+		
+		-- 启用计算用料纸度 (0未开通1开通) wbh 2020-03-06
+		if  IFNULL(_isCalPaperWidth,0) = 1 THEN
+				-- 得到最小紙度與最大紙度
+			   /* select _wMin=min(case when _bUnit='inch' then pl_InchCode                                                   
+									 when _bUnit='cm' then pl_CMCode                                                   
+									  else pl_CMCode*10 end),                                                  
+					  _wMax=max(case when _bUnit='inch' then pl_InchCode                                                   
+									 when _bUnit='cm' then pl_CMCode                                                  
+									  else pl_CMCode*10 end) from T_PaperLimit where pl_karat=1 ;		
+				if _bUnit='inch' then
+					select MIN( plWidthMM * 25.4 ), MAX( plWidthMM * 25.4 ) into _wMin,_wMax from T_BasPaperLimit where plkarat = 1;
+				elseif _bUnit='cm' then
+					select MIN( plWidthMM * 10 ), MAX( plWidthMM * 10 ) into _wMin,_wMax from T_BasPaperLimit where plkarat = 1;
+				else
+					select MIN( plWidthMM ), MAX( plWidthMM ) into _wMin,_wMax from T_BasPaperLimit where plkarat = 1;
+				end if;
+				*/
+				-- 本系统只设置了MM：wbh 201912  又添加了inch字段 20210708 wbh
+				select MIN( case when _bUnit='inch' then plWidthInch                                                   
+									 when _bUnit='cm' then plWidth                                                   
+									  else plWidth*10 end ), 
+						MAX( case when _bUnit='inch' then plWidthInch                                                   
+									 when _bUnit='cm' then plWidth                                                   
+									  else plWidth*10 end  ) 
+				into _wMin,_wMax 
+				from T_BasPaperLimit where companyId = inCompanyId and plkarat = 1;
+				/*
+				if _bUnit='inch' then
+					SET _wMin = _wMin / 2.54 ;
+					SET _wMax = _wMax / 2.54 ;
+				elseif _bUnit='mm' then
+					SET _wMin = _wMin*10 ;
+					SET _wMax = _wMax*10 ;
+				end if;
+				*/
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+				if ( FOUND_ROWS() < 1 or  _wMin is null or _wMax is null ) then
+					set _errno='EMI00156'; -- 紙度表沒設置, 不能進行計算!  
+					LEAVE usual_block;
+				end if;	
+				-- 得到最少紙長與最大紙長 
+				call spGetParamValue(inCompanyId,'MinPaperLen',_lMin );
+				call spGetParamValue(inCompanyId,'MaxPaperLen',_lMax );
+				if _lMin=0 or _lMax=0   then
+					set _errno='EMI00157'; -- 紙度表沒設置, 不能進行計算! 
+					LEAVE usual_block;
+				elseif _lMin > _lMax then
+					set _errno='EMI00158'; -- 最小紙長大于最大紙長 
+					LEAVE usual_block;
+				end if ;
+				
+				-- _BoxMDataSizeLUnit 为紙箱用料紙長單位
+				set _lMin= F_UnitChange(inCompanyId,'mm',_BoxMDataSizeLUnit,_lMin) ;
+		end if ;
+		
+		
+		-- 讀取壓線小數進位處理方式  (wbh无此参数)
+		call spGetParamValue(inCompanyId,'BoxLineMode',_BoxLineMode );
+		set _boxlinemode=SUBSTR(_boxlinemode,1,1);	
+		-- 读取是否开料              (wbh无此参数)
+		-- call spGetParamValue(inCompanyId,'PaperCutFlag',_PaperCutFlag );	
+		call spGetParamValue(inCompanyId,'isCalPaperWidth',_PaperCutFlag ); -- 20201010 wbh 改
+		-- 讀取是否格式化紙箱訂單中的開料規格  (wbh无此参数)
+		call spGetParamValue(inCompanyId,'BoxPaperSizeFormat',_BoxPaperSizeFormat );                                                   
+		-- 讀取紙度最大耗損數 
+		call spGetParamValue(inCompanyId,'PaperWaste',_PaperWaste );  -- 最大修边
+		set _PaperWaste=F_UnitChange(inCompanyId,'mm',_bUnit,_PaperWaste)  ;  			
+		call spGetParamValue(inCompanyId,'PaperMinWaste',_PaperMinWaste ); 	  -- 最小修边    
+		set _PaperMinWaste=F_UnitChange(inCompanyId,'mm',_bUnit,_PaperMinWaste)   ;                                              
+																																				 
+		-- 纸箱用料依规格的英寸值进行计算      (wbh无此参数)
+		-- call spGetParamValue(inCompanyId,'CalcBoxMDataAsInch',_flag ); 	
+		-- exec spGetParamValue 'Maxps', _Maxps out     --去掉最大开数　swb120522   
+		
+		-- 得到紙質的 厚t, 基重g，壓線加分s, 釘條d, 纸度廢邊f , 纸长廢邊fl          
+		-- 从纸质表中取 基重g
+		select b.baseWt into _g
+		from T_BasArt a inner join T_BasArtLeng b on a.ID=b.artId                                     
+		where a.artCode=inArtCode and a.companyId = inCompanyId and b.companyId = inCompanyId and b.lbCode=inLbCode ; 	
+		-- 从楞别表中取 厚度t, 壓線加分t, 釘條d inch cm, 纸度廢邊f , 纸长廢邊fl
+		select lpHeigth,lbYxAdd,lbDtInch,lbDtCm,lbWidthLose,lbLengLose
+		into   _t,_s,_dinch,_dcm,_fmm,_flmm
+		from T_BasLeng bl where bl.companyId = inCompanyId and bl.lbCode=inLbCode ; 
+		set _u=0 ;  -- 單價為零art_costprice, 
+		
+		-- 不管系统客户设置的是什么单位，纸度废边，纸长废边的单位都是mm
+    SET _f =  F_UnitChange(inCompanyId,'mm',_bUnit,_fmm);
+		SET _fl = F_UnitChange(inCompanyId,'mm',_BoxMDataSizeLUnit,_flmm); 	
+
+		if ( (inUnitCode = 'cm' ) or (inUnitCode ='mm') ) THEN
+			SET _d = _dcm*10;		
+			-- SET _f =  _fmm ;   -- F_UnitChange(inCompanyId,'cm',_bUnit,_fcm);
+			-- SET _fl = _flmm ; -- F_UnitChange(inCompanyId,'cm',_BoxMDataSizeLUnit,_flcm)  ; 	
+			SET _Tmpd=F_UnitChange(inCompanyId,'cm',_bUnit,_dcm)   ; -- 钉条		
+		elseif inUnitCode = 'inch' THEN
+			SET _d = F_UnitChange(inCompanyId,'inch','mm',_dinch);		
+			-- SET _f =  _fmm ;  --  F_UnitChange(inCompanyId,'inch',_bUnit,_fcm);
+			-- SET _fl = _flmm ; --  F_UnitChange(inCompanyId,'inch',_BoxMDataSizeLUnit,_flcm)  ;		
+			SET _Tmpd=F_UnitChange(inCompanyId,'inch',_bUnit,_dinch)   ; 	
+		end IF;
+		
+		-- 得到指定盒式的紙板計算公式                                                
+		set _ll= inL ; -- 保存当前下单规格值       
+		set _ww=inW ;                                                                            
+		set _hh=inH  ;                
+		set _usemode=1;
+		set inK=F_UnitChange(inCompanyId,_BoxKaiKouUnit,'mm',inK );                                               
+		set inAdjBorder=F_UnitChange(inCompanyId,_BoxKaiKouUnit,'mm',inAdjBorder);    -- 修边，与开口共用一个单位参数WWC20140529  
+		
+		
+		/* 增加计算用料公式 客户化处理(客户化计价盒式) swb120915 */
+		
+		-- boxCode 盒式编号,boxIsBorder 纸宽废边,boxIsLBorder 纸长废边,boxIfExpr 单双片条件,boxIfValue 单双片值,   
+		-- boxW1Expr 单片纸宽,boxL1Expr 单片|纸长,boxYS1Expr 单片压线,boxKC1Expr 单片开槽,
+		-- boxW2Expr 双片纸宽,boxL2Expr 双片纸长, boxYS2Expr 双片压线,boxKC2Expr 双片开槽,                                                   
+		-- spInchExpr 英寸计价公式, spCMExpr 厘米计价公式,spWeightExpr 重量公式, spAreaExpr 面积公式, spCubeExpr 体积公式,                          
+		-- boxCutMode 开料单双片,   boxDefultW 宽加值, boxDefultL 长加值
+		CREATE TEMPORARY TABLE IF NOT EXISTS tmpBox ( 
+			select inCompanyId as companyId, a.boxCode,0 as boxIsBorder,0 as boxIsLBorder,b.boxIfExpr,b.boxIfValue,                                                                                                 
+				 b.boxW1Expr,b.boxL1Expr,ifnull(b.boxYS1Expr, '') as boxYS1Expr,ifnull(b.boxKC1Expr, '') as boxKC1Expr,                                       
+				 b.boxW2Expr,b.boxL2Expr, ifnull(b.boxYS2Expr, '') as boxYS2Expr, ifnull(b.boxKC2Expr, '') as boxKC2Expr,                                                   
+				 a.spInchExpr, a.spCMExpr,a.spWeightExpr, a.spAreaExpr, a.spCubeExpr,                          
+				 ifnull(b.boxCutMode,0) as boxCutMode,0 as boxDefultW,0 as boxDefultL                         
+			from T_BasSpecPrice a inner join T_BasSpecPrice_Item  b on a.id=b.specPriceId
+			where a.companyId = inCompanyId and a.custId = inCustId and a.iisAudit = 1 and
+			b.companyId = inCompanyId and a.boxCode = inBoxCode
+		);
+		-- DELETE FROM tmpBox where companyId = inCompanyId;
+
+		-- if @@rowcount=0 
+		IF  IFNULL((SELECT companyId from tmpBox where companyId = inCompanyId),'N')= 'N' THEN
+			insert into tmpBox                                      
+			select a.companyId,a.boxCode,a.boxIsBorder,a.boxIsLBorder,b.boxIfExpr,b.boxIfValue,                                                                 
+				 b.boxW1Expr,b.boxL1Expr,ifnull(b.boxYS1Expr, ''),ifnull(b.boxKC1Expr, ''),                                                                                                   
+				 b.boxW2Expr,b.boxL2Expr, ifnull(b.boxYS2Expr, ''), ifnull(b.boxKC2Expr, ''),                                                   
+				 a.boxInchExpr,a.boxCMExpr, a.boxWeightExpr, a.boxAreaExpr, a.boxCubeExpr,                                  
+				 ifnull(b.boxCutMode,0),0 as boxDefultW,0 as boxDefultL                                                                       
+			from T_BasBox a                                                 
+			left join T_BasBox_Item b on a.id = b.boxId                                                 
+			where a.companyId = inCompanyId and b.companyId = inCompanyId and a.iisAudit = 1 and a.boxCode = inBoxCode ;
+		else
+			update tmpBox a INNER JOIN (SELECT boxCode,boxIsBorder,boxIsLBorder FROM T_BasBox WHERE iisAudit = 1 and companyId = inCompanyId ) b
+			on a.boxCode=b.boxCode
+			set a.boxIsBorder = b.boxIsBorder, a.boxIsLBorder=b.boxIsLBorder where a.companyId = inCompanyId ;
+		END IF;
+			
+		/* 1 增加计算用料公式客户化处理*/ 	
+		calcYongliao_block:BEGIN
+			DECLARE  no_more_record INT DEFAULT 0;
+			declare _pis decimal(24,6); -- 临时纸度  wbh
+			declare crBoxExpr cursor for  select boxIsBorder,boxIsLBorder,boxIfExpr,boxIfValue,                                                                                                 
+												 boxW1Expr,boxL1Expr,ifnull(boxYS1Expr, ''),ifnull(boxKC1Expr, ''),                                                     
+												 boxW2Expr,boxL2Expr, ifnull(boxYS2Expr, ''), ifnull(boxKC2Expr, ''),                                                   
+												 spInchExpr,spCMExpr, spWeightExpr, spAreaExpr, spCubeExpr,                                                   
+												 ifnull(boxCutMode,0),boxDefultW,boxDefultL from tmpBox WHERE companyId = inCompanyId;  	
+		
+			/*这个是个条件处理,针对NOT FOUND的条件,当没有记录时赋值为1*/
+			DECLARE  CONTINUE HANDLER FOR NOT FOUND  SET  no_more_record = 1;		
+			open crBoxExpr;
+			fetch next from crBoxExpr into _isBorder,_islBorder,_box_If_Expr,_box_If_Value,_box_W1_Expr,_box_L1_Expr,                                                  
+					_box_YS1_Expr,_box_KC1_Expr,_box_W2_Expr,_box_L2_Expr,_box_YS2_Expr,_box_KC2_Expr,                                                  
+					_box_Inch_Expr,_box_CM_Expr,_box_Weight_Expr,_box_Area_Expr,_box_Cube_Expr,_box_Cut_Mode,                                      
+					_box_DefultW,_box_DefultL   ;
+						
+			WHILE no_more_record != 1 DO  -- 游标循环1
+				small_block:BEGIN            -- 游标WHILE begin
+				
+					if _box_Cut_Mode='1' then
+						set _Loop = 0 ; -- 單雙駁混合處理模式
+					else
+						set _Loop = 1 ;
+					end if ;
+					
+					mywhile:WHILE _Loop < 2 DO
+						insert into T_tmpMData (companyId,userId,artId,useMode,artCode,sizeW,sizeL,wKs,lKs,Ks,doubleKs,waste,qty,sizeYs,ssizeW,ssizeL,sizeKc)
+						values (inCompanyId,inUserId,_artId,_usemode,inArtCode,0,0,1,1,1.0/inMoks,_Loop,0,0,0,0,0,0);
+						
+						set _DoubleFlag='0'; 
+						if _box_Cut_Mode='1' then -- 如果是开料单双驳混合模式
+							if _Loop=0 then
+								update T_tmpMData set doubleks='0'  -- 单片
+								where companyId = inCompanyId and userId=inUserId and useMode=_usemode and doubleKs=_Loop ;							
+								set _W_Expr=_box_W1_Expr;
+								set _L_Expr=_box_L1_Expr;
+								set _YS_Expr=_box_YS1_Expr;
+								set _KC_Expr=_box_KC1_Expr;                         
+							else
+								set _DoubleFlag='1' ;
+								update T_tmpMData set doubleks='1' -- 双片
+								where companyId = inCompanyId and userId=inUserId and useMode=_usemode and doubleKs=_Loop ;	
+								set _W_Expr=_box_W2_Expr;
+								set _L_Expr=_box_L2_Expr;
+								set _YS_Expr=_box_YS2_Expr;
+								set _KC_Expr=_box_KC2_Expr;
+							end if ;
+						else
+							set inL=F_UnitChange(inCompanyId,inUnitCode,'mm',_ll) ; -- 轉換單位 计算单双驳值按纸度单位计算
+							set inw=F_UnitChange(inCompanyId,inUnitCode,'mm',_ww) ;
+							set inh=F_UnitChange(inCompanyId,inUnitCode,'mm',_hh) ;
+							
+							if LTRIM(RTRIM(_box_If_Expr))='' then
+								set _v=0 ;
+							else
+								-- call spCalcExpr _box_If_Expr, inL, inw, inh, _t, _u, _g, _Tmpd, _s, _v out, _errno out,inK,inAdjBorder ;
+								call spCalcExpr(_box_If_Expr, inL, inw, inh, _t, _u, _g, _Tmpd, _s , inK,inAdjBorder, _v) ;
+							end if ;
+							
+							if  _v > 0  and  _v > _box_If_Value then  -- 双驳计算							
+								update T_tmpMData set doubleks='1'   -- 双开
+								where companyId = inCompanyId and userId=inUserId and useMode=_usemode and doubleKs=_Loop ;	
+								set _W_Expr=_box_W2_Expr;
+								set _L_Expr=_box_L2_Expr;
+								set _YS_Expr=_box_YS2_Expr;
+								set _KC_Expr=_box_KC2_Expr;
+							else
+								update T_tmpMData set doubleks='0'  -- 双开
+								where companyId = inCompanyId and userId=inUserId and useMode=_usemode and doubleKs=_Loop ;	
+								set _W_Expr=_box_W1_Expr;
+								set _L_Expr=_box_L1_Expr;
+								set _YS_Expr=_box_YS1_Expr;
+								set _KC_Expr=_box_KC1_Expr;
+							end if ;
+						end if ;
+						
+						set inL=F_UnitChange(inCompanyId,inUnitCode,'mm',_ll) ; -- 轉換單位 计算紙度紙长先转换为毫米计算后再转成相应的单位
+						set inw=F_UnitChange(inCompanyId,inUnitCode,'mm',_ww) ;
+						set inh=F_UnitChange(inCompanyId,inUnitCode,'mm',_hh) ;
+						
+						if ltrim(rtrim(_W_Expr))='' or ltrim(rtrim(_L_Expr))='' then
+							delete from T_tmpMData where companyId = inCompanyId and userId=inUserId and useMode=_usemode and doubleKs=_DoubleFlag ;	
+							set _Loop=_Loop+1 ;
+							ITERATE  mywhile; -- 重新循环					
+						end if ;					
+						-- 計算用料紙度   --exec spCalcMData 'admin','SGJT','07S00','B','55',50,50,0,1,1,0,'1:厘米','','0',0,'',0                                          
+						
+						-- print inAdjBorder            
+						-- call spCalcExpr _W_Expr, inL, inw, inh, _t, _u, _g _d, _s, _v out, _errno out,inK,inAdjBorder   ;
+						call spCalcExpr(_W_Expr, inL, inw, inh, _t, _u, _g, _d, _s , inK,inAdjBorder, _v) ;
+						
+						set _v=round(F_UnitChange(inCompanyId,'mm',_bUnit,_v),
+												case when _bUnit='mm' then 0 when _bUnit='cm' then 1 else 3 end);
+						
+						-- 宽,净料宽			
+						update T_tmpMData set sizeW=ifnull(_v,0),ssizeW=ifnull(_v,0)
+						where companyId = inCompanyId and userId=inUserId and useMode=_usemode and doubleKs=_DoubleFlag ;	                                  
+						-- 計算用料紙长                                                                                                
+						-- call spCalcExpr _L_Expr, _l, _w, _h, _t, _u, _g, _d, _s, _v out, _errno out,inK,inAdjBorder  
+						-- SELECT _L_Expr, inL, inw, inh, _t, _u, _g, _d, _s , inK,inAdjBorder, _v;
+						call spCalcExpr(_L_Expr, inL, inw, inh, _t, _u, _g, _d, _s , inK,inAdjBorder, _v) ;
+						-- print _BoxMDataSizeLUnit 
+						
+						update T_tmpMData set sizeL=round(F_UnitChange(inCompanyId,'mm',_BoxMDataSizeLUnit,ifnull(_v,0)+ifnull(_BoxPrintWaste,0)),                        
+														case when _BoxMDataSizeLUnit='mm' then 0 when _BoxMDataSizeLUnit='cm' then 1 else 3 end),  -- 增加满版印刷加值                                                
+										 ssizeL=round(F_UnitChange(inCompanyId,'mm',_BoxMDataSizeLUnit,ifnull(_v,0)+ifnull(_BoxPrintWaste,0)),                        
+																  case when _BoxMDataSizeLUnit='mm' then 0 when _BoxMDataSizeLUnit='cm' then 1 else 3 end) -- 增加满版印刷加值                                    
+						where companyId = inCompanyId and userId=inUserId and useMode=_usemode and doubleKs=_DoubleFlag ;	                                               
+						
+						-- 計算用料压线                                                  
+						set inL=F_UnitChange(inCompanyId,inUnitCode,'mm',_ll) ; -- 轉換單位 计算压线开槽按mm计算
+						set inw=F_UnitChange(inCompanyId,inUnitCode,'mm',_ww) ;
+						set inh=F_UnitChange(inCompanyId,inUnitCode,'mm',_hh) ;
+																		  
+						set _ys=''    ;                                                                                             
+						set _YS_Expr=replace(_YS_Expr, ' ', '')   ;
+						
+						if _YS_Expr<>''  then
+							-- 將壓線資料分段處理, 各段間以(..)+(..)+(..)的形式進行分隔, 分隔成(..) (..) (..) 
+							CREATE TEMPORARY TABLE IF NOT EXISTS tmpYs ( companyId bigint(20) , expr char(255) null, index_no int null );
+							-- delete from tmpYs when companyId = inCompanyId ;
+							
+							-- set _pos=charindex(')+(',_YS_Expr);
+							set _pos=instr(_YS_Expr,')+(');
+							set _index_no=1;						
+							if _pos>0   THEN                                                                                           
+								  while _pos>0     DO                                                                                        
+									set _tmp_expr=SUBSTR(_YS_Expr,1,_pos) ;                                           
+									set _YS_Expr=SUBSTR(_YS_Expr, _pos+2, 4000)  ;                                                                                              
+									insert into tmpYs(companyId,expr, index_no) values(inCompanyId,_tmp_expr, _index_no)  ;                                                                                              
+									set _pos=instr(_YS_Expr,')+('); -- charindex(')+(',_YS_Expr); 
+									set _index_no=_index_no+1  ;                                                                            
+								  end   WHILE;                                                                                             
+							end if ;
+							if _YS_Expr<>'' THEN 
+								insert into tmpYs(companyId,expr, index_no) values(inCompanyId,_YS_Expr, _index_no)  ;                                            
+									   -- 進行分段表達式的計算
+							END if ;
+							
+							calcys_block:BEGIN
+								DECLARE  no_more_record1 INT DEFAULT 0;
+								declare crYS cursor for select expr from tmpYs where companyId = inCompanyId order by index_no ;
+								/* 这个是个条件处理,针对NOT FOUND的条件,当没有记录时赋值为1 */
+								DECLARE  CONTINUE HANDLER FOR NOT FOUND  SET  no_more_record1 = 1;	
+								open crYS ;
+								fetch next from crYS into _YS_Expr;
+								WHILE no_more_record1 != 1 DO  -- 游标的循环
+									-- CALL spCalcExpr _YS_Expr, _l, _w, _h, _t, _u, _g, _d, _s, _v out, _errno out,inK,inAdjBorder                                                                                                                                
+									call spCalcExpr(_YS_Expr, inL, inw, inh, _t, _u, _g, _d, _s , inK,inAdjBorder, _v) ;
+									if _boxlinemode='1' THEN
+										set _ysInt=floor(_v) ; -- 只舍不入                                                                                              
+									elseif _boxlinemode='2' THEN
+										set _ysInt=ceiling(_v); -- 只入不舍
+									else 
+										set _ysInt=round(_v,case when _BoxMDataYXFloatToInt='0' then 0 else 1 end) ; -- 四舍五入
+									END IF ;
+									if _ys=''  THEN
+										set _ys=convert(convert(_ysInt,DECIMAL),CHAR(20));  -- ltrim(rtrim(cast(_ysInt as char(10)))) -- cast(_v as int)
+									else 
+										set _ys=CONCAT(ltrim(rtrim(_ys)),'+',convert(convert(_ysInt,DECIMAL),CHAR(20) )) ; -- ltrim(rtrim(cast(_ysInt as char(10))))
+									END IF ;
+									fetch next from crYS into _YS_Expr;
+								END WHILE;
+								close crYS;  
+								DELETE FROM tmpYs ;
+								DROP TEMPORARY TABLE IF EXISTS tmpYs ;
+								-- DELETE FROM tmpYs WHEN companyId =inCompanyId ;     
+							   
+							   update T_tmpMData set sizeYs=_ys -- 压线
+								where companyId = inCompanyId and userId=inUserId and useMode=_usemode and doubleKs=_DoubleFlag ;
+							end calcys_block ;
+						end if ;
+						-- 計算用料压线  完成
+						
+						-- 計算用料开槽
+						set _kc='';
+						set _KC_Expr=replace(_KC_Expr, ' ', '');
+						if _KC_Expr<>''   THEN
+							calcKc_block:BEGIN
+								-- 將壓線資料分段處理, 各段間以(..)+(..)+(..)的形式進行分隔, 分隔成(..) (..) (..)                 
+								declare _pos1 int(5);
+								declare _tmp_expr1 varchar(255);
+								declare _index_no1 int(5);
+								set _pos1=instr(_KC_Expr,')+('); -- charindex(')+(',_KC_Expr);
+								SET  _index_no1=1  ;  
+								CREATE TEMPORARY TABLE IF NOT EXISTS tmpKc ( companyId bigint(20) , expr char(255) null, index_no int null );
+								-- delete from tmpKc when companyId = inCompanyId ;
+								
+								if _pos1>0   THEN                                                                                           
+									while _pos1>0     DO                                                                                        
+										set _tmp_expr1=SUBSTR(_KC_Expr,1,_pos1) ;                                           
+										set _KC_Expr=SUBSTR(_KC_Expr, _pos1+2, 4000)  ;                                                                                              
+										insert into tmpKc(companyId,expr, index_no) values(inCompanyId,_tmp_expr1, _index_no1)  ;                                                                                              
+										set _pos1=instr(_KC_Expr,')+('); -- charindex(')+(',_KC_Expr); 
+										set _index_no1=_index_no1+1  ;                                                                            
+									end   WHILE;                                                                                             
+								end if ;
+								
+								if _KC_Expr<>'' then 
+									insert into tmpKc(companyId,expr, index_no) values(inCompanyId,_KC_Expr, _index_no1)  ;  								                             
+								end if ;
+								
+								-- 進行分段表達式的計算 
+								calcKc1_block:BEGIN
+										DECLARE  no_more_record2 INT DEFAULT 0;
+										declare crKC cursor for select expr from tmpKc where companyId = inCompanyId order by index_no ;
+										/* 这个是个条件处理,针对NOT FOUND的条件,当没有记录时赋值为1 */
+										DECLARE  CONTINUE HANDLER FOR NOT FOUND  SET  no_more_record2 = 1;
+										open crKC;
+										fetch next from crKC into _KC_Expr;
+										WHILE no_more_record2 != 1 DO  -- 游标的循环
+											-- call spCalcExpr _KC_Expr, _l, _w, _h, _t, _u, _g, _d, _s, _v out, _errno out,inK,inAdjBorder                                                                                                                                 
+											call spCalcExpr(_KC_Expr, inL, inw, inh, _t, _u, _g, _d, _s , inK,inAdjBorder, _v) ;
+											if _boxlinemode='1' then
+												set _kcInt=floor(_v); -- 只舍不入
+											elseif _boxlinemode='2' then
+												set _kcInt=ceiling(_v); -- 只入不舍      
+											else 
+												set _kcInt=round(_v,0); -- 四舍五入     
+											end if ;
+											if _kc='' then
+												set _kc=ltrim(rtrim(cast(_kcInt as char(20)))) ; -- cast(_v as int)                                                                                              
+											else 
+												set _kc=CONCAT(ltrim(rtrim(_kc)),'+',ltrim(rtrim(cast(_kcInt as char(20))))) ;
+											end if ;
+											fetch next from crKC into _KC_Expr;
+										END WHILE;
+										close crKC;
+										DELETE FROM tmpKc;
+										drop temporary table IF EXISTS tmpKc ;
+										-- DELETE FROM tmpKc WHEN companyId =inCompanyId ; 
+										
+										update T_tmpMData set sizeKc=_kc -- 开槽
+										where companyId = inCompanyId and userId=inUserId and useMode=_usemode and doubleKs=_DoubleFlag ;									
+								end calcKc1_block ;														
+							end calcKc_block ;                                          
+						END IF ; 
+						-- 計算用料开槽 完成
+						
+						-- 增加如果有模切板信息，则开料模切板中的规格来
+						if ltrim(rtrim(inDieCuttingPlateCode))<>'' then
+							calcMode_block:BEGIN
+									declare _Model_W decimal(24,6); declare _Model_L decimal(24,6); declare _CutQty decimal(24,6); declare _DieCutUnit int(3);  -- _bUnit_BoxMDataSizeLUnit                                              
+									call spGetParamValue(inCompanyId,'DieCutUnit',_DieCutUnit );
+									if substr(_DieCutUnit,1,1) in ('1') then -- 厘米
+										   -- dpLengthmm用纸规格(cm)|宽, dpWidthmm用纸规格(cm)长,dpDieCuttingQty模数
+										   select dpLengthmm,dpWidthmm,ifnull(dpDieCuttingQty,1)
+										   into   _Model_W, _Model_L,  _CutQty
+										   from T_BasDieCuttingPlate where companyId = inCompanyId and dpNo=inDieCuttingPlateCode  ;
+										   
+										   -- ssizeW 净料宽, ssizeL 净料长 , wKs 纸宽开 , lKs 纸长开 , Ks 总开数 ,waste 修边
+										   update T_tmpMData set ssizeW = F_UnitChange(inCompanyId,'cm',_bUnit,ifnull(_Model_W,0))+F_UnitChange(inCompanyId,'mm',_bUnit,ifnull(_box_DefultW,0)),                                      
+																 ssizeL = F_UnitChange(inCompanyId,'cm',_BoxMDataSizeLUnit,ifnull(_Model_L,0))+F_UnitChange(inCompanyId,'mm',_BoxMDataSizeLUnit,ifnull(_box_DefultL,0)),                                               
+																 wKs=1,lKs=1,Ks=floor(ifnull(1.0/_CutQty,1)),                                                  
+																 waste=0,
+																 qty=ifnull(ceiling(F_sfIIF(_DoubleFlag,(inQty+inBp)*2,(inQty+inBp))*1.0/_CutQty),0)                                                  
+											where companyId = inCompanyId and userId=inUserId and useMode=_usemode ;
+									/*		
+									elseif substr(_DieCutUnit,1,1) in ('2') then -- 毫米                     
+										   -- 
+										   select _Model_W=dp_SizeWmm,_Model_L=dp_SizeLmm,_CutQty=ifnull(dp_DieCuttingQty,1) from T_DieCuttingPlate(nolock) where dp_No=inDieCuttingPlateCode                                              
+										   update T_tmpMData set ssizeW=F_UnitChange(inCompanyId,'mm',_bUnit,ifnull(_Model_W,0))+F_UnitChange(inCompanyId,'mm',_bUnit,ifnull(_box_DefultW,0)),                                      
+																  ssizeL=F_UnitChange(inCompanyId,'mm',_BoxMDataSizeLUnit,ifnull(_Model_L,0))+F_UnitChange(inCompanyId,'mm',_BoxMDataSizeLUnit,ifnull(_box_DefultL,0)),                                               
+											 w_ks=1,lKs=1,ks=ifnull(1.0/_CutQty,1),                                                  
+											 waste=0,qty=ifnull(ceiling(F_sfIIF(_DoubleFlag,(inQty+inBp)*2,(inQty+inBp))*1.0/_CutQty),0)                                                 
+													where [user_id]=_user_id and use_mode=_use_mode
+									*/				
+									elseif substr(_DieCutUnit,1,1) in ('0') then -- 英寸                                            
+										   -- dpLengthinch 用纸规格(inch)宽 , dpWidthinch 用纸规格(inch)长
+											select dpLengthinch,dpWidthinch,ifnull(dpDieCuttingQty,1)
+											into  _Model_W,_Model_L,_CutQty
+											from T_BasDieCuttingPlate where companyId = inCompanyId and dpNo=inDieCuttingPlateCode  ;
+											
+											update T_tmpMData set ssizeW = F_UnitChange(inCompanyId,'inch',_bUnit,ifnull(_Model_W,0))+F_UnitChange(inCompanyId,'mm',_bUnit,ifnull(_box_DefultW,0)),                                      
+																 ssizeL = F_UnitChange(inCompanyId,'inch',_BoxMDataSizeLUnit,ifnull(_Model_L,0))+F_UnitChange(inCompanyId,'mm',_BoxMDataSizeLUnit,ifnull(_box_DefultL,0)),                                              
+																 wKs=1,lKs=1,Ks=floor(ifnull(1.0/_CutQty,1)),                                                  
+																 waste=0,
+																 qty=ifnull(ceiling(F_sfIIF(_DoubleFlag,(inQty+inBp)*2,(inQty+inBp))*1.0/_CutQty),0)                                                  
+											where companyId = inCompanyId and userId=inUserId and useMode=_usemode ;											 
+									end if ;  
+									-- 如果是按模切板的信息算用料则开槽压线为空
+									update T_tmpMData set sizeKc='',sizeYs= ''
+									where companyId = inCompanyId and userId=inUserId ;                                           
+							end calcMode_block ;	
+						end if ;
+						--  模切板信息 完成
+						
+						-- 启用计算用料纸度 (0未开通1开通) wbh 2020-03-06
+						if  IFNULL(_isCalPaperWidth,0) = 1 THEN
+								-- 不用開料
+								if _PaperCutFlag='0' then
+									-- 不用開料時直接寫入開料信息
+									update T_tmpMData set sizew=ifnull(ssizew,0),sizel=ifnull(ssizel,0),wKs=1,lKs=1,Ks=floor(ifnull(1.0/inMoks,1)),                                                  
+														   waste=0,qty=ifnull(ceiling(F_sfIIF(_DoubleFlag,(inQty+inBp)*2,(inQty+inBp))*1.0/inMoks),0)                                             
+									where companyId = inCompanyId and userId=inUserId and useMode=_usemode ;
+								else -- 開料  
+								
+									-- 增加纸度废长是否加入计算控制                                         
+									if _islBorder=0 then                                     
+										set _fl=0   ;
+									end if ;
+									
+									-- 如果紙長小于最小紙長設定, 計算出用料的最小紙長及紙長開數                                                                          
+									select ifnull(ssizel,0),1 into _r1l,_l1Cut from T_tmpMData
+									where companyId = inCompanyId and userId=inUserId and useMode=_usemode and doubleKs=_DoubleFlag  limit 1;
+																	
+									if _r1l>0  then
+										while _r1l*_l1Cut+_fl<_lMin DO
+											set _l1Cut=_l1Cut+1  ;
+										end   WHILE; 
+									end if ; 
+											
+									set _r1l=_r1l*_l1Cut+_fl;
+									
+									if _BoxPaperSizeFormat='1' and _BoxMDataSizeLUnit='inch'  then
+										set _r1l=F_sfFormatInch(inCompanyId,_r1l) ; -- 格式化規格
+									end if ;							                                               
+																										   
+									update T_tmpMData set sizel=ifnull(_r1l,0),lks=_l1Cut
+									where companyId = inCompanyId and userId=inUserId and useMode=_usemode and doubleKs=_DoubleFlag ;    
+									
+									-- 計算出用料的纸度及开数 
+									/*
+									CREATE TEMPORARY TABLE IF NOT EXISTS tmpPaperLimit(
+										select inCompanyId ,
+												(case when _bUnit='inch' then plWidth*25.4
+													  when _bUnit='cm' then plWidth*10
+													  else plWidth END )
+										from T_BasPaperLimit where companyId = inCompanyId and plkarat=1							
+									); */
+									CREATE TEMPORARY TABLE IF NOT EXISTS tmpPaperLimit(companyId bigint(20) ,pis numeric(24,6) );
+									-- delete from tmpPaperLimit when companyId = inCompanyId ;
+									if _bUnit='inch' then
+										insert into tmpPaperLimit(companyId,pis)
+										select inCompanyId,plWidthInch  from T_BasPaperLimit where companyId = inCompanyId and plkarat=1;
+									elseif _bUnit='cm' then
+										insert into tmpPaperLimit(companyId,pis)
+										select inCompanyId,plWidth from T_BasPaperLimit where companyId = inCompanyId and plkarat=1;
+									else 
+										insert into tmpPaperLimit(companyId,pis)
+										select inCompanyId,plWidth*10 from T_BasPaperLimit where companyId = inCompanyId and plkarat=1;
+									end if ; 
+									select ssizew,1 into _rW, _wCut from T_tmpMData                                                  
+									where companyId = inCompanyId and userId=inUserId and useMode=_usemode and doubleKs=_DoubleFlag ;   
+									
+									-- 与最小纸宽进行比较                                                
+									set  _i=1; set _wFlag='1' ;                                     
+									if _rW<=0 then set _wFlag='0'; end if ;
+									
+									while _wFlag='1' do
+										-- set _wTmp = _wCut * _rW + F_sfIIF(_isBorder, _f, 0); 
+										-- 楞别里的纸度费边需要转化成纸度的单位                                            
+									   set _wTmp = _wCut * _rW + F_sfIIF(_isBorder, _f, 0);
+
+										--  在最小纸度下再减去损耗标准 songwenbo120919
+										--  _PaperWaste 改成： F_UnitChange(inCompanyId,_bUnit,'mm',_PaperWaste)  -- wbh 20201217
+										whilePaperLimit:while _wTmp < _PaperWaste do                                                 
+												if _rW<=0 then LEAVE whilePaperLimit ; end if;                                                                                                                                            
+												set _wCut = _wCut + 1   ;                          
+												-- if _wCut*_rW+F_sfIIF(_isBorder, _f, 0)>_wMax break                                                                                               
+												-- set _wTmp = _wCut * _rW + F_sfIIF(_isBorder, _f, 0)  ;  
+												set _wTmp = _wCut * _rW +  F_sfIIF(_isBorder, _f, 0);     
+										END WHILE; 
+									
+										set _xTmp=_wTmp ;  -- 暫時保存計算結果                                                                                                                                                 
+										if (_wTmp<_wMin) and (_wMin-_wTmp<= _PaperWaste ) then -- 如果小于最小紙度, 則取最小紙度                                                                                                 
+										   set _wTmp=_wMin ;                                                                                              
+										elseif _wTmp > _wMax  then --  如果大于最大紙度, 不處理                                                                           
+										   set _wTmp=0 ;                                                                                         
+										elseif exists(select pis from tmpPaperLimit where pis>=_wTmp and companyId = inCompanyId limit 1    )    then                        
+											select pis into _wTmp from tmpPaperLimit        
+											where pis>=_wTmp         
+											and pis-_wTmp<= _PaperWaste     -- 最大修边        
+											and pis-_wTmp>= _PaperMinWaste   -- 最小修边
+											order by pis  
+											limit 1;
+												  
+											if (  FOUND_ROWS() = 0 ) then -- if isnull(_wTmp,0)=0                                                           
+											 set _wTmp=-1 ;
+											end if ;
+											 
+										else                                               
+										   set  _wTmp=0  ;                                            
+										   set _wFlag='0';                                                
+										end  if ;
+
+										if _wTmp>0 then -- 生成用料表    waste的值 + F_sfIIF(_isBorder, _f, 0) -- 如果盒式公式勾选，楞别对应的废边  -- wbh 20201217 解决莆田修边问题
+											if _i=1 then 
+												update T_tmpMData 
+												set sizeW= ifnull(_wTmp,0),
+												wKs=_wCut,
+												Ks=floor(ifnull(_wCut*lKs*1.0/inMoks,1)), 
+												waste = F_UnitChange(inCompanyId,_bUnit,'mm',(ifnull((case when _UWasteByBoxSize='1' then (_wTmp-_xTmp + F_sfIIF(_isBorder, _f, 0) )/(_wCut * _lCut*1.0/inMoks) else (_wTmp-_xTmp + F_sfIIF(_isBorder, _f, 0) ) end),0))),
+												-- waste = ifnull((case when _UWasteByBoxSize='1' then (_wTmp-_xTmp + F_sfIIF(_isBorder, _f, 0) )/(_wCut * _lCut*1.0/inMoks) else (_wTmp-_xTmp + F_sfIIF(_isBorder, _f, 0) ) end),0),				
+												qty=ifnull(ceiling((inQty + inBp) * F_sfIIF(_DoubleFlag, 2, 1) * 10.0/(_wCut * lKs * inMoks * 10.0)*(case when _MDatatwoperKilo='1' then 1.002 else 1.0 end)),0)
+												where companyId = inCompanyId and userId=inUserId and useMode=_usemode and doubleKs=_DoubleFlag ;
+											else  
+												insert into T_tmpMData(companyId,userId,artId,useMode,artCode,sizeW,sizeL,wKs,lKs,Ks,doubleKs,waste,qty,ssizeW, ssizeL, sizeYs,sizeKc)                                                                                                
+												select inCompanyId,inUserId,artId, useMode, inArtCode,ifnull(_wTmp,0),ifnull(sizeL,0), _wCut, lKs, floor(ifnull(_wCut*lKs*1.0/inMoks,1)), doubleKs,   
+												F_UnitChange(inCompanyId,_bUnit,'mm',(ifnull(case when _UWasteByBoxSize='1' then (_wTmp-_xTmp + F_sfIIF(_isBorder, _f, 0) )/(_wCut * _lCut*1.0/inMoks) else (_wTmp-_xTmp + F_sfIIF(_isBorder, _f, 0) ) end ,0))), 
+												-- ifnull(case when _UWasteByBoxSize='1' then (_wTmp-_xTmp + F_sfIIF(_isBorder, _f, 0) )/(_wCut * _lCut*1.0/inMoks) else (_wTmp-_xTmp + F_sfIIF(_isBorder, _f, 0) ) end ,0),
+												ifnull(ceiling((inQty + inBp) * F_sfIIF(_DoubleFlag, 2, 1) * 10.0/(_wCut * lKs * inMoks * 10.0)*(case when _MDatatwoperKilo='1' then 1.002 else 1.0 end)),0),                                                  
+												ssizeW, ssizeL, sizeYs,sizeKc 
+												from T_tmpMData 
+												where companyId = inCompanyId and userId=inUserId and useMode=_usemode and doubleKs=_DoubleFlag   
+												order by id 
+												limit 1;
+											end if ;																									   
+											set _i=_i+1 ;                                                 
+										end  if ;  
+										
+										set _wCut = _wCut + 1 ; 
+										
+										if _wTmp=0 then 
+											set _wFlag='0'; 
+										end if ;                                                 
+										-- if _wCut>_Maxps --增加最大开数控制    --去掉最大开数　swb120522                                              
+										--   set _wFlag='0'  
+										
+									END WHILE;  	
+									DELETE FROM tmpPaperLimit;
+									DROP TEMPORARY TABLE IF EXISTS  tmpPaperLimit ;
+								end if; --  开料完成
+						end if ;
+						
+						
+						set _Loop = _Loop + 1 ;						
+					END WHILE;
+					
+					
+					
+				end small_block ;  -- 游标WHILE begin end
+				
+				set _usemode = _usemode + 1;
+				fetch next from crBoxExpr into _isBorder,_islBorder,_box_If_Expr,_box_If_Value,_box_W1_Expr,_box_L1_Expr,                                                  
+												_box_YS1_Expr,_box_KC1_Expr,_box_W2_Expr,_box_L2_Expr,_box_YS2_Expr,_box_KC2_Expr,                                                  
+												_box_Inch_Expr,_box_CM_Expr,_box_Weight_Expr,_box_Area_Expr,_box_Cube_Expr,_box_Cut_Mode,                                      
+												_box_DefultW,_box_DefultL   ;
+			END WHILE;		
+			/*用完后记得用CLOSE把资源释放掉*/
+			CLOSE crBoxExpr;
+			
+		end calcYongliao_block ;
+		
+		-- 处理楞别资料中的最大开数及纸宽 WWC 20161219		
+		if _PMaxCut>0 then
+			delete from T_tmpMData  where userId=inUserId and companyId = inCompanyId and _PMaxCut<wks;
+		end if ;
+
+		if _PMaxWidth>0 then
+			delete from T_tmpMData  where userId=inUserId and companyId = inCompanyId and sizeW>_PMaxWidth ;
+		end if ;
+		
+		if SUBSTR(_BoxMDataCalcByParam,1,1)='0'  then 		-- 0 按损耗最小开料
+			select useMode,artId,artCode,sizeW,sizeL,wKs,lKs,Ks,doubleKs,waste,qty,sizeYs,ssizeW,ssizeL,sizeKc                                  
+			from T_tmpMData
+			where userId=inUserId and companyId = inCompanyId and (ssizeW>0 and ssizeL>0)                                      
+			order by useMode,waste,doubleKs ;
+		elseif SUBSTR(_BoxMDataCalcByParam,1,1)='1' then  -- 1 按最大纸度开料
+			select useMode,artId,artCode,sizeW,sizeL,wKs,lKs,Ks,doubleKs,waste,qty,sizeYs,ssizeW,ssizeL,sizeKc                                  
+			from T_tmpMData
+			where userId=inUserId and companyId = inCompanyId and (ssizeW>0 and ssizeL>0)                                      
+			order by useMode,sizeW desc  ;
+		else					-- 2 按最小纸度开料
+			select useMode,artId,artCode,sizeW,sizeL,wKs,lKs,Ks,doubleKs,waste,qty,sizeYs,ssizeW,ssizeL,sizeKc                                  
+			from T_tmpMData
+			where userId=inUserId and companyId = inCompanyId and (ssizeW>0 and ssizeL>0)                                      
+			order by useMode,sizeW  ;
+		end if ;
+		
+		DELETE FROM tmpBox;
+		DROP TEMPORARY TABLE IF EXISTS  tmpBox;
+	
+	end usual_block ;
+	
+	if _errno != '' then
+	
+		error_block:BEGIN
+			select useMode,artId,artCode,sizeW,sizeL,wKs,lKs,Ks,doubleKs,waste,qty,sizeYs,ssizeW,ssizeL,sizeKc
+			from T_tmpMData where userId=inUserId and companyId = inCompanyId;	
+		end error_block ;
+	
+	end if ;
+	
+	
+	  
+
+END

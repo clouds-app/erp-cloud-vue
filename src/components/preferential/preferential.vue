@@ -244,7 +244,6 @@
         }
         return true;
       },preferentialToValue(){
-        debugger
         let array = [];
         this.preferential.items.forEach((item)=>{
           let tempArray = [item.min,item.max,item.price,item.oper,this.preferential.priceMode,this.preferential.priceUnit];
