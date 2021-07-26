@@ -15,7 +15,7 @@
                  @row-click="rowClickEvent"
                     v-if="!!tableColTitleData"
                     :showContextMenu="false"
-                    :height="500"
+                    :height="creditAdjustFnWinHeight - 80"
                     ref="master_list_table"
                     unqiue-mark="id"
                     :index-menu="true"

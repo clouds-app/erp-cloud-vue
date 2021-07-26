@@ -15,7 +15,7 @@
                  @row-click="rowClickEvent"
                     v-if="!!tableColTitleData"
                     :showContextMenu="false"
-                    :height="500"
+                    :height="creditAdjustFnWinHeight - 80"
                     ref="master_list_table"
                     unqiue-mark="id"
                     :index-menu="true"
@@ -84,14 +84,14 @@
                 <FormItem class="formCreditAdjustItem" label="最大信用额" prop="newMaxAmt">
                     <Input type="number" placeholder="最大信用额" v-model="formCreditAdjust.newMaxAmt"></Input>
                 </FormItem>
-                  <FormItem class="formCreditAdjustItem" label="临时信用额" prop="tempAmt">
-                    <Input type="number" placeholder="临时信用额" v-model="formCreditAdjust.tempAmt"></Input>
-                </FormItem>
-                 <FormItem class="datePickerItem" label="截止日期" prop="endDate">
+                <FormItem class="datePickerItem" label="截止日期" prop="endDate">
                     <DatePicker
                         type="datetime"
                         v-model="formCreditAdjust.endDate"
                     ></DatePicker>
+                </FormItem>
+                  <FormItem class="formCreditAdjustItem" label="临时信用额" prop="tempAmt">
+                    <Input type="number" placeholder="临时信用额" v-model="formCreditAdjust.tempAmt"></Input>
                 </FormItem>
             </Form>
         </div>

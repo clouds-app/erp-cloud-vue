@@ -9,7 +9,7 @@
                  @row-click="rowClickEvent"
                     v-if="!!tableColTitleData"
                     :showContextMenu="false"
-                    :height="500"
+                    :height="saleCreditAdjustStatuFnWin"
                     ref="master_list_table"
                     unqiue-mark="id"
                     :index-menu="true"
